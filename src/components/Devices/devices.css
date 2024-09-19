@@ -1,0 +1,254 @@
+.add-device-form {
+    margin-top: 20px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+
+.add-device-form input {
+    display: block;
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    outline: none;
+}
+
+.submit-button {
+    background-color: var(--success-button-color);
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.submit-button:hover {
+    background-color: var(--success-button-color);
+}
+
+.cancel-button {
+    background-color: var(--fail-button-color);
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.cancel-button:hover {
+    background-color: var(--fail-button-color);
+}
+
+.table-edit {
+    color: var(--success-button-color);
+    font-size: 1vw;
+}
+
+.table-delete {
+    color: var(--fail-button-color);
+    font-size: 1vw;
+}
+
+.form button {
+    border: none;
+    background: none;
+    color: #8B8BA7;
+}
+
+
+.form {
+    position: relative;
+    width: var(--width-of-input);
+    height: var(--height-of-input);
+    display: flex;
+    align-items: center;
+    padding-inline: 0.8em;
+    border-radius: var(--border-radius);
+    transition: border-radius 0.5s ease;
+    background: var(--input-bg, #fff);
+    border: 1px solid var(--border-color);
+}
+
+/* styling of Input */
+.input {
+    font-size: 0.9rem;
+    background-color: transparent;
+    width: 100%;
+    height: 100%;
+    padding-inline: 0.5em;
+    padding-block: 0.7em;
+    border: none;
+}
+
+/* styling of animated border */
+.form:before {
+    content: "";
+    position: absolute;
+    background: var(--inner-border-color);
+    transform: scaleX(0);
+    transform-origin: center;
+    width: 100%;
+    height: var(--border-height);
+    left: 0;
+    bottom: 0;
+    border-radius: 1px;
+    transition: transform var(--timing) ease;
+}
+
+/* Hover on Input */
+.form:focus-within {
+    border-radius: var(--after-border-radius);
+}
+
+input:focus {
+    outline: none;
+}
+
+.form:focus-within:before {
+    transform: scale(1);
+}
+
+.reset {
+    border: none;
+    background: none;
+    opacity: 0;
+    visibility: hidden;
+}
+
+input:not(:placeholder-shown)~.reset {
+    opacity: 1;
+    visibility: visible;
+}
+
+.form svg {
+    width: 17px;
+    margin-top: 3px;
+}
+
+/* Toggle Switch Styles */
+.status-toggle{
+    padding: 0% 0% 1% 0%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.7vw;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 34px;
+    height: 20px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked+.slider {
+    background-color:var(--success-button-color);
+}
+
+input:checked+.slider:before {
+    transform: translateX(14px);
+}
+
+/* Pagination Styles */
+.pagination {
+    display: flex;
+    justify-content: end;
+    margin-top: 20px;
+}
+
+.pagination-container {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.pagination-container li {
+    margin: 0 5px;
+}
+
+.pagination-container a {
+    display: block;
+    padding: 10px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    text-align: center;
+    color: var( --text-color);
+    text-decoration: none;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.pagination-container a:hover {
+    background-color: var(--theam-color);
+    color: white;
+}
+.pagination-active a {
+    background-color: var(--theam-color);
+    color: var(--accent-color);
+    border-color: var(--theam-color);
+    cursor: default;
+}
+
+.pagination-container a:disabled {
+    color: #ccc;
+    border-color: #ddd;
+    cursor: not-allowed;
+}
+
+.activeStatus {
+    color: #2ebf2e;
+    border: 1px solid #2ebf2e;
+    border-radius: 15px;
+    width: 3vw;
+    text-align: center;
+    padding: unset;
+}
+.inactiveStatus {
+    color: #f16262;
+    border: 1px solid #f16262;
+    border-radius: 15px;
+    width: 3vw;
+    text-align: center;
+    padding: unset;
+}
+.device-table{
+    margin-top: 1%;
+}
+.device-table thead tr th{
+    color: var(--text-color);
+    background-color: var(--table-header-color);
+}

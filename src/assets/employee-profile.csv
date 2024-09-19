@@ -1,0 +1,3 @@
+﻿"id","employeeId","name","basicSalary","allottedHours","workingHours","overtimeHours","workingDays","bankName","extraFund","advanceSalary","accountNo","pay"
+"1","E001","John Doe","$3000","160","170","10","22","Bank A","$200","$100","1234567890","$3300"
+"2","E002","Jane Smith","$3200","160","160","0","22","Bank B","$150","$50","0987654321","$3400"

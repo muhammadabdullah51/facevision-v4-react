@@ -1,0 +1,79 @@
+/* src/pages/Company.css */
+.company-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f8f9fc;
+}
+
+.company-card {
+    background: linear-gradient(35deg, #ffffff 30%,#8ec5fc 150%);
+    /* Gradient background */
+    padding: 2% 5%;
+    width: 40vw;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    text-align: center;
+    color: #333;
+    /* Text color */
+}
+
+.company-header {
+    margin-bottom: 24px;
+}
+
+.company-header h2 {
+    margin-bottom: 8px;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.company-header p {
+    margin-bottom: 24px;
+}
+
+.input-group {
+    margin-bottom: 16px;
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #666;
+}
+
+.input-group input,
+.input-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.input-group textarea {
+    resize: vertical;
+    /* Allows resizing vertically only */
+    height: 80px;
+    /* Set a fixed height for the textarea */
+}
+
+.company-button {
+    width: 100%;
+    padding: 12px;
+    background-color: #6b46c1;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-top: 20px;
+}
+
+.company-button:hover {
+    background-color: #553c9a;
+}

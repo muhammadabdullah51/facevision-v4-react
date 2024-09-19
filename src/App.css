@@ -1,0 +1,102 @@
+:root {
+  --primary-color: #5f8053;
+  --secondary-color: #d5e9be;
+  --sidebar-color:#FFFFFF;
+  --app-color:  #F7F8FA;
+  --hover-color: #EDF5FC;
+  --hoverText-color: #7341DA;
+  --theam-color: #7341DA;
+  --after-border-radius: #7341DA;
+  --button-color:#EDF5FC;
+  --success-button-color: #67b8b1;
+  --fail-button-color:#db7b55;
+  --button-hover-color: #7670eb;
+  --table-header-color: #dbdbdb;
+  --shadow-color: rgba(0, 0, 0, 0.541);
+  --text-color: #4e4e4e;
+  --background-color: #f0f0f0; 
+  --border-color: #d4d2d2; 
+  --input-border-color: #e0e0e0; 
+  --box-shadow:0 4px 8px rgba(0, 0, 0, 0.1);
+  --font-size:0.9vw;
+  --headerFont-size:0.8vw;
+  --inner-border-color:  #7341DA;
+  --pagination-hover-color:black
+  --timing: 0.3s;
+  --width-of-input: 300px;
+  --height-of-input: 40px;
+  --border-height: 2px;
+  --input-bg: #fff;
+  --border-radius: 30px;
+  --after-border-radius: 1px;
+  --bold-font: 900
+  /* Old Color #508CED */
+}
+.bold-fonts{
+  font-weight: var(--bold-font);
+}
+
+.presentStatus{
+  background-color: #d4edda;
+  color: #17a136;
+}
+.absentStatus{
+  background-color: #ffa8bd;
+  color: #cf0013;
+}
+.lateStatus{
+  background-color: #e1b0f8;
+  color: #c300ff;
+}
+
+.status {
+  display: inline-block;
+  padding: 3px 6px;
+  border-radius: 3px;
+}
+
+table th, table td{
+  text-align: center;
+}
+
+.App {
+  text-align: center;
+}
+
+body {
+  font-family: 'Roboto Condensed', sans-serif;
+}
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

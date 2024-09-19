@@ -1,0 +1,79 @@
+.leave-table {
+    padding: 20px;
+  }
+  
+  .table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .input {
+    padding: 5px;
+    margin-right: 10px;
+  }
+  
+  .add-button, .submit-button {
+    padding: 10px;
+    cursor: pointer;
+  }
+  
+  .add-leave-form, .edit-leave-form {
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    padding: 20px;
+    border-radius: 5px;
+  }
+  
+  .add-leave-form h3, .edit-leave-form h3 {
+    margin-top: 0;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+  
+  thead {
+    background-color: #f4f4f4;
+  }
+  
+  .table-edit, .table-delete {
+    cursor: pointer;
+    margin: 0 5px;
+  }
+  
+  .status {
+    display: inline-block;
+    padding: 3px 6px;
+    border-radius: 3px;
+  }
+  
+  .approvedStatus {
+    background-color: #d4edda;
+    color: #17a136;
+  }
+  
+  .pendingStatus {
+    background-color: #f8d7da;
+    color: #cf0013;
+  }
+  
+.bonus-duration{
+    width: 98.5%;
+    height: 4vh;
+    border-radius: 5px;
+    margin-bottom: 2vh;
+    padding: 1px 10px;
+    font-weight: 700;
+    transition: .3s all;
+    outline: none;
+    border: 1px solid #ccc;
+}

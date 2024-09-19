@@ -1,0 +1,138 @@
+.business-hours {
+    width: 25vw;
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header h2 {
+    font-size: 1vw;
+    margin: 0;
+    font-weight: 600;
+    text-align: start;
+    color: #1a1a1a;
+}
+
+.header p {
+    color: #6c757d;
+    font-size: 0.7vw;
+    margin: 5px 0 20px;
+}
+
+.enable-toggle,
+.timezone,
+.day-row,
+.additional-settings {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 15px 0;
+}
+
+.enable-toggle label,
+.timezone label {
+    font-weight: 600;
+    font-size: 0.8vw;
+}
+
+input[type="checkbox"] {
+    width: 50px;
+    height: 24px;
+    appearance: none;
+    background-color: #d1d5db;
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    outline: none;
+    transition: background-color 0.3s;
+}
+
+input[type="checkbox"]:checked {
+    background-color: var(--hoverText-color);
+    
+}
+
+input[type="checkbox"]:before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: white;
+    transition: transform 0.3s;
+}
+
+input[type="checkbox"]:checked:before {
+    transform: translateX(26px);
+}
+
+.timezone select {
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    font-size: 0.8vw;
+    color: #495057;
+}
+
+.day-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #f1f3f5;
+}
+
+.day-row:last-child {
+    border-bottom: none;
+}
+
+.day-row label {
+    display: flex;
+    align-items: center;
+    font-size: 0.8vw;
+    color: #1a1a1a;
+}
+
+.time-inputs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 15vw;
+    justify-content: center;
+}
+
+input[type="time"] {
+    padding: 6px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    font-size: 0.8vw;
+    color: #495057;
+}
+
+.additional-settings button {
+    background-color: #f9fafb;
+    border: 1px solid #d1d5db;
+    border-radius: 5px;
+    padding: 8px 12px;
+    font-size:  0.8vw;
+    color: #1a1a1a;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.additional-settings button:hover {
+    background-color: #e5e7eb;
+    border-color: #cbd5e1;
+}
+
+.closed {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+input[type="checkbox"]:disabled+label {
+    color: #d1d5db;
+}

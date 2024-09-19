@@ -1,0 +1,138 @@
+.employee-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2vh;
+}
+
+.employee-form section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.employee-form section h1 {
+    width: 93%;
+    font-size: 0.9vw;
+}
+
+.employee-info {
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 90%;
+    padding: 2%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+.employee-upper {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+   
+}
+
+.employee-info-upper {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.employee-info-lower {
+    display: flex;
+    align-items: center;
+    justify-content: end;
+    flex-direction: row;
+}
+
+.employee-info-inner {
+    width: 45%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5vh;
+}
+
+.employee-info-inner input,
+.employee-info-inner select {
+    display: block;
+    width: 30vw;
+    height: 4vh;
+    border-radius: 5px;
+    border: 1px solid var(--input-border-color);
+    margin-bottom: 3vh;
+    padding: 1px 10px;
+    font-weight: 700;
+    transition: .3s all;
+    outline: none;
+}
+
+.employee-info-inner input:focus,
+.employee-info-inner select:focus {
+    border: 2px solid var(--hoverText-color);
+}
+
+label {
+    font-weight: 600;
+    font-size: 0.8vw;
+    color: var(--text-color);
+}
+
+button.add {
+    background-color: var(--success-button-color);
+    color: white;
+    border: none;
+    padding: 0.6vw 1.4vw;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 1vw;
+}
+
+button.cancel {
+    background-color: var(--fail-button-color);
+    color: white;
+    border: none;
+    padding: 0.6vw 1.4vw;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.back-button {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+}
+
+.back-button svg {
+    margin-right: 8px; 
+}
+
+h2 {
+    text-align: center;
+}
+.employee-main{
+    display: flex;
+    flex-direction: column;
+    width: 90%;
+    padding: 2%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    background-color: white;
+}
+.employee-buttons{
+    display: flex;
+    gap: 1vw;
+    align-items: center;
+    justify-content: center;
+}
+.empImage img{
+    width: 2vw;
+}

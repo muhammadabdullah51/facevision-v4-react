@@ -1,0 +1,56 @@
+.dashboard-card {
+    width: 20vw;
+    height: 400px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.dashboard-card h4 {
+    font-size: 1.2em;
+    margin-bottom: 5px;
+}
+
+.dashboard-card p {
+    margin: 0;
+    font-size: 0.9em;
+    color: #888;
+}
+
+.dashboard-card h2 {
+    font-size: 2em;
+    margin: 10px 0;
+}
+
+.line-chart-container {
+    width: 100%;
+    height: 150px;
+    margin-bottom: 20px;
+}
+
+.dashboard-card .earnings-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.dashboard-card .earnings-info p {
+    display: flex;
+    justify-content: space-between;
+}
+
+.dashboard-card .earnings-info span {
+    font-weight: bold;
+}
+
+.dashboard-card .earnings-info .negative {
+    color: red;
+}
+
+.dashboard-card .earnings-info .positive {
+    color: green;
+}

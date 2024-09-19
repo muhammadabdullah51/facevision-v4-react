@@ -1,0 +1,65 @@
+.schedule-container {
+    width: 35vw;
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Align two fields (onEntry and onExit) in one row */
+.day-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* Arrange two inputs (onEntry and onExit) in a row */
+.day-checkbox {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 10px;
+
+}
+
+.day-checkbox label{
+    display: flex;
+    flex-basis: 25%;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.time-selectors {
+    display: flex;
+    flex-direction: row;
+    flex-basis: 75%;
+    gap: 15px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+input[type="time"] {
+    padding: 5px;
+    margin-bottom: 10px;
+    width: 7vw;
+}
+
+button {
+    margin-left: 5px;
+    padding: 5px;
+    border: none;
+    background-color: #e0e0e0;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.attendance-calculation{
+    color: #6c757d;
+    font-size: 0.7vw;
+    margin: 5px 0 20px;
+}
+.schedule-container h3{
+    font-size: 0.9vw;
+}

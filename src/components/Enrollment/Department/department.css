@@ -1,0 +1,225 @@
+.search-input {
+    width: 15%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    outline: none;
+}
+
+/* Pagination styles */
+.pagination {
+    display: flex;
+    justify-content: end;
+    list-style-type: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+.pagination a,
+.pagination span {
+    margin: 0 5px;
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #333;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.pagination a:hover,
+.pagination span.active {
+    background-color: var(--theam-color);
+    color: #fff;
+}
+
+.pagination .disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.pagination-active {
+    background-color: var(--theam-color);
+    color: white;
+    border: 1px solid var(--theam-color);
+}
+
+.add-button {
+    margin-left: 10px;
+    padding: 8px 16px;
+    border: 1px solid var(--theam-color);
+    border-radius: 4px;
+    background-color: var(--button-color);
+    color: var(--theam-color);
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.add-button:hover {
+    background-color: var(--button-hover-color);
+    border: 1px solid var(--button-hover-color);
+    color: white;
+}
+
+.table-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.add-department-form {
+    margin-top: 20px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+
+.add-department-form input {
+    display: block;
+    width: 99%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    outline: none;
+}
+
+.submit-button {
+    background-color: var(--success-button-color);
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.submit-button:hover {
+    background-color: var(--success-button-color);
+}
+
+.cancel-button {
+    background-color: var(--fail-button-color);
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.cancel-button:hover {
+    background-color: var(--fail-button-color);
+}
+
+.table-edit {
+    color: var(--success-button-color);
+    font-size: 1vw;
+}
+
+.table-delete {
+    color: var(--fail-button-color);
+    font-size: 1vw;
+}
+
+.form button {
+    border: none;
+    background: none;
+    color: #8B8BA7;
+} 
+
+/* styling of Input */
+.input {
+    font-size: 0.9rem;
+    background-color: transparent;
+    width: 100%;
+    height: 100%;
+    padding-inline: 0.5em;
+    padding-block: 0.7em;
+    border: none;
+}
+
+/* styling of animated border */
+.form:before {
+    content: "";
+    position: absolute;
+    background: var(--inner-border-color);
+    transform: scaleX(0);
+    transform-origin: center;
+    width: 100%;
+    height: var(--border-height);
+    left: 0;
+    bottom: 0;
+    border-radius: 1px;
+    transition: transform var(--timing) ease;
+}
+
+/* Hover on Input */
+.form:focus-within {
+    border-radius: var(--after-border-radius);
+}
+
+input:focus {
+    outline: none;
+}
+
+.form:focus-within:before {
+    transform: scale(1);
+}
+
+.reset {
+    border: none;
+    background: none;
+    opacity: 0;
+    visibility: hidden;
+}
+
+input:not(:placeholder-shown)~.reset {
+    opacity: 1;
+    visibility: visible;
+}
+
+.form svg {
+    width: 17px;
+    margin-top: 3px;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 14px;
+    /* font-family: 'Arial', sans-serif; */
+    background-color: white;
+}
+
+.table td {
+    padding: 16px;
+    font-weight: 500;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: center;
+    font-size: 0.7vw;
+
+}
+
+.table th {
+    color: var(--text-color);
+    font-weight: 600;
+    background-color: var(--table-header-color);
+    text-align: center;
+    font-size: 0.7vw;
+    border: 1px solid rgb(189, 189, 189);
+    height: 3vh;
+}
+
+.departments-table {
+    padding: 1%;
+    background-color: white;
+    margin-top: 2vh;
+    border-radius: 15px;
+    box-shadow: var(--box-shadow);
+}
