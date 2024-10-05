@@ -24,7 +24,7 @@ const LocationTable = ({ data, setData }) => {
     fetchLocation();
   }, []);
 
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
     const updateLocation = {
       _id: formData._id,
       locationCode: formData.locationCode,
@@ -32,33 +32,34 @@ const LocationTable = ({ data, setData }) => {
       deviceQuantity: formData.deviceQuantity,
       employeeQuantity: formData.employeeQuantity,
       resignedQuantity: formData.resignedQuantity,
-    }
+    };
     console.log(updateLocation);
     try {
       axios.post(`http://localhost:5000/api/updateLocation`, updateLocation);
+      const updatedData = await axios.get(
+        "http://localhost:5000/api/fetchLocation"
+      );
+      setData(updatedData.data);
       fetchLocation();
       setShowEditForm(false);
-
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   };
 
   const fetchLocation = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/fetchLocation');
+      const response = await fetch("http://localhost:5000/api/fetchLocation");
       if (response.ok) {
         const location = await response.json();
         setData(location);
       } else {
-        throw new Error('Failed to fetch location');
+        throw new Error("Failed to fetch location");
       }
     } catch (error) {
-      console.error('Error fetching location data:', error);
+      console.error("Error fetching location data:", error);
     }
   };
-
-
 
   const columns = useMemo(
     () => [
@@ -74,9 +75,7 @@ const LocationTable = ({ data, setData }) => {
       {
         Header: "Location Name",
         accessor: "locationName",
-        Cell: ({ value }) => (
-          <span className='bold-fonts'>{value}</span>
-        ),
+        Cell: ({ value }) => <span className="bold-fonts">{value}</span>,
       },
       {
         Header: "Device Quantity",
@@ -156,10 +155,14 @@ const LocationTable = ({ data, setData }) => {
     setShowEditForm(true); // Show Edit Form
   };
 
-  const handleDelete = (row) => {
-    const id= row._id;
-    axios.post(`http://localhost:5000/api/deleteLocation`, {id})
-    console.log(id)
+  const handleDelete = async (row) => {
+    const id = row._id;
+    axios.post(`http://localhost:5000/api/deleteLocation`, { id });
+    console.log(id);
+    const updatedData = await axios.get(
+      "http://localhost:5000/api/fetchLocation"
+    );
+    setData(updatedData.data);
     fetchLocation();
   };
 
@@ -176,7 +179,7 @@ const LocationTable = ({ data, setData }) => {
     setShowEditForm(false); // Hide Edit Form
   };
 
-  const addLocation = () => {
+  const addLocation = async () => {
     setShowAddForm(false);
     setShowEditForm(true);
     console.log(formData);
@@ -187,9 +190,16 @@ const LocationTable = ({ data, setData }) => {
       deviceQuantity: formData.deviceQuantity,
       employeeQuantity: formData.employeeQuantity,
       resignedQuantity: formData.resignedQuantity,
-    }
+    };
     try {
-      axios.post('http://localhost:5000/api/addLocation', location)
+      axios.post("http://localhost:5000/api/addLocation", location);
+      const updatedData = await axios.get(
+        "http://localhost:5000/api/fetchLocation"
+      );
+      setData(updatedData.data);
+      fetchLocation();
+      setShowAddForm(false);
+      setShowEditForm(false);
     } catch (error) {
       console.log(error);
     }
@@ -198,14 +208,13 @@ const LocationTable = ({ data, setData }) => {
   return (
     <div className="location-table">
       <div className="table-header">
-        <form className="form">
-          <button>
+        <form className="form" onSubmit={(e) => e.preventDefault()}>
+          <button type="submit">
             <svg
               width="17"
               height="16"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              role="img"
               aria-labelledby="search"
             >
               <path
@@ -222,10 +231,13 @@ const LocationTable = ({ data, setData }) => {
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search..."
             className="input"
-            required
             type="text"
           />
-          <button className="reset" type="reset">
+          <button
+            className="reset"
+            type="button" // Change to type="button" to prevent form reset
+            onClick={() => setSearchQuery("")} // Clear the input on click
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-6 w-6"
@@ -238,7 +250,7 @@ const LocationTable = ({ data, setData }) => {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 d="M6 18L18 6M6 6l12 12"
-              ></path>
+              />
             </svg>
           </button>
         </form>

@@ -212,7 +212,7 @@ input:not(:placeholder-shown)~.reset {
     background-color: var(--table-header-color);
     text-align: center;
     font-size: 0.7vw;
-    border: 1px solid rgb(189, 189, 189);
+    /* border: 1px solid rgb(189, 189, 189); */
     height: 3vh;
 }
 

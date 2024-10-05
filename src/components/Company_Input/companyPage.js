@@ -1,41 +1,97 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import './companyPage.css'
+import './companyPage.css';
+import axios from 'axios';
+
 const Information = () => {
     const userInfo = useSelector((state) => state.auth.userInfo);
     const navigate = useNavigate();
 
-    if (!userInfo) {
-        navigate('/'); 
-    }
+    // if (!userInfo) {
+    //     navigate('/'); 
+    // }
 
     const [companyName, setCompanyName] = useState('');
     const [employees, setEmployees] = useState('');
     const [logo, setLogo] = useState(null);
     const [description, setDescription] = useState('');
     const [industry, setIndustry] = useState('');
+    const [companyId, setCompanyId] = useState(null); // For updates and deletion
+
+    useEffect(() => {
+        // If you want to fetch and edit an existing company
+        const fetchCompany = async () => {
+            try {
+                const response = await axios.get(`/api/company/${userInfo.companyId}`);
+                const { companyName, employees, description, industry } = response.data;
+                setCompanyName(companyName);
+                setEmployees(employees);
+                setDescription(description);
+                setIndustry(industry);
+                setCompanyId(response.data._id); // Set companyId for updating or deleting
+            } catch (error) {
+                console.log("Error fetching company data", error);
+            }
+        };
+
+        // Uncomment if you want to pre-fill with existing company data
+        // fetchCompany();
+    }, [userInfo]);
 
     const handleLogoUpload = (e) => {
-        setLogo(e.target.files[0]); // Save the uploaded file
+        setLogo(e.target.files[0]); 
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        navigate('/dashboard');
-        console.log({
-            companyName,
-            employees,
-            logo,
-            description,
-            industry,
+
+    const formData = new FormData();
+    formData.append('companyName', companyName);
+    formData.append('employees', employees);
+    formData.append('logo', logo); // Optional
+    formData.append('description', description);
+    formData.append('industry', industry);
+    formData.append('action', companyId ? 'update' : 'create'); // Create if no companyId, otherwise update
+    if (companyId) {
+        formData.append('companyId', companyId);
+    }
+
+    try {
+        const response = await axios.post('http://localhost:5000/api/company', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
         });
+
+        console.log(response.data);
+
+        // Navigate to login page after successful form submission
+        navigate('/');  
+    } catch (error) {
+        console.error('Error submitting company data', error);
+    }
     };
+
+    const handleDelete = async () => {
+        try {
+            const response = await axios.post('/api/company', {
+                action: 'delete',
+                companyId,
+            });
+            console.log(response.data);
+            // Redirect or perform an action after deletion
+            navigate('/dashboard');
+        } catch (error) {
+            console.error('Error deleting company', error);
+        }
+    };
+
     return (
         <div className="company-container">
             <div className="company-card">
                 <div className="company-header">
-                    <h2>Enter Your Company Information</h2>
+                    <h2>{companyId ? 'Edit Your Company Information' : 'Enter Your Company Information'}</h2>
                     <p>Please provide the details of your company</p>
                 </div>
                 <form onSubmit={handleSubmit}>
@@ -61,7 +117,7 @@ const Information = () => {
                     </div>
                     <div className="input-group">
                         <label>Company Logo</label>
-                        <input type="file" onChange={handleLogoUpload} required />
+                        <input type="file" onChange={handleLogoUpload} />
                     </div>
                     <div className="input-group">
                         <label>Industry</label>
@@ -82,8 +138,15 @@ const Information = () => {
                             required
                         />
                     </div>
-                    <button type="submit" className="company-button">Submit</button>
+                    <button type="submit" className="company-button">
+                        {companyId ? 'Update' : 'Submit'}
+                    </button>
                 </form>
+                {companyId && (
+                    <button onClick={handleDelete} className="company-delete-button">
+                        Delete Company
+                    </button>
+                )}
             </div>
         </div>
     );

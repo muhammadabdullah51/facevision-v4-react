@@ -19,15 +19,15 @@ const TableComponent = ({ data, setData }) => {
   // Fetch departments data
   const fetchDepartments = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/fetchDepartment');
+      const response = await fetch("http://localhost:5000/api/fetchDepartment");
       if (response.ok) {
         const departments = await response.json();
         setData(departments);
       } else {
-        throw new Error('Failed to fetch departments');
+        throw new Error("Failed to fetch departments");
       }
     } catch (error) {
-      console.error('Error fetching department data:', error);
+      console.error("Error fetching department data:", error);
     }
   };
 
@@ -50,11 +50,13 @@ const TableComponent = ({ data, setData }) => {
 
   const handleDelete = async (id) => {
     try {
-      axios.post(`http://localhost:5000/api/deleteDepartments`,{ id});
+      axios.post(`http://localhost:5000/api/deleteDepartments`, { id });
       console.log(`Department deleted ID: ${id}`);
+      const updatedData = await axios.get('http://localhost:5000/api/fetchDepartment');
+      setData(updatedData.data)
       fetchDepartments();
     } catch (error) {
-      console.error('Error deleting department:', error);
+      console.error("Error deleting department:", error);
     }
   };
 
@@ -67,7 +69,7 @@ const TableComponent = ({ data, setData }) => {
     });
     setShowAddForm(true);
     setShowEditForm(false);
-    fetchDepartments(); 
+    fetchDepartments();
   };
 
   const addDepartment = async () => {
@@ -78,14 +80,15 @@ const TableComponent = ({ data, setData }) => {
     };
 
     try {
-      axios.post(`http://localhost:5000/api/addDepartments`, newDepartment)
+      axios.post(`http://localhost:5000/api/addDepartments`, newDepartment);
       console.log(newDepartment);
-      console.log('Department added successfully:');
-      setShowAddForm(false); // Close add form
-      fetchDepartments(); // Refresh the department list
-
+      console.log("Department added successfully:");
+      setShowAddForm(false); 
+      const updatedData = await axios.get('http://localhost:5000/api/fetchDepartment');
+      setData(updatedData.data)
+      fetchDepartments(); 
     } catch (error) {
-      console.error('Error adding department:', error);
+      console.error("Error adding department:", error);
     }
 
     // Reset the form data
@@ -97,13 +100,12 @@ const TableComponent = ({ data, setData }) => {
     });
   };
 
-
   const filteredData = data.filter((row) =>
     Object.values(row).some((val) =>
       String(val).toLowerCase().includes(searchQuery.toLowerCase())
     )
   );
-  
+
   const updateDepartment = async () => {
     const updatedDepartment = {
       _id: formData._id,
@@ -114,20 +116,29 @@ const TableComponent = ({ data, setData }) => {
     };
 
     try {
-      await axios.put(`http://localhost:5000/api/updateDepartments`, updatedDepartment);
-      console.log('Department updated successfully');
+      await axios.put(
+        `http://localhost:5000/api/updateDepartments`,
+        updatedDepartment
+      );
+      console.log("Department updated successfully");
       setShowEditForm(false); // Close edit form
       fetchDepartments(); // Refresh the department list
     } catch (error) {
-      console.error('Error updating department:', error);
+      console.error("Error updating department:", error);
     }
   };
   return (
     <div className="department-table">
       <div className="table-header">
-        <form className="form">
-          <button>
-            <svg width="17" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-labelledby="search">
+        <form className="form" onSubmit={(e) => e.preventDefault()}>
+          <button type="submit">
+            <svg
+              width="17"
+              height="16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-labelledby="search"
+            >
               <path
                 d="M7.667 12.667A5.333 5.333 0 107.667 2a5.333 5.333 0 000 10.667zM14.334 14l-2.9-2.9"
                 stroke="currentColor"
@@ -144,9 +155,24 @@ const TableComponent = ({ data, setData }) => {
             className="input"
             type="text"
           />
-          <button className="reset" type="reset">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          <button
+            className="reset"
+            type="button" // Change to type="button" to prevent form reset
+            onClick={() => setSearchQuery("")} // Clear the input on click
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </form>

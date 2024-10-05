@@ -34,46 +34,111 @@ const AddEmployee = ({ setData, setActiveTab, data }) => {
   });
 
   const [departments, setDepartments] = useState([
-    "IT", "HR", "Finance", "Marketing", "R&D", "Sales", "Admin"
+    "IT",
+    "HR",
+    "Finance",
+    "Marketing",
+    "R&D",
+    "Sales",
+    "Admin",
   ]);
-
-  const submitForm = () => {
-    try {
-      axios.post(`http://localhost:5000/api/addEmployee`, newEmployee);
-      console.log(newEmployee);
-      setSelectedPage("");
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const nextSerialNo = data.length + 1;
-
-    const newEmployeeWithSerial = {
-      ...newEmployee,
-      serialNo: nextSerialNo,
-      employeeName: `${newEmployee.firstName} ${newEmployee.lastName}`,
-      contactNo: newEmployee.contactNo.toString(),
-    };
-
-    setData((prevData) => [...prevData, newEmployeeWithSerial]);
-    setActiveTab("Employees");
-  };
-
   const handleDepartmentChange = (event) => {
     const { value } = event.target;
 
     if (value === "Add-Department") {
       setSelectedPage("Department");
     } else {
-      setNewEmployee((prevState) => ({
-        ...prevState,
-        department: value,
-      }));
+      setNewEmployee({ ...newEmployee, department: value });
     }
   };
+
+  const addEmployees = async () => {
+    const employeeData  = {
+      employeeId: newEmployee.employeeId,
+      firstName: newEmployee.firstName,
+      lastName: newEmployee.lastName,
+      email: newEmployee.email,
+      contactNo: newEmployee.contactNo,
+      picture: newEmployee.picture,
+      enrollSite: newEmployee.enrollSite,
+      gender: newEmployee.gender,
+      joiningDate: newEmployee.joiningDate,
+      bankName: newEmployee.bankName,
+      overtimeAssigned: newEmployee.overtimeAssigned,
+      department: newEmployee.department,
+      designationName: newEmployee.designationName,
+      basicSalary: newEmployee.basicSalary,
+      accountNo: newEmployee.accountNo,
+      salaryPeriod: newEmployee.salaryPeriod,
+      salaryType: newEmployee.salaryType,
+      enableAttendance: newEmployee.enableAttendance,
+      enableSchedule: newEmployee.enableSchedule,
+      enableOvertime: newEmployee.enableOvertime,
+    };
+
+    try {
+      axios.post('http://localhost:5000/api/addEmployees', employeeData );
+      console.log(employeeData );
+      setSelectedPage("");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Create a new FormData object
+    const formData = new FormData();
+    
+    // Append all employee details
+    Object.keys(newEmployee).forEach(key => {
+        formData.append(key, newEmployee[key]);
+    });
+
+    try {
+        const response = await axios.post(
+            "http://localhost:5000/api/addEmployees", // Make sure this matches your backend endpoint
+            formData,
+            { headers: { 'Content-Type': 'multipart/form-data' } }
+        );
+
+        if (response.status === 201) { // Check for 201 status code for successful creation
+            setData((prevData) => [...prevData, response.data]); // Update state with new employee
+            setActiveTab("Employees");
+
+            // Reset form fields after successful submission
+            setNewEmployee({
+                employeeId: "",
+                firstName: "",
+                lastName: "",
+                email: "",
+                contactNo: "",
+                picture: "",
+                enrollSite: "",
+                gender: "",
+                joiningDate: "",
+                bankName: "",
+                overtimeAssigned: "",
+                department: "",
+                designationName: "",
+                basicSalary: "",
+                accountNo: "",
+                salaryPeriod: "",
+                salaryType: "",
+                enableAttendance: "",
+                enableSchedule: "",
+                enableOvertime: "",
+            });
+        } else {
+            console.error("Failed to add employee:", response);
+        }
+    } catch (error) {
+        console.error("Error adding new employee:", error.response ? error.response.data : error.message);
+    }
+};
+
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -83,32 +148,23 @@ const AddEmployee = ({ setData, setActiveTab, data }) => {
   const handlePictureChange = async (event) => {
     const file = event.target.files[0];
     if (file) {
-      const formData = new FormData();
-      formData.append("picture", file);
+      setNewEmployee((prevState) => ({ ...prevState, picture: file })); // Store the file object
+  }
+    // if (file) {
+    //   const formData = new FormData();
+    //   formData.append("picture", file);
 
-      try {
-        const response = await fetch("http://localhost:5000/api/upload", {
-          method: "POST",
-          body: formData,
-        });
-
-        if (!response.ok) {
-          throw new Error("Image upload failed");
-        }
-
-        const result = await response.json();
-        const imageUrl = result.imageUrl;
-
-        setNewEmployee((prevState) => ({
-          ...prevState,
-          picture: imageUrl,
-        }));
-
-        console.log("File uploaded successfully:", imageUrl);
-      } catch (error) {
-        console.error("Error uploading file:", error);
-      }
-    }
+    //   try {
+    //     const response = await axios.post(
+    //       "http://localhost:5000/api/upload",
+    //       formData
+    //     );
+    //     const imageUrl = response.data.imageUrl;
+    //     setNewEmployee((prevState) => ({ ...prevState, picture: imageUrl }));
+    //   } catch (error) {
+    //     console.error("Error uploading picture:", error);
+    //   }
+    // }
   };
 
   const handleWebcamCapture = (imageSrc) => {
@@ -118,7 +174,7 @@ const AddEmployee = ({ setData, setActiveTab, data }) => {
       picture: imageSrc, // Store the imageSrc in the 'picture' field
     }));
   };
-  
+
   return (
     <div className="add-employee-main">
       <div>
@@ -195,9 +251,22 @@ const AddEmployee = ({ setData, setActiveTab, data }) => {
                     accept="image/*"
                     onChange={handlePictureChange}
                   />
-                  <button type="button" onClick={() => setIsWebcamOpen(true)} className="webcam-button">
+                  <button
+                    type="button"
+                    onClick={() => setIsWebcamOpen(true)}
+                    className="webcam-button"
+                  >
                     Capture Picture with Webcam
                   </button>
+                  {newEmployee.picture && (
+                    <div className="captured-image-container">
+                      <img
+                        src={newEmployee.picture}
+                        alt="Captured"
+                        className="captured-image"
+                      />
+                    </div>
+                  )}
                   <WebcamModal
                     isOpen={isWebcamOpen}
                     onClose={() => setIsWebcamOpen(false)}
@@ -242,7 +311,6 @@ const AddEmployee = ({ setData, setActiveTab, data }) => {
                     value={newEmployee.bankName}
                     onChange={handleChange}
                   />
-
                 </div>
                 <div className="employee-info-inner">
                   <label>Overtime Assigned</label>
@@ -258,7 +326,7 @@ const AddEmployee = ({ setData, setActiveTab, data }) => {
 
                   <label>Department Name</label>
                   <select
-                    name="Department"
+                    name="department"
                     value={newEmployee.department}
                     onChange={handleDepartmentChange}
                   >
@@ -359,7 +427,7 @@ const AddEmployee = ({ setData, setActiveTab, data }) => {
                 </div>
               </div>
               <div className="employee-buttons">
-                <button className="add" type="submit" onClick={submitForm}>
+                <button className="add" type="submit" >
                   Add Employee
                 </button>
                 <button
@@ -369,7 +437,6 @@ const AddEmployee = ({ setData, setActiveTab, data }) => {
                 >
                   Cancel
                 </button>
-
               </div>
             </div>
           </section>

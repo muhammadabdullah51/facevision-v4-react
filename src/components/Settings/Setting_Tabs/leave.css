@@ -166,7 +166,7 @@
     border: 1px solid #ccc; /* Thinner border */
 }
 .checkbox-container input:checked ~ .checkmark {
-    background-color: #5F8053;
+    background-color: #7341DA;
 }
 .checkmark:after {
     content: "";
@@ -200,9 +200,9 @@
 }
 .accessible-items span {
     display: inline-block;
-    margin-right: 5px; /* Space between each item */
-    color: #5F8053; /* Custom color for items */
-    background-color: #D5E9BE; /* Light background for each item */
+    margin-right: 5px;
+    color: white;
+    background-color: #7341DA;
     padding: 3px 6px;
     border-radius: 3px;
 }

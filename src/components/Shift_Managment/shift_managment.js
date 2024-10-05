@@ -131,14 +131,13 @@ const ShiftsTable = () => {
   return (
     <div className="table-container">
       <div className="leave-header">
-        <form className="form">
-          <button>
+      <form className="form" onSubmit={(e) => e.preventDefault()}>
+          <button type="submit">
             <svg
               width="17"
               height="16"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              role="img"
               aria-labelledby="search"
             >
               <path
@@ -152,13 +151,16 @@ const ShiftsTable = () => {
           </button>
           <input
             value={searchQuery}
-            onChange={handleSearchChange}
+            onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search..."
             className="input"
-            required
             type="text"
           />
-          <button className="reset" type="reset">
+          <button
+            className="reset"
+            type="button" // Change to type="button" to prevent form reset
+            onClick={() => setSearchQuery("")} // Clear the input on click
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-6 w-6"
@@ -171,7 +173,7 @@ const ShiftsTable = () => {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 d="M6 18L18 6M6 6l12 12"
-              ></path>
+              />
             </svg>
           </button>
         </form>

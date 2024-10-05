@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./addVisitors.css";
 import Department from '../Enrollment/Department/department';
 import { FaArrowLeft } from 'react-icons/fa';
+import axios from "axios";
 const AddVisitor = ({ setData, setActiveTab, data }) => {
   const [selectedPage, setSelectedPage] = useState(""); // State to control page view
   const [departments, setDepartments] = useState([
@@ -59,8 +60,65 @@ const AddVisitor = ({ setData, setActiveTab, data }) => {
       phoneNo: newVisitor.phoneNo.toString(), // Convert phone number to string
     };
     setData((prevData) => [...prevData, newVisitorWithSerial]);
+    const addVisitors={
+      id: newVisitorWithSerial.serialNo,
+      firstName: newVisitorWithSerial.firstName,
+      lastName: newVisitorWithSerial.lastName,
+      crftNo: newVisitorWithSerial.crftNo,
+      createTime: new Date().toISOString(),
+      exitTime: new Date().toISOString(),
+      email: newVisitorWithSerial.email,
+      phoneNo: newVisitorWithSerial.phoneNo,
+      visitingDepartment: newVisitorWithSerial.visitingDepartment,
+      host: newVisitorWithSerial.host,
+      visitingReason: newVisitorWithSerial.visitingReason,
+      carryingGoods: newVisitorWithSerial.carryingGoods,
+      image: newVisitorWithSerial.image, // Updated to handle file
+    }
+    try {
+      axios.post(`http://localhost:5000/api/addVisitor`,addVisitors);
+      
+    } catch (error) {
+      console.log(error)
+    }
     setActiveTab("Visitors");
   };
+
+
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   const nextSerialNo = data.length + 1;
+    
+  //   const formData = new FormData();
+  //   formData.append('id', nextSerialNo);
+  //   formData.append('firstName', newVisitor.firstName);
+  //   formData.append('lastName', newVisitor.lastName);
+  //   formData.append('crftNo', newVisitor.crftNo);
+  //   formData.append('createTime', new Date().toISOString());
+  //   formData.append('exitTime', "");
+  //   formData.append('email', newVisitor.email);
+  //   formData.append('phoneNo', newVisitor.phoneNo.toString());
+  //   formData.append('visitingDepartment', newVisitor.visitingDepartment);
+  //   formData.append('host', newVisitor.host);
+  //   formData.append('visitingReason', newVisitor.visitingReason);
+  //   formData.append('carryingGoods', newVisitor.carryingGoods);
+  //   if (newVisitor.image) {
+  //     formData.append('image', newVisitor.image); // Adding the image file to form-data
+  //   }
+  
+  //   try {
+  //     await axios.post(`http://localhost:5000/api/addVisitor`, formData, {
+  //       headers: {
+  //         'Content-Type': 'multipart/form-data',
+  //       },
+  //     });
+  //     setActiveTab("Visitors");
+  //   } catch (error) {
+  //     console.error("Error while adding visitor:", error);
+  //   }
+  // };
+  
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;

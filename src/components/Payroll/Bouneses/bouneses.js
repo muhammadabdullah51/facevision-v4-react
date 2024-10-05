@@ -1,55 +1,63 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
+import axios from "axios";
 // import "../Settings/Setting_Tabs/bonus.css";
 
 const Bonuses = () => {
-  const [data, setData] = useState([
-    { id: 1, bonusName: "Performance Bonus", bonusDuration: "Monthly", bonusAmount: "1000", bonusDate: "2024-09-01" },
-    { id: 2, bonusName: "Holiday Bonus", bonusDuration: "Yearly", bonusAmount: "1500", bonusDate: "2024-12-25" },
-    { id: 3, bonusName: "Quarterly Bonus", bonusDuration: "3-Month", bonusAmount: "1200", bonusDate: "2024-06-30" },
-    { id: 4, bonusName: "Project Completion Bonus", bonusDuration: "6-Month", bonusAmount: "2000", bonusDate: "2024-11-15" },
-    { id: 5, bonusName: "Retention Bonus", bonusDuration: "Yearly", bonusAmount: "2500", bonusDate: "2024-01-01" },
-    { id: 6, bonusName: "Safety Bonus", bonusDuration: "Weekly", bonusAmount: "500", bonusDate: "2024-09-08" },
-    { id: 7, bonusName: "Sales Target Bonus", bonusDuration: "Monthly", bonusAmount: "1800", bonusDate: "2024-10-01" },
-    { id: 8, bonusName: "Attendance Bonus", bonusDuration: "3-Month", bonusAmount: "1300", bonusDate: "2024-07-01" },
-    { id: 9, bonusName: "Special Recognition Bonus", bonusDuration: "6-Month", bonusAmount: "2200", bonusDate: "2024-11-30" },
-    { id: 10, bonusName: "Team Achievement Bonus", bonusDuration: "Monthly", bonusAmount: "1600", bonusDate: "2024-08-15" }
-  ]);
+  const [data, setData] = useState([]);
+  useEffect(() => {
+    fetchBouneses();
+  }, []);
+
+  const fetchBouneses = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:5000/api/fetchBouneses"
+      );
+      console.log(response.data);
+      setData(response.data);
+    } catch (error) {
+      console.error("Error fetching resignation data:", error);
+    }
+  };
+
   const [showForm, setShowForm] = useState(false);
-  const [formMode, setFormMode] = useState("add"); // "add" or "edit"
-  const [currentItemId, setCurrentItemId] = useState(null); // Store ID of item being edited
+  const [formMode, setFormMode] = useState("add");
+  const [currentItemId, setCurrentItemId] = useState(null);
   const [formData, setFormData] = useState({
+    _id: "",
     id: "",
     bonusName: "",
     bonusDuration: "",
     bonusAmount: "",
-    bonusDate: ""
+    bonusDate: "",
   });
-  const [searchQuery, setSearchQuery] = useState(""); // State for search query
 
-  const handleEdit = (id) => {
-    const itemToEdit = data.find((item) => item.id === id);
-    if (itemToEdit) {
-      setFormData({
-        id: itemToEdit.id,
-        bonusName: itemToEdit.bonusName,
-        bonusDuration: itemToEdit.bonusDuration,
-        bonusAmount: itemToEdit.bonusAmount,
-        bonusDate: itemToEdit.bonusDate
-      });
-      setCurrentItemId(id);
-      setFormMode("edit");
-      setShowForm(true);
-    }
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleEdit = (data) => {
+    setFormData({
+      _id: data._id,
+      id: data.id,
+      bonusName: data.bonusName,
+      bonusDuration: data.bonusDuration,
+      bonusAmount: data.bonusAmount,
+      bonusDate: data.bonusDate,
+    });
+    setFormMode("edit");
+    setShowForm(true);
   };
 
   const handleCancel = () => {
     setShowForm(false);
   };
 
-  const handleDelete = (id) => {
-    setData(data.filter((item) => item.id !== id));
+  const handleDelete = async(id) => {
+    axios.post("http://localhost:5000/api/deleteBouneses", { id });
+    const updatedData = await axios.get('http://localhost:5000/api/fetchBouneses');
+    setData(updatedData.data);
+    fetchBouneses();
   };
 
   const handleAddNew = () => {
@@ -59,26 +67,50 @@ const Bonuses = () => {
       bonusName: "",
       bonusDuration: "",
       bonusAmount: "",
-      bonusDate: ""
+      bonusDate: "",
     });
     setShowForm(true);
   };
 
-  const handleSaveItem = () => {
+  const handleSaveItem = async () => {
     if (formMode === "add") {
-      const newItem = {
+      const bouneses = {
         id: parseInt(formData.id, 10),
         bonusName: formData.bonusName,
         bonusDuration: formData.bonusDuration,
         bonusAmount: formData.bonusAmount,
-        bonusDate: formData.bonusDate
+        bonusDate: formData.bonusDate,
       };
-      setData([...data, newItem]);
+      try {
+        axios.post(`http://localhost:5000/api/addBouneses`, bouneses);
+        const updatedData = await axios.get(
+          "http://localhost:5000/api/fetchBouneses"
+        );
+        setData(updatedData.data);
+        fetchBouneses();
+      } catch (error) {
+        console.log(error);
+      }
     } else if (formMode === "edit") {
-      const updatedData = data.map((item) =>
-        item.id === currentItemId ? { ...item, ...formData } : item
-      );
-      setData(updatedData);
+      const updateBounses = {
+        _id: formData._id,
+        id: parseInt(formData.id, 10),
+        bonusName: formData.bonusName,
+        bonusDuration: formData.bonusDuration,
+        bonusAmount: formData.bonusAmount,
+        bonusDate: formData.bonusDate,
+      };
+      console.log(updateBounses);
+      try {
+        axios.post(`http://localhost:5000/api/updateBouneses`, updateBounses);
+        const updatedData = await axios.get(
+          "http://localhost:5000/api/fetchBouneses"
+        );
+        setData(updatedData.data);
+        fetchBouneses();
+      } catch (error) {
+        console.log(error);
+      }
     }
     resetForm();
   };
@@ -89,7 +121,7 @@ const Bonuses = () => {
       bonusName: "",
       bonusDuration: "",
       bonusAmount: "",
-      bonusDate: ""
+      bonusDate: "",
     });
     setCurrentItemId(null);
     setFormMode("add");
@@ -107,14 +139,13 @@ const Bonuses = () => {
   return (
     <div className="table-container">
       <div className="leave-header">
-        <form className="form">
-          <button>
+        <form className="form" onSubmit={(e) => e.preventDefault()}>
+          <button type="submit">
             <svg
               width="17"
               height="16"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              role="img"
               aria-labelledby="search"
             >
               <path
@@ -128,13 +159,16 @@ const Bonuses = () => {
           </button>
           <input
             value={searchQuery}
-            onChange={handleSearchChange}
-            placeholder="Search by Bonus Name..."
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search..."
             className="input"
-            required
             type="text"
           />
-          <button className="reset" type="reset">
+          <button
+            className="reset"
+            type="button" // Change to type="button" to prevent form reset
+            onClick={() => setSearchQuery("")} // Clear the input on click
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-6 w-6"
@@ -147,7 +181,7 @@ const Bonuses = () => {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 d="M6 18L18 6M6 6l12 12"
-              ></path>
+              />
             </svg>
           </button>
         </form>
@@ -163,9 +197,7 @@ const Bonuses = () => {
             type="text"
             placeholder="Bonus ID"
             value={formData.id}
-            onChange={(e) =>
-              setFormData({ ...formData, id: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, id: e.target.value })}
             readOnly={formMode === "edit"}
           />
           <input
@@ -176,8 +208,9 @@ const Bonuses = () => {
               setFormData({ ...formData, bonusName: e.target.value })
             }
           />
-          
-          <select className="bonus-duration"
+
+          <select
+            className="bonus-duration"
             value={formData.bonusDuration}
             onChange={(e) =>
               setFormData({ ...formData, bonusDuration: e.target.value })
@@ -229,7 +262,7 @@ const Bonuses = () => {
           </thead>
           <tbody>
             {filteredData.map((bonus) => (
-              <tr key={bonus.id}>
+              <tr key={bonus._id}>
                 <td>{bonus.id}</td>
                 <td>{bonus.bonusName}</td>
                 <td>{bonus.bonusDuration}</td>
@@ -239,14 +272,14 @@ const Bonuses = () => {
                   <button
                     // className="edit-button"
                     className="action-button edit"
-                    onClick={() => handleEdit(bonus.id)}
+                    onClick={() => handleEdit(bonus)}
                   >
                     <FontAwesomeIcon icon={faEdit} />
                   </button>
                   <button
                     // className="edit-button"
                     className="action-button delete"
-                    onClick={() => handleDelete(bonus.id)}
+                    onClick={() => handleDelete(bonus._id)}
                   >
                     <FontAwesomeIcon icon={faTrash} />
                   </button>

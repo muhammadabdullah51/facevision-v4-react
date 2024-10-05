@@ -1,14 +1,16 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { useTable, usePagination } from "react-table";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import ReactPaginate from "react-paginate";
 import './leaves.css'
+import axios from "axios";
 
 const LeaveTable = ({ data, setData }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [formData, setFormData] = useState({
+    _id: "",
     id: null,
     employeeId: "",
     employeeName: "",
@@ -19,6 +21,20 @@ const LeaveTable = ({ data, setData }) => {
     status: "Pending",
     createdAt: "",
   });
+
+
+  useEffect(() => {
+    fetchLeave();
+}, []);
+
+const fetchLeave = async () => {
+    try {
+        const response = await axios.get('http://localhost:5000/api/fetchLeave');
+        setData(response.data);
+    } catch (error) {
+        console.error('Error fetching resignation data:', error);
+    }
+};
 
   const handleStatusToggle = useCallback(() => {
     setFormData((prevState) => ({
@@ -66,9 +82,8 @@ const LeaveTable = ({ data, setData }) => {
         accessor: "status",
         Cell: ({ value }) => (
           <span
-            className={`status ${
-              value === "Approved" ? "approvedStatus" : "pendingStatus"
-            }`}
+            className={`status ${value === "Approved" ? "approvedStatus" : "pendingStatus"
+              }`}
           >
             {value}
           </span>
@@ -131,6 +146,7 @@ const LeaveTable = ({ data, setData }) => {
 
   const handleEdit = (row) => {
     setFormData({
+      _id: row._id,
       id: row.id,
       employeeId: row.employeeId,
       employeeName: row.employeeName,
@@ -141,12 +157,16 @@ const LeaveTable = ({ data, setData }) => {
       status: row.status,
       createdAt: row.createdAt,
     });
+
     setShowAddForm(false);
     setShowEditForm(true);
   };
 
-  const handleDelete = (row) => {
-    setData((prevData) => prevData.filter((item) => item.id !== row.id));
+  const handleDelete = async (row) => {
+    const id= row._id
+    await axios.post('http://localhost:5000/api/deleteLeave', {id})
+    const updatedData = await axios.get('http://localhost:5000/api/fetchLeave');
+      setData(updatedData.data);
   };
 
   const handleAdd = () => {
@@ -161,65 +181,67 @@ const LeaveTable = ({ data, setData }) => {
       status: "Pending",
       createdAt: new Date().toISOString().split('T')[0],
     });
+
     setShowAddForm(true);
     setShowEditForm(false);
   };
 
-  const addLeave = () => {
-    // Add leave to the table
-    setData((prevData) => [...prevData, { ...formData, id: Date.now() }]);
-
-    // Reset form data
-    setFormData({
-      id: null,
-      employeeId: "",
-      employeeName: "",
-      leaveType: "",
-      startDate: "",
-      endDate: "",
-      reason: "",
-      status: "Pending",
-      createdAt: new Date().toISOString().split('T')[0],
-    });
-
-    // Hide form
+  const addLeave = async() => {
+    const leavePayload = {
+      employeeId: formData.employeeId,
+      employeeName: formData.employeeName,
+      leaveType: formData.leaveType,
+      startDate: formData.startDate,
+      endDate: formData.endDate,
+      reason: formData.reason,
+      status: formData.status,
+      createdAt: formData.createdAt
+    }
+    try {
+      axios.post(`http://localhost:5000/api/addLeave`, leavePayload)
+      const updatedData = await axios.get('http://localhost:5000/api/fetchLeave');
+      setData(updatedData.data);
+      fetchLeave()
+    } catch (error) {
+      console.log(error)
+    }
     setShowAddForm(false);
   };
 
-  const handleUpdate = () => {
-    // Update the leave data
-    setData((prevData) =>
-      prevData.map((item) => (item.id === formData.id ? { ...formData } : item))
-    );
+  const handleUpdate = async () => {
+    const leavePayload = {
+      _id: formData._id,
+      employeeId: formData.employeeId,
+      employeeName: formData.employeeName,
+      leaveType: formData.leaveType,
+      startDate: formData.startDate,
+      endDate: formData.endDate,
+      reason: formData.reason,
+      status: formData.status,
+      createdAt: formData.createdAt,
+    }
+    console.log(leavePayload)
+    try {
+      await axios.post('http://localhost:5000/api/updateLeave', leavePayload)
+      const updatedData = await axios.get('http://localhost:5000/api/fetchLeave');
+      setData(updatedData.data);
 
-    // Optionally reset form data
-    setFormData({
-      id: null,
-      employeeId: "",
-      employeeName: "",
-      leaveType: "",
-      startDate: "",
-      endDate: "",
-      reason: "",
-      status: "Pending",
-      createdAt: new Date().toISOString().split('T')[0],
-    });
-
-    // Hide the edit form
+    } catch (error) {
+      console.log(error)
+    }
     setShowEditForm(false);
   };
 
   return (
     <div className="leave-table">
       <div className="table-header">
-        <form className="form">
-          <button>
+      <form className="form" onSubmit={(e) => e.preventDefault()}>
+          <button type="submit">
             <svg
               width="17"
               height="16"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              role="img"
               aria-labelledby="search"
             >
               <path
@@ -236,10 +258,13 @@ const LeaveTable = ({ data, setData }) => {
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search..."
             className="input"
-            required
             type="text"
           />
-          <button className="reset" type="reset">
+          <button
+            className="reset"
+            type="button" // Change to type="button" to prevent form reset
+            onClick={() => setSearchQuery("")} // Clear the input on click
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-6 w-6"
@@ -252,7 +277,7 @@ const LeaveTable = ({ data, setData }) => {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 d="M6 18L18 6M6 6l12 12"
-              ></path>
+              />
             </svg>
           </button>
         </form>

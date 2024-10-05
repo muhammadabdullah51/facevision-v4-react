@@ -126,9 +126,13 @@ const ResignTable = ({ data, setData }) => {
     fetchResign();
   };
 
-  const handleDelete = (row) => {
+  const handleDelete = async (row) => {
     const id = row._id;
     axios.post('http://localhost:5000/api/deleteResign', {id})
+    const updatedData = await axios.get(
+      "http://localhost:5000/api/fetchResign"
+    );
+    setData(updatedData.data);
     fetchResign();
   };
 
@@ -144,7 +148,7 @@ const ResignTable = ({ data, setData }) => {
     fetchResign();
   };
 
-  const handleUpdate = () => {
+  const handleUpdate = async() => {
     setShowAddForm(false);
     setShowEditForm(true);
     const updateResign = {
@@ -156,6 +160,11 @@ const ResignTable = ({ data, setData }) => {
     }
     try {
       axios.post('http://localhost:5000/api/updateResign', updateResign)
+      const updatedData = await axios.get(
+        "http://localhost:5000/api/fetchResign"
+      );
+      setData(updatedData.data);
+      fetchResign()
       setShowAddForm(false); // Hide Add Form
       setShowEditForm(false);
       fetchResign();
@@ -165,7 +174,7 @@ const ResignTable = ({ data, setData }) => {
 
   };
 
-  const addResign = () => {
+  const addResign = async () => {
     setShowAddForm(false);
     setShowEditForm(true);
     console.log(formData);
@@ -182,6 +191,14 @@ const ResignTable = ({ data, setData }) => {
     }
     try {
       axios.post(`http://localhost:5000/api/addResign`, resign)
+      const updatedData = await axios.get(
+        "http://localhost:5000/api/fetchResign"
+      );
+      setData(updatedData.data);
+      fetchResign()
+      setShowAddForm(false)
+      setShowEditForm(false)
+
     } catch (error) {
       console.log(error);
     }
@@ -190,14 +207,13 @@ const ResignTable = ({ data, setData }) => {
   return (
     <div className="employee-table">
       <div className="table-header">
-        <form className="form">
+      <form className="form" onSubmit={(e) => e.preventDefault()}>
           <button type="submit">
             <svg
               width="17"
               height="16"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              role="img"
               aria-labelledby="search"
             >
               <path
@@ -214,10 +230,13 @@ const ResignTable = ({ data, setData }) => {
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search..."
             className="input"
-            required
             type="text"
           />
-          <button className="reset" type="reset">
+          <button
+            className="reset"
+            type="button" // Change to type="button" to prevent form reset
+            onClick={() => setSearchQuery("")} // Clear the input on click
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-6 w-6"
@@ -230,7 +249,7 @@ const ResignTable = ({ data, setData }) => {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 d="M6 18L18 6M6 6l12 12"
-              ></path>
+              />
             </svg>
           </button>
         </form>
@@ -250,7 +269,7 @@ const ResignTable = ({ data, setData }) => {
             }
           />
           <input
-            type="text"
+            type="date"
             placeholder="Date"
             value={formData.date}
             onChange={(e) =>
@@ -288,7 +307,7 @@ const ResignTable = ({ data, setData }) => {
             }
           />
           <input
-            type="text"
+            type="date"
             placeholder="Date"
             value={formData.date}
             onChange={(e) =>

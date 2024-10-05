@@ -1,5 +1,5 @@
 import React from "react";
-import Default_picture from '../../../assets/profile.jpg';
+import Default_picture from '../../../assets/profile.jpg'; // Default image if no image is provided
 import "./modal.css"; // Updated styling for profile-like modal
 
 const EmployeeReportModal = ({ isOpen, onClose, rowData }) => {
@@ -13,12 +13,20 @@ const EmployeeReportModal = ({ isOpen, onClose, rowData }) => {
         </button>
         <div className="modal-header">
           <div className="emp-img">
-          {/* <img src={rowData.image} alt="Employee" className="profile-image" /> */}
-          <img src= {Default_picture} alt="Employee" className="profile-image" />
+            {/* Handle image loading with a fallback to the default image */}
+            <img
+              src={rowData.picture ? `http://localhost:5000/${rowData.picture.replace(/\\/g, "/")}` : Default_picture}
+              alt="Employee"
+              className="profile-image"
+              onError={(e) => {
+                // If image fails to load, use the default picture
+                e.target.src = Default_picture;
+              }}
+            />
           </div>
           <div className="emp-name">
-          <h2 className="employee-name">{rowData.employeeName}</h2>
-          <p className="employee-department">Department: {rowData.department}</p>
+            <h2 className="employee-name">{rowData.firstName} {rowData.lastName}</h2>
+            <p className="employee-department">Department: {rowData.department}</p>
           </div>
         </div>
         <div className="modal-body">

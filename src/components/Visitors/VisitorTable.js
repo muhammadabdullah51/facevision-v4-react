@@ -3,10 +3,12 @@ import { useTable, usePagination, useRowSelect } from 'react-table';
 import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
 import ReactPaginate from 'react-paginate';
 import './visitors.css'
+import axios from 'axios';
 
 const VisitorTable = ({ data, setData, activeTab, setActiveTab }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [formData, setFormData] = useState({
+        _id: '',
         id: null,
         visitorName: '',
         crftNo: '',
@@ -18,7 +20,7 @@ const VisitorTable = ({ data, setData, activeTab, setActiveTab }) => {
         host: '',
         visitingReason: '',
         carryingGoods: '',
-        image: ''
+        image: '',
     });
 
     // Define visitor table columns
@@ -36,9 +38,9 @@ const VisitorTable = ({ data, setData, activeTab, setActiveTab }) => {
             {
                 Header: 'Visitor Name',
                 accessor: 'visitorName',
-                Cell: ({ value }) => (
-                    <span className='bold-fonts'>{value}</span>
-                  ),
+                Cell: ({ row  }) => (
+                    <span className='bold-fonts'>{row.original.firstName} {row.original.lastName}</span>
+                ),
             },
             {
                 Header: 'Crft No',
@@ -65,7 +67,7 @@ const VisitorTable = ({ data, setData, activeTab, setActiveTab }) => {
                 accessor: 'visitingDepartment',
                 Cell: ({ value }) => (
                     <span className='bold-fonts'>{value}</span>
-                  ),
+                ),
             },
             {
                 Header: 'Host',
@@ -76,7 +78,7 @@ const VisitorTable = ({ data, setData, activeTab, setActiveTab }) => {
                 accessor: 'visitingReason',
                 Cell: ({ value }) => (
                     <span className='bold-fonts'>{value}</span>
-                  ),
+                ),
             },
             {
                 Header: 'Carrying Goods',
@@ -149,12 +151,13 @@ const VisitorTable = ({ data, setData, activeTab, setActiveTab }) => {
             carryingGoods: row.carryingGoods,
             image: row.image
         });
-      
+
     };
 
     // Handle Delete
     const handleDelete = (row) => {
-        setData(prevData => prevData.filter(item => item.id !== row.id));
+        const id = row._id
+        axios.post('http://localhost:5000/api/deleteVisitor', { id })
     };
 
     const handleAdd = () => {
@@ -162,7 +165,7 @@ const VisitorTable = ({ data, setData, activeTab, setActiveTab }) => {
     };
 
     const handleUpdate = () => {
-   
+
     };
 
     return (
@@ -183,30 +186,30 @@ const VisitorTable = ({ data, setData, activeTab, setActiveTab }) => {
                 </button>
             </div>
             <div className="departments-table">
-            <table {...getTableProps()} className="table">
-                <thead>
-                    {headerGroups.map(headerGroup => (
-                        <tr {...headerGroup.getHeaderGroupProps()}>
-                            {headerGroup.headers.map(column => (
-                                <th {...column.getHeaderProps()}>{column.render('Header')}</th>
-                            ))}
-                        </tr>
-                    ))}
-                </thead>
-                <tbody {...getTableBodyProps()}>
-                    {page.map(row => {
-                        prepareRow(row);
-                        return (
-                            <tr {...row.getRowProps()}>
-                                {row.cells.map(cell => (
-                                    <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
+                <table {...getTableProps()} className="table">
+                    <thead>
+                        {headerGroups.map(headerGroup => (
+                            <tr {...headerGroup.getHeaderGroupProps()}>
+                                {headerGroup.headers.map(column => (
+                                    <th {...column.getHeaderProps()}>{column.render('Header')}</th>
                                 ))}
                             </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
-</div>
+                        ))}
+                    </thead>
+                    <tbody {...getTableBodyProps()}>
+                        {page.map(row => {
+                            prepareRow(row);
+                            return (
+                                <tr {...row.getRowProps()}>
+                                    {row.cells.map(cell => (
+                                        <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
+                                    ))}
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
             <div className="pagination">
                 <ReactPaginate
                     previousLabel={'Previous'}

@@ -38,7 +38,7 @@ const Home = () => {
     if (!isAuthenticated) {
     }
 
-    const [selectedMenu, setSelectedMenu] = useState('Dashboard');  // Default to an empty string or a specific page
+    const [selectedMenu, setSelectedMenu] = useState('Dashboard');  
     const handleMenuChange = (menu) => {
         setSelectedMenu(menu);
     };
