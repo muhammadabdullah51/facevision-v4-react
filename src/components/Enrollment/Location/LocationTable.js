@@ -1,53 +1,41 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { useTable, usePagination, useRowSelect } from "react-table";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import ReactPaginate from "react-paginate";
 import "./location.css"; // Custom CSS for styling
 import axios from "axios";
+import ConirmationModal from "../../Modal/conirmationModal";
+import addAnimation from "../../../assets/Lottie/addAnim.json";
+import updateAnimation from "../../../assets/Lottie/updateAnim.json";
+import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
+import successAnimation from "../../../assets/Lottie/successAnim.json";
 
 const LocationTable = ({ data, setData }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const rowsPerPage = 8;
+  const handlePageChange = ({ selected }) => {
+    setCurrentPage(selected);
+  };
   const [formData, setFormData] = useState({
     _id: "",
-    id: null,
-    locationCode: "",
-    locationName: "",
-    deviceQuantity: "",
-    employeeQuantity: "",
-    resignedQuantity: "",
+    locId: null,
+    locCode: "",
+    name: "",
+    deviceQty: "",
+    empQty: "",
+    resignQty: "",
   });
 
-  // Call fetchDepartments when component mounts
-  useEffect(() => {
-    fetchLocation();
-  }, []);
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState("");
+  const [successModal, setSuccessModal] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleUpdate = async () => {
-    const updateLocation = {
-      _id: formData._id,
-      locationCode: formData.locationCode,
-      locationName: formData.locationName,
-      deviceQuantity: formData.deviceQuantity,
-      employeeQuantity: formData.employeeQuantity,
-      resignedQuantity: formData.resignedQuantity,
-    };
-    console.log(updateLocation);
-    try {
-      axios.post(`http://localhost:5000/api/updateLocation`, updateLocation);
-      const updatedData = await axios.get(
-        "http://localhost:5000/api/fetchLocation"
-      );
-      setData(updatedData.data);
-      fetchLocation();
-      setShowEditForm(false);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const fetchLocation = async () => {
+  const fetchLocation = useCallback(async () => {
+    setLoading(true);
     try {
       const response = await fetch("http://localhost:5000/api/fetchLocation");
       if (response.ok) {
@@ -58,9 +46,63 @@ const LocationTable = ({ data, setData }) => {
       }
     } catch (error) {
       console.error("Error fetching location data:", error);
+    } finally {
+      setLoading(false);
     }
+  }, [setData]);
+
+  // Call fetchDepartments when component mounts
+  useEffect(() => {
+    fetchLocation();
+    let timer;
+    if (successModal) {
+      timer = setTimeout(() => {
+        setSuccessModal(false);
+      }, 2000);
+    }
+    return () => clearTimeout(timer);
+  }, [fetchLocation, successModal]);
+
+  const handleUpdate = async (row) => {
+    setModalType("update");
+    setFormData({
+      _id: row._id,
+      locId: row.locId,
+      locCode: row.locCode,
+      name: row.name,
+      deviceQty: row.deviceQty,
+      empQty: row.empQty,
+      resignQty: row.resignQty,
+    });
+    console.log(formData);
+    setShowModal(true);
   };
 
+  const confirmUpdate = async () => {
+    const updateLocation = {
+      _id: formData._id,
+      locId: formData.locId,
+      locCode: formData.locCode,
+      name: formData.name,
+      deviceQty: formData.deviceQty,
+      empQty: formData.empQty,
+      resignQty: formData.resignQty,
+    };
+
+    try {
+      const response = await axios.post(
+        `http://localhost:5000/api/updateLocation`,
+        updateLocation
+      );
+      console.log(response.data); // Log the response
+      fetchLocation(); // Fetch the updated locations
+      setShowEditForm(false); // Close the edit form
+      setShowModal(false); // Close the confirmation modal
+      setSuccessModal(true); // Show the success modal
+    } catch (error) {
+      console.error("Error updating location:", error);
+    }
+  };
   const columns = useMemo(
     () => [
       {
@@ -69,25 +111,29 @@ const LocationTable = ({ data, setData }) => {
         Cell: ({ row }) => row.index + 1,
       },
       {
+        Header: "Location ID",
+        accessor: "locId",
+      },
+      {
         Header: "Location Code",
-        accessor: "locationCode",
+        accessor: "locCode",
       },
       {
         Header: "Location Name",
-        accessor: "locationName",
+        accessor: "name",
         Cell: ({ value }) => <span className="bold-fonts">{value}</span>,
       },
       {
         Header: "Device Quantity",
-        accessor: "deviceQuantity",
+        accessor: "deviceQty",
       },
       {
         Header: "Employee Quantity",
-        accessor: "employeeQuantity",
+        accessor: "empQty",
       },
       {
         Header: "Resigned Quantity",
-        accessor: "resignedQuantity",
+        accessor: "resignQty",
       },
       {
         Header: "Action",
@@ -122,6 +168,10 @@ const LocationTable = ({ data, setData }) => {
       ),
     [data, searchQuery]
   );
+  const currentPageData = filteredData.slice(
+    currentPage * rowsPerPage,
+    (currentPage + 1) * rowsPerPage
+  );
 
   const {
     getTableProps,
@@ -144,52 +194,68 @@ const LocationTable = ({ data, setData }) => {
   const handleEdit = (row) => {
     setFormData({
       _id: row._id,
-      id: row.id,
-      locationCode: row.locationCode,
-      locationName: row.locationName,
-      deviceQuantity: row.deviceQuantity,
-      employeeQuantity: row.employeeQuantity,
-      resignedQuantity: row.resignedQuantity,
+      locId: row.locId,
+      locCode: row.locCode,
+      name: row.name,
+      deviceQty: row.deviceQty,
+      empQty: row.empQty,
+      resignQty: row.resignQty,
     });
     setShowAddForm(false); // Hide Add Form
     setShowEditForm(true); // Show Edit Form
   };
 
-  const handleDelete = async (row) => {
-    const id = row._id;
-    axios.post(`http://localhost:5000/api/deleteLocation`, { id });
-    console.log(id);
-    const updatedData = await axios.get(
-      "http://localhost:5000/api/fetchLocation"
-    );
-    setData(updatedData.data);
-    fetchLocation();
+  const handleDelete = async (locId) => {
+    setModalType("delete");
+    setShowModal(true);
+    setFormData({ ...formData, _id: locId });
+  };
+  const confirmDelete = async () => {
+    try {
+      const locId = formData._id;
+      await axios.post(`http://localhost:5000/api/deleteLocation`, { locId });
+      console.log(locId);
+      const updatedData = await axios.get(
+        "http://localhost:5000/api/fetchLocation"
+      );
+      setData(updatedData.data);
+      fetchLocation();
+      setShowModal(false);
+      setSuccessModal(true);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleAdd = () => {
     setFormData({
-      id: null,
-      locationCode: "",
-      locationName: "",
-      deviceQuantity: "",
-      employeeQuantity: "",
-      resignedQuantity: "",
+      locId: null,
+      locCode: "",
+      name: "",
+      deviceQty: "",
+      empQty: "",
+      resignQty: "",
     });
     setShowAddForm(true);
     setShowEditForm(false); // Hide Edit Form
   };
 
-  const addLocation = async () => {
+  const addLocation = () => {
+    setModalType("create");
+    setShowModal(true);
+  };
+  const confirmAdd = async () => {
     setShowAddForm(false);
     setShowEditForm(true);
     console.log(formData);
 
     const location = {
-      locationCode: formData.locationCode,
-      locationName: formData.locationName,
-      deviceQuantity: formData.deviceQuantity,
-      employeeQuantity: formData.employeeQuantity,
-      resignedQuantity: formData.resignedQuantity,
+      locId: formData.locId,
+      locCode: formData.locCode,
+      name: formData.name,
+      deviceQty: formData.deviceQty,
+      empQty: formData.empQty,
+      resignQty: formData.resignQty,
     };
     try {
       axios.post("http://localhost:5000/api/addLocation", location);
@@ -197,16 +263,43 @@ const LocationTable = ({ data, setData }) => {
         "http://localhost:5000/api/fetchLocation"
       );
       setData(updatedData.data);
-      fetchLocation();
       setShowAddForm(false);
       setShowEditForm(false);
+      setShowModal(false);
+      setSuccessModal(true);
+      fetchLocation();
     } catch (error) {
       console.log(error);
     }
   };
 
   return (
-    <div className="location-table">
+    <div className="department-table">
+      <ConirmationModal
+        isOpen={showModal}
+        message={`Are you sure you want to ${modalType} this location?`}
+        onConfirm={() => {
+          if (modalType === "create") confirmAdd();
+          else if (modalType === "update") confirmUpdate();
+          else confirmDelete();
+        }}
+        onCancel={() => setShowModal(false)}
+        animationData={
+          modalType === "create"
+            ? addAnimation
+            : modalType === "update"
+            ? updateAnimation
+            : deleteAnimation
+        }
+      />
+      <ConirmationModal
+        isOpen={successModal}
+        message={`Location ${modalType}d successfully!`}
+        onConfirm={() => setSuccessModal(false)}
+        onCancel={() => setSuccessModal(false)}
+        animationData={successAnimation}
+        successModal={successModal}
+      />
       <div className="table-header">
         <form className="form" onSubmit={(e) => e.preventDefault()}>
           <button type="submit">
@@ -263,42 +356,48 @@ const LocationTable = ({ data, setData }) => {
           <h3>Add New Location</h3>
           <input
             type="text"
-            placeholder="Location Code"
-            value={formData.locationCode}
+            placeholder="Location ID"
+            value={formData.locId}
             onChange={(e) =>
-              setFormData({ ...formData, locationCode: e.target.value })
+              setFormData({ ...formData, locId: e.target.value })
+            }
+          />
+          <input
+            type="text"
+            placeholder="Location Code"
+            value={formData.locCode}
+            onChange={(e) =>
+              setFormData({ ...formData, locCode: e.target.value })
             }
           />
           <input
             type="text"
             placeholder="Location Name"
-            value={formData.locationName}
-            onChange={(e) =>
-              setFormData({ ...formData, locationName: e.target.value })
-            }
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           />
           <input
             type="number"
             placeholder="Device Quantity"
-            value={formData.deviceQuantity}
+            value={formData.deviceQty}
             onChange={(e) =>
-              setFormData({ ...formData, deviceQuantity: e.target.value })
+              setFormData({ ...formData, deviceQty: e.target.value })
             }
           />
           <input
             type="number"
             placeholder="Employee Quantity"
-            value={formData.employeeQuantity}
+            value={formData.empQty}
             onChange={(e) =>
-              setFormData({ ...formData, employeeQuantity: e.target.value })
+              setFormData({ ...formData, empQty: e.target.value })
             }
           />
           <input
             type="number"
             placeholder="Resigned Quantity"
-            value={formData.resignedQuantity}
+            value={formData.resignQty}
             onChange={(e) =>
-              setFormData({ ...formData, resignedQuantity: e.target.value })
+              setFormData({ ...formData, resignQty: e.target.value })
             }
           />
           <button className="submit-button" onClick={addLocation}>
@@ -317,45 +416,54 @@ const LocationTable = ({ data, setData }) => {
           <h3>Edit Location</h3>
           <input
             type="text"
-            placeholder="Location Code"
-            value={formData.locationCode}
+            placeholder="Location ID"
+            value={formData.locId}
             onChange={(e) =>
-              setFormData({ ...formData, locationCode: e.target.value })
+              setFormData({ ...formData, locId: e.target.value })
+            }
+          />
+          <input
+            type="text"
+            placeholder="Location Code"
+            value={formData.locCode}
+            onChange={(e) =>
+              setFormData({ ...formData, locCode: e.target.value })
             }
           />
           <input
             type="text"
             placeholder="Location Name"
-            value={formData.locationName}
-            onChange={(e) =>
-              setFormData({ ...formData, locationName: e.target.value })
-            }
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           />
           <input
             type="number"
             placeholder="Device Quantity"
-            value={formData.deviceQuantity}
+            value={formData.deviceQty}
             onChange={(e) =>
-              setFormData({ ...formData, deviceQuantity: e.target.value })
+              setFormData({ ...formData, deviceQty: e.target.value })
             }
           />
           <input
             type="number"
             placeholder="Employee Quantity"
-            value={formData.employeeQuantity}
+            value={formData.empQty}
             onChange={(e) =>
-              setFormData({ ...formData, employeeQuantity: e.target.value })
+              setFormData({ ...formData, empQty: e.target.value })
             }
           />
           <input
             type="number"
             placeholder="Resigned Quantity"
-            value={formData.resignedQuantity}
+            value={formData.resignQty}
             onChange={(e) =>
-              setFormData({ ...formData, resignedQuantity: e.target.value })
+              setFormData({ ...formData, resignQty: e.target.value })
             }
           />
-          <button className="submit-button" onClick={handleUpdate}>
+          <button
+            className="submit-button"
+            onClick={() => handleUpdate(formData)}
+          >
             Update Location
           </button>
           <button
@@ -367,7 +475,7 @@ const LocationTable = ({ data, setData }) => {
         </div>
       )}
 
-      <div className="locations-table">
+      <div className="departments-table">
         <table {...getTableProps()} className="table">
           <thead>
             {headerGroups.map((headerGroup) => (

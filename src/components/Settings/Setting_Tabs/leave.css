@@ -1,9 +1,9 @@
-.leave-header {
+/* .leave-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1%;
-}
+    margin-bottom: 20px;
+} */
 
 .table-container {
     width: 97%;
@@ -57,7 +57,7 @@
     font-weight: bold;
 }
 
-.add-leave-form input {
+.add-leave-form input, .add-leave-form textarea {
     width: 97%;
     padding: 10px;
     margin-bottom: 15px;
@@ -66,13 +66,14 @@
     font-size: 14px;
 }
 .add-leave-form select{
-    width: 50%;
+    width: 98.4%;
     padding: 10px;
     margin-bottom: 15px;
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 14px;
 }
+
 .form-time{
     display: flex;
     flex-direction: row;
@@ -100,7 +101,6 @@
     gap: 2vw;
     align-items: center;
     justify-content: end;
-    padding: 1%;
 }
 .export-btn a{
     color: white;
@@ -121,7 +121,7 @@
     width: 30%;
     background-color: #fff;
     padding: 10px;
-    margin-bottom: 15px;
+    /* margin-bottom: 15px; */
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 14px;
@@ -200,7 +200,7 @@
 }
 .accessible-items span {
     display: inline-block;
-    margin-right: 5px;
+    margin: 5px 5px 0 0 ;
     color: white;
     background-color: #7341DA;
     padding: 3px 6px;
@@ -217,4 +217,16 @@
     color: var(--fail-button-color);
     font-size: 0.9vw;
     background-color: transparent;
+}
+@media only screen and (min-width: 700px) and (max-width: 1000px) {
+    .export-btn{
+        font-size: 1.5vw;
+        width: 15vw;
+    }
+    .button-icon{
+        font-size: 2vw;
+    }
+    .payroll-header-search {
+        width: 80%;
+    }
 }

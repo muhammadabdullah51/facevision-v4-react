@@ -1,19 +1,29 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Department from "../Department/department";
+import ShiftManagement from "../../Shift_Managment/shift_managment"
 // import "../../AddVisitors/addvisitors.css";
 import "./employees.css";
 import { FaArrowLeft } from "react-icons/fa";
 import axios from "axios";
 import WebcamModal from "./webcam"; // Import the WebcamModal component
+import OvertimeTable from "../../Settings/Setting_Tabs/OvertimeSettings";
+import Location from "../Location/location";
+import LocationTable from "../Location/LocationTable";
+import { useLocation } from 'react-router-dom';
 
-const AddEmployee = ({ setData, setActiveTab, data }) => {
+
+const AddEmployee = ({ setData, setActiveTab, data, isEditMode, employeeToEdit }) => {
   const [selectedPage, setSelectedPage] = useState("");
   const [isWebcamOpen, setIsWebcamOpen] = useState(false); // State to control webcam modal visibility
+  // const isEditMode = Boolean(employeeToEdit);
+
+  const location = useLocation();
+  const { formData } = location.state || {};
 
   const [newEmployee, setNewEmployee] = useState({
-    employeeId: "",
-    firstName: "",
-    lastName: "",
+    empId: "",
+    fName: "",
+    lName: "",
     email: "",
     contactNo: "",
     picture: "",
@@ -28,20 +38,96 @@ const AddEmployee = ({ setData, setActiveTab, data }) => {
     accountNo: "",
     salaryPeriod: "",
     salaryType: "",
-    enableAttendance: "",
-    enableSchedule: "",
-    enableOvertime: "",
+    shift: "",
+    enableAttendance: false,
+    enableSchedule: false,
+    enableOvertime: false,
   });
 
-  const [departments, setDepartments] = useState([
-    "IT",
-    "HR",
-    "Finance",
-    "Marketing",
-    "R&D",
-    "Sales",
-    "Admin",
+  // New state variables for dropdown options
+  const [departments, setDepartments] = useState([]);
+  const [shifts, setShifts] = useState([]);
+  const [enrollSites, setEnrollSites] = useState([]);
+  const [overtime, setOvertime] = useState([
+    {
+      OTFormulaId: 1,
+      OTCode: "PC001",
+      ratePerHour: "$30",
+      updateDate: "2024-09-01",
+    },
+    {
+      OTFormulaId: 2,
+      OTCode: "PC002",
+      ratePerHour: "$35",
+      updateDate: "2024-09-02",
+    },
   ]);
+  
+
+  useEffect(() => {
+    const fetchOptions = async () => {
+      try {
+        const departmentResponse = await axios.get("http://localhost:5000/api/fetchDepartment");
+        const shiftResponse = await axios.get("http://localhost:5000/api/fetchShift");
+        const enrollSiteResponse = await axios.get("http://localhost:5000/api/fetchLocation");
+        // const overtimeResponse = await axios.get("http://localhost:5000/api/fetchLocation");
+
+        setDepartments(departmentResponse.data);
+        setShifts(shiftResponse.data);
+        setEnrollSites(enrollSiteResponse.data);
+        // setOvertime(overtimeResponse.data);
+      } catch (error) {
+        console.error("Error fetching options:", error);
+      }
+    };
+
+    fetchOptions();
+  }, []);
+
+  // useEffect(() => {
+  //   if (isEditMode && employeeToEdit) {
+  //     setNewEmployee({
+  //       empId: employeeToEdit.empId,
+  //       fName: employeeToEdit.fName,
+  //       lName: employeeToEdit.lName,
+  //       email: employeeToEdit.email,
+  //       contactNo: employeeToEdit.contactNo,
+  //       picture: employeeToEdit.picture,
+  //       enrollSite: employeeToEdit.enrollSite,
+  //       gender: employeeToEdit.gender,
+  //       joiningDate: employeeToEdit.joiningDate,
+  //       bankName: employeeToEdit.bankName,
+  //       overtimeAssigned: employeeToEdit.overtimeAssigned,
+  //       department: employeeToEdit.department,
+  //       designationName: employeeToEdit.designationName,
+  //       basicSalary: employeeToEdit.basicSalary,
+  //       accountNo: employeeToEdit.accountNo,
+  //       salaryPeriod: employeeToEdit.salaryPeriod,
+  //       salaryType: employeeToEdit.salaryType,
+  //       enableAttendance: employeeToEdit.enableAttendance,
+  //       enableSchedule: employeeToEdit.enableSchedule,
+  //       enableOvertime: employeeToEdit.enableOvertime,
+  //     });
+  //   }
+  // }, [isEditMode, employeeToEdit]);
+
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewEmployee((prev) => ({ ...prev, [name]: value }));
+  };
+
+
+
+  // const [departments, setDepartments] = useState([
+  //   "IT",
+  //   "HR",
+  //   "Finance",
+  //   "Marketing",
+  //   "R&D",
+  //   "Sales",
+  //   "Admin",
+  // ]);
   const handleDepartmentChange = (event) => {
     const { value } = event.target;
 
@@ -51,12 +137,41 @@ const AddEmployee = ({ setData, setActiveTab, data }) => {
       setNewEmployee({ ...newEmployee, department: value });
     }
   };
+  const handleShiftChange = (event) => {
+    const { value } = event.target;
+
+    if (value === "Add-Shift") {
+      setSelectedPage("Shift Management");
+    } else {
+      setNewEmployee({ ...newEmployee, shift: value });
+    }
+  };
+
+  const handleOvertimeChange = (event) => {
+    const { value } = event.target;
+
+    if (value === "Add-Overtime") {
+      setSelectedPage("Overtime Management");
+    } else {
+      setNewEmployee({ ...newEmployee, overtimeAssigned: value });
+    }
+  };
+
+  const handleEnrollSiteChange = (event) => {
+    const { value } = event.target;
+
+    if (value === "Add-EnrollSite") {
+      setSelectedPage("Enroll Site Management");
+    } else {
+      setNewEmployee({ ...newEmployee, enrollSite: value });
+    }
+  };
 
   const addEmployees = async () => {
     const employeeData  = {
-      employeeId: newEmployee.employeeId,
-      firstName: newEmployee.firstName,
-      lastName: newEmployee.lastName,
+      empId: newEmployee.empId,
+      fName: newEmployee.fName,
+      lName: newEmployee.lName,
       email: newEmployee.email,
       contactNo: newEmployee.contactNo,
       picture: newEmployee.picture,
@@ -71,6 +186,7 @@ const AddEmployee = ({ setData, setActiveTab, data }) => {
       accountNo: newEmployee.accountNo,
       salaryPeriod: newEmployee.salaryPeriod,
       salaryType: newEmployee.salaryType,
+      shift: newEmployee.shift,
       enableAttendance: newEmployee.enableAttendance,
       enableSchedule: newEmployee.enableSchedule,
       enableOvertime: newEmployee.enableOvertime,
@@ -85,57 +201,30 @@ const AddEmployee = ({ setData, setActiveTab, data }) => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    // Create a new FormData object
-    const formData = new FormData();
-    
-    // Append all employee details
-    Object.keys(newEmployee).forEach(key => {
-        formData.append(key, newEmployee[key]);
-    });
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    try {
-        const response = await axios.post(
-            "http://localhost:5000/api/addEmployees", // Make sure this matches your backend endpoint
-            formData,
-            { headers: { 'Content-Type': 'multipart/form-data' } }
-        );
+  // Create a new FormData object
+  const formData = new FormData();
+  Object.keys(newEmployee).forEach((key) => {
+    formData.append(key, newEmployee[key]);
+  });
 
-        if (response.status === 201) { // Check for 201 status code for successful creation
-            setData((prevData) => [...prevData, response.data]); // Update state with new employee
-            setActiveTab("Employees");
+  try {
+    const response = isEditMode
+      ? await axios.put(`http://localhost:5000/api/employees/${newEmployee.empId}`, formData)
+      : await axios.post("http://localhost:5000/api/addEmployees", formData);
 
-            // Reset form fields after successful submission
-            setNewEmployee({
-                employeeId: "",
-                firstName: "",
-                lastName: "",
-                email: "",
-                contactNo: "",
-                picture: "",
-                enrollSite: "",
-                gender: "",
-                joiningDate: "",
-                bankName: "",
-                overtimeAssigned: "",
-                department: "",
-                designationName: "",
-                basicSalary: "",
-                accountNo: "",
-                salaryPeriod: "",
-                salaryType: "",
-                enableAttendance: "",
-                enableSchedule: "",
-                enableOvertime: "",
-            });
-        } else {
-            console.error("Failed to add employee:", response);
-        }
-    } catch (error) {
-        console.error("Error adding new employee:", error.response ? error.response.data : error.message);
+    if (response.status === (isEditMode ? 200 : 201)) {
+      setData((prevData) => isEditMode
+        ? prevData.map((emp) => (emp.empId === newEmployee.empId ? { ...emp, ...response.data } : emp))
+        : [...prevData, response.data]
+      );
+      setActiveTab("Employees"); // Redirect back to the employee list
     }
+  } catch (error) {
+    console.error("Error adding/updating employee:", error.response ? error.response.data : error.message);
+  }
 };
 
   
@@ -150,21 +239,6 @@ const AddEmployee = ({ setData, setActiveTab, data }) => {
     if (file) {
       setNewEmployee((prevState) => ({ ...prevState, picture: file })); // Store the file object
   }
-    // if (file) {
-    //   const formData = new FormData();
-    //   formData.append("picture", file);
-
-    //   try {
-    //     const response = await axios.post(
-    //       "http://localhost:5000/api/upload",
-    //       formData
-    //     );
-    //     const imageUrl = response.data.imageUrl;
-    //     setNewEmployee((prevState) => ({ ...prevState, picture: imageUrl }));
-    //   } catch (error) {
-    //     console.error("Error uploading picture:", error);
-    //   }
-    // }
   };
 
   const handleWebcamCapture = (imageSrc) => {
@@ -187,6 +261,18 @@ const AddEmployee = ({ setData, setActiveTab, data }) => {
       </div>
       {selectedPage === "Department" ? (
         <Department setSelectedPage={setSelectedPage} />
+      ) : selectedPage === "Shift Management" ? (
+        // Render Shift Management component here
+        // <div>Shift Management Component</div>
+        <ShiftManagement setSelectedPage={setSelectedPage}/>
+      ) : selectedPage === "Overtime Management" ? (
+        // Render Overtime Management component here
+        // <div>Overtime Management Component</div>
+        <OvertimeTable setSelectedPage={setSelectedPage}/>
+      ) : selectedPage === "Enroll Site Management" ? (
+        // Render Enroll Site Management component here
+        // <div>Enroll Site Management Component</div>
+        <Location setSelectedPage={setSelectedPage}/>
       ) : (
         <form onSubmit={handleSubmit} className="employee-form">
           <section>
@@ -197,19 +283,20 @@ const AddEmployee = ({ setData, setActiveTab, data }) => {
                   <label>Employee ID</label>
                   <input
                     type="text"
-                    name="employeeId"
+                    name="empId"
                     placeholder="Enter Employee ID"
-                    value={newEmployee.employeeId}
+                    value={newEmployee.empId}
                     onChange={handleChange}
                     required
+                    disabled={isEditMode} // Disable if editing
                   />
 
                   <label>First Name</label>
                   <input
                     type="text"
-                    name="firstName"
+                    name="fName"
                     placeholder="Enter First Name"
-                    value={newEmployee.firstName}
+                    value={newEmployee.fName}
                     onChange={handleChange}
                     required
                   />
@@ -217,9 +304,9 @@ const AddEmployee = ({ setData, setActiveTab, data }) => {
                   <label>Last Name</label>
                   <input
                     type="text"
-                    name="lastName"
+                    name="lName"
                     placeholder="Enter Last Name"
-                    value={newEmployee.lastName}
+                    value={newEmployee.lName}
                     onChange={handleChange}
                     required
                   />
@@ -261,7 +348,8 @@ const AddEmployee = ({ setData, setActiveTab, data }) => {
                   {newEmployee.picture && (
                     <div className="captured-image-container">
                       <img
-                        src={newEmployee.picture}
+                        // src={newEmployee.picture}
+                        src={typeof newEmployee.picture === "string" ? newEmployee.picture : URL.createObjectURL(newEmployee.picture)}
                         alt="Captured"
                         className="captured-image"
                       />
@@ -273,13 +361,26 @@ const AddEmployee = ({ setData, setActiveTab, data }) => {
                     onCapture={handleWebcamCapture}
                   />
                   <label>Enrolled Site</label>
-                  <input
+                  {/* <input
                     type="text"
                     name="enrollSite"
                     placeholder="Enter Enrolled Site"
                     value={newEmployee.enrollSite}
                     onChange={handleChange}
-                  />
+                  /> */}
+                  <select
+                    name="enrollSite"
+                    value={newEmployee.enrollSite}
+                    onChange={handleEnrollSiteChange}
+                  >
+                    <option value="">Select Enrolled Site</option>
+                    {enrollSites.map((site, index) => (
+                      <option key={index} value={site.name}>
+                        {site.name}
+                      </option>
+                    ))}
+                    <option value="Add-EnrollSite">+ Add Enrolled Site</option>
+                  </select>
 
                   <label>Gender</label>
                   <select
@@ -311,17 +412,39 @@ const AddEmployee = ({ setData, setActiveTab, data }) => {
                     value={newEmployee.bankName}
                     onChange={handleChange}
                   />
+                  
                 </div>
+                
                 <div className="employee-info-inner">
+                <label>Shift</label>
+                <select
+                  name="shift"
+                  value={newEmployee.shift}
+                  onChange={handleShiftChange}
+                  required
+                >
+                  <option value="">Select Shift</option>
+                  {shifts.map((shift, index) => (
+                    <option key={index} value={shift.name}>
+                      {shift.name}
+                    </option>
+                  ))}
+                  <option value="Add-Shift">+ Add New Shift</option>
+
+                </select>
                   <label>Overtime Assigned</label>
                   <select
                     name="overtimeAssigned"
                     value={newEmployee.overtimeAssigned}
-                    onChange={handleChange}
+                    onChange={handleOvertimeChange}
                   >
                     <option value="">Select Overtime</option>
-                    <option value="Yes">Yes</option>
-                    <option value="No">No</option>
+                    {overtime.map((ot) => (
+                      <option key={ot.OTFormulaId} value={ot.OTCode}>
+                        {ot.OTCode}
+                      </option>
+                    ))}
+                    <option value="Add-Overtime">+ Add Overtime</option>
                   </select>
 
                   <label>Department Name</label>
@@ -334,8 +457,8 @@ const AddEmployee = ({ setData, setActiveTab, data }) => {
                       Select a Department
                     </option>
                     {departments.map((dept, index) => (
-                      <option key={index} value={dept}>
-                        {dept}
+                      <option key={index} value={dept.name}>
+                        {dept.name}
                       </option>
                     ))}
                     <option value="Add-Department">+ Add New Department</option>
@@ -427,11 +550,11 @@ const AddEmployee = ({ setData, setActiveTab, data }) => {
                 </div>
               </div>
               <div className="employee-buttons">
-                <button className="add" type="submit" >
-                  Add Employee
+                <button className="submit-button" type="submit" >
+                {isEditMode ? "Update Employee" : "Add Employee"}
                 </button>
                 <button
-                  className="cancel"
+                  className="cancel-button"
                   type="button"
                   onClick={() => setActiveTab("Employees")}
                 >

@@ -14,47 +14,62 @@ const AttendanceTable = ({ data }) => {
         accessor: "serial",
         Cell: ({ row }) => row.index + 1,
       },
-      {
-        Header: "Location",
-        accessor: "Location",
-      },
+      // {
+      //   Header: "S.No",
+      //   accessor: "allAttendanceId", // Keeps the original field name
+      // },
       {
         Header: "Employee ID",
-        accessor: "Employee ID",
+        accessor: "empId", // Keeps the original field name
       },
       {
         Header: "Employee Name",
-        accessor: "Employee Name",
-        Cell: ({ value }) => (
-          <span className='bold-fonts'>{value}</span>
+        // Combines first name and last name
+        Cell: ({ row }) => (
+          <span className='bold-fonts'>
+            {row.original.emp_fName} {row.original.emp_lName}
+          </span>
         ),
       },
       {
-        Header: "Time",
-        accessor: "Time",
+        Header: "Time In",
+        accessor: "time_in", // Keeps the original field name
+      },
+      {
+        Header: "Time Out",
+        accessor: "time_out", // Keeps the original field name
+      },
+      {
+        Header: "Date",
+        accessor: "date", // Keeps the original field name
+      },
+      {
+        Header: "Attendance Marked",
+        accessor: "attendance_marked", 
+        Cell: ({ value }) => (value ? "Yes" : "No"),
       },
       {
         Header: "Status",
-        accessor: "Status",
+        accessor: "status",
         Cell: ({ value }) => (
           <span
-          className={`status ${
-            value === "Present"
-              ? "presentStatus"
-              : value === "Absent"
-              ? "absentStatus"
-              : value === "Late"
-              ? "lateStatus"
-              : 'none'
-          }`}
+            className={`status ${
+              value === "Present"
+                ? "presentStatus"
+                : value === "Late"
+                ? "lateStatus"
+                : value === "Absent"
+                ? "absentStatus"
+                : "none"
+            }`}
           >
             {value}
           </span>
         ),
       },
       {
-        Header: "Date",
-        accessor: "Date",
+        Header: "Location",
+        accessor: "location", 
       },
     ],
     []
@@ -90,9 +105,26 @@ const AttendanceTable = ({ data }) => {
   );
 
   return (
-    <div className="location-table">
+    <div className="department-table">
       <div className="table-header">
-        <form className="form">
+      <form className="form" onSubmit={(e) => e.preventDefault()}>
+          <button type="submit">
+            <svg
+              width="17"
+              height="16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-labelledby="search"
+            >
+              <path
+                d="M7.667 12.667A5.333 5.333 0 107.667 2a5.333 5.333 0 000 10.667zM14.334 14l-2.9-2.9"
+                stroke="currentColor"
+                strokeWidth="1.333"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              ></path>
+            </svg>
+          </button>
           <input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -102,8 +134,8 @@ const AttendanceTable = ({ data }) => {
           />
           <button
             className="reset"
-            type="button"
-            onClick={() => setSearchQuery("")}
+            type="button" // Change to type="button" to prevent form reset
+            onClick={() => setSearchQuery("")} // Clear the input on click
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -117,13 +149,13 @@ const AttendanceTable = ({ data }) => {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 d="M6 18L18 6M6 6l12 12"
-              ></path>
+              />
             </svg>
           </button>
         </form>
       </div>
 
-      <div className="locations-table">
+      <div className="departments-table">
         <table {...getTableProps()} className="table">
           <thead>
             {headerGroups.map((headerGroup) => (

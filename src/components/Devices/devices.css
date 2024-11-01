@@ -1,3 +1,13 @@
+.green-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #05cb05;
+    margin-right: 5px;
+  }
+  
+
 .add-device-form {
     margin-top: 20px;
     padding: 20px;
@@ -17,7 +27,7 @@
 }
 
 .submit-button {
-    background-color: var(--success-button-color);
+    background-color: var(--button-hover-color);
     color: white;
     border: none;
     padding: 10px;
@@ -26,32 +36,28 @@
 }
 
 .submit-button:hover {
-    background-color: var(--success-button-color);
+    /* background-color: var(--button-hover-color); */
+    background-color: var(--theam-color);
+    transition: background-color 0.3s ease;
 }
 
 .cancel-button {
     background-color: var(--fail-button-color);
-    color: white;
-    border: none;
+    color: rgb(255, 55, 55);
+    border: 1px solid red;
     padding: 10px;
     border-radius: 4px;
     cursor: pointer;
     margin-left: 10px;
+    transition: .3s ease;
 }
 
 .cancel-button:hover {
-    background-color: var(--fail-button-color);
+    background-color: red;
+    color: white;
+    /* border: 1px solid black; */
 }
 
-.table-edit {
-    color: var(--success-button-color);
-    font-size: 1vw;
-}
-
-.table-delete {
-    color: var(--fail-button-color);
-    font-size: 1vw;
-}
 
 .form button {
     border: none;
@@ -233,7 +239,7 @@ input:checked+.slider:before {
     color: #2ebf2e;
     border: 1px solid #2ebf2e;
     border-radius: 15px;
-    width: 3vw;
+    width: 6vw;
     text-align: center;
     padding: unset;
 }
@@ -241,7 +247,7 @@ input:checked+.slider:before {
     color: #f16262;
     border: 1px solid #f16262;
     border-radius: 15px;
-    width: 3vw;
+    width: 6vw;
     text-align: center;
     padding: unset;
 }
@@ -251,4 +257,9 @@ input:checked+.slider:before {
 .device-table thead tr th{
     color: var(--text-color);
     background-color: var(--table-header-color);
+}
+@media only screen and (min-width:1500px){
+    .activeStatus, .inactiveStatus{
+        width:3vw;
+    }
 }

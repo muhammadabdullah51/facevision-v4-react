@@ -1,6 +1,7 @@
 .report {
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
     gap: 2vw;
     align-items: center;
 }
@@ -42,8 +43,8 @@
 
 .report-selector-icon {
     margin-right: 3px;
-    font-size: 1vw;
     color: var(--theam-color);
+    font-size: var(--icon-size);
 }
 
 .generate-report-button {
@@ -80,7 +81,7 @@
 }
 
 .dropdown {
-    height: 15vh;
+    /* height: 15vh; */
     display: flex;
     position: relative;
     align-items: center;
@@ -120,10 +121,7 @@
 .button-icon {
     margin-right: 8px;
 }
-.table-container thead tr th {
-    color: var(--text-color);
-    background-color: var(--table-header-color);
-}
+
 .report-content{
     padding: 1%;
     background-color: white;
@@ -133,3 +131,19 @@
 
 }
 
+@media only screen and (min-width: 700px) and (max-width: 1000px) {
+    .report-selector{
+        padding: 0.1% 1%;
+    }
+    .report-selector-icon{
+        font-size: 1.5vw;
+    }
+    .report-selector select{
+        font-size: 1.1vw;  
+    }
+    .generate-report-button{
+        font-size: 1.5vw;
+        height: 4vh;
+        width: 18vw;
+    }
+}

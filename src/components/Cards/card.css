@@ -1,7 +1,7 @@
 .card {
     background-color: white;
     border-radius: 12px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
     padding: 16px;
     width: 300px;
     display: flex;
@@ -67,4 +67,9 @@
 
 .low-value {
     background-color: #fee2e2; /* Light red background for low value */
+}
+@media (min-width: 700px) and (max-width:1660px) {
+    .card{
+        width: 80%;
+    }
 }

@@ -3,11 +3,11 @@ import '../Dashboard_Table/dashboard_table.css';
 
 const Weekly_Overtime_Report = ({searchQuery, sendDataToParent  }) => {
     const data = [
-        { employeeId: "E001", employeeName: "Camila Rios", startDate: "2024-07-01", endDate: "2024-07-02", workingHours: "40", overtimeHours: "5" },
-        { employeeId: "E002", employeeName: "Diana Smith", startDate: "2024-07-02", endDate: "2024-07-03", workingHours: "38", overtimeHours: "3" },
-        { employeeId: "E003", employeeName: "Wade Warren", startDate: "2024-07-03", endDate: "2024-07-04", workingHours: "42", overtimeHours: "6" },
-        { employeeId: "E004", employeeName: "Guy Hawkins", startDate: "2024-07-04", endDate: "2024-07-05", workingHours: "40", overtimeHours: "4" },
-        { employeeId: "E005", employeeName: "Emily Davis", startDate: "2024-07-05", endDate: "2024-07-06", workingHours: "39", overtimeHours: "2" },
+        { employeeId: "E001", employeeName: "Ayesha Khan", startDate: "2024-07-01", endDate: "2024-07-02", workingHours: "40", overtimeHours: "5" },
+        { employeeId: "E002", employeeName: "Fatima Ahmed", startDate: "2024-07-02", endDate: "2024-07-03", workingHours: "38", overtimeHours: "3" },
+        { employeeId: "E003", employeeName: "Omar Ali", startDate: "2024-07-03", endDate: "2024-07-04", workingHours: "42", overtimeHours: "6" },
+        { employeeId: "E004", employeeName: "Hassan Mahmood", startDate: "2024-07-04", endDate: "2024-07-05", workingHours: "40", overtimeHours: "4" },
+        { employeeId: "E005", employeeName: "Zainab Hussain", startDate: "2024-07-05", endDate: "2024-07-06", workingHours: "39", overtimeHours: "2" },
         // Add more rows as needed
     ];
 
@@ -26,9 +26,9 @@ const Weekly_Overtime_Report = ({searchQuery, sendDataToParent  }) => {
     }, [filteredData, sendDataToParent]);
 
     return (
-        <div className="table-container">
+        <div className="departments-table">
             <h3>Weekly Overtime Report</h3>
-            <table>
+            <table className="table">
                 <thead>
                     <tr>
                         <th>Serial No</th>

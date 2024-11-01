@@ -5,35 +5,35 @@ const Monthly_Entry_Time_Report = ({ searchQuery, sendDataToParent }) => {
   const data = [
     {
       employeeId: "E001",
-      employeeName: "Camila Rios",
+      employeeName: "Ayesha Khan",
       date: "2024-04-01",
       time: "08:00 - 17:00",
       status: "Fulltime",
     },
     {
       employeeId: "E002",
-      employeeName: "Diana Smith",
+      employeeName: "Fatima Ahmed",
       date: "2024-04-01",
       time: "08:00 - 17:00",
       status: "Fulltime",
     },
     {
       employeeId: "E003",
-      employeeName: "Wade Warren",
+      employeeName: "Omar Ali",
       date: "2024-04-02",
       time: "08:00 - 17:00",
       status: "Fulltime",
     },
     {
       employeeId: "E004",
-      employeeName: "Guy Hawkins",
+      employeeName: "Hassan Mahmood",
       date: "2024-04-03",
       time: "08:00 - 17:00",
       status: "Fulltime",
     },
     {
       employeeId: "E005",
-      employeeName: "Emily Davis",
+      employeeName: "Zainab Hussain",
       date: "2024-04-04",
       time: "08:00 - 17:00",
       status: "Fulltime",
@@ -56,9 +56,9 @@ const Monthly_Entry_Time_Report = ({ searchQuery, sendDataToParent }) => {
   }, [filteredData, sendDataToParent]);
 
   return (
-    <div className="table-container">
+    <div className="departments-table">
       <h3>Monthly Entry time Report</h3>
-      <table>
+      <table className="table">
         <thead>
           <tr>
             <th>Serial No</th>

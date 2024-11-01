@@ -142,3 +142,11 @@
     font-size: 14px;
     color: #666;
 }
+@media only screen and (max-width:1080px){
+    .login-card{
+        width: 60%;
+    }
+    .social-button img{
+        width: 2vw;
+    }
+}

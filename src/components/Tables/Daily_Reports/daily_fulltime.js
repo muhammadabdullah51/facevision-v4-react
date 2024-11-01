@@ -5,153 +5,135 @@ const Daily_Fulltime_Report = ({ searchQuery, sendDataToParent }) => {
   // Updated data structure to match new headings
   const data = [
     {
-      employeeId: "E001",
-      employeeName: "Camila Rios",
+      dailyFullTimeId: 1,
+      empId: "E001",
+      employee: "Aisha Khan",
+      timeIn: "09:00 AM",
+      timeOut: "09:00 AM",
       date: "12 / 04 / 2022",
-      time: "09:00 AM",
+      day: "monday",
+      workingHrs: '8',
+      totalHrs: '8',
       status: "Present",
     },
     {
-      employeeId: "E002",
-      employeeName: "Diana Smith",
+      dailyFullTimeId: 2,
+      empId: "E002",
+      employee: "Fatima Ahmed",
+      timeIn: "09:15 AM",
+      timeOut: "09:15 AM",
       date: "12 / 04 / 2022",
-      time: "09:15 AM",
+      day: "monday",
+      workingHrs: '8',
+      totalHrs: '8',
       status: "Present",
     },
     {
-      employeeId: "E003",
-      employeeName: "Wade Warren",
+      dailyFullTimeId: 3,
+      empId: "E003",
+      employee: "Omar Siddiqui",
+      timeIn: "09:05 AM",
+      timeOut: "09:05 AM",
       date: "12 / 04 / 2022",
-      time: "09:05 AM",
+      day: "monday",
+      workingHrs: '8',
+      totalHrs: '8',
       status: "Late",
     },
     {
-      employeeId: "E004",
-      employeeName: "Guy Hawkins",
+      dailyFullTimeId: 4,
+      empId: "E004",
+      employee: "Zain Malik",
+      timeIn: "09:30 AM",
+      timeOut: "09:30 AM",
       date: "12 / 04 / 2022",
-      time: "09:30 AM",
+      day: "monday",
+      workingHrs: '8',
+      totalHrs: '8',
       status: "Late",
     },
     {
-      employeeId: "E005",
-      employeeName: "Emily Davis",
+      dailyFullTimeId: 5,
+      empId: "E005",
+      employee: "Maryam Yousaf",
+      timeIn: "09:00 AM",
+      timeOut: "09:00 AM",
       date: "12 / 04 / 2022",
-      time: "09:00 AM",
+      day: "monday",
+      workingHrs: '8',
+      totalHrs: '8',
       status: "Present",
     },
     {
-      employeeId: "E006",
-      employeeName: "Michael Brown",
+      dailyFullTimeId: 6,
+      empId: "E006",
+      employee: "Ali Hassan",
+      timeIn: "09:10 AM",
+      timeOut: "09:10 AM",
       date: "12 / 04 / 2022",
-      time: "09:10 AM",
+      day: "monday",
+      workingHrs: '8',
+      totalHrs: '8',
       status: "Present",
     },
     {
-      employeeId: "E007",
-      employeeName: "Jessica White",
+      dailyFullTimeId: 7,
+      empId: "E007",
+      employee: "Sana Karim",
+      timeIn: "09:20 AM",
+      timeOut: "09:20 AM",
       date: "12 / 04 / 2022",
-      time: "09:20 AM",
+      day: "monday",
+      workingHrs: '8',
+      totalHrs: '8',
       status: "Late",
     },
     {
-      employeeId: "E008",
-      employeeName: "David Johnson",
+      dailyFullTimeId: 8,
+      empId: "E008",
+      employee: "Yusuf Khan",
+      timeIn: "09:00 AM",
+      timeOut: "09:00 AM",
       date: "12 / 04 / 2022",
-      time: "09:00 AM",
+      day: "monday",
+      workingHrs: '8',
+      totalHrs: '8',
       status: "Present",
     },
     {
-      employeeId: "E009",
-      employeeName: "Laura Martinez",
+      dailyFullTimeId: 9,
+      empId: "E009",
+      employee: "Zara Sheikh",
+      timeIn: "09:25 AM",
+      timeOut: "09:25 AM",
       date: "12 / 04 / 2022",
-      time: "09:25 AM",
+      day: "monday",
+      workingHrs: '8',
+      totalHrs: '8',
       status: "Late",
     },
     {
-      employeeId: "E010",
-      employeeName: "James Lee",
+      dailyFullTimeId: 10,
+      empId: "E010",
+      employee: "Ahmed Khan",
+      timeIn: "09:00 AM",
+      timeOut: "09:00 AM",
       date: "12 / 04 / 2022",
-      time: "09:00 AM",
+      day: "monday",
+      workingHrs: '8',
+      totalHrs: '8',
       status: "Present",
-    },
-    {
-      employeeId: "E011",
-      employeeName: "Anna Wilson",
-      date: "12 / 04 / 2022",
-      time: "09:30 AM",
-      status: "Late",
-    },
-    {
-      employeeId: "E012",
-      employeeName: "John Scott",
-      date: "12 / 04 / 2022",
-      time: "09:00 AM",
-      status: "Present",
-    },
-    {
-      employeeId: "E013",
-      employeeName: "Olivia Taylor",
-      date: "12 / 04 / 2022",
-      time: "09:15 AM",
-      status: "Present",
-    },
-    {
-      employeeId: "E014",
-      employeeName: "Chris Anderson",
-      date: "12 / 04 / 2022",
-      time: "09:35 AM",
-      status: "Late",
-    },
-    {
-      employeeId: "E015",
-      employeeName: "Sophia Harris",
-      date: "12 / 04 / 2022",
-      time: "09:00 AM",
-      status: "Present",
-    },
-    {
-      employeeId: "E016",
-      employeeName: "Matthew Clark",
-      date: "12 / 04 / 2022",
-      time: "09:05 AM",
-      status: "Present",
-    },
-    {
-      employeeId: "E017",
-      employeeName: "Charlotte Lewis",
-      date: "12 / 04 / 2022",
-      time: "09:20 AM",
-      status: "Late",
-    },
-    {
-      employeeId: "E018",
-      employeeName: "Ethan Walker",
-      date: "12 / 04 / 2022",
-      time: "09:00 AM",
-      status: "Present",
-    },
-    {
-      employeeId: "E019",
-      employeeName: "Ava Young",
-      date: "12 / 04 / 2022",
-      time: "09:30 AM",
-      status: "Late",
-    },
-    {
-      employeeId: "E020",
-      employeeName: "Daniel King",
-      date: "12 / 04 / 2022",
-      time: "09:00 AM",
-      status: "Present",
-    },
+    }
   ];
 
   const filteredData = data.filter(
     (row) =>
-      row.employeeId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      row.employeeName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      row.empId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      row.employee.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      row.timeIn.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      row.timeOut.toLowerCase().includes(searchQuery.toLowerCase()) ||
       row.date.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      row.time.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      row.day.toLowerCase().includes(searchQuery.toLowerCase()) ||
       row.status.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -161,16 +143,19 @@ const Daily_Fulltime_Report = ({ searchQuery, sendDataToParent }) => {
   }, [filteredData, sendDataToParent]);
 
   return (
-    <div className="table-container">
+    <div className="departments-table">
       <h3>Daily Full-Time Report</h3>
-      <table>
+      <table className="table">
         <thead>
           <tr>
             <th>Serial No</th>
             <th>Employee ID</th>
             <th>Employee Name</th>
+            <th>Time In</th>
+            <th>Time Out</th>
             <th>Date</th>
-            <th>Time</th>
+            <th>Day</th>
+            <th>Working Hours</th>
             <th>Status</th>
           </tr>
         </thead>
@@ -178,10 +163,13 @@ const Daily_Fulltime_Report = ({ searchQuery, sendDataToParent }) => {
           {filteredData.map((row, index) => (
             <tr key={index}>
               <td>{index + 1}</td>
-              <td>{row.employeeId}</td>
-              <td className="bold-fonts">{row.employeeName}</td>
+              <td>{row.empId}</td>
+              <td className="bold-fonts">{row.employee}</td>
+              <td>{row.timeIn}</td>
+              <td>{row.timeOut}</td>
               <td>{row.date}</td>
-              <td>{row.time}</td>
+              <td>{row.day}</td>
+              <td>{row.workingHrs}</td>
               <td>
                 <span
                   className={`${row.status.toLowerCase()} status ${

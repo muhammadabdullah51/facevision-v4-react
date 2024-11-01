@@ -4,6 +4,11 @@ import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import ReactPaginate from "react-paginate";
 import "./devices.css"; // Custom CSS for styling
 import axios from "axios";
+import ConirmationModal from "../Modal/conirmationModal";
+import addAnimation from "../../assets/Lottie/addAnim.json"
+import updateAnimation from "../../assets/Lottie/updateAnim.json";
+import deleteAnimation from "../../assets/Lottie/deleteAnim.json";
+import successAnimation from "../../assets/Lottie/successAnim.json";
 
 
 const DeviceTable = ({ data, setData }) => {
@@ -12,33 +17,45 @@ const DeviceTable = ({ data, setData }) => {
   const [showEditForm, setShowEditForm] = useState(false);
   const [formData, setFormData] = useState({
     _id: "",
-    id: null,
-    deviceName: "",
-    deviceIP: "",
-    devicePort: "",
+    cameraId: null,
+    cameraName: "",
+    cameraIp: "",
+    port: "",
     status: "Inactive",
   });
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState("");
+  const [successModal, setSuccessModal] = useState(false);
+  const [loading, setLoading] = useState(false);
 
 
-  const fetchDevices = async () => {
-    try {
-      const response = await fetch('http://localhost:5000/api/fetchDevices');
-      if (response.ok) {
-        const devices = await response.json();
-        setData(devices);
-      } else {
-        throw new Error('Failed to fetch devices');
+  const fetchDevices = useCallback(
+
+    async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/fetchDevices');
+        if (response.ok) {
+          const devices = await response.json();
+          setData(devices);
+        } else {
+          throw new Error('Failed to fetch devices');
+        }
+      } catch (error) {
+        console.error('Error fetching devices data:', error);
       }
-    } catch (error) {
-      console.error('Error fetching devices data:', error);
-    }
-  };
+    },[setData])
 
   // Call fetchDepartments when component mounts
   useEffect(() => {
     fetchDevices();
-  }, []);
-
+    let timer;
+    if (successModal) {
+      timer = setTimeout(() => {
+        setSuccessModal(false);
+      }, 2000);
+    }
+    return () => clearTimeout(timer);
+  }, [fetchDevices, successModal]);
 
   const handleStatusToggle = useCallback(() => {
     setFormData((prevState) => ({
@@ -55,22 +72,31 @@ const DeviceTable = ({ data, setData }) => {
         Cell: ({ row }) => row.index + 1,
       },
       {
+        Header: "Device ID",
+        accessor: "cameraId",
+      },
+      {
         Header: "Device Name",
-        accessor: "deviceName",
+        accessor: "cameraName",
         Cell: ({ value }) => (
           <span className='bold-fonts'>{value}</span>
         ),
       },
       {
         Header: "Device IP",
-        accessor: "deviceIP",
-        Cell: ({ value }) => (
-          <span className='bold-fonts'>{value}</span>
+        accessor: "cameraIp",
+        Cell: ({ row, value }) => (
+          <span className="bold-fonts">
+            {row.original.status === "Active" && (
+              <span className="green-dot"></span>
+            )}
+            {value}
+          </span>
         ),
       },
       {
         Header: "Device Port",
-        accessor: "devicePort",
+        accessor: "port",
       },
       {
         Header: "Status",
@@ -139,23 +165,31 @@ const DeviceTable = ({ data, setData }) => {
   const handleEdit = (row) => {
     setFormData({
       _id: row._id,
-      id: row.id,
-      deviceName: row.deviceName,
-      deviceIP: row.deviceIP,
-      devicePort: row.devicePort,
+      cameraId: row.cameraId,
+      cameraName: row.cameraName,
+      cameraIp: row.cameraIp,
+      port: row.port,
       status: row.status,
     });
     setShowAddForm(false);
     setShowEditForm(true);
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (cameraId) => {
+    setModalType("delete");
+    setShowModal(true);
+    setFormData({...formData, _id: cameraId})
+  }
+  const confirmDelete = async () => {
     try {
-      axios.post(`http://localhost:5000/api/deleteDevices`,{ id});
+      const cameraId = formData._id;
+      axios.post(`http://localhost:5000/api/deleteDevices`,{ cameraId});
       const updatedData = await axios.get('http://localhost:5000/api/fetchDevices');
       setData(updatedData.data)
-      console.log(`Device deleted ID: ${id}`);
+      console.log(`Device deleted ID: ${cameraId}`);
       fetchDevices();
+      setShowModal(false);
+      setSuccessModal(true);
     } catch (error) {
       console.error('Error deleting Device:', error);
     }
@@ -163,10 +197,10 @@ const DeviceTable = ({ data, setData }) => {
 
   const handleAdd = () => {
     setFormData({
-      id: null,
-      deviceName: "",
-      deviceIP: "",
-      devicePort: "",
+      cameraId: null,
+      cameraName: "",
+      cameraIp: "",
+      port: "",
       status: "Inactive",
     });
     setShowAddForm(true);
@@ -174,22 +208,31 @@ const DeviceTable = ({ data, setData }) => {
     fetchDevices();
   };
 
-  const addDevice = () => {
+  const addDevice = async() => {
+    setModalType("create");
+    setShowModal(true);
+  }
+  const confirmAdd = async() => {
     // Add device to the table
     setData((prevData) => [...prevData, { ...formData, id: Date.now() }]);
     const newDevice = {
-      deviceName: formData.deviceName,
-      deviceIP: formData.deviceIP,
-      devicePort: formData.devicePort,
+      cameraId : formData.cameraId,
+      cameraName: formData.cameraName,
+      cameraIp: formData.cameraIp,
+      port: formData.port,
       status: formData.status,
     }
 
     try {
       axios.post(`http://localhost:5000/api/addDevices`, newDevice)
+      const updatedData = await axios.get('http://localhost:5000/api/fetchDevices');
+      setData(updatedData.data)
       console.log(newDevice);
       console.log('Device added successfully:');
-      setShowAddForm(false); // Close add form
-      fetchDevices(); // Refresh the department list
+      setShowAddForm(false);
+      fetchDevices();
+      setShowModal(false);
+      setSuccessModal(true);
 
     } catch (error) {
       console.error('Error adding Device:', error);
@@ -197,37 +240,54 @@ const DeviceTable = ({ data, setData }) => {
 
     // Reset form data
     setFormData({
-      id: null,
-      deviceName: "",
-      deviceIP: "",
-      devicePort: "",
+      cameraId: null,
+      cameraName: "",
+      cameraIp: "",
+      port: "",
       status: "Inactive",
     });
 
     // Hide form
     setShowAddForm(false);
   };
-
+  
+  
   const handleUpdate = async () => {
-   
+    setModalType("update");
+    setFormData({
+      _id: formData._id,
+      cameraId: formData.cameraId,
+      cameraName: formData.cameraName,
+      cameraIp: formData.cameraIp,
+      port: formData.port,
+      status: formData.status,
+    })
+    console.log(formData)
+    setShowModal(true)
+  }
+  const confirmUpdate = async () => {
     const updatedDevice = {
       _id: formData._id,
-      id: formData.id,
-      deviceName: formData.deviceName,
-      deviceIP: formData.deviceIP,
-      devicePort: formData.devicePort,
+      cameraId: formData.cameraId,
+      cameraName: formData.cameraName,
+      cameraIp: formData.cameraIp,
+      port: formData.port,
       status: formData.status,
     };
-    console.log(updatedDevice)
+    
     try {
-      await axios.put(`http://localhost:5000/api/updateDevices`, updatedDevice);
+      await axios.post("http://localhost:5000/api/updateDevices", updatedDevice);
 
       const updatedData = await axios.get('http://localhost:5000/api/fetchDevices');
       setData(updatedData.data)
-      console.log(updatedData)
+      console.log("doe nUpdated device data:", updatedDevice);
       console.log('device updated successfully');
+      fetchDevices()
       setShowEditForm(false); 
+      setShowModal(false); // Hide the modal
+      setSuccessModal(true); // Show the success modal
     } catch (error) {
+      console.log("Updated device dataasdas:", updatedDevice);
       console.error('Error updating devices:', error);
     }
     // Hide the edit form
@@ -235,7 +295,33 @@ const DeviceTable = ({ data, setData }) => {
   };
 
   return (
-    <div className="device-table">
+    <div className="department-table">
+      <ConirmationModal
+        isOpen={showModal}
+        message={`Are you sure you want to ${modalType} this Device?`}
+        onConfirm={() => {
+         
+          if (modalType === "create") confirmAdd();
+          else if (modalType === "update") confirmUpdate();
+          else confirmDelete();
+        }}
+        onCancel={() => setShowModal(false)}
+        animationData={
+          modalType === "create"
+            ? addAnimation
+            : modalType === "update"
+            ? updateAnimation
+            : deleteAnimation
+        }
+      />
+      <ConirmationModal
+        isOpen={successModal}
+        message={`Device ${modalType}d successfully!`}
+        onConfirm={() => setSuccessModal(false)}
+        onCancel={() => setSuccessModal(false)}
+        animationData={successAnimation}
+        successModal={successModal}
+      />
       <div className="table-header">
       <form className="form" onSubmit={(e) => e.preventDefault()}>
           <button type="submit">
@@ -294,26 +380,34 @@ const DeviceTable = ({ data, setData }) => {
           <h3>Add New Device</h3>
           <input
             type="text"
-            placeholder="Device Name"
-            value={formData.deviceName}
+            placeholder="Device ID"
+            value={formData.cameraId}
             onChange={(e) =>
-              setFormData({ ...formData, deviceName: e.target.value })
+              setFormData({ ...formData, cameraId: e.target.value })
+            }
+          />
+          <input
+            type="text"
+            placeholder="Device Name"
+            value={formData.cameraName}
+            onChange={(e) =>
+              setFormData({ ...formData, cameraName: e.target.value })
             }
           />
           <input
             type="text"
             placeholder="Device IP"
-            value={formData.deviceIP}
+            value={formData.cameraIp}
             onChange={(e) =>
-              setFormData({ ...formData, deviceIP: e.target.value })
+              setFormData({ ...formData, cameraIp: e.target.value })
             }
           />
           <input
             type="text"
             placeholder="Device Port"
-            value={formData.devicePort}
+            value={formData.port}
             onChange={(e) =>
-              setFormData({ ...formData, devicePort: e.target.value })
+              setFormData({ ...formData, port: e.target.value })
             }
           />
           <div className="status-toggle">
@@ -346,26 +440,34 @@ const DeviceTable = ({ data, setData }) => {
           <h3>Edit Device</h3>
           <input
             type="text"
-            placeholder="Device Name"
-            value={formData.deviceName}
+            placeholder="Device ID"
+            value={formData.cameraId}
             onChange={(e) =>
-              setFormData({ ...formData, deviceName: e.target.value })
+              setFormData({ ...formData, cameraId: e.target.value })
+            }
+          />
+          <input
+            type="text"
+            placeholder="Device Name"
+            value={formData.cameraName}
+            onChange={(e) =>
+              setFormData({ ...formData, cameraName: e.target.value })
             }
           />
           <input
             type="text"
             placeholder="Device IP"
-            value={formData.deviceIP}
+            value={formData.cameraIp}
             onChange={(e) =>
-              setFormData({ ...formData, deviceIP: e.target.value })
+              setFormData({ ...formData, cameraIp: e.target.value })
             }
           />
           <input
             type="text"
             placeholder="Device Port"
-            value={formData.devicePort}
+            value={formData.port}
             onChange={(e) =>
-              setFormData({ ...formData, devicePort: e.target.value })
+              setFormData({ ...formData, port: e.target.value })
             }
           />
           <div className="status-toggle">
@@ -392,7 +494,7 @@ const DeviceTable = ({ data, setData }) => {
         </div>
       )}
       <div className="departments-table">
-        <table className="device-table" {...getTableProps()}>
+        <table className="table" {...getTableProps()}>
           <thead>
             {headerGroups.map((headerGroup) => (
               <tr {...headerGroup.getHeaderGroupProps()}>

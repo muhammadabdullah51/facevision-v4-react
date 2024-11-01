@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { login } from '../../redux/authSlice';
@@ -17,8 +17,22 @@ const Register = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
     const [profilePicture, setProfilePicture] = useState(null);
+    const [companyExists, setCompanyExists] = useState(false);
     const dispatch = useDispatch();
     const navigate = useNavigate();
+
+     // Check if company info exists
+     useEffect(() => {
+        const checkCompanyInfo = async () => {
+            try {
+                const response = await axios.get('http://localhost:5000/api/check-company');
+                setCompanyExists(response.data.companyExists);
+            } catch (error) {
+                console.error('Error checking company info:', error);
+            }
+        };
+        checkCompanyInfo();
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -47,7 +61,12 @@ const Register = () => {
                 });
 
                 dispatch(login({ email }));
-                navigate('/companyInformation');
+                // navigate('/companyInformation');
+                if (!companyExists) {
+                    navigate('/companyInformation');
+                } else {
+                    navigate('/dashboard');
+                }
             } catch (error) {
                 console.error('Error in registration:', error.response?.data?.message || error.message);
                 alert('Registration failed.');

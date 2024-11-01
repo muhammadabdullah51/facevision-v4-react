@@ -5,140 +5,140 @@ const All_Attendance_Summary_Report = ({ searchQuery, sendDataToParent }) => {
   const data = [
     {
       employeeId: "E001",
-      employeeName: "Camila Rios",
+      employeeName: "Ayesha Khan",
       date: "01/05/2022",
       time: "09:00 AM",
       status: "Present",
     },
     {
       employeeId: "E002",
-      employeeName: "Diana Smith",
+      employeeName: "Fatima Ahmed",
       date: "01/05/2022",
       time: "09:05 AM",
       status: "Late",
     },
     {
       employeeId: "E003",
-      employeeName: "Wade Warren",
+      employeeName: "Omar Ali",
       date: "01/05/2022",
       time: "09:00 AM",
       status: "Present",
     },
     {
       employeeId: "E004",
-      employeeName: "Guy Hawkins",
+      employeeName: "Hassan Mahmood",
       date: "01/05/2022",
       time: "09:15 AM",
       status: "Late",
     },
     {
       employeeId: "E005",
-      employeeName: "Emily Davis",
+      employeeName: "Zainab Hussain",
       date: "01/05/2022",
       time: "09:00 AM",
       status: "Present",
     },
     {
       employeeId: "E006",
-      employeeName: "Michael Brown",
+      employeeName: "Yusuf Rashid",
       date: "01/05/2022",
       time: "09:00 AM",
       status: "Present",
     },
     {
       employeeId: "E007",
-      employeeName: "Jessica White",
+      employeeName: "Amina Ibrahim",
       date: "01/05/2022",
       time: "09:05 AM",
       status: "Late",
     },
     {
       employeeId: "E008",
-      employeeName: "David Johnson",
+      employeeName: "Ahmed Jamal",
       date: "01/05/2022",
       time: "09:10 AM",
       status: "Late",
     },
     {
       employeeId: "E009",
-      employeeName: "Laura Martinez",
+      employeeName: "Mariam Hassan",
       date: "01/05/2022",
       time: "09:00 AM",
       status: "Present",
     },
     {
       employeeId: "E010",
-      employeeName: "James Lee",
+      employeeName: "Bilal Shaikh",
       date: "01/05/2022",
       time: "09:00 AM",
       status: "Present",
     },
     {
       employeeId: "E011",
-      employeeName: "Anna Wilson",
+      employeeName: "Safiya Khan",
       date: "01/05/2022",
       time: "09:20 AM",
       status: "Late",
     },
     {
       employeeId: "E012",
-      employeeName: "John Scott",
+      employeeName: "Zaid Malik",
       date: "01/05/2022",
       time: "09:00 AM",
       status: "Present",
     },
     {
       employeeId: "E013",
-      employeeName: "Olivia Taylor",
+      employeeName: "Sara Yusuf",
       date: "01/05/2022",
       time: "09:00 AM",
       status: "Present",
     },
     {
       employeeId: "E014",
-      employeeName: "Chris Anderson",
+      employeeName: "Ismail Ahmed",
       date: "01/05/2022",
       time: "09:30 AM",
       status: "Late",
     },
     {
       employeeId: "E015",
-      employeeName: "Sophia Harris",
+      employeeName: "Sofia Karim",
       date: "01/05/2022",
       time: "09:00 AM",
       status: "Present",
     },
     {
       employeeId: "E016",
-      employeeName: "Matthew Clark",
+      employeeName: "Mohammed Abbas",
       date: "01/05/2022",
       time: "09:00 AM",
       status: "Present",
     },
     {
       employeeId: "E017",
-      employeeName: "Charlotte Lewis",
+      employeeName: "Layla Tariq",
       date: "01/05/2022",
       time: "09:05 AM",
       status: "Late",
     },
     {
       employeeId: "E018",
-      employeeName: "Ethan Walker",
+      employeeName: "Ebrahim Shah",
       date: "01/05/2022",
       time: "09:00 AM",
       status: "Present",
     },
     {
       employeeId: "E019",
-      employeeName: "Ava Young",
+      employeeName: "Nadia Khan",
       date: "01/05/2022",
       time: "09:00 AM",
       status: "Present",
     },
     {
       employeeId: "E020",
-      employeeName: "Daniel King",
+      employeeName: "Tariq Ali",
       date: "01/05/2022",
       time: "09:10 AM",
       status: "Late",
@@ -160,9 +160,9 @@ const All_Attendance_Summary_Report = ({ searchQuery, sendDataToParent }) => {
   }, [filteredData, sendDataToParent]);
 
   return (
-    <div className="table-container">
+    <div className="departments-table">
       <h3>All Attendance Summary Report</h3>
-      <table>
+      <table className="table">
         <thead>
           <tr>
             <th>Serial No</th>

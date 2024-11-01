@@ -5,35 +5,35 @@ const Weekly_Fulltime_Report = ({ searchQuery, sendDataToParent }) => {
   const data = [
     {
       employeeId: "E001",
-      employeeName: "Camila Rios",
+      employeeName: "Ayesha Khan",
       date: "2024-07-01",
       time: "09:00 AM - 05:00 PM",
       status: "Present",
     },
     {
       employeeId: "E002",
-      employeeName: "Diana Smith",
+      employeeName: "Fatima Ahmed",
       date: "2024-07-02",
       time: "09:00 AM - 05:00 PM",
       status: "Absent",
     },
     {
       employeeId: "E003",
-      employeeName: "Wade Warren",
+      employeeName: "Omar Ali",
       date: "2024-07-03",
       time: "09:00 AM - 05:00 PM",
       status: "Present",
     },
     {
       employeeId: "E004",
-      employeeName: "Guy Hawkins",
+      employeeName: "Hassan Mahmood",
       date: "2024-07-04",
       time: "09:00 AM - 05:00 PM",
       status: "Present",
     },
     {
       employeeId: "E005",
-      employeeName: "Emily Davis",
+      employeeName: "Zainab Hussain",
       date: "2024-07-05",
       time: "09:00 AM - 05:00 PM",
       status: "Present",
@@ -56,9 +56,9 @@ const Weekly_Fulltime_Report = ({ searchQuery, sendDataToParent }) => {
   }, [filteredData, sendDataToParent]);
 
   return (
-    <div className="table-container">
+    <div className="departments-table">
       <h3>Weekly Fulltime Report</h3>
-      <table>
+      <table className="table">
         <thead>
           <tr>
             <th>Serial No</th>

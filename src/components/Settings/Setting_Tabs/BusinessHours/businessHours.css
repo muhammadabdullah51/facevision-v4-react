@@ -1,5 +1,5 @@
 .business-hours {
-    width: 25vw;
+    width: 50%;
     background-color: #ffffff;
     padding: 20px;
     border-radius: 10px;
@@ -34,6 +34,8 @@
 .timezone label {
     font-weight: 600;
     font-size: 0.8vw;
+    display: flex;
+    align-items: center;
 }
 
 input[type="checkbox"] {
@@ -50,7 +52,7 @@ input[type="checkbox"] {
 
 input[type="checkbox"]:checked {
     background-color: var(--hoverText-color);
-    
+
 }
 
 input[type="checkbox"]:before {
@@ -117,7 +119,7 @@ input[type="time"] {
     border: 1px solid #d1d5db;
     border-radius: 5px;
     padding: 8px 12px;
-    font-size:  0.8vw;
+    font-size: 0.8vw;
     color: #1a1a1a;
     cursor: pointer;
     transition: background-color 0.2s, border-color 0.2s;
@@ -135,4 +137,29 @@ input[type="time"] {
 
 input[type="checkbox"]:disabled+label {
     color: #d1d5db;
+}
+
+@media only screen and (min-width:700px) and (max-width:1000px) {
+    .header h2 {
+        font-size: 2vw;
+    }
+
+    .header p, .enable-toggle label,
+    .timezone label, .day-row label, .timezone select, input[type="time"], .additional-settings button {
+        font-size: 1.5vw;
+    }
+    input[type="time"]{
+        width: 100%;
+    }
+}
+
+@media only screen and (min-width:1001px) and (max-width:1300px) {
+    .header h2 {
+        font-size: 1.8vw;
+    }
+
+    .header p, .enable-toggle label,
+    .timezone label, .day-row label, .timezone select, input[type="time"], .additional-settings button {
+        font-size: 1.2vw;
+    }
 }

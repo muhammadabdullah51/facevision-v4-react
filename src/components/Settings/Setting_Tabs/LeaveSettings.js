@@ -1,25 +1,30 @@
 import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+
 import "./leave.css";
 
 const LeaveTable = () => {
+  // Updated state field names
   const [data, setData] = useState([
-    { id: 1, leaveCode: "LC001", ratePerHour: "$20" },
-    { id: 2, leaveCode: "LC002", ratePerHour: "$25" },
+    { leaveFormulaId: 1, cutCode: "LC001", cutRate: "$20" },
+    { leaveFormulaId: 2, cutCode: "LC002", cutRate: "$25" },
   ]);
-  const [showForm, setShowForm] = useState(false);
-  const [formMode, setFormMode] = useState("add"); 
-  const [currentItemId, setCurrentItemId] = useState(null); 
-  const [leaveCode, setLeaveCode] = useState("");
-  const [ratePerHour, setRatePerHour] = useState("");
-  const [searchQuery, setSearchQuery] = useState(""); 
 
+  const [showForm, setShowForm] = useState(false);
+  const [formMode, setFormMode] = useState("add");
+  const [currentItemId, setCurrentItemId] = useState(null);
+  const [cutCode, setCutCode] = useState("");
+  const [cutRate, setCutRate] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Handle edit with updated field names
   const handleEdit = (id) => {
-    const itemToEdit = data.find((item) => item.id === id);
+    const itemToEdit = data.find((item) => item.leaveFormulaId === id);
     if (itemToEdit) {
-      setLeaveCode(itemToEdit.leaveCode);
-      setRatePerHour(itemToEdit.ratePerHour);
+      setCutCode(itemToEdit.cutCode);
+      setCutRate(itemToEdit.cutRate);
       setCurrentItemId(id);
       setFormMode("edit");
       setShowForm(true);
@@ -31,27 +36,29 @@ const LeaveTable = () => {
   };
 
   const handleDelete = (id) => {
-    setData(data.filter((item) => item.id !== id));
+    setData(data.filter((item) => item.leaveFormulaId !== id));
   };
 
   const handleAddNew = () => {
     setFormMode("add");
-    setLeaveCode("");
-    setRatePerHour("");
+    setCutCode("");
+    setCutRate("");
     setShowForm(true);
   };
 
   const handleSaveItem = () => {
     if (formMode === "add") {
       const newItem = {
-        id: data.length + 1,
-        leaveCode,
-        ratePerHour,
+        leaveFormulaId: data.length + 1,
+        cutCode,
+        cutRate,
       };
       setData([...data, newItem]);
     } else if (formMode === "edit") {
       const updatedData = data.map((item) =>
-        item.id === currentItemId ? { ...item, leaveCode, ratePerHour } : item
+        item.leaveFormulaId === currentItemId
+          ? { ...item, cutCode, cutRate }
+          : item
       );
       setData(updatedData);
     }
@@ -59,8 +66,8 @@ const LeaveTable = () => {
   };
 
   const resetForm = () => {
-    setLeaveCode("");
-    setRatePerHour("");
+    setCutCode("");
+    setCutRate("");
     setCurrentItemId(null);
     setFormMode("add");
     setShowForm(false);
@@ -70,13 +77,14 @@ const LeaveTable = () => {
     setSearchQuery(e.target.value);
   };
 
+  // Update search to use `cutCode`
   const filteredData = data.filter((item) =>
-    item.leaveCode.toLowerCase().includes(searchQuery.toLowerCase())
+    item.cutCode.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
-    <div className="table-container">
-      <div className="leave-header">
+    <div className="department-table">
+      <div className="table-header">
         <form className="form">
           <button>
             <svg
@@ -121,8 +129,8 @@ const LeaveTable = () => {
             </svg>
           </button>
         </form>
-        <button className="addLeave" onClick={handleAddNew}>
-          <FontAwesomeIcon icon={faPlus} /> Add New Formula
+        <button className="add-button" onClick={handleAddNew}>
+          <FaPlus /> Add New Formula
         </button>
       </div>
 
@@ -132,14 +140,14 @@ const LeaveTable = () => {
           <input
             type="text"
             placeholder="Leave Code"
-            value={leaveCode}
-            onChange={(e) => setLeaveCode(e.target.value)}
+            value={cutCode}
+            onChange={(e) => setCutCode(e.target.value)}
           />
           <input
             type="text"
-            placeholder="Rate Per Hour"
-            value={ratePerHour}
-            onChange={(e) => setRatePerHour(e.target.value)}
+            placeholder="Cut Rate Per Hour"
+            value={cutRate}
+            onChange={(e) => setCutRate(e.target.value)}
           />
           <button className="submit-button" onClick={handleSaveItem}>
             {formMode === "add" ? "Add" : "Update"}
@@ -150,8 +158,8 @@ const LeaveTable = () => {
         </div>
       )}
 
-      <div className="leave-table-outer">
-        <table className="leave-table">
+      <div className="departments-table">
+        <table className="table">
           <thead>
             <tr>
               <th>Id</th>
@@ -162,16 +170,22 @@ const LeaveTable = () => {
           </thead>
           <tbody>
             {filteredData.map((item) => (
-              <tr key={item.id}>
-                <td>{item.id}</td>
-                <td>{item.leaveCode}</td>
-                <td>{item.ratePerHour}</td>
+              <tr key={item.leaveFormulaId}>
+                <td>{item.leaveFormulaId}</td>
+                <td>{item.cutCode}</td>
+                <td>{item.cutRate}</td>
                 <td>
-                  <button className="action-button edit" onClick={() => handleEdit(item.id)}>
-                    <FontAwesomeIcon icon={faEdit} />
+                  <button
+                    onClick={() => handleEdit(item.leaveFormulaId)}
+                    style={{ background: "none", border: "none" }}
+                  >
+                    <FaEdit className="table-edit" />
                   </button>
-                  <button className="action-button delete" onClick={() => handleDelete(item.id)}>
-                    <FontAwesomeIcon icon={faTrash} />
+                  <button
+                    onClick={() => handleDelete(item.leaveFormulaId)}
+                    style={{ background: "none", border: "none" }}
+                  >
+                    <FaTrash className="table-delete" />
                   </button>
                 </td>
               </tr>

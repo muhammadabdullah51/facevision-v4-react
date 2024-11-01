@@ -4,38 +4,38 @@ import "../Dashboard_Table/dashboard_table.css";
 const Daily_Late_In_Report = ({ searchQuery, sendDataToParent }) => {
   const data = [
     {
-      employeeId: "E001",
-      employeeName: "Camila Rios",
+      empId: "E001",
+      employeeName: "Aleem Dar",
+      timeIn: "09:15 AM",
       date: "2024-09-01",
-      time: "09:15 AM",
       status: "Late",
     },
     {
-      employeeId: "E002",
-      employeeName: "Diana Smith",
+      empId: "E002",
+      employeeName: "Dania Khalid",
+      timeIn: "09:10 AM",
       date: "2024-09-01",
-      time: "09:10 AM",
       status: "On Time",
     },
     {
-      employeeId: "E003",
-      employeeName: "Wade Warren",
+      empId: "E003",
+      employeeName: "Farrukh Saleem",
+      timeIn: "09:25 AM",
       date: "2024-09-01",
-      time: "09:25 AM",
       status: "Late",
     },
     {
-      employeeId: "E004",
-      employeeName: "Guy Hawkins",
+      empId: "E004",
+      employeeName: "Ayesha Sanum",
+      timeIn: "09:05 AM",
       date: "2024-09-01",
-      time: "09:05 AM",
       status: "On Time",
     },
     {
-      employeeId: "E005",
-      employeeName: "Emily Davis",
+      empId: "E005",
+      employeeName: "Waleed Faheem",
+      timeIn: "09:30 AM",
       date: "2024-09-01",
-      time: "09:30 AM",
       status: "Late",
     },
     // Add more rows as needed
@@ -43,10 +43,10 @@ const Daily_Late_In_Report = ({ searchQuery, sendDataToParent }) => {
 
   const filteredData = data.filter(
     (row) =>
-      row.employeeId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      row.empId.toLowerCase().includes(searchQuery.toLowerCase()) ||
       row.employeeName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       row.date.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      row.time.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      row.timeIn.toLowerCase().includes(searchQuery.toLowerCase()) ||
       row.status.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -56,9 +56,9 @@ const Daily_Late_In_Report = ({ searchQuery, sendDataToParent }) => {
   }, [filteredData, sendDataToParent]);
 
   return (
-    <div className="table-container">
+    <div className="departments-table">
       <h3>Daily Late In Report</h3>
-      <table>
+      <table className="table">
         <thead>
           <tr>
             <th>Serial No</th>
@@ -73,10 +73,10 @@ const Daily_Late_In_Report = ({ searchQuery, sendDataToParent }) => {
           {filteredData.map((row, index) => (
             <tr key={index}>
               <td>{index + 1}</td>
-              <td>{row.employeeId}</td>
+              <td>{row.empId}</td>
               <td className="bold-fonts">{row.employeeName}</td>
               <td>{row.date}</td>
-              <td>{row.time}</td>
+              <td>{row.timeIn}</td>
               <td>
                 <span
                   className={`${row.status.toLowerCase()} status ${

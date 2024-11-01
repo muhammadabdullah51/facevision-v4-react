@@ -7,10 +7,10 @@ import Default_picture from '../../assets/profile.jpg';
 function ProfileSettings() {
     // State for profile data
     const [profileData, setProfileData] = useState({
-        profileName: 'Kevin Heart',
-        username: 'kevinunhuy',
+        profileName: 'Danish',
+        username: 'Bashir',
         status: 'On duty',
-        about: 'Discuss only on work hours, unless you wanna discuss about music 🎵',
+        about: 'Discuss only on work hours, unless you wanna discuss about tech 🎵',
         profilePicture: Default_picture, // Set imported default profile picture
     });
 

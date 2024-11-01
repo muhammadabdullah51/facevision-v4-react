@@ -37,8 +37,10 @@ const ScheduleCheckboxes = () => {
 
     return (
         <div className="schedule-container">
-            <h3>Attendance Calculation</h3>
+            <div className="header">
+            <h2>Attendance Calculation</h2>
             <p className="attendance-calculation">Set your entry and exit times for each day.</p>
+            </div>
             <div className="day-checkboxes">
                 {days.map(({ day, state, setState }) => (
                     <div key={day} className="day-checkbox">

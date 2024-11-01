@@ -19,9 +19,9 @@ const Navbar = ({ selectedMenu }) => {
         const fetchCompanyLogo = async () => {
             try {
                 const response = await axios.get('http://localhost:5000/api/company');
-                if (response.data.length > 0) {
+                if (response.data.completed && response.data.companies.length > 0) {
                     // Get the logo path from the first company
-                    const logoPath = response.data[0].logo.replace(/\\/g, '/'); // Replace backslashes with forward slashes
+                    const logoPath = response.data.companies[0].logo.replace(/\\/g, '/'); // Replace backslashes with forward slashes
                     setCompanyLogo(logoPath);
                 }
             } catch (error) {

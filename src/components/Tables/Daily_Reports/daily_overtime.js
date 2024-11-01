@@ -1,67 +1,67 @@
 import React, { useEffect } from "react";
-import '../Dashboard_Table/dashboard_table.css';
+import "../Dashboard_Table/dashboard_table.css";
 
+const Daily_Overtime_Report = ({ searchQuery, sendDataToParent }) => {
+  const data = [
+    { empId: "E001", employeeName: "Ayesha Khan", overtimeHours: "2" },
+    { empId: "E002", employeeName: "Fatima Ahmed", overtimeHours: "1.5" },
+    { empId: "E003", employeeName: "Omar Ali", overtimeHours: "3" },
+    { empId: "E004", employeeName: "Hassan Mahmood", overtimeHours: "2.5" },
+    { empId: "E005", employeeName: "Zainab Hussain", overtimeHours: "2" },
+    { empId: "E006", employeeName: "Yusuf Rashid", overtimeHours: "4" },
+    { empId: "E007", employeeName: "Amina Ibrahim", overtimeHours: "1" },
+    { empId: "E008", employeeName: "Ahmed Jamal", overtimeHours: "2.5" },
+    { empId: "E009", employeeName: "Mariam Hassan", overtimeHours: "1.75" },
+    { empId: "E010", employeeName: "Bilal Shaikh", overtimeHours: "3" },
+    { empId: "E011", employeeName: "Safiya Khan", overtimeHours: "2" },
+    { empId: "E012", employeeName: "Zaid Malik", overtimeHours: "2.5" },
+    { empId: "E013", employeeName: "Sara Yusuf", overtimeHours: "1.5" },
+    { empId: "E014", employeeName: "Ismail Ahmed", overtimeHours: "3.5" },
+    { empId: "E015", employeeName: "Sofia Karim", overtimeHours: "2" },
+    { empId: "E016", employeeName: "Mohammed Abbas", overtimeHours: "2.25" },
+    { empId: "E017", employeeName: "Layla Tariq", overtimeHours: "1.5" },
+    { empId: "E018", employeeName: "Ebrahim Shah", overtimeHours: "3" },
+    { empId: "E019", employeeName: "Nadia Khan", overtimeHours: "2.75" },
+    { empId: "E020", employeeName: "Tariq Ali", overtimeHours: "2" },
+  ];
 
-const Daily_Overtime_Report = ({searchQuery, sendDataToParent  }) => {
-    const data = [
-        { employeeId: "E001", employeeName: "Camila Rios", overtimeHours: "2" },
-        { employeeId: "E002", employeeName: "Diana Smith", overtimeHours: "1.5" },
-        { employeeId: "E003", employeeName: "Wade Warren", overtimeHours: "3" },
-        { employeeId: "E004", employeeName: "Guy Hawkins", overtimeHours: "2.5" },
-        { employeeId: "E005", employeeName: "Emily Davis", overtimeHours: "2" },
-        { employeeId: "E006", employeeName: "Michael Brown", overtimeHours: "4" },
-        { employeeId: "E007", employeeName: "Jessica White", overtimeHours: "1" },
-        { employeeId: "E008", employeeName: "David Johnson", overtimeHours: "2.5" },
-        { employeeId: "E009", employeeName: "Laura Martinez", overtimeHours: "1.75" },
-        { employeeId: "E010", employeeName: "James Lee", overtimeHours: "3" },
-        { employeeId: "E011", employeeName: "Anna Wilson", overtimeHours: "2" },
-        { employeeId: "E012", employeeName: "John Scott", overtimeHours: "2.5" },
-        { employeeId: "E013", employeeName: "Olivia Taylor", overtimeHours: "1.5" },
-        { employeeId: "E014", employeeName: "Chris Anderson", overtimeHours: "3.5" },
-        { employeeId: "E015", employeeName: "Sophia Harris", overtimeHours: "2" },
-        { employeeId: "E016", employeeName: "Matthew Clark", overtimeHours: "2.25" },
-        { employeeId: "E017", employeeName: "Charlotte Lewis", overtimeHours: "1.5" },
-        { employeeId: "E018", employeeName: "Ethan Walker", overtimeHours: "3" },
-        { employeeId: "E019", employeeName: "Ava Young", overtimeHours: "2.75" },
-        { employeeId: "E020", employeeName: "Daniel King", overtimeHours: "2" },
-    ];
+  const filteredData = data.filter(
+    (row) =>
+      row.empId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      row.employeeName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      row.overtimeHours.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-    const filteredData = data.filter(row =>
-        row.employeeId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        row.employeeName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        row.overtimeHours.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+  // Send filtered data to parent
+  useEffect(() => {
+    sendDataToParent(filteredData);
+  }, [filteredData, sendDataToParent]);
 
-    // Send filtered data to parent
-    useEffect(() => {
-        sendDataToParent(filteredData);
-    }, [filteredData, sendDataToParent]);
-
-    return (
-        <div className="table-container">
-            <h3>Daily Overtime Report</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Serial No</th>
-                        <th>Employee ID</th>
-                        <th>Employee Name</th>
-                        <th>Overtime Hours</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {filteredData.map((row, index) => (
-                        <tr key={index}>
-                            <td>{index + 1}</td>
-                            <td>{row.employeeId}</td>
-                            <td  className="bold-fonts">{row.employeeName}</td>
-                            <td className="bold-fonts">{row.overtimeHours}</td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    );
+  return (
+    <div className="departments-table">
+      <h3>Daily Overtime Report</h3>
+      <table className="table">
+        <thead>
+          <tr>
+            <th>Serial No</th>
+            <th>Employee ID</th>
+            <th>Employee Name</th>
+            <th>Overtime Hours</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredData.map((row, index) => (
+            <tr key={index}>
+              <td>{index + 1}</td>
+              <td>{row.empId}</td>
+              <td className="bold-fonts">{row.employeeName}</td>
+              <td className="bold-fonts">{row.overtimeHours}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 };
 
 export default Daily_Overtime_Report;

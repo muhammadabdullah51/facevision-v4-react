@@ -9,9 +9,9 @@
   --after-border-radius: #7341DA;
   --button-color:#EDF5FC;
   --success-button-color: #67b8b1;
-  --fail-button-color:#db7b55;
+  --fail-button-color:#ffffff;
   --button-hover-color: #7670eb;
-  --table-header-color: #dbdbdb;
+  --table-header-color: #e5e5e5;
   --shadow-color: rgba(0, 0, 0, 0.541);
   --text-color: #4e4e4e;
   --background-color: #f0f0f0; 
@@ -29,13 +29,75 @@
   --input-bg: #fff;
   --border-radius: 30px;
   --after-border-radius: 1px;
-  --bold-font: 900
+  --bold-font: 900;
+  --table-text-font: 0.7vw;
+  --icon-size: 1vw;
+  --sidebar-font: 0.8vw;
+  --sidebar-font-dropdown: 0.73vw;
+  --sidebar-bg: #ffffff;
   /* Old Color #508CED */
+  --accessible-items-font: 14px;
+  --delete-svg-color: #ff4c74;
+  --edit-svg-color: #7670eb;
+}
+@media only screen and (max-width:1300px){
+  :root {
+    --width-of-input: 200px;
+    --height-of-input: 30px;
+    --icon-size: 1.5vw;
+  }
+  .add-button{
+    font-size: x-small;
+  }
+}
+
+@media only screen and (min-width:700px) and (max-width:800px){
+  :root{
+    --table-text-font: 1.6vw;
+  }
+
+}
+@media only screen and (min-width:801px) and (max-width:900px){
+  :root{
+    --table-text-font: 1.4vw;
+  }
+}
+@media only screen and (min-width:901px) and (max-width:1000px){
+  :root{
+    --table-text-font: 1.2vw;
+  }
+}
+@media only screen and (min-width:1001px) and (max-width:1300px){
+  :root{
+    --table-text-font: 1vw;
+  }
+}
+@media only screen and (min-width:1301px) and (max-width:1500px){
+  :root{
+    --table-text-font: 0.9vw;
+  }
+}
+@media only screen and (min-width:700px) and (max-width:1000px){
+  :root{
+        --sidebar-font: 1.3vw
+  }
+}
+@media only screen and (min-width:1001px) and (max-width:1300px){
+  :root{
+        --sidebar-font: 1.3vw
+  }
+}
+
+.icons-box{
+  display: flex;
 }
 .bold-fonts{
   font-weight: var(--bold-font);
 }
-
+.captured-image-container img{
+  width: 100%;
+  height: auto;
+}
 .presentStatus{
   background-color: #d4edda;
   color: #17a136;
@@ -55,9 +117,6 @@
   border-radius: 3px;
 }
 
-table th, table td{
-  text-align: center;
-}
 table thead th{
   position: sticky;
   top: 0;

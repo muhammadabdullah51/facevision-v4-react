@@ -23,6 +23,10 @@ import Profile from '../Profile/profile';
 
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import AdvanceSalary from '../Payroll/Advance_Salary/advance_salary';
+import Appraisal from '../Payroll/Appraisal/appraisal';
+import Loan from '../Payroll/Loan/loan';
+import ExtraFunds from '../Enrollment/ExtraFund/ExtraFunds';
 
 const Home = () => {
 
@@ -73,6 +77,14 @@ const Home = () => {
                 return <EmployeeProfile />;
             case 'Payroll Log':
                 return <PayRollLog />;
+            case 'Advance Salary':
+                return <AdvanceSalary />;
+            case 'Appraisal':
+                return <Appraisal />;
+            case 'Loan':
+                return <Loan />;
+            case 'Extra Funds':
+                return <ExtraFunds />;
             case 'Visitors':
                 return <Visitors />;
             case 'Block Employee':

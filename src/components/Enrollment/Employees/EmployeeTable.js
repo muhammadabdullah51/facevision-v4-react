@@ -3,20 +3,34 @@ import { FaEdit, FaTrash, FaPlus, FaFileAlt } from "react-icons/fa";
 import ReactPaginate from "react-paginate";
 import "./employees.css";
 import EmployeeReportModal from "./EmployeeReportModal";
-import Default_picture from '../../../assets/profile.jpg';
+import Default_picture from "../../../assets/profile.jpg";
 import axios from "axios";
+import TableComponent from "../Department/departmentTable";
+import DesignationTable from "../Designation/designationTable";
+import LocationTable from "../Location/LocationTable";
+import ResignTable from "../Resign/ResignTable";
 
-const EmployeeTable = ({ data, setData, activeTab, setActiveTab }) => {
+import { useNavigate  } from 'react-router-dom';
+
+const EmployeeTable = ({
+  
+  data,
+  setData,
+  setActiveTab,
+  setSelectedEmployee,
+  setIsEditMode,
+}) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRow, setSelectedRow] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
-    employeeId: null,
+    empId: null,
     employeeName: "",
-    firstName: "",
-    lastName: "",
+    fName: "",
+    lName: "",
     department: "",
     enrollSite: "",
+    shift: "",
     salaryType: "",
     contactNo: "",
     basicSalary: "",
@@ -24,6 +38,7 @@ const EmployeeTable = ({ data, setData, activeTab, setActiveTab }) => {
     bankName: "",
     image: "",
   });
+  const navigate = useNavigate();
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(0);
@@ -44,7 +59,7 @@ const EmployeeTable = ({ data, setData, activeTab, setActiveTab }) => {
 
   const closeModal = () => {
     setIsModalOpen(false);
-    setSelectedRow(null); 
+    setSelectedRow(null);
   };
 
   const fetchEmployees = async () => {
@@ -66,58 +81,52 @@ const EmployeeTable = ({ data, setData, activeTab, setActiveTab }) => {
     fetchEmployees();
   }, []);
 
-
-
   // Handle Edit
-  const handleEdit = async (row) => {
-    setFormData({
-        employeeId: row.employeeId,
-        employeeName: row.employeeName,
-        department: row.department,
-        enrollSite: row.enrollSite,
-        salaryType: row.salaryType,
-        contactNo: row.contactNo,
-        basicSalary: row.basicSalary,
-        accountNo: row.accountNo,
-        bankName: row.bankName,
-        picture: row.picture,
-    });
+  // const handleEdit = async (row) => {
+    // try {
+    //   // Fetch the complete employee data from the backend
+    //   const response = await axios.get(
+    //     `http://localhost:5000/api/employee/${employee._id}`
+    //   );
+    //   const fullEmployeeData = response.data;
+    //   console.log(fullEmployeeData);
+    //   // Update the selectedEmployee in the parent component
+    //   setSelectedEmployee(fullEmployeeData);
 
-    // Update Employee API call
+    //   // Enable edit mode
+    //   setIsEditMode(true);
+
+    //   // Switch to AddEmployee component
+    //   setActiveTab("Add Employee");
+    // } catch (error) {
+    //   console.error("Error fetching employee data for editing:", error.message);
+    // }
+  // };
+
+  const handleEdit = (employee) => {
+    // Navigate to the AddEmployee component with the selected row data
+    // navigate('/add-employee', { state: { formData: employee } }); // Pass the employee data in state
+    setIsEditMode(true);
+    setActiveTab("Add Employee");
+  };
+
+
+  const handleDelete = async (id) => {
     try {
-        await axios.put(`http://localhost:5000/api/employees/${row.employeeId}`, formData);
-        setData((prevData) =>
-            prevData.map((employee) =>
-                employee.employeeId === row.employeeId ? { ...row, ...formData } : employee
-            )
-        );
+      axios.post(`http://localhost:5000/api/deleteEmployees`, { id });
+      console.log(`Department deleted ID: ${id}`);
+      const updatedData = await axios.get(
+        "http://localhost:5000/api/fetchEmployees"
+      );
+      setData(updatedData.data);
+      fetchEmployees();
     } catch (error) {
-        console.error("Error updating employee data:", error);
+      console.error("Error deleting department:", error);
     }
-};
-
-  // Handle Delete
-//   const handleDelete = async (row) => {
-//     try {
-//         await axios.delete(`http://localhost:5000/api/employees/${row.employeeId}`);
-//         setData(prevData => prevData.filter(item => item.employeeId !== row.employeeId));  
-//     } catch (error) {
-//         console.error("Error deleting employee:", error);
-//     }
-// };
-const handleDelete = async (id) => {
-  try {
-    axios.post(`http://localhost:5000/api/deleteEmployees`, { id });
-    console.log(`Department deleted ID: ${id}`);
-    const updatedData = await axios.get('http://localhost:5000/api/fetchEmployees');
-    setData(updatedData.data)
-    fetchEmployees();
-  } catch (error) {
-    console.error("Error deleting department:", error);
-  }
-};
+  };
 
   const handleAdd = () => {
+    setIsEditMode(false);
     setActiveTab("Add Employee"); // Update the activeTab state from parent
   };
 
@@ -132,15 +141,18 @@ const handleDelete = async (id) => {
     (currentPage + 1) * rowsPerPage
   );
 
+
+
   return (
-    <div className="employee-table">
+    <div className="department-table">
+      
       <EmployeeReportModal
         isOpen={isModalOpen}
         onClose={closeModal}
         rowData={selectedRow}
       />
       <div className="table-header">
-      <form className="form" onSubmit={(e) => e.preventDefault()}>
+        <form className="form" onSubmit={(e) => e.preventDefault()}>
           <button type="submit">
             <svg
               width="17"
@@ -161,7 +173,7 @@ const handleDelete = async (id) => {
           <input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search..."
+            placeholder="Search any query..."
             className="input"
             type="text"
           />
@@ -199,6 +211,7 @@ const handleDelete = async (id) => {
               <th>Employee Name</th>
               <th>Department</th>
               <th>Enroll Site</th>
+              <th>Shift</th>
               <th>Salary Type</th>
               <th>Contact No</th>
               <th>Basic Salary</th>
@@ -210,12 +223,15 @@ const handleDelete = async (id) => {
           </thead>
           <tbody>
             {currentPageData.map((row, index) => (
-              <tr key={row.employeeId}>
+              <tr key={row.empId}>
                 <td>{index + 1 + currentPage * rowsPerPage}</td>
-                <td>{row.employeeId}</td>
-                <td className="bold-fonts">{row.firstName} {row.lastName}</td>
+                <td>{row.empId}</td>
+                <td className="bold-fonts">
+                  {row.fName} {row.lName}
+                </td>
                 <td>{row.department}</td>
                 <td>{row.enrollSite}</td>
+                <td>{row.shift}</td>
                 <td>{row.salaryType}</td>
                 <td>{row.contactNo}</td>
                 <td>{row.basicSalary}</td>
@@ -223,13 +239,20 @@ const handleDelete = async (id) => {
                 <td>{row.bankName}</td>
                 <td className="empImage">
                   <img
-                    src={row.picture ? `http://localhost:5000/${row.picture.replace(/\\/g, "/")}` : Default_picture} 
+                    src={
+                      row.picture
+                        ? `http://localhost:5000/${row.picture.replace(
+                            /\\/g,
+                            "/"
+                          )}`
+                        : Default_picture
+                    }
                     alt={row.employeeName}
                     className="employee-image"
                   />
                 </td>
                 <td>
-                  <div>
+                  <div className="icons-box">
                     <button
                       onClick={() => handleEdit(row)}
                       style={{ background: "none", border: "none" }}

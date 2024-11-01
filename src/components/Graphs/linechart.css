@@ -54,3 +54,13 @@
 .dashboard-card .earnings-info .positive {
     color: green;
 }
+
+@media screen and (max-width:1660px) {
+    .geography-graph {
+        width: 80%;
+    }
+    .dashboard-card{
+        width: 100%;
+    }
+
+}

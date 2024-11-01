@@ -1,36 +1,51 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./addVisitors.css";
-import Department from '../Enrollment/Department/department';
-import { FaArrowLeft } from 'react-icons/fa';
+import Department from "../Enrollment/Department/department";
+import { FaArrowLeft } from "react-icons/fa";
 import axios from "axios";
 const AddVisitor = ({ setData, setActiveTab, data }) => {
   const [selectedPage, setSelectedPage] = useState(""); // State to control page view
-  const [departments, setDepartments] = useState([
-    "IT",
-    "HR",
-    "Finance",
-    "Marketing",
-    "R&D",
-    "Sales",
-    "Admin",
-  ]);
+  const [departments, setDepartments] = useState([]);
+
+  useEffect(() => {
+    const fetchOptions = async () => {
+      try {
+        const departmentResponse = await axios.get(
+          "http://localhost:5000/api/fetchDepartment"
+        );
+        // const shiftResponse = await axios.get("http://localhost:5000/api/fetchShift");
+        // const enrollSiteResponse = await axios.get("http://localhost:5000/api/fetchLocation");
+        // const overtimeResponse = await axios.get("http://localhost:5000/api/fetchLocation");
+
+        setDepartments(departmentResponse.data);
+        // setShifts(shiftResponse.data);
+        // setEnrollSites(enrollSiteResponse.data);
+        // setOvertime(overtimeResponse.data);
+      } catch (error) {
+        console.error("Error fetching options:", error);
+      }
+    };
+
+    fetchOptions();
+  }, []);
 
   const handleBackClick = () => {
-    setSelectedPage('Back'); 
-    setActiveTab('Visitors')
+    setSelectedPage("Back");
+    setActiveTab("Visitors");
   };
 
   const [newVisitor, setNewVisitor] = useState({
-    id: "",
-    firstName: "",
-    lastName: "",
-    crftNo: "",
+    visitorsId: "",
+    fName: "",
+    lName: "",
+    certificationNo: "",
     createTime: "",
     exitTime: "",
     email: "",
-    phoneNo: "",
-    visitingDepartment: "",
+    contactNo: "",
+    visitingDept: "",
     host: "",
+    cardNumber: "",
     visitingReason: "",
     carryingGoods: "",
     image: null, // Updated to handle file
@@ -42,7 +57,7 @@ const AddVisitor = ({ setData, setActiveTab, data }) => {
     if (value === "Add-Department") {
       setSelectedPage("Department");
     } else {
-      setNewVisitor({ ...newVisitor, visitingDepartment: value });
+      setNewVisitor({ ...newVisitor, visitingDept: value });
     }
   };
 
@@ -57,55 +72,54 @@ const AddVisitor = ({ setData, setActiveTab, data }) => {
     const newVisitorWithSerial = {
       ...newVisitor,
       serialNo: nextSerialNo,
-      phoneNo: newVisitor.phoneNo.toString(), // Convert phone number to string
+      contactNo: newVisitor.contactNo.toString(), // Convert phone number to string
     };
     setData((prevData) => [...prevData, newVisitorWithSerial]);
-    const addVisitors={
-      id: newVisitorWithSerial.serialNo,
-      firstName: newVisitorWithSerial.firstName,
-      lastName: newVisitorWithSerial.lastName,
-      crftNo: newVisitorWithSerial.crftNo,
+    const addVisitors = {
+      visitorsId: newVisitorWithSerial.serialNo,
+      fName: newVisitorWithSerial.fName,
+      lName: newVisitorWithSerial.lName,
+      certificationNo: newVisitorWithSerial.certificationNo,
       createTime: new Date().toISOString(),
       exitTime: new Date().toISOString(),
       email: newVisitorWithSerial.email,
-      phoneNo: newVisitorWithSerial.phoneNo,
-      visitingDepartment: newVisitorWithSerial.visitingDepartment,
+      contactNo: newVisitorWithSerial.contactNo,
+      visitingDept: newVisitorWithSerial.visitingDept,
       host: newVisitorWithSerial.host,
+      cardNumber: newVisitorWithSerial.cardNumber,
       visitingReason: newVisitorWithSerial.visitingReason,
       carryingGoods: newVisitorWithSerial.carryingGoods,
       image: newVisitorWithSerial.image, // Updated to handle file
-    }
+    };
     try {
-      axios.post(`http://localhost:5000/api/addVisitor`,addVisitors);
-      
+      axios.post(`http://localhost:5000/api/addVisitor`, addVisitors);
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
     setActiveTab("Visitors");
   };
 
-
   // const handleSubmit = async (e) => {
   //   e.preventDefault();
   //   const nextSerialNo = data.length + 1;
-    
+
   //   const formData = new FormData();
   //   formData.append('id', nextSerialNo);
-  //   formData.append('firstName', newVisitor.firstName);
-  //   formData.append('lastName', newVisitor.lastName);
-  //   formData.append('crftNo', newVisitor.crftNo);
+  //   formData.append('fName', newVisitor.fName);
+  //   formData.append('lName', newVisitor.lName);
+  //   formData.append('certificationNo', newVisitor.certificationNo);
   //   formData.append('createTime', new Date().toISOString());
   //   formData.append('exitTime', "");
   //   formData.append('email', newVisitor.email);
-  //   formData.append('phoneNo', newVisitor.phoneNo.toString());
-  //   formData.append('visitingDepartment', newVisitor.visitingDepartment);
+  //   formData.append('contactNo', newVisitor.contactNo.toString());
+  //   formData.append('visitingDept', newVisitor.visitingDept);
   //   formData.append('host', newVisitor.host);
   //   formData.append('visitingReason', newVisitor.visitingReason);
   //   formData.append('carryingGoods', newVisitor.carryingGoods);
   //   if (newVisitor.image) {
   //     formData.append('image', newVisitor.image); // Adding the image file to form-data
   //   }
-  
+
   //   try {
   //     await axios.post(`http://localhost:5000/api/addVisitor`, formData, {
   //       headers: {
@@ -117,8 +131,6 @@ const AddVisitor = ({ setData, setActiveTab, data }) => {
   //     console.error("Error while adding visitor:", error);
   //   }
   // };
-  
-
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -127,11 +139,11 @@ const AddVisitor = ({ setData, setActiveTab, data }) => {
 
   return (
     <div className="add-visitor-main">
-        <div>
+      <div>
         <button onClick={handleBackClick} className="back-button">
-        <FaArrowLeft /> Back
-      </button>
-        </div>
+          <FaArrowLeft /> Back
+        </button>
+      </div>
       {selectedPage === "Department" ? (
         <Department setSelectedPage={setSelectedPage} />
       ) : (
@@ -143,9 +155,9 @@ const AddVisitor = ({ setData, setActiveTab, data }) => {
                 <label>Visitor ID</label>
                 <input
                   type="text"
-                  name="id"
+                  name="visitorsId"
                   placeholder="Enter Visitor ID"
-                  value={newVisitor.id}
+                  value={newVisitor.visitorsId}
                   onChange={handleChange}
                   required
                 />
@@ -153,9 +165,9 @@ const AddVisitor = ({ setData, setActiveTab, data }) => {
                 <label>First Name</label>
                 <input
                   type="text"
-                  name="firstName"
+                  name="fName"
                   placeholder="Enter First Name"
-                  value={newVisitor.firstName}
+                  value={newVisitor.fName}
                   onChange={handleChange}
                   required
                 />
@@ -163,9 +175,9 @@ const AddVisitor = ({ setData, setActiveTab, data }) => {
                 <label>Last Name</label>
                 <input
                   type="text"
-                  name="lastName"
+                  name="lName"
                   placeholder="Enter Last Name"
-                  value={newVisitor.lastName}
+                  value={newVisitor.lName}
                   onChange={handleChange}
                   required
                 />
@@ -173,9 +185,9 @@ const AddVisitor = ({ setData, setActiveTab, data }) => {
                 <label>Certification Name (Crtf no)</label>
                 <input
                   type="text"
-                  name="crftNo"
+                  name="certificationNo"
                   placeholder="Enter Certification Number"
-                  value={newVisitor.crftNo}
+                  value={newVisitor.certificationNo}
                   onChange={handleChange}
                   required
                 />
@@ -194,9 +206,9 @@ const AddVisitor = ({ setData, setActiveTab, data }) => {
                 <label>Contact No</label>
                 <input
                   type="text"
-                  name="phoneNo"
+                  name="contactNo"
                   placeholder="Enter Contact Number"
-                  value={newVisitor.phoneNo}
+                  value={newVisitor.contactNo}
                   onChange={handleChange}
                   required
                 />
@@ -256,14 +268,16 @@ const AddVisitor = ({ setData, setActiveTab, data }) => {
 
                   <label>Visiting Department</label>
                   <select
-                    name="visitingDepartment"
-                    value={newVisitor.visitingDepartment}
+                    name="visitingDept"
+                    value={newVisitor.visitingDept}
                     onChange={handleDepartmentChange}
                   >
-                    <option value="" disabled>Select a Department</option>
+                    <option value="" disabled>
+                      Select a Department
+                    </option>
                     {departments.map((dept, index) => (
-                      <option key={index} value={dept}>
-                        {dept}
+                      <option key={index} value={dept.name}>
+                        {dept.name} 
                       </option>
                     ))}
                     <option value="Add-Department">+ Add New Department</option>
@@ -290,11 +304,11 @@ const AddVisitor = ({ setData, setActiveTab, data }) => {
                 </div>
               </div>
               <div className="visitor-info-lower">
-                <button className="add" type="submit">
+                <button className="submit-button" type="submit">
                   Add Visitor
                 </button>
                 <button
-                  className="cancel"
+                  className="cancel-button"
                   type="button"
                   onClick={() => setActiveTab("Visitors")}
                 >

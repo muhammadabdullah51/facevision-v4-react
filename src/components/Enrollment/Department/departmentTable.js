@@ -1,23 +1,41 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import ReactPaginate from "react-paginate";
-import "./department.css"; // Custom CSS for styling
+import "./department.css";
 import axios from "axios";
+import ConirmationModal from "../../Modal/conirmationModal";
+import addAnimation from "../../../assets/Lottie/addAnim.json";
+import updateAnimation from "../../../assets/Lottie/updateAnim.json";
+import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
+import successAnimation from "../../../assets/Lottie/successAnim.json";
 
 const TableComponent = ({ data, setData }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const rowsPerPage = 7;
+  const handlePageChange = ({ selected }) => {
+    setCurrentPage(selected);
+  };
+
+ 
+ 
   const [formData, setFormData] = useState({
     _id: "",
-    id: null,
-    departmentName: "",
+    dptId: null,
+    name: "",
     superior: "",
-    employeeQty: "",
+    empQty: "",
   });
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState("");
+  const [successModal, setSuccessModal] = useState(false);
+  const [loading, setLoading] = useState(false); // Loading state
 
   // Fetch departments data
-  const fetchDepartments = async () => {
+  const fetchDepartments = useCallback(async () => {
+    setLoading(true);
     try {
       const response = await fetch("http://localhost:5000/api/fetchDepartment");
       if (response.ok) {
@@ -28,33 +46,49 @@ const TableComponent = ({ data, setData }) => {
       }
     } catch (error) {
       console.error("Error fetching department data:", error);
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [setData]);
 
-  // Call fetchDepartments when component mounts
   useEffect(() => {
     fetchDepartments();
-  }, []);
+    let timer;
+    if (successModal) {
+      timer = setTimeout(() => {
+        setSuccessModal(false);
+      }, 2000);
+    }
+    return () => clearTimeout(timer);
+  }, [fetchDepartments, successModal]);
 
   const handleEdit = (row) => {
     setFormData({
       _id: row._id,
-      id: row.id,
-      departmentName: row.departmentName,
+      dptId: row.dptId,
+      name: row.name,
       superior: row.superior,
-      employeeQty: row.employeeQty,
+      empQty: row.empQty,
     });
     setShowAddForm(false);
     setShowEditForm(true);
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = (dptId) => {
+    setModalType("delete");
+    setShowModal(true);
+    setFormData({ ...formData, _id: dptId });
+  };
+
+  const confirmDelete = async () => {
     try {
-      axios.post(`http://localhost:5000/api/deleteDepartments`, { id });
-      console.log(`Department deleted ID: ${id}`);
-      const updatedData = await axios.get('http://localhost:5000/api/fetchDepartment');
-      setData(updatedData.data)
+      await axios.post(`http://localhost:5000/api/deleteDepartments`, {
+        dptId: formData._id,
+      });
+      console.log(`Department deleted ID: ${formData._id}`);
       fetchDepartments();
+      setShowModal(false);
+      setSuccessModal(true);
     } catch (error) {
       console.error("Error deleting department:", error);
     }
@@ -62,41 +96,54 @@ const TableComponent = ({ data, setData }) => {
 
   const handleAdd = () => {
     setFormData({
-      id: null,
-      departmentName: "",
+      dptId: null,
+      name: "",
       superior: "",
-      employeeQty: "",
+      empQty: "",
     });
     setShowAddForm(true);
     setShowEditForm(false);
     fetchDepartments();
   };
 
-  const addDepartment = async () => {
+  const addDepartment = () => {
+    setModalType("create");
+    setShowModal(true);
+  };
+
+  const confirmAdd = async () => {
+    if (!formData.name || !formData.dptId) {
+      alert("Please fill in all required fields.");
+      return;
+  }
     const newDepartment = {
-      departmentName: formData.departmentName,
+      dptId: formData.dptId,
+      name: formData.name,
       superior: formData.superior,
-      employeeQty: formData.employeeQty,
+      empQty: formData.empQty,
     };
 
     try {
-      axios.post(`http://localhost:5000/api/addDepartments`, newDepartment);
+      axios.post("http://localhost:5000/api/addDepartments", newDepartment);
       console.log(newDepartment);
       console.log("Department added successfully:");
-      setShowAddForm(false); 
-      const updatedData = await axios.get('http://localhost:5000/api/fetchDepartment');
-      setData(updatedData.data)
-      fetchDepartments(); 
+      setShowAddForm(false);
+      const updatedData = await axios.get("http://localhost:5000/api/fetchDepartment"
+      );
+      setData(updatedData.data);
+      setShowModal(false);
+      setSuccessModal(true);
+      fetchDepartments();
     } catch (error) {
       console.error("Error adding department:", error);
     }
 
     // Reset the form data
     setFormData({
-      id: null,
-      departmentName: "",
+      dptId: null,
+      name: "",
       superior: "",
-      employeeQty: "",
+      empQty: "",
     });
   };
 
@@ -105,30 +152,77 @@ const TableComponent = ({ data, setData }) => {
       String(val).toLowerCase().includes(searchQuery.toLowerCase())
     )
   );
+ 
+  const currentPageData = filteredData.slice(
+    currentPage * rowsPerPage,
+    (currentPage + 1) * rowsPerPage
+  );
 
-  const updateDepartment = async () => {
+  const updateDepartment = async (row) => {
+    console.log(row);
+    setModalType("update");
+    setFormData({
+      _id: row._id,
+      dptId: row.dptId,
+      name: row.name,
+      superior: row.superior,
+      empQty: row.empQty,
+    });
+    setShowModal(true);
+  };
+  const confirmUpdate = async () => {
     const updatedDepartment = {
       _id: formData._id,
-      id: formData.id,
-      departmentName: formData.departmentName,
+      dptId: formData.dptId,
+      name: formData.name,
       superior: formData.superior,
-      employeeQty: formData.employeeQty,
+      empQty: formData.empQty,
     };
 
     try {
-      await axios.put(
-        `http://localhost:5000/api/updateDepartments`,
+      await axios.post(
+        "http://localhost:5000/api/updateDepartments",
         updatedDepartment
       );
       console.log("Department updated successfully");
-      setShowEditForm(false); // Close edit form
-      fetchDepartments(); // Refresh the department list
+      fetchDepartments();
+      setShowEditForm(false);
+      // const updatedData = await axios.get('http://localhost:5000/api/fetchDepartment');
+      // setData(updatedData.data);
+      setShowModal(false);
+      setSuccessModal(true);
     } catch (error) {
       console.error("Error updating department:", error);
     }
   };
   return (
     <div className="department-table">
+      <ConirmationModal
+        isOpen={showModal}
+        message={`Are you sure you want to ${modalType} this department?`}
+        onConfirm={() => {
+          if (modalType === "create") confirmAdd();
+          else if (modalType === "update") confirmUpdate();
+          else confirmDelete();
+        }}
+        onCancel={() => setShowModal(false)}
+        animationData={
+          modalType === "create"
+            ? addAnimation
+            : modalType === "update"
+            ? updateAnimation
+            : deleteAnimation
+        }
+      />
+      <ConirmationModal
+        isOpen={successModal}
+        message={`Department ${modalType}d successfully!`}
+        onConfirm={() => setSuccessModal(false)}
+        onCancel={() => setSuccessModal(false)}
+        animationData={successAnimation}
+        successModal={successModal}
+      />
+
       <div className="table-header">
         <form className="form" onSubmit={(e) => e.preventDefault()}>
           <button type="submit">
@@ -187,11 +281,17 @@ const TableComponent = ({ data, setData }) => {
           <h3>Add New Department</h3>
           <input
             type="text"
-            placeholder="Department Name"
-            value={formData.departmentName}
+            placeholder="Department ID"
+            value={formData.dptId}
             onChange={(e) =>
-              setFormData({ ...formData, departmentName: e.target.value })
+              setFormData({ ...formData, dptId: e.target.value })
             }
+          />
+          <input
+            type="text"
+            placeholder="Department Name"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           />
           <input
             type="text"
@@ -204,9 +304,9 @@ const TableComponent = ({ data, setData }) => {
           <input
             type="number"
             placeholder="Employee Qty"
-            value={formData.employeeQty}
+            value={formData.empQty}
             onChange={(e) =>
-              setFormData({ ...formData, employeeQty: e.target.value })
+              setFormData({ ...formData, empQty: e.target.value })
             }
           />
           <button className="submit-button" onClick={addDepartment}>
@@ -226,11 +326,17 @@ const TableComponent = ({ data, setData }) => {
           <h3>Edit Department</h3>
           <input
             type="text"
-            placeholder="Department Name"
-            value={formData.departmentName}
+            placeholder="Department ID"
+            value={formData.dptId}
             onChange={(e) =>
-              setFormData({ ...formData, departmentName: e.target.value })
+              setFormData({ ...formData, dptId: e.target.value })
             }
+          />
+          <input
+            type="text"
+            placeholder="Department Name"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           />
           <input
             type="text"
@@ -243,12 +349,16 @@ const TableComponent = ({ data, setData }) => {
           <input
             type="number"
             placeholder="Employee Qty"
-            value={formData.employeeQty}
+            value={formData.empQty}
             onChange={(e) =>
-              setFormData({ ...formData, employeeQty: e.target.value })
+              setFormData({ ...formData, empQty: e.target.value })
             }
           />
-          <button className="submit-button" onClick={updateDepartment}>
+
+          <button
+            className="submit-button"
+            onClick={() => updateDepartment(formData)}
+          >
             Update Department
           </button>
           <button
@@ -265,6 +375,7 @@ const TableComponent = ({ data, setData }) => {
           <thead>
             <tr className="thead-row">
               <th>S.No</th>
+              <th>Department ID</th>
               <th>Department Name</th>
               <th>Superior</th>
               <th>Employee Qty</th>
@@ -272,12 +383,13 @@ const TableComponent = ({ data, setData }) => {
             </tr>
           </thead>
           <tbody>
-            {filteredData.map((row, index) => (
+            {currentPageData.map((row, index) => (
               <tr key={row._id}>
                 <td>{index + 1}</td>
-                <td>{row.departmentName}</td>
+                <td>{row.dptId}</td>
+                <td>{row.name}</td>
                 <td>{row.superior}</td>
-                <td>{row.employeeQty}</td>
+                <td>{row.empQty}</td>
                 <td>
                   <button
                     onClick={() => handleEdit(row)}
@@ -299,13 +411,14 @@ const TableComponent = ({ data, setData }) => {
       </div>
 
       <div className="pagination">
-        <ReactPaginate
+      <ReactPaginate
           previousLabel={"Previous"}
           nextLabel={"Next"}
-          pageCount={Math.ceil(filteredData.length / 10)}
-          onPageChange={({ selected }) => {
-            /* pagination logic */
-          }}
+          breakLabel={"..."}
+          pageCount={Math.ceil(filteredData.length / rowsPerPage)}
+          marginPagesDisplayed={2}
+          pageRangeDisplayed={5}
+          onPageChange={handlePageChange}
           containerClassName={"pagination"}
           activeClassName={"active"}
         />

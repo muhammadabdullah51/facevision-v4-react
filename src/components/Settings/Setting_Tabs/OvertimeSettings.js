@@ -1,25 +1,35 @@
 import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEdit, faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import "./leave.css";
 
 const OvertimeTable = () => {
   const [data, setData] = useState([
-    { id: 1, payCode: "PC001", ratePerHour: "$30", updateDate: "2024-09-01" },
-    { id: 2, payCode: "PC002", ratePerHour: "$35", updateDate: "2024-09-02" },
+    {
+      OTFormulaId: 1,
+      OTCode: "PC001",
+      ratePerHour: "$30",
+      updateDate: "2024-09-01",
+    },
+    {
+      OTFormulaId: 2,
+      OTCode: "PC002",
+      ratePerHour: "$35",
+      updateDate: "2024-09-02",
+    },
   ]);
   const [showForm, setShowForm] = useState(false);
   const [formMode, setFormMode] = useState("add"); // "add" or "edit"
   const [currentItemId, setCurrentItemId] = useState(null); // Store ID of item being edited
-  const [payCode, setPayCode] = useState("");
+  const [OTCode, setOTCode] = useState("");
   const [ratePerHour, setRatePerHour] = useState("");
   const [updateDate, setUpdateDate] = useState("");
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
 
   const handleEdit = (id) => {
-    const itemToEdit = data.find((item) => item.id === id);
+    const itemToEdit = data.find((item) => item.OTFormulaId === id);
     if (itemToEdit) {
-      setPayCode(itemToEdit.payCode);
+      setOTCode(itemToEdit.OTCode);
       setRatePerHour(itemToEdit.ratePerHour);
       setUpdateDate(itemToEdit.updateDate);
       setCurrentItemId(id);
@@ -33,30 +43,33 @@ const OvertimeTable = () => {
   };
 
   const handleDelete = (id) => {
-    setData(data.filter((item) => item.id !== id));
+    setData(data.filter((item) => item.OTFormulaId !== id));
   };
 
   const handleAddNew = () => {
     setFormMode("add");
-    setPayCode("");
+    setOTCode("");
     setRatePerHour("");
     setUpdateDate("");
     setShowForm(true);
   };
 
   const handleSaveItem = () => {
-    const currentDate = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
+    // const currentDate = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
     if (formMode === "add") {
       const newItem = {
-        id: data.length + 1,
-        payCode,
+        OTFormulaId: data.length + 1,
+        OTCode,
         ratePerHour,
-        updateDate: currentDate,
+        updateDate,
+        // updateDate: currentDate,
       };
       setData([...data, newItem]);
     } else if (formMode === "edit") {
       const updatedData = data.map((item) =>
-        item.id === currentItemId ? { ...item, payCode, ratePerHour, updateDate: currentDate } : item
+        item.OTFormulaId === currentItemId
+          ? { ...item, OTCode, ratePerHour, updateDate }
+          : item
       );
       setData(updatedData);
     }
@@ -64,7 +77,7 @@ const OvertimeTable = () => {
   };
 
   const resetForm = () => {
-    setPayCode("");
+    setOTCode("");
     setRatePerHour("");
     setUpdateDate("");
     setCurrentItemId(null);
@@ -77,12 +90,12 @@ const OvertimeTable = () => {
   };
 
   const filteredData = data.filter((item) =>
-    item.payCode.toLowerCase().includes(searchQuery.toLowerCase())
+    item.OTCode.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
-    <div className="table-container">
-      <div className="leave-header">
+    <div className="department-table">
+      <div className="table-header">
         <form className="form">
           <button>
             <svg
@@ -127,8 +140,8 @@ const OvertimeTable = () => {
             </svg>
           </button>
         </form>
-        <button className="addLeave" onClick={handleAddNew}>
-          <FontAwesomeIcon icon={faPlus} /> Add New Overtime Formula
+        <button className="add-button" onClick={handleAddNew}>
+         <FaPlus/> Add New Overtime Formula
         </button>
       </div>
 
@@ -138,8 +151,8 @@ const OvertimeTable = () => {
           <input
             type="text"
             placeholder="Pay Code"
-            value={payCode}
-            onChange={(e) => setPayCode(e.target.value)}
+            value={OTCode}
+            onChange={(e) => setOTCode(e.target.value)}
           />
           <input
             type="text"
@@ -162,8 +175,8 @@ const OvertimeTable = () => {
         </div>
       )}
 
-      <div className="leave-table-outer">
-        <table className="leave-table">
+      <div className="departments-table">
+        <table className="table">
           <thead>
             <tr>
               <th>Formula ID</th>
@@ -175,17 +188,23 @@ const OvertimeTable = () => {
           </thead>
           <tbody>
             {filteredData.map((item) => (
-              <tr key={item.id}>
-                <td>{item.id}</td>
-                <td>{item.payCode}</td>
+              <tr key={item.OTFormulaId}>
+                <td>{item.OTFormulaId}</td>
+                <td>{item.OTCode}</td>
                 <td>{item.ratePerHour}</td>
                 <td>{item.updateDate}</td>
                 <td>
-                  <button className="action-button edit" onClick={() => handleEdit(item.id)}>
-                    <FontAwesomeIcon icon={faEdit} />
+                  <button
+                    onClick={() => handleEdit(item.OTFormulaId)}
+                    style={{ background: "none", border: "none" }}
+                  >
+                    <FaEdit className="table-edit" />
                   </button>
-                  <button className="action-button delete" onClick={() => handleDelete(item.id)}>
-                    <FontAwesomeIcon icon={faTrash} />
+                  <button
+                    onClick={() => handleDelete(item.OTFormulaId)}
+                    style={{ background: "none", border: "none" }}
+                  >
+                    <FaTrash className="table-delete" />
                   </button>
                 </td>
               </tr>

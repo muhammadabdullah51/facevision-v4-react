@@ -1,5 +1,5 @@
 .schedule-container {
-    width: 35vw;
+    width: 50%;
     background-color: #ffffff;
     padding: 20px;
     border-radius: 10px;
@@ -55,11 +55,15 @@ button {
     border-radius: 4px;
 }
 
-.attendance-calculation{
-    color: #6c757d;
-    font-size: 0.7vw;
-    margin: 5px 0 20px;
+
+
+@media only screen and (min-width: 700px) and (max-width: 1000px) {
+    .day-checkbox label {
+        font-size: 1.5vw;
+    }
 }
-.schedule-container h3{
-    font-size: 0.9vw;
+@media only screen and (min-width: 1001px) and (max-width: 1300px) {
+    .day-checkbox label {
+        font-size: 1.2vw;
+    }
 }

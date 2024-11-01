@@ -92,3 +92,28 @@
     border: 1px solid var(--button-hover-color);
     color: white;
 }
+
+@media only screen and (max-width:1000px){
+    .profile-settings input[type="text"],
+    .profile-settings textarea {
+        padding: 1vw; 
+        font-size: 1.4vw; 
+    }
+  }
+@media only screen and (min-width:1001px) and (max-width:1300px){
+    .profile-settings input[type="text"],
+    .profile-settings textarea {
+        padding: 1vw; 
+        font-size: 1.2vw; 
+    }
+  }
+
+  @media only screen and (max-width:1610px){
+    .profile-picture-container{
+        align-items: center;
+    }
+    .profile-buttons{
+        width: 50%;
+        justify-content: center;
+    }
+}

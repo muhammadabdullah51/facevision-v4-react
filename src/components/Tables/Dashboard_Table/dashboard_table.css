@@ -1,6 +1,6 @@
 .table-container {
     width: 100%;
-    margin: 20px 0;
+    /* margin: 20px 0; */
 }
 
 .table-container h3 {
@@ -18,18 +18,16 @@
     font-size: 0.9em;
 }
 
-table {
+/* table {
     width: 100%;
     border-collapse: collapse;
-}
-table thead{
+} */
+/* table thead{
     position: sticky;
     top: 0;
-    /* background-color: var(--table-header-color); */
     z-index: 1; 
 }
 table thead th {
-    /* background-color: var(--table-header-color); */
     color: white;
     padding: 10px;
     border: 1px solid #ddd;
@@ -58,5 +56,5 @@ table tbody tr td span {
     border-radius: 12px;
     font-size: 0.9em;
     font-weight: bold;
-    display: inline-block;
-}
+    display: inline-block; 
+} */

@@ -3,11 +3,11 @@ import React, { useEffect } from "react";import '../Dashboard_Table/dashboard_ta
 
 const Daily_Absent_Report = ({searchQuery, sendDataToParent  }) => {
     const data = [
-        { employeeId: "E001", employeeName: "Camila Rios", date: "2024-09-01", reason: "Sick Leave" },
-        { employeeId: "E002", employeeName: "Diana Smith", date: "2024-09-01", reason: "Vacation" },
-        { employeeId: "E003", employeeName: "Wade Warren", date: "2024-09-01", reason: "Personal" },
-        { employeeId: "E004", employeeName: "Guy Hawkins", date: "2024-09-01", reason: "Unpaid Leave" },
-        { employeeId: "E005", employeeName: "Emily Davis", date: "2024-09-01", reason: "Medical" },
+        { employeeId: "E001", employeeName: "Ayesha Khan", date: "2024-09-01", reason: "Sick Leave" },
+        { employeeId: "E002", employeeName: "Fatima Ahmed", date: "2024-09-01", reason: "Vacation" },
+        { employeeId: "E003", employeeName: "Omar Ali", date: "2024-09-01", reason: "Personal" },
+        { employeeId: "E004", employeeName: "Hassan Mahmood", date: "2024-09-01", reason: "Unpaid Leave" },
+        { employeeId: "E005", employeeName: "Zainab Hussain", date: "2024-09-01", reason: "Medical" }
         // Add more rows as needed
     ];
 
@@ -24,9 +24,9 @@ const Daily_Absent_Report = ({searchQuery, sendDataToParent  }) => {
     }, [filteredData, sendDataToParent]);
 
     return (
-        <div className="table-container">
+        <div className="departments-table">
             <h3>Daily Absent Report</h3>
-            <table>
+            <table className="table"s>
                 <thead>
                     <tr>
                         <th>Serial No</th>

@@ -2,39 +2,70 @@ import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { useTable, usePagination } from "react-table";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import ReactPaginate from "react-paginate";
-import './leaves.css'
+import "./leaves.css";
 import axios from "axios";
+import ConirmationModal from "../Modal/conirmationModal";
+import addAnimation from "../../assets/Lottie/addAnim.json"
+import updateAnimation from "../../assets/Lottie/updateAnim.json";
+import deleteAnimation from "../../assets/Lottie/deleteAnim.json";
+import successAnimation from "../../assets/Lottie/successAnim.json";
 
 const LeaveTable = ({ data, setData }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
+  const [employees, setEmployees] = useState([]);
+  const leaveTypes = ["Sick Leave", "Vacation", "Personal Leave"];
+  const statuses = ["Pending", "Approved", "Rejected", "Cancelled"];
+
   const [formData, setFormData] = useState({
     _id: "",
     id: null,
-    employeeId: "",
-    employeeName: "",
-    leaveType: "",
-    startDate: "",
-    endDate: "",
+    employee: "",
+    leave_type: "",
+    start_date: "",
+    end_date: "",
     reason: "",
     status: "Pending",
-    createdAt: "",
+    created_at: "",
   });
 
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState("");
+  const [successModal, setSuccessModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const fetchLeave = useCallback(async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/fetchLeave");
+      setData(response.data);
+    } catch (error) {
+      console.error("Error fetching resignation data:", error);
+    }
+  }, [setData]);
+
+  const fetchEmployees = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:5000/api/fetchEmployees"
+      );
+      setEmployees(response.data);
+    } catch (error) {
+      console.error("Error fetching employees:", error);
+    }
+  };
 
   useEffect(() => {
     fetchLeave();
-}, []);
-
-const fetchLeave = async () => {
-    try {
-        const response = await axios.get('http://localhost:5000/api/fetchLeave');
-        setData(response.data);
-    } catch (error) {
-        console.error('Error fetching resignation data:', error);
+    fetchEmployees();
+    let timer;
+    if (successModal) {
+      timer = setTimeout(() => {
+        setSuccessModal(false);
+      }, 2000);
     }
-};
+    return () => clearTimeout(timer);
+  }, [fetchLeave, successModal]);
 
   const handleStatusToggle = useCallback(() => {
     setFormData((prevState) => ({
@@ -52,26 +83,24 @@ const fetchLeave = async () => {
       },
       {
         Header: "Employee ID",
-        accessor: "employeeId",
+        accessor: "id",
       },
       {
         Header: "Employee Name",
-        accessor: "employeeName",
-        Cell: ({ value }) => (
-          <span className='bold-fonts'>{value}</span>
-        ),
+        accessor: "employee",
+        Cell: ({ value }) => <span className="bold-fonts">{value}</span>,
       },
       {
         Header: "Leave Type",
-        accessor: "leaveType",
+        accessor: "leave_type",
       },
       {
         Header: "Start Date",
-        accessor: "startDate",
+        accessor: "start_date",
       },
       {
         Header: "End Date",
-        accessor: "endDate",
+        accessor: "end_date",
       },
       {
         Header: "Reason",
@@ -82,8 +111,9 @@ const fetchLeave = async () => {
         accessor: "status",
         Cell: ({ value }) => (
           <span
-            className={`status ${value === "Approved" ? "approvedStatus" : "pendingStatus"
-              }`}
+            className={`status ${
+              value === "Approved" ? "approvedStatus" : "pendingStatus"
+            }`}
           >
             {value}
           </span>
@@ -91,7 +121,7 @@ const fetchLeave = async () => {
       },
       {
         Header: "Created At",
-        accessor: "createdAt",
+        accessor: "created_at",
       },
       {
         Header: "Action",
@@ -148,94 +178,145 @@ const fetchLeave = async () => {
     setFormData({
       _id: row._id,
       id: row.id,
-      employeeId: row.employeeId,
-      employeeName: row.employeeName,
-      leaveType: row.leaveType,
-      startDate: row.startDate,
-      endDate: row.endDate,
+      employee: row.employee,
+      leave_type: row.leave_type,
+      start_date: row.start_date,
+      end_date: row.end_date,
       reason: row.reason,
       status: row.status,
-      createdAt: row.createdAt,
+      created_at: row.created_at,
     });
 
     setShowAddForm(false);
     setShowEditForm(true);
   };
 
-  const handleDelete = async (row) => {
-    const id= row._id
-    await axios.post('http://localhost:5000/api/deleteLeave', {id})
-    const updatedData = await axios.get('http://localhost:5000/api/fetchLeave');
+  const handleUpdate = async () => {
+    setModalType("update");
+    setFormData({ ...formData });
+    setShowModal(true);
+  };
+
+  const confirmUpdate = async () => {
+    const leavePayload = {
+      _id: formData._id,
+      id: formData.id,
+      employee: formData.employee,
+      leave_type: formData.leave_type,
+      start_date: formData.start_date,
+      end_date: formData.end_date,
+      reason: formData.reason,
+      status: formData.status,
+      created_at: formData.created_at,
+    };
+    console.log(leavePayload);
+    try {
+      await axios.post("http://localhost:5000/api/updateLeave", leavePayload);
+      const updatedData = await axios.get(
+        "http://localhost:5000/api/fetchLeave"
+      );
       setData(updatedData.data);
+      fetchLeave();
+      setShowEditForm(false);
+      setShowModal(false);
+      setSuccessModal(true);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    setModalType("delete");
+    setShowModal(true);
+    setFormData({ ...formData, _id: id });
+  };
+
+  const confirmDelete = async () => {
+    const id = formData._id;
+    await axios.post("http://localhost:5000/api/deleteLeave", { id });
+    const updatedData = await axios.get("http://localhost:5000/api/fetchLeave");
+    setData(updatedData.data);
+    fetchLeave();
+    setShowModal(false);
+    setSuccessModal(true);
   };
 
   const handleAdd = () => {
     setFormData({
       id: null,
-      employeeId: "",
-      employeeName: "",
-      leaveType: "",
-      startDate: "",
-      endDate: "",
+      employee: "",
+      leave_type: "",
+      start_date: "",
+      end_date: "",
       reason: "",
       status: "Pending",
-      createdAt: new Date().toISOString().split('T')[0],
+      created_at: new Date().toISOString().split("T")[0],
     });
 
     setShowAddForm(true);
     setShowEditForm(false);
   };
 
-  const addLeave = async() => {
-    const leavePayload = {
-      employeeId: formData.employeeId,
-      employeeName: formData.employeeName,
-      leaveType: formData.leaveType,
-      startDate: formData.startDate,
-      endDate: formData.endDate,
-      reason: formData.reason,
-      status: formData.status,
-      createdAt: formData.createdAt
-    }
-    try {
-      axios.post(`http://localhost:5000/api/addLeave`, leavePayload)
-      const updatedData = await axios.get('http://localhost:5000/api/fetchLeave');
-      setData(updatedData.data);
-      fetchLeave()
-    } catch (error) {
-      console.log(error)
-    }
-    setShowAddForm(false);
+  const addLeave = async () => {
+    setModalType("create");
+    setShowModal(true);
   };
-
-  const handleUpdate = async () => {
+  const confirmAdd = async () => {
     const leavePayload = {
-      _id: formData._id,
-      employeeId: formData.employeeId,
-      employeeName: formData.employeeName,
-      leaveType: formData.leaveType,
-      startDate: formData.startDate,
-      endDate: formData.endDate,
+      id: formData.id,
+      employee: formData.employee,
+      leave_type: formData.leave_type,
+      start_date: formData.start_date,
+      end_date: formData.end_date,
       reason: formData.reason,
       status: formData.status,
-      createdAt: formData.createdAt,
-    }
-    console.log(leavePayload)
+      created_at: formData.created_at,
+    };
     try {
-      await axios.post('http://localhost:5000/api/updateLeave', leavePayload)
-      const updatedData = await axios.get('http://localhost:5000/api/fetchLeave');
+      axios.post(`http://localhost:5000/api/addLeave`, leavePayload);
+      const updatedData = await axios.get(
+        "http://localhost:5000/api/fetchLeave"
+      );
       setData(updatedData.data);
-
+      fetchLeave();
+      setShowAddForm(false);
+      setShowModal(false);
+      setSuccessModal(true);
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-    setShowEditForm(false);
   };
 
   return (
-    <div className="leave-table">
+    <div className="department-table">
+      <ConirmationModal
+        isOpen={showModal}
+        message={`Are you sure you want to ${modalType} this Leave?`}
+        onConfirm={() => {
+         
+          if (modalType === "create") confirmAdd();
+          else if (modalType === "update") confirmUpdate();
+          else confirmDelete();
+        }}
+        onCancel={() => setShowModal(false)}
+        animationData={
+          modalType === "create"
+            ? addAnimation
+            : modalType === "update"
+            ? updateAnimation
+            : deleteAnimation
+        }
+      />
+      <ConirmationModal
+        isOpen={successModal}
+        message={`Leave ${modalType}d successfully!`}
+        onConfirm={() => setSuccessModal(false)}
+        onCancel={() => setSuccessModal(false)}
+        animationData={successAnimation}
+        successModal={successModal}
+      />
       <div className="table-header">
-      <form className="form" onSubmit={(e) => e.preventDefault()}>
+        <form className="form" onSubmit={(e) => e.preventDefault()}>
           <button type="submit">
             <svg
               width="17"
@@ -287,47 +368,53 @@ const fetchLeave = async () => {
       </div>
 
       {/* Add Leave Form */}
-      {showAddForm && (
-        <div className="add-device-form">
-          <h3>Add New Leave</h3>
-          <input
-            type="text"
-            placeholder="Employee ID"
-            value={formData.employeeId}
+      {(showAddForm || showEditForm) && (
+        <div className="add-department-form add-leave-form">
+          <h3>{showAddForm ? "Add New Leave" : "Edit Leave"}</h3>
+          <select
+            value={formData.employee}
+            onChange={(e) => {
+              const selectedEmployee = employees.find(
+                (emp) => `${emp.fName} ${emp.lName}` === e.target.value
+              );
+              setFormData({
+                ...formData,
+                employee: e.target.value,
+                id: selectedEmployee ? selectedEmployee.empId : null,
+              });
+            }}
+          >
+            <option value="">Select Employee</option>
+            {employees.map((emp) => (
+              <option key={emp.empId} value={`${emp.fName} ${emp.lName}`}>
+                {emp.fName} {emp.lName}
+              </option>
+            ))}
+          </select>
+          <select
+            value={formData.leave_type}
             onChange={(e) =>
-              setFormData({ ...formData, employeeId: e.target.value })
+              setFormData({ ...formData, leave_type: e.target.value })
             }
-          />
+          >
+            {leaveTypes.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
           <input
-            type="text"
-            placeholder="Employee Name"
-            value={formData.employeeName}
+            type="date"
+            value={formData.start_date}
             onChange={(e) =>
-              setFormData({ ...formData, employeeName: e.target.value })
-            }
-          />
-          <input
-            type="text"
-            placeholder="Leave Type"
-            value={formData.leaveType}
-            onChange={(e) =>
-              setFormData({ ...formData, leaveType: e.target.value })
+              setFormData({ ...formData, start_date: e.target.value })
             }
           />
           <input
             type="date"
-            placeholder="Start Date"
-            value={formData.startDate}
+            value={formData.end_date}
             onChange={(e) =>
-              setFormData({ ...formData, startDate: e.target.value })
-            }
-          />
-          <input
-            type="date"
-            placeholder="End Date"
-            value={formData.endDate}
-            onChange={(e) =>
-              setFormData({ ...formData, endDate: e.target.value })
+              setFormData({ ...formData, end_date: e.target.value })
             }
           />
           <input
@@ -338,129 +425,62 @@ const fetchLeave = async () => {
               setFormData({ ...formData, reason: e.target.value })
             }
           />
-          <div className="status-toggle">
-            <label>Status: </label>
-            <label className="switch">
-              <input
-                type="checkbox"
-                checked={formData.status === "Approved"}
-                onChange={handleStatusToggle}
-              />
-              <span className="slider round"></span>
-            </label>
-            {formData.status}
-          </div>
-          <button className="submit-button" onClick={addLeave}>
-            Add Leave
+          <select
+            value={formData.status}
+            onChange={(e) =>
+              setFormData({ ...formData, status: e.target.value })
+            }
+          >
+            {statuses.map((status) => (
+              <option key={status} value={status}>
+                {status}
+              </option>
+            ))}
+          </select>
+          <button
+            className="submit-button"
+            onClick={showAddForm ? addLeave : handleUpdate}
+          >
+            {showAddForm ? "Add Leave" : "Update Leave"}
           </button>
           <button
             className="cancel-button"
-            onClick={() => setShowAddForm(false)}
+            onClick={() => {
+              setShowAddForm(false);
+              setShowEditForm(false);
+            }}
           >
             Cancel
           </button>
         </div>
       )}
-
-      {/* Edit Leave Form */}
-      {showEditForm && (
-        <div className="add-device-form">
-          <h3>Edit Leave</h3>
-          <input
-            type="text"
-            placeholder="Employee ID"
-            value={formData.employeeId}
-            onChange={(e) =>
-              setFormData({ ...formData, employeeId: e.target.value })
-            }
-          />
-          <input
-            type="text"
-            placeholder="Employee Name"
-            value={formData.employeeName}
-            onChange={(e) =>
-              setFormData({ ...formData, employeeName: e.target.value })
-            }
-          />
-          <input
-            type="text"
-            placeholder="Leave Type"
-            value={formData.leaveType}
-            onChange={(e) =>
-              setFormData({ ...formData, leaveType: e.target.value })
-            }
-          />
-          <input
-            type="date"
-            placeholder="Start Date"
-            value={formData.startDate}
-            onChange={(e) =>
-              setFormData({ ...formData, startDate: e.target.value })
-            }
-          />
-          <input
-            type="date"
-            placeholder="End Date"
-            value={formData.endDate}
-            onChange={(e) =>
-              setFormData({ ...formData, endDate: e.target.value })
-            }
-          />
-          <input
-            type="text"
-            placeholder="Reason"
-            value={formData.reason}
-            onChange={(e) =>
-              setFormData({ ...formData, reason: e.target.value })
-            }
-          />
-          <div className="status-toggle">
-            <label>Status: </label>
-            <label className="switch">
-              <input
-                type="checkbox"
-                checked={formData.status === "Approved"}
-                onChange={handleStatusToggle}
-              />
-              <span className="slider round"></span>
-            </label>
-            {formData.status}
-          </div>
-          <button className="submit-button" onClick={handleUpdate}>
-            Update Leave
-          </button>
-          <button
-            className="cancel-button"
-            onClick={() => setShowAddForm(false)}
-          >
-            Cancel
-          </button>
-        </div>
-      )}
-
-      <table {...getTableProps()} className="table">
-        <thead>
-          {headerGroups.map((headerGroup) => (
-            <tr {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map((column) => (
-                <th {...column.getHeaderProps()}>{column.render("Header")}</th>
-              ))}
-            </tr>
-          ))}
-        </thead>
-        <tbody {...getTableBodyProps()}>
-          {page.map((row) => {
-            prepareRow(row);
-            return (
-              <tr {...row.getRowProps()}>
-                {row.cells.map((cell) => (
-                  <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
+      <div className="departments-table">
+        <table {...getTableProps()} className="table">
+          <thead>
+            {headerGroups.map((headerGroup) => (
+              <tr {...headerGroup.getHeaderGroupProps()}>
+                {headerGroup.headers.map((column) => (
+                  <th {...column.getHeaderProps()}>
+                    {column.render("Header")}
+                  </th>
                 ))}
               </tr>
-            );
-          })}
-        </tbody>
-      </table>
+            ))}
+          </thead>
+          <tbody {...getTableBodyProps()}>
+            {page.map((row) => {
+              prepareRow(row);
+              return (
+                <tr {...row.getRowProps()}>
+                  {row.cells.map((cell) => (
+                    <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
+                  ))}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
 
       <ReactPaginate
         previousLabel={"Previous"}

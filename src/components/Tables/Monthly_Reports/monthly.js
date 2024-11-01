@@ -3,11 +3,11 @@ import "../Dashboard_Table/dashboard_table.css";
 
 const Monthly_Report = ({ searchQuery, sendDataToParent }) => {
   const data = [
-    { employeeId: "E001", employeeName: "Camila Rios", date: "2024-04-01" },
-    { employeeId: "E002", employeeName: "Diana Smith", date: "2024-04-02" },
-    { employeeId: "E003", employeeName: "Wade Warren", date: "2024-04-03" },
-    { employeeId: "E004", employeeName: "Guy Hawkins", date: "2024-04-04" },
-    { employeeId: "E005", employeeName: "Emily Davis", date: "2024-04-05" },
+    { employeeId: "E001", employeeName: "Ayesha Khan", date: "2024-04-01" },
+    { employeeId: "E002", employeeName: "Fatima Ahmed", date: "2024-04-02" },
+    { employeeId: "E003", employeeName: "Omar Ali", date: "2024-04-03" },
+    { employeeId: "E004", employeeName: "Hassan Mahmood", date: "2024-04-04" },
+    { employeeId: "E005", employeeName: "Zainab Hussain", date: "2024-04-05" },
     // Add more rows as needed
   ];
 
@@ -24,9 +24,9 @@ const Monthly_Report = ({ searchQuery, sendDataToParent }) => {
   }, [filteredData, sendDataToParent]);
 
   return (
-    <div className="table-container">
+    <div className="departments-table">
       <h3>Monthly Report</h3>
-      <table>
+      <table className="table">
         <thead>
           <tr>
             <th>Serial No</th>

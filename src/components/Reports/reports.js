@@ -66,22 +66,22 @@ const Reports = () => {
       alert("No data available to download!");
       return;
     }
-  
+
     const headers = Object.keys(data[0]);
     const rows = data.map((row) => headers.map((header) => row[header]));
-  
+
     let csvContent =
       "data:text/csv;charset=utf-8," +
       headers.join(",") +
       "\n" +
       rows.map((e) => e.join(",")).join("\n");
-  
+
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
     link.setAttribute("download", `${activeTab}.csv`);
     document.body.appendChild(link);
-  
+
     link.click();
     document.body.removeChild(link);
   };
@@ -104,106 +104,200 @@ const Reports = () => {
     doc.save(`${activeTab}.pdf`);
   };
 
-//   const handleReportTypeChange = (event) => {
-//     setReportType(event.target.value);
-//     setReportSubtype("");
-//     setActiveTab(event.target.value);
-//   };
+  //   const handleReportTypeChange = (event) => {
+  //     setReportType(event.target.value);
+  //     setReportSubtype("");
+  //     setActiveTab(event.target.value);
+  //   };
 
-//   const handleReportSubtypeChange = (event) => {
-//     const selectedSubtype = event.target.value;
-//     setReportSubtype(selectedSubtype);
-//     setActiveTab(`${reportType}-${selectedSubtype}`);
-//   };
+  //   const handleReportSubtypeChange = (event) => {
+  //     const selectedSubtype = event.target.value;
+  //     setReportSubtype(selectedSubtype);
+  //     setActiveTab(`${reportType}-${selectedSubtype}`);
+  //   };
 
-const handleReportTypeChange = (event) => {
-  setReportType(event.target.value);
-  setReportSubtype(""); // Clear the subtype
-  setActiveTab(event.target.value);
-  setData([]); // Clear previous data
-};
+  const handleReportTypeChange = (event) => {
+    setReportType(event.target.value);
+    setReportSubtype(""); // Clear the subtype
+    setActiveTab(event.target.value);
+    setData([]); // Clear previous data
+  };
 
-const handleReportSubtypeChange = (event) => {
-  setReportSubtype(event.target.value);
-  setActiveTab(event.target.value);
-  setData([]); // Clear previous data
-};
+  const handleReportSubtypeChange = (event) => {
+    setReportSubtype(event.target.value);
+    setActiveTab(event.target.value);
+    setData([]); // Clear previous data
+  };
 
-const renderContent = () => {
+  const renderContent = () => {
     switch (reportType) {
       case "daily":
         switch (reportSubtype) {
           case "daily-full-time":
-            return <Daily_Fulltime_Report sendDataToParent={handleDataFromChild} searchQuery={searchQuery} />;
+            return (
+              <Daily_Fulltime_Report
+                sendDataToParent={handleDataFromChild}
+                searchQuery={searchQuery}
+              />
+            );
           case "daily-working-hours":
-            return <Daily_Working_Hours_Report sendDataToParent={handleDataFromChild} searchQuery={searchQuery} />;
+            return (
+              <Daily_Working_Hours_Report
+                sendDataToParent={handleDataFromChild}
+                searchQuery={searchQuery}
+              />
+            );
           case "daily-overtime":
-            return <Daily_Overtime_Report sendDataToParent={handleDataFromChild} searchQuery={searchQuery} />;
+            return (
+              <Daily_Overtime_Report
+                sendDataToParent={handleDataFromChild}
+                searchQuery={searchQuery}
+              />
+            );
           case "daily-late-in":
-            return <Daily_Late_In_Report sendDataToParent={handleDataFromChild} searchQuery={searchQuery} />;
+            return (
+              <Daily_Late_In_Report
+                sendDataToParent={handleDataFromChild}
+                searchQuery={searchQuery}
+              />
+            );
           case "daily-absent":
-            return <Daily_Absent_Report sendDataToParent={handleDataFromChild} searchQuery={searchQuery} />;
+            return (
+              <Daily_Absent_Report
+                sendDataToParent={handleDataFromChild}
+                searchQuery={searchQuery}
+              />
+            );
           default:
             return <div>Please select a valid daily report subtype</div>;
         }
-  
+
       case "weekly":
         switch (reportSubtype) {
           case "weekly-full-time":
-            return <Weekly_Fulltime_Report sendDataToParent={handleDataFromChild} searchQuery={searchQuery} />;
+            return (
+              <Weekly_Fulltime_Report
+                sendDataToParent={handleDataFromChild}
+                searchQuery={searchQuery}
+              />
+            );
           case "weekly-overtime":
-            return <Weekly_Overtime_Report sendDataToParent={handleDataFromChild} searchQuery={searchQuery} />;
+            return (
+              <Weekly_Overtime_Report
+                sendDataToParent={handleDataFromChild}
+                searchQuery={searchQuery}
+              />
+            );
           case "weekly-absent":
-            return <Weekly_Absent_Report sendDataToParent={handleDataFromChild} searchQuery={searchQuery} />;
+            return (
+              <Weekly_Absent_Report
+                sendDataToParent={handleDataFromChild}
+                searchQuery={searchQuery}
+              />
+            );
           default:
             return <div>Please select a valid weekly report subtype</div>;
         }
-  
+
       case "monthly":
         switch (reportSubtype) {
           case "monthly":
-            return <Monthly_Report sendDataToParent={handleDataFromChild} searchQuery={searchQuery} />;
+            return (
+              <Monthly_Report
+                sendDataToParent={handleDataFromChild}
+                searchQuery={searchQuery}
+              />
+            );
           case "monthly-entry-time":
-            return <Monthly_Entry_Time_Report sendDataToParent={handleDataFromChild} searchQuery={searchQuery} />;
+            return (
+              <Monthly_Entry_Time_Report
+                sendDataToParent={handleDataFromChild}
+                searchQuery={searchQuery}
+              />
+            );
           case "monthly-overtime":
-            return <Monthly_Overtime_Report sendDataToParent={handleDataFromChild} searchQuery={searchQuery} />;
+            return (
+              <Monthly_Overtime_Report
+                sendDataToParent={handleDataFromChild}
+                searchQuery={searchQuery}
+              />
+            );
           case "monthly-full-time":
-            return <Monthly_Fulltime_Report sendDataToParent={handleDataFromChild} searchQuery={searchQuery} />;
+            return (
+              <Monthly_Fulltime_Report
+                sendDataToParent={handleDataFromChild}
+                searchQuery={searchQuery}
+              />
+            );
           case "monthly-absent":
-            return <Monthly_Absent_Report sendDataToParent={handleDataFromChild} searchQuery={searchQuery} />;
+            return (
+              <Monthly_Absent_Report
+                sendDataToParent={handleDataFromChild}
+                searchQuery={searchQuery}
+              />
+            );
           default:
             return <div>Please select a valid monthly report subtype</div>;
         }
-  
+
       case "summary":
         switch (reportSubtype) {
           case "all-attendance-summary":
-            return <All_Attendance_Summary_Report sendDataToParent={handleDataFromChild} searchQuery={searchQuery} />;
+            return (
+              <All_Attendance_Summary_Report
+                sendDataToParent={handleDataFromChild}
+                searchQuery={searchQuery}
+              />
+            );
           case "leaves-summary":
-            return <Leave_Summary_Report sendDataToParent={handleDataFromChild} searchQuery={searchQuery} />;
+            return (
+              <Leave_Summary_Report
+                sendDataToParent={handleDataFromChild}
+                searchQuery={searchQuery}
+              />
+            );
           case "overtime-summary":
-            return <Overtime_Summary_Report sendDataToParent={handleDataFromChild} searchQuery={searchQuery} />;
+            return (
+              <Overtime_Summary_Report
+                sendDataToParent={handleDataFromChild}
+                searchQuery={searchQuery}
+              />
+            );
           case "absent-summary":
-            return <Absent_Summary_Report sendDataToParent={handleDataFromChild} searchQuery={searchQuery} />;
+            return (
+              <Absent_Summary_Report
+                sendDataToParent={handleDataFromChild}
+                searchQuery={searchQuery}
+              />
+            );
           default:
             return <div>Please select a valid summary report subtype</div>;
         }
-  
+
       case "advance-salary":
-        return <Advance_Salary_Reports sendDataToParent={handleDataFromChild} searchQuery={searchQuery} />;
-  
+        return (
+          <Advance_Salary_Reports
+            sendDataToParent={handleDataFromChild}
+            searchQuery={searchQuery}
+          />
+        );
+
       case "all-employee-salary":
-        return <All_Employees_Salary_Report sendDataToParent={handleDataFromChild} searchQuery={searchQuery} />;
-  
+        return (
+          <All_Employees_Salary_Report
+            sendDataToParent={handleDataFromChild}
+            searchQuery={searchQuery}
+          />
+        );
+
       default:
         return <div>Please select a report type</div>;
     }
   };
-  
 
   return (
-    <div>
-      <div className="report">
+    <div className="department-table">
+      <div className="report table-header">
         <div className="report-header">
           <h2>Select Report</h2>
           <div className="report-selector">
@@ -230,7 +324,10 @@ const renderContent = () => {
                 className="report-selector-icon"
                 icon={faSitemap}
               />
-              <select value={reportSubtype} onChange={handleReportSubtypeChange}>
+              <select
+                value={reportSubtype}
+                onChange={handleReportSubtypeChange}
+              >
                 <option value="">-- Select a Subtype --</option>
                 {reportOptions[reportType].map((subtype, index) => (
                   <option
@@ -254,58 +351,55 @@ const renderContent = () => {
               <li onClick={downloadPDF}>Export as PDF</li>
             </ul>
           </div>
-          {/* <button className="generate-report-button" onClick={downloadCSV}>
-          <FontAwesomeIcon icon={faCog} className="button-icon" />
-          Generate Report
-        </button> */}
+          
         </div>
         <div>
-        <form className="form" onSubmit={(e) => e.preventDefault()}>
-          <button type="submit">
-            <svg
-              width="17"
-              height="16"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              aria-labelledby="search"
+          <form className="form" onSubmit={(e) => e.preventDefault()}>
+            <button type="submit">
+              <svg
+                width="17"
+                height="16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-labelledby="search"
+              >
+                <path
+                  d="M7.667 12.667A5.333 5.333 0 107.667 2a5.333 5.333 0 000 10.667zM14.334 14l-2.9-2.9"
+                  stroke="currentColor"
+                  strokeWidth="1.333"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                ></path>
+              </svg>
+            </button>
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search..."
+              className="input"
+              type="text"
+            />
+            <button
+              className="reset"
+              type="button" // Change to type="button" to prevent form reset
+              onClick={() => setSearchQuery("")} // Clear the input on click
             >
-              <path
-                d="M7.667 12.667A5.333 5.333 0 107.667 2a5.333 5.333 0 000 10.667zM14.334 14l-2.9-2.9"
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
                 stroke="currentColor"
-                strokeWidth="1.333"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              ></path>
-            </svg>
-          </button>
-          <input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search..."
-            className="input"
-            type="text"
-          />
-          <button
-            className="reset"
-            type="button" // Change to type="button" to prevent form reset
-            onClick={() => setSearchQuery("")} // Clear the input on click
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </form>
+                strokeWidth="2"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </form>
         </div>
       </div>
       <div className="report-content">{renderContent()}</div>

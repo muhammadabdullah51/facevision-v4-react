@@ -7,7 +7,7 @@ import {
     faCalendarAlt, faCogs, faMoneyCheckAlt, faChartBar,
     faUsers, faBan, faCog, faUser, faBuilding, faTag,
     faMapMarkerAlt, faIdBadge, faSignOutAlt, faChevronDown,
-    faChevronUp
+    faChevronUp, faHandHoldingUsd , faClipboardCheck ,faAward, faFileInvoiceDollar ,faTabletAlt, faDollarSign
 } from '@fortawesome/free-solid-svg-icons';
 
 const menuItems = [
@@ -19,14 +19,18 @@ const menuItems = [
         { label: 'Employee', icon: faIdBadge },
         { label: 'Resign', icon: faSignOutAlt }
     ]},
-    { label: 'Devices', icon: faMobileAlt },
+    { label: 'Devices', icon: faTabletAlt },
     { label: 'Attendance', icon: faCalendarCheck },
     { label: 'Leaves', icon: faCalendarAlt },
     { label: 'Shift Management', icon: faCogs },
     { label: 'Payroll', icon: faMoneyCheckAlt, submenu: [
         { label: 'Employee Profile', icon: faUser },
         { label: 'Payroll Log', icon: faCalendarAlt },
-        { label: 'Bonuses', icon: faMoneyCheckAlt }
+        { label: 'Advance Salary', icon: faHandHoldingUsd  },
+        { label: 'Appraisal', icon: faClipboardCheck },
+        { label: 'Loan', icon: faFileInvoiceDollar  },
+        { label: 'Extra Funds', icon: faDollarSign  },
+        { label: 'Bonuses', icon: faAward }
     ]},
     { label: 'Reports', icon: faChartBar },
     { label: 'Visitors', icon: faUsers },

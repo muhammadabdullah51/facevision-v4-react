@@ -56,6 +56,8 @@
     cursor: pointer;
     font-weight: 600;
     transition: background-color 0.3s, color 0.3s;
+    padding: 10px;
+    cursor: pointer;
 }
 
 .add-button:hover {
@@ -118,12 +120,26 @@
 
 .table-edit {
     color: var(--success-button-color);
-    font-size: 1vw;
+    font-size: var(--icon-size);
 }
 
+svg.table-edit{
+    color: var(--edit-svg-color);
+    transition: .3s ease;
+}
+svg.table-edit:hover{
+    color: #7342DA;
+}
 .table-delete {
     color: var(--fail-button-color);
-    font-size: 1vw;
+    font-size: var(--icon-size);
+}
+svg.table-delete{
+    color: var(--delete-svg-color);
+    transition: .3s ease;
+}
+svg.table-delete:hover{
+    color: #bf3f5c;
 }
 
 .form button {
@@ -188,38 +204,49 @@ input:not(:placeholder-shown)~.reset {
     margin-top: 3px;
 }
 
-.table {
+/* .table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
     font-size: 14px;
-    /* font-family: 'Arial', sans-serif; */
     background-color: white;
-}
+} */
 
 .table td {
     padding: 16px;
-    font-weight: 500;
     border-bottom: 1px solid #e5e7eb;
     text-align: center;
-    font-size: 0.7vw;
+    font-size: var(--table-text-font);
+    border: 1px solid #ddd;
 
 }
 
 .table th {
     color: var(--text-color);
-    font-weight: 600;
-    background-color: var(--table-header-color);
-    text-align: center;
-    font-size: 0.7vw;
-    /* border: 1px solid rgb(189, 189, 189); */
+    font-size: var(--table-text-font);
     height: 3vh;
+    border: 1px solid #ddd;
+    padding: 8px;
 }
 
 .departments-table {
     padding: 1%;
     background-color: white;
-    margin-top: 2vh;
     border-radius: 15px;
     box-shadow: var(--box-shadow);
+    overflow-x: auto;
+}
+@media screen and (max-width:1570px) {
+    button.table-delete, button.table-edit, button.report-selector-icon{
+        display: block !important;
+    }
+}
+@media screen and (max-width:1300px) {
+    /* .table th, .table td{
+        font-size: var(--resp-table-text-font);
+    } */
+    .table-delete, .table-edit, .report-selector-icon{
+        font-size: var(--icon-size)
+    }
+
 }

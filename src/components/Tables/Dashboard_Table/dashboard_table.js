@@ -12,7 +12,7 @@ const Table = () => {
     return (
         <div className="table-container">
             <h3>Latest Conversions <span className="live-data">Live data</span></h3>
-            <table>
+            <table className="table">
                 <thead>
                     <tr>
                         <th>Advertiser</th>

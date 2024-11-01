@@ -14,7 +14,7 @@
     margin-right: 10px;
   }
   
-  .add-button, .submit-button {
+  .submit-button {
     padding: 10px;
     cursor: pointer;
   }
@@ -35,11 +35,7 @@
     border-collapse: collapse;
   }
   
-  th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-  }
+ 
   
   thead {
     background-color: #f4f4f4;

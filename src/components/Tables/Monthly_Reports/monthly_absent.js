@@ -3,11 +3,11 @@ import '../Dashboard_Table/dashboard_table.css';
 
 const Monthly_Absent_Report = ({searchQuery, sendDataToParent  }) => {
     const data = [
-        { employeeId: "E001", employeeName: "Camila Rios", absentDate: "2024-09-01" },
-        { employeeId: "E002", employeeName: "Diana Smith", absentDate: "2024-09-02" },
-        { employeeId: "E003", employeeName: "Wade Warren", absentDate: "2024-09-03" },
-        { employeeId: "E004", employeeName: "Guy Hawkins", absentDate: "2024-09-04" },
-        { employeeId: "E005", employeeName: "Emily Davis", absentDate: "2024-09-05" },
+        { employeeId: "E001", employeeName: "Ayesha Khan", absentDate: "2024-09-01" },
+        { employeeId: "E002", employeeName: "Fatima Ahmed", absentDate: "2024-09-02" },
+        { employeeId: "E003", employeeName: "Omar Ali", absentDate: "2024-09-03" },
+        { employeeId: "E004", employeeName: "Hassan Mahmood", absentDate: "2024-09-04" },
+        { employeeId: "E005", employeeName: "Zainab Hussain", absentDate: "2024-09-05" },
         // Add more rows as needed
     ];
 
@@ -23,9 +23,9 @@ const Monthly_Absent_Report = ({searchQuery, sendDataToParent  }) => {
     }, [filteredData, sendDataToParent]);
 
     return (
-        <div className="table-container">
+        <div className="departments-table">
             <h3>Monthly Absent Report</h3>
-            <table>
+            <table className="table"s>
                 <thead>
                     <tr>
                         <th>Serial No</th>

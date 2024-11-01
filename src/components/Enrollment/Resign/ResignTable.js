@@ -1,40 +1,69 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { useTable, usePagination, useRowSelect } from "react-table";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import ReactPaginate from "react-paginate";
 import axios from "axios";
+import ConirmationModal from "../../Modal/conirmationModal";
+import addAnimation from "../../../assets/Lottie/addAnim.json";
+import updateAnimation from "../../../assets/Lottie/updateAnim.json";
+import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
+import successAnimation from "../../../assets/Lottie/successAnim.json";
 
 const ResignTable = ({ data, setData }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
+  const [employees, setEmployees] = useState([]); // State for employee data
   const [formData, setFormData] = useState({
     _id: "",
-    id: null,
-    employeeName: "",
+    resignId: null,
+    employee: "",
     date: "",
     reason: "",
   });
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState("");
+  const [successModal, setSuccessModal] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const fetchResign = async () => {
+  const fetchResign = useCallback(async () => {
+    setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/fetchResign');
+      const response = await fetch("http://localhost:5000/api/fetchResign");
       if (response.ok) {
         const resign = await response.json();
         setData(resign);
       } else {
-        throw new Error('Failed to fetch resigns');
+        throw new Error("Failed to fetch resigns");
       }
     } catch (error) {
-      console.error('Error fetching resigns data:', error);
+      console.error("Error fetching resigns data:", error);
+    }
+  }, [setData]);
+  // Fetch employee data
+  const fetchEmployees = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:5000/api/fetchEmployees"
+      ); // Update this URL accordingly
+      setEmployees(response.data);
+    } catch (error) {
+      console.error("Error fetching employees:", error);
     }
   };
 
   // Call fetchDepartments when component mounts
   useEffect(() => {
     fetchResign();
-  }, []);
-
+    fetchEmployees();
+    let timer;
+    if (successModal) {
+      timer = setTimeout(() => {
+        setSuccessModal(false);
+      }, 2000);
+    }
+    return () => clearTimeout(timer);
+  }, [fetchResign, successModal]);
 
   const columns = useMemo(
     () => [
@@ -45,10 +74,8 @@ const ResignTable = ({ data, setData }) => {
       },
       {
         Header: "Employee Name",
-        accessor: "employeeName",
-        Cell: ({ value }) => (
-          <span className='bold-fonts'>{value}</span>
-        ),
+        accessor: "employee",
+        Cell: ({ value }) => <span className="bold-fonts">{value}</span>,
       },
       {
         Header: "Date",
@@ -57,9 +84,7 @@ const ResignTable = ({ data, setData }) => {
       {
         Header: "Reason",
         accessor: "reason",
-        Cell: ({ value }) => (
-          <span className='bold-fonts'>{value}</span>
-        ),
+        Cell: ({ value }) => <span className="bold-fonts">{value}</span>,
       },
       {
         Header: "Action",
@@ -116,8 +141,8 @@ const ResignTable = ({ data, setData }) => {
   const handleEdit = (row) => {
     setFormData({
       _id: row._id,
-      id: row.id,
-      employeeName: row.employeeName,
+      resignId: row.resignId,
+      employee: row.employee,
       date: row.date,
       reason: row.reason,
     });
@@ -126,20 +151,27 @@ const ResignTable = ({ data, setData }) => {
     fetchResign();
   };
 
-  const handleDelete = async (row) => {
-    const id = row._id;
-    axios.post('http://localhost:5000/api/deleteResign', {id})
+  const handleDelete = (resignId) => {
+    setModalType("delete");
+    setShowModal(true);
+    setFormData({ ...formData, _id: resignId });
+  };
+  const confirmDelete = async () => {
+    const resignId = formData._id;
+    await axios.post("http://localhost:5000/api/deleteResign", { resignId });
     const updatedData = await axios.get(
       "http://localhost:5000/api/fetchResign"
     );
     setData(updatedData.data);
     fetchResign();
+    setShowModal(false);
+    setSuccessModal(true);
   };
 
   const handleAdd = () => {
     setFormData({
-      id: null,
-      employeeName: "",
+      resignId: null,
+      employee: "",
       date: "",
       reason: "",
     });
@@ -148,66 +180,108 @@ const ResignTable = ({ data, setData }) => {
     fetchResign();
   };
 
-  const handleUpdate = async() => {
+  const handleUpdate = async (row) => {
+    setModalType("update");
+    setFormData({
+      _id: row._id,
+      resignId: row.resignId,
+      employee: row.employee,
+      date: row.date,
+      reason: row.reason,
+    });
+    setShowModal(true);
+  };
+
+  const confirmUpdate = async () => {
     setShowAddForm(false);
     setShowEditForm(true);
     const updateResign = {
       _id: formData._id,
-      id: formData.id,
-      employeeName: formData.employeeName,
+      resignId: formData.id,
+      employee: formData.employee,
       date: formData.date,
       reason: formData.reason,
-    }
+    };
     try {
-      axios.post('http://localhost:5000/api/updateResign', updateResign)
-      const updatedData = await axios.get(
-        "http://localhost:5000/api/fetchResign"
-      );
-      setData(updatedData.data);
-      fetchResign()
+      axios.post("http://localhost:5000/api/updateResign", updateResign);
+      // const updatedData = await axios.get(
+      //   "http://localhost:5000/api/fetchResign"
+      // );
+      // setData(updatedData.data);
+      fetchResign();
       setShowAddForm(false); // Hide Add Form
       setShowEditForm(false);
-      fetchResign();
+      setShowModal(false); // Close the confirmation modal
+      setSuccessModal(true); // Show the success modal
     } catch (error) {
       console.log(error);
     }
-
   };
 
-  const addResign = async () => {
+  const addResign = () => {
+    setModalType("create");
+    setShowModal(true);
+  };
+  const confirmAdd = async () => {
     setShowAddForm(false);
     setShowEditForm(true);
     console.log(formData);
     setFormData({
-      id: null,
-      employeeName: "",
+      resignId: null,
+      employee: "",
       date: "",
       reason: "",
     });
     const resign = {
-      employeeName: formData.employeeName,
+      employee: formData.employee,
       date: formData.date,
       reason: formData.reason,
-    }
+    };
     try {
-      axios.post(`http://localhost:5000/api/addResign`, resign)
+      axios.post(`http://localhost:5000/api/addResign`, resign);
       const updatedData = await axios.get(
         "http://localhost:5000/api/fetchResign"
       );
       setData(updatedData.data);
-      fetchResign()
-      setShowAddForm(false)
-      setShowEditForm(false)
-
+      setShowAddForm(false);
+      setShowEditForm(false);
+      setShowModal(false);
+      setSuccessModal(true);
+      fetchResign();
     } catch (error) {
       console.log(error);
     }
   };
 
   return (
-    <div className="employee-table">
+    <div className="department-table">
+      <ConirmationModal
+        isOpen={showModal}
+        message={`Are you sure you want to ${modalType} this Resign?`}
+        onConfirm={() => {
+          if (modalType === "create") confirmAdd();
+          else if (modalType === "update") confirmUpdate();
+          else confirmDelete();
+        }}
+        onCancel={() => setShowModal(false)}
+        animationData={
+          modalType === "create"
+            ? addAnimation
+            : modalType === "update"
+            ? updateAnimation
+            : deleteAnimation
+        }
+      />
+      <ConirmationModal
+        isOpen={successModal}
+        message={`Resign ${modalType}d successfully!`}
+        onConfirm={() => setSuccessModal(false)}
+        onCancel={() => setSuccessModal(false)}
+        animationData={successAnimation}
+        successModal={successModal}
+      />
       <div className="table-header">
-      <form className="form" onSubmit={(e) => e.preventDefault()}>
+        <form className="form" onSubmit={(e) => e.preventDefault()}>
           <button type="submit">
             <svg
               width="17"
@@ -258,23 +332,34 @@ const ResignTable = ({ data, setData }) => {
         </button>
       </div>
       {showAddForm && !showEditForm && (
-        <div className="add-department-form">
+        <div className="add-department-form add-leave-form">
           <h3>Add Employee</h3>
-          <input
+          {/* <input
             type="text"
             placeholder="Employee Name"
-            value={formData.employeeName}
+            value={formData.employee}
             onChange={(e) =>
-              setFormData({ ...formData, employeeName: e.target.value })
+              setFormData({ ...formData, employee: e.target.value })
             }
-          />
+          /> */}
+          <select
+            value={formData.employee}
+            onChange={(e) =>
+              setFormData({ ...formData, employee: e.target.value })
+            }
+          >
+            <option value="">Select Employee</option>
+            {employees.map((emp) => (
+              <option key={emp.empId} value={`${emp.fName} ${emp.lName}`}>
+                {emp.fName} {emp.lName}
+              </option>
+            ))}
+          </select>
           <input
             type="date"
             placeholder="Date"
             value={formData.date}
-            onChange={(e) =>
-              setFormData({ ...formData, date: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
           />
           <input
             type="text"
@@ -296,23 +381,26 @@ const ResignTable = ({ data, setData }) => {
         </div>
       )}
       {showEditForm && (
-        <div className="add-department-form">
+        <div className="add-department-form add-leave-form">
           <h3>Edit Employee</h3>
-          <input
-            type="text"
-            placeholder="Employee Name"
-            value={formData.employeeName}
+          <select
+            value={formData.employee}
             onChange={(e) =>
-              setFormData({ ...formData, employeeName: e.target.value })
+              setFormData({ ...formData, employee: e.target.value })
             }
-          />
+          >
+            <option value="">Select Employee</option>
+            {employees.map((emp) => (
+              <option key={emp.empId} value={`${emp.fName} ${emp.lName}`}>
+                {emp.fName} {emp.lName}
+              </option>
+            ))}
+          </select>
           <input
             type="date"
             placeholder="Date"
             value={formData.date}
-            onChange={(e) =>
-              setFormData({ ...formData, date: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
           />
           <input
             type="text"
@@ -322,7 +410,10 @@ const ResignTable = ({ data, setData }) => {
               setFormData({ ...formData, reason: e.target.value })
             }
           />
-          <button className="submit-button" onClick={handleUpdate}>
+          <button
+            className="submit-button"
+            onClick={() => handleUpdate(formData)}
+          >
             Update Employee
           </button>
           <button
@@ -333,7 +424,7 @@ const ResignTable = ({ data, setData }) => {
           </button>
         </div>
       )}
-      <div className="employees-table">
+      <div className="departments-table">
         <table {...getTableProps()} className="table">
           <thead>
             {headerGroups.map((headerGroup) => (
