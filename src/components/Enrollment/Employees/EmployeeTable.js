@@ -9,8 +9,8 @@ import TableComponent from "../Department/departmentTable";
 import DesignationTable from "../Designation/designationTable";
 import LocationTable from "../Location/LocationTable";
 import ResignTable from "../Resign/ResignTable";
+import AddEmployee from "./AddEmployee";
 
-import { useNavigate  } from 'react-router-dom';
 
 const EmployeeTable = ({
   
@@ -38,7 +38,7 @@ const EmployeeTable = ({
     bankName: "",
     image: "",
   });
-  const navigate = useNavigate();
+
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(0);
@@ -56,6 +56,14 @@ const EmployeeTable = ({
     setSelectedRow(row);
     setIsModalOpen(true);
   };
+  const handleEdit = (row) => {
+    setSelectedRow({...row})
+    // setFormData({...row});
+    // console.log(row)
+    // console.log(formData)
+    console.log(selectedRow)
+    setIsEditMode(true);
+  }
 
   const closeModal = () => {
     setIsModalOpen(false);
@@ -103,12 +111,13 @@ const EmployeeTable = ({
     // }
   // };
 
-  const handleEdit = (employee) => {
-    // Navigate to the AddEmployee component with the selected row data
-    // navigate('/add-employee', { state: { formData: employee } }); // Pass the employee data in state
-    setIsEditMode(true);
-    setActiveTab("Add Employee");
-  };
+  // const handleEdit = (employee) => {
+
+  //   // Navigate to the AddEmployee component with the selected row data
+  //   // navigate('/add-employee', { state: { formData: employee } }); // Pass the employee data in state
+  //   // setIsEditMode(true);
+  //   // setActiveTab("Add Employee");
+  // };
 
 
   const handleDelete = async (id) => {
@@ -145,7 +154,8 @@ const EmployeeTable = ({
 
   return (
     <div className="department-table">
-      
+      <AddEmployee
+      />
       <EmployeeReportModal
         isOpen={isModalOpen}
         onClose={closeModal}

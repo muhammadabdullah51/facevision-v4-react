@@ -25,7 +25,7 @@ const EmployeeReportModal = ({ isOpen, onClose, rowData }) => {
             />
           </div>
           <div className="emp-name">
-            <h2 className="employee-name">{rowData.firstName} {rowData.lastName}</h2>
+            <h2 className="employee-name">{rowData.fName} {rowData.lName}</h2>
             <p className="employee-department">Department: {rowData.department}</p>
           </div>
         </div>
