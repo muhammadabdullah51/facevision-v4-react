@@ -7,6 +7,7 @@ import Logo from '../../assets/faceVisionLogo.png';
 import Google from '../../assets/google.png';
 import Facebook from '../../assets/facebook.png';
 import X from '../../assets/x.png';
+import {SERVER_URL} from "../../config"
 
 const Register = () => {
     const [firstName, setFirstName] = useState('');
@@ -44,17 +45,26 @@ const Register = () => {
 
         if (firstName && lastName && username && email && password && phoneNumber && profilePicture) {
             try {
-                const formData = new FormData();
-                formData.append('firstName', firstName);
-                formData.append('lastName', lastName);
-                formData.append('username', username);
-                formData.append('email', email);
-                formData.append('password', password);
-                formData.append('phoneNumber', phoneNumber);
-                formData.append('profilePicture', profilePicture);
+                const formData = {
+                    'firstName': firstName,
+                    'lastName': lastName,
+                    'username': username,
+                    'email': email,
+                    'password': password,
+                    'phoneNumber': phoneNumber,
+                    'profilePicture': profilePicture,
+                }
+                // const formData = new FormData();
+                // formData.append('firstName', firstName);
+                // formData.append('lastName', lastName);
+                // formData.append('username', username);
+                // formData.append('email', email);
+                // formData.append('password', password);
+                // formData.append('phoneNumber', phoneNumber);
+                // formData.append('profilePicture', profilePicture);
 
                 // Send a POST request to the register endpoint with form data
-                await axios.post('http://localhost:5000/api/auth/register', formData, {
+                await axios.post(`${SERVER_URL}auth-rg/`, formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     }
@@ -152,7 +162,7 @@ const Register = () => {
                     <div className="input-group">
                         <label>Phone Number</label>
                         <input
-                            type="text"
+                            type="number"
                             placeholder="Enter your phone number"
                             value={phoneNumber}
                             onChange={(e) => setPhoneNumber(e.target.value)}

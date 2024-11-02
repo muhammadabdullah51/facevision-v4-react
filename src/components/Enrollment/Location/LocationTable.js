@@ -9,6 +9,9 @@ import addAnimation from "../../../assets/Lottie/addAnim.json";
 import updateAnimation from "../../../assets/Lottie/updateAnim.json";
 import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../../assets/Lottie/successAnim.json";
+import warningAnimation from "../../../assets/Lottie/warningAnim.json";
+
+import { SERVER_URL } from "../../../config";
 
 const LocationTable = ({ data, setData }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -33,17 +36,16 @@ const LocationTable = ({ data, setData }) => {
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [warningModal, setWarningModal] = useState(false);
+  const [resMsg, setResMsg] = useState("");
 
   const fetchLocation = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:5000/api/fetchLocation");
-      if (response.ok) {
-        const location = await response.json();
-        setData(location);
-      } else {
-        throw new Error("Failed to fetch location");
-      }
+      const response = await axios.get(`${SERVER_URL}pr-loc/`);
+      const location = response.data.context;
+      setData(location);
+      
     } catch (error) {
       console.error("Error fetching location data:", error);
     } finally {
@@ -66,7 +68,6 @@ const LocationTable = ({ data, setData }) => {
   const handleUpdate = async (row) => {
     setModalType("update");
     setFormData({
-      _id: row._id,
       locId: row.locId,
       locCode: row.locCode,
       name: row.name,
@@ -79,8 +80,18 @@ const LocationTable = ({ data, setData }) => {
   };
 
   const confirmUpdate = async () => {
+    if(
+      formData.locCode === "" ||
+      formData.name === "" ||
+      formData.deviceQty === "" ||
+      formData.empQty === "" 
+    ){
+      setResMsg("Please fill in all required fields.")
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    }
     const updateLocation = {
-      _id: formData._id,
       locId: formData.locId,
       locCode: formData.locCode,
       name: formData.name,
@@ -90,17 +101,25 @@ const LocationTable = ({ data, setData }) => {
     };
 
     try {
-      const response = await axios.post(
-        `http://localhost:5000/api/updateLocation`,
-        updateLocation
-      );
+      const response = await axios.post(`${SERVER_URL}pr-loc-up/`, updateLocation);
+
       console.log(response.data); // Log the response
       fetchLocation(); // Fetch the updated locations
       setShowEditForm(false); // Close the edit form
       setShowModal(false); // Close the confirmation modal
+      setResMsg(response.data.msg)
+      if (response.data.status) {
+        setSuccessModal(true);
+        fetchLocation();
+      }else {
+        setShowModal(false);
+        setWarningModal(true);
+        console.log(response.data.msg)
+      }
       setSuccessModal(true); // Show the success modal
     } catch (error) {
       console.error("Error updating location:", error);
+      setWarningModal(true);
     }
   };
   const columns = useMemo(
@@ -205,20 +224,16 @@ const LocationTable = ({ data, setData }) => {
     setShowEditForm(true); // Show Edit Form
   };
 
-  const handleDelete = async (locId) => {
+  const handleDelete = async (row) => {
     setModalType("delete");
     setShowModal(true);
-    setFormData({ ...formData, _id: locId });
+    setFormData({ ...formData, locId: row.locId });
   };
   const confirmDelete = async () => {
     try {
-      const locId = formData._id;
-      await axios.post(`http://localhost:5000/api/deleteLocation`, { locId });
-      console.log(locId);
-      const updatedData = await axios.get(
-        "http://localhost:5000/api/fetchLocation"
-      );
-      setData(updatedData.data);
+      await axios.post(`${SERVER_URL}pr-loc-del/`, { locId: formData.locId });
+      const updatedData = await axios.get(`${SERVER_URL}pr-loc/`);
+      setData(updatedData.data.context);
       fetchLocation();
       setShowModal(false);
       setSuccessModal(true);
@@ -245,12 +260,21 @@ const LocationTable = ({ data, setData }) => {
     setShowModal(true);
   };
   const confirmAdd = async () => {
-    setShowAddForm(false);
-    setShowEditForm(true);
-    console.log(formData);
+    if (
+      formData.locId === "" ||
+      formData.locCode === "" ||
+      formData.name === "" ||
+      formData.deviceQty === "" ||
+      formData.empQty === ""
+    ){
+      setResMsg("Please fill in all required fields.")
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    }
+    
 
     const location = {
-      locId: formData.locId,
       locCode: formData.locCode,
       name: formData.name,
       deviceQty: formData.deviceQty,
@@ -258,18 +282,32 @@ const LocationTable = ({ data, setData }) => {
       resignQty: formData.resignQty,
     };
     try {
-      axios.post("http://localhost:5000/api/addLocation", location);
-      const updatedData = await axios.get(
-        "http://localhost:5000/api/fetchLocation"
-      );
-      setData(updatedData.data);
+     const res =  await axios.post(`${SERVER_URL}pr-loc/`, location);
+      console.log(res.data.msg)
+      console.log("Location Added Successfully")
+      setShowAddForm(false);
+      setResMsg(res.data.msg)
+      if (res.data.status) {
+        setShowModal(false);
+        setSuccessModal(true);
+        fetchLocation();
+      }else {
+        setShowModal(false);
+        setWarningModal(true);
+        console.log(updatedData.data.msg)
+      }
+
+
+      const updatedData = await axios.get(`${SERVER_URL}pr-loc/`);
+      setData(updatedData.data.context);
       setShowAddForm(false);
       setShowEditForm(false);
       setShowModal(false);
       setSuccessModal(true);
       fetchLocation();
     } catch (error) {
-      console.log(error);
+      // console.log(error);
+      setWarningModal(true);
     }
   };
 
@@ -299,6 +337,14 @@ const LocationTable = ({ data, setData }) => {
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
         successModal={successModal}
+      />
+       <ConirmationModal
+        isOpen={warningModal}
+        message={resMsg}
+        onConfirm={() => setWarningModal(false)}
+        onCancel={() => setWarningModal(false)}
+        animationData={warningAnimation}
+        warningModal={warningModal}
       />
       <div className="table-header">
         <form className="form" onSubmit={(e) => e.preventDefault()}>
@@ -356,14 +402,6 @@ const LocationTable = ({ data, setData }) => {
           <h3>Add New Location</h3>
           <input
             type="text"
-            placeholder="Location ID"
-            value={formData.locId}
-            onChange={(e) =>
-              setFormData({ ...formData, locId: e.target.value })
-            }
-          />
-          <input
-            type="text"
             placeholder="Location Code"
             value={formData.locCode}
             onChange={(e) =>
@@ -414,14 +452,6 @@ const LocationTable = ({ data, setData }) => {
       {showEditForm && (
         <div className="add-department-form">
           <h3>Edit Location</h3>
-          <input
-            type="text"
-            placeholder="Location ID"
-            value={formData.locId}
-            onChange={(e) =>
-              setFormData({ ...formData, locId: e.target.value })
-            }
-          />
           <input
             type="text"
             placeholder="Location Code"

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import DevicesTable from './devicesTable.js'
 import axios from 'axios';
+import { SERVER_URL } from '../../config.js';
 
 const Devices = () => {
     const [data, setData] = useState([]);
@@ -11,8 +12,8 @@ const Devices = () => {
 
     const fetchDevices = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/api/fetchDevices');
-            setData(response.data);
+            const response = await axios.get(`${SERVER_URL}device/`);
+            setData(response.data.context);
         } catch (error) {
             console.error('Error fetching Devices data:', error);
         }

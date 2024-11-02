@@ -8,6 +8,8 @@ import addAnimation from "../../../assets/Lottie/addAnim.json";
 import updateAnimation from "../../../assets/Lottie/updateAnim.json";
 import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../../assets/Lottie/successAnim.json";
+import { SERVER_URL } from "../../../config";
+
 
 const TableComponent = ({ data, setData }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -22,7 +24,7 @@ const TableComponent = ({ data, setData }) => {
  
  
   const [formData, setFormData] = useState({
-    _id: "",
+    // _id: "",
     dptId: null,
     name: "",
     superior: "",
@@ -36,14 +38,9 @@ const TableComponent = ({ data, setData }) => {
   // Fetch departments data
   const fetchDepartments = useCallback(async () => {
     setLoading(true);
-    try {
-      const response = await fetch("http://localhost:5000/api/fetchDepartment");
-      if (response.ok) {
-        const departments = await response.json();
-        setData(departments);
-      } else {
-        throw new Error("Failed to fetch departments");
-      }
+   try {
+      const response = await axios.get(`${SERVER_URL}pr-dpt/`);
+      setData(response.data.context);
     } catch (error) {
       console.error("Error fetching department data:", error);
     } finally {
@@ -64,7 +61,7 @@ const TableComponent = ({ data, setData }) => {
 
   const handleEdit = (row) => {
     setFormData({
-      _id: row._id,
+      // _id: row._id,
       dptId: row.dptId,
       name: row.name,
       superior: row.superior,
@@ -77,15 +74,18 @@ const TableComponent = ({ data, setData }) => {
   const handleDelete = (dptId) => {
     setModalType("delete");
     setShowModal(true);
-    setFormData({ ...formData, _id: dptId });
+    setFormData({ ...formData, dptId: dptId });
   };
 
   const confirmDelete = async () => {
     try {
-      await axios.post(`http://localhost:5000/api/deleteDepartments`, {
-        dptId: formData._id,
+      await axios.post(`${SERVER_URL}pr-dpt-del/`, {
+        dptId: formData.dptId,
       });
-      console.log(`Department deleted ID: ${formData._id}`);
+      console.log(`Department deleted ID: ${formData.dptId}`);
+      const updatedData = await axios.get(`${SERVER_URL}pr-dpt/`
+      );
+      setData(updatedData.data.context);
       fetchDepartments();
       setShowModal(false);
       setSuccessModal(true);
@@ -112,25 +112,25 @@ const TableComponent = ({ data, setData }) => {
   };
 
   const confirmAdd = async () => {
-    if (!formData.name || !formData.dptId) {
+    if (!formData.name ) {
       alert("Please fill in all required fields.");
       return;
   }
     const newDepartment = {
-      dptId: formData.dptId,
-      name: formData.name,
-      superior: formData.superior,
-      empQty: formData.empQty,
+      // dptId: formData.dptId,
+      'name': formData.name,
+      'superior': formData.superior,
+      'empQty': formData.empQty,
     };
 
     try {
-      axios.post("http://localhost:5000/api/addDepartments", newDepartment);
+      await axios.post(`${SERVER_URL}pr-dpt/`, newDepartment);
       console.log(newDepartment);
       console.log("Department added successfully:");
       setShowAddForm(false);
-      const updatedData = await axios.get("http://localhost:5000/api/fetchDepartment"
+      const updatedData = await axios.get(`${SERVER_URL}pr-dpt/`
       );
-      setData(updatedData.data);
+      setData(updatedData.data.context);
       setShowModal(false);
       setSuccessModal(true);
       fetchDepartments();
@@ -162,7 +162,7 @@ const TableComponent = ({ data, setData }) => {
     console.log(row);
     setModalType("update");
     setFormData({
-      _id: row._id,
+      // _id: row._id,
       dptId: row.dptId,
       name: row.name,
       superior: row.superior,
@@ -172,7 +172,7 @@ const TableComponent = ({ data, setData }) => {
   };
   const confirmUpdate = async () => {
     const updatedDepartment = {
-      _id: formData._id,
+      // _id: formData._id,
       dptId: formData.dptId,
       name: formData.name,
       superior: formData.superior,
@@ -181,14 +181,14 @@ const TableComponent = ({ data, setData }) => {
 
     try {
       await axios.post(
-        "http://localhost:5000/api/updateDepartments",
+        `${SERVER_URL}pr-dpt-up/`,
         updatedDepartment
       );
       console.log("Department updated successfully");
       fetchDepartments();
       setShowEditForm(false);
-      // const updatedData = await axios.get('http://localhost:5000/api/fetchDepartment');
-      // setData(updatedData.data);
+      const updatedData = await axios.get(`${SERVER_URL}pr-dpt/`);
+      setData(updatedData.data.context);
       setShowModal(false);
       setSuccessModal(true);
     } catch (error) {
@@ -281,14 +281,6 @@ const TableComponent = ({ data, setData }) => {
           <h3>Add New Department</h3>
           <input
             type="text"
-            placeholder="Department ID"
-            value={formData.dptId}
-            onChange={(e) =>
-              setFormData({ ...formData, dptId: e.target.value })
-            }
-          />
-          <input
-            type="text"
             placeholder="Department Name"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -324,14 +316,6 @@ const TableComponent = ({ data, setData }) => {
       {showEditForm && (
         <div className="add-department-form">
           <h3>Edit Department</h3>
-          <input
-            type="text"
-            placeholder="Department ID"
-            value={formData.dptId}
-            onChange={(e) =>
-              setFormData({ ...formData, dptId: e.target.value })
-            }
-          />
           <input
             type="text"
             placeholder="Department Name"
@@ -384,7 +368,7 @@ const TableComponent = ({ data, setData }) => {
           </thead>
           <tbody>
             {currentPageData.map((row, index) => (
-              <tr key={row._id}>
+              <tr key={row.dptId}>
                 <td>{index + 1}</td>
                 <td>{row.dptId}</td>
                 <td>{row.name}</td>
@@ -398,7 +382,7 @@ const TableComponent = ({ data, setData }) => {
                     <FaEdit className="table-edit" />
                   </button>
                   <button
-                    onClick={() => handleDelete(row._id)}
+                    onClick={() => handleDelete(row.dptId)}
                     style={{ background: "none", border: "none" }}
                   >
                     <FaTrash className="table-delete" />

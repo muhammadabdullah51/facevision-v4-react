@@ -11,18 +11,19 @@ import LocationTable from "../Location/LocationTable";
 import ResignTable from "../Resign/ResignTable";
 import AddEmployee from "./AddEmployee";
 
-
 const EmployeeTable = ({
-  
   data,
   setData,
   setActiveTab,
   setSelectedEmployee,
-  setIsEditMode,
+  onEdit,
+  onAdd,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRow, setSelectedRow] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [isActiveTab, setIsActiveTab] = useState(false);
   const [formData, setFormData] = useState({
     empId: null,
     employeeName: "",
@@ -39,6 +40,7 @@ const EmployeeTable = ({
     image: "",
   });
 
+  const [editData, setEditData] = useState(null);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(0);
@@ -57,13 +59,12 @@ const EmployeeTable = ({
     setIsModalOpen(true);
   };
   const handleEdit = (row) => {
-    setSelectedRow({...row})
-    // setFormData({...row});
-    // console.log(row)
-    // console.log(formData)
-    console.log(selectedRow)
-    setIsEditMode(true);
-  }
+    // console.log("selected row for edit",row)
+    // setEditData(row)
+    // setIsEditMode(true);
+    // setIsActiveTab("Add Employee");
+    onEdit(row);
+  };
 
   const closeModal = () => {
     setIsModalOpen(false);
@@ -89,41 +90,10 @@ const EmployeeTable = ({
     fetchEmployees();
   }, []);
 
-  // Handle Edit
-  // const handleEdit = async (row) => {
-    // try {
-    //   // Fetch the complete employee data from the backend
-    //   const response = await axios.get(
-    //     `http://localhost:5000/api/employee/${employee._id}`
-    //   );
-    //   const fullEmployeeData = response.data;
-    //   console.log(fullEmployeeData);
-    //   // Update the selectedEmployee in the parent component
-    //   setSelectedEmployee(fullEmployeeData);
-
-    //   // Enable edit mode
-    //   setIsEditMode(true);
-
-    //   // Switch to AddEmployee component
-    //   setActiveTab("Add Employee");
-    // } catch (error) {
-    //   console.error("Error fetching employee data for editing:", error.message);
-    // }
-  // };
-
-  // const handleEdit = (employee) => {
-
-  //   // Navigate to the AddEmployee component with the selected row data
-  //   // navigate('/add-employee', { state: { formData: employee } }); // Pass the employee data in state
-  //   // setIsEditMode(true);
-  //   // setActiveTab("Add Employee");
-  // };
-
-
   const handleDelete = async (id) => {
     try {
       axios.post(`http://localhost:5000/api/deleteEmployees`, { id });
-      console.log(`Department deleted ID: ${id}`);
+      console.log(`Employee deleted ID: ${id}`);
       const updatedData = await axios.get(
         "http://localhost:5000/api/fetchEmployees"
       );
@@ -135,8 +105,9 @@ const EmployeeTable = ({
   };
 
   const handleAdd = () => {
-    setIsEditMode(false);
-    setActiveTab("Add Employee"); // Update the activeTab state from parent
+    onAdd()
+    // setIsEditMode(false);
+    // setActiveTab("Add Employee"); // Update the activeTab state from parent
   };
 
   // Handle page change
@@ -150,12 +121,10 @@ const EmployeeTable = ({
     (currentPage + 1) * rowsPerPage
   );
 
-
-
   return (
     <div className="department-table">
-      <AddEmployee
-      />
+      {/* <AddEmployee
+      /> */}
       <EmployeeReportModal
         isOpen={isModalOpen}
         onClose={closeModal}
@@ -189,8 +158,8 @@ const EmployeeTable = ({
           />
           <button
             className="reset"
-            type="button" // Change to type="button" to prevent form reset
-            onClick={() => setSearchQuery("")} // Clear the input on click
+            type="button"
+            onClick={() => setSearchQuery("")}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -269,6 +238,9 @@ const EmployeeTable = ({
                     >
                       <FaEdit className="table-edit" />
                     </button>
+                    {/* {isActiveTab === "Add Employee" &&(
+                      <AddEmployee editData={editData} isEditMode={isEditMode} />
+                    )} */}
                     <button
                       onClick={() => handleDelete(row._id)}
                       style={{ background: "none", border: "none" }}

@@ -5,8 +5,17 @@ import ReactPaginate from "react-paginate";
 import "./visitors.css";
 import axios from "axios";
 
-const VisitorTable = ({ data, setData, activeTab, setActiveTab }) => {
+const VisitorTable = ({
+  // data,
+  // setData,
+  activeTab,
+  setActiveTab,
+  onEdit,
+  onAdd,
+}) => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [data, setData] = useState([]);
+
   const [formData, setFormData] = useState({
     _id: "",
     visitorsId: null,
@@ -22,22 +31,21 @@ const VisitorTable = ({ data, setData, activeTab, setActiveTab }) => {
     cardNumber: "",
     visitingReason: "",
     carryingGoods: "",
-    image: "",
   });
-   // Helper function to format datetime
-   const formatDateTime = (datetime) => {
+  // Helper function to format datetime
+  const formatDateTime = (datetime) => {
     const date = new Date(datetime);
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
     const year = String(date.getFullYear()).slice(-2);
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
     let hours = date.getHours();
     const minutes = String(date.getMinutes()).padStart(2, "0");
     const ampm = hours >= 12 ? "PM" : "AM";
-    
+
     // Convert hours from 24-hour to 12-hour format
     hours = hours % 12 || 12;
     hours = String(hours).padStart(2, "0");
-  
+
     return (
       <>
         <span>{`${day}-${month}-${year}`}</span>
@@ -46,19 +54,19 @@ const VisitorTable = ({ data, setData, activeTab, setActiveTab }) => {
       </>
     );
   };
-  
 
   // Define visitor table columns
   const columns = useMemo(
     () => [
-      {
-        Header: "Serial No",
-        accessor: "srNo",
-        Cell: ({ row }) => row.index + 1,
-      },
+      // {
+      //   Header: "SNo",
+      //   accessor: "srNo",
+      //   Cell: ({ row }) => row.index + 1,
+      // },
       {
         Header: "Visitor ID",
         accessor: "visitorsId",
+        Cell: ({ row }) => row.index + 1,
       },
       {
         Header: "Visitor Name",
@@ -112,10 +120,6 @@ const VisitorTable = ({ data, setData, activeTab, setActiveTab }) => {
       {
         Header: "Carrying Goods",
         accessor: "carryingGoods",
-      },
-      {
-        Header: "Image",
-        accessor: "image",
       },
       {
         Header: "Action",
@@ -186,24 +190,26 @@ const VisitorTable = ({ data, setData, activeTab, setActiveTab }) => {
     }
   };
 
+
   // Handle Edit
   const handleEdit = (row) => {
-    setFormData({
-      visitorsId: row.visitorsId,
-      fName: row.fName,
-      lName: row.lName,
-      certificationNo: row.certificationNo,
-      createTime: row.createTime,
-      exitTime: row.exitTime,
-      email: row.email,
-      contactNo: row.contactNo,
-      visitingDept: row.visitingDept,
-      host: row.host,
-      cardNumber: row.cardNumber,
-      visitingReason: row.visitingReason,
-      carryingGoods: row.carryingGoods,
-      image: row.image,
-    });
+    // setFormData({
+    //   visitorsId: row.visitorsId,
+    //   fName: row.fName,
+    //   lName: row.lName,
+    //   certificationNo: row.certificationNo,
+    //   createTime: row.createTime,
+    //   exitTime: row.exitTime,
+    //   email: row.email,
+    //   contactNo: row.contactNo,
+    //   visitingDept: row.visitingDept,
+    //   host: row.host,
+    //   cardNumber: row.cardNumber,
+    //   visitingReason: row.visitingReason,
+    //   carryingGoods: row.carryingGoods,
+    // });
+    
+    onEdit(row)
   };
 
   // Handle Delete
@@ -218,10 +224,11 @@ const VisitorTable = ({ data, setData, activeTab, setActiveTab }) => {
   };
 
   const handleAdd = () => {
-    setActiveTab("Add Visitor"); // Update the activeTab state from parent
+    onAdd()
+    // setActiveTab("Add Visitor"); // Update the activeTab state from parent
   };
 
-  const handleUpdate = () => {};
+ 
 
   return (
     <div className="visitor-table">

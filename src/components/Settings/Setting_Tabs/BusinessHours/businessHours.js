@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import './businessHours.css';
+import { SERVER_URL } from "../../../../config";
 
 const DayTimeSelector = ({ day, active, from, to, toggleDayActive, handleTimeChange }) => {
     return (
@@ -33,73 +35,73 @@ const DayTimeSelector = ({ day, active, from, to, toggleDayActive, handleTimeCha
 };
 
 const BusinessHours = () => {
-    const [enabled, setEnabled] = useState(false);
-    const [timezone, setTimezone] = useState("UTC-08:00");
-
-    // Separate states for each day
-    const [monday, setMonday] = useState({ active: true, from: "09:00", to: "17:30" });
-    const [tuesday, setTuesday] = useState({ active: true, from: "09:00", to: "17:30" });
-    const [wednesday, setWednesday] = useState({ active: true, from: "09:00", to: "17:30" });
-    const [thursday, setThursday] = useState({ active: true, from: "09:00", to: "17:30" });
-    const [friday, setFriday] = useState({ active: true, from: "09:00", to: "17:30" });
-    const [saturday, setSaturday] = useState({ active: false, from: "Closed", to: "Closed" });
-    const [sunday, setSunday] = useState({ active: false, from: "Closed", to: "Closed" });
+    const [enabled, setEnabled] = useState(true);
+    const defaultBusinessHours = {
+        "Monday": { active: true, from: "09:00", to: "17:30" },
+        "Tuesday": { active: true, from: "09:00", to: "17:30" },
+        "Wednesday": { active: true, from: "09:00", to: "17:30" },
+        "Thursday": { active: true, from: "09:00", to: "17:30" },
+        "Friday": { active: true, from: "09:00", to: "17:30" },
+        "Saturday": { active: true, from: "09:00", to: "17:30" },
+        "Sunday": { active: true, from: "09:00", to: "17:30" }
+    };
+    const [businessHours, setBusinessHours] = useState({});
 
     const toggleEnable = () => setEnabled(!enabled);
 
     const handleTimeChange = (day, field, value) => {
-        switch (day) {
-            case "Monday":
-                setMonday({ ...monday, [field]: value });
-                break;
-            case "Tuesday":
-                setTuesday({ ...tuesday, [field]: value });
-                break;
-            case "Wednesday":
-                setWednesday({ ...wednesday, [field]: value });
-                break;
-            case "Thursday":
-                setThursday({ ...thursday, [field]: value });
-                break;
-            case "Friday":
-                setFriday({ ...friday, [field]: value });
-                break;
-            case "Saturday":
-                setSaturday({ ...saturday, [field]: value });
-                break;
-            case "Sunday":
-                setSunday({ ...sunday, [field]: value });
-                break;
-            default:
-                break;
-        }
+        setBusinessHours((prevHours) => ({
+            ...prevHours,
+            [day]: { ...prevHours[day], [field]: value }
+        }));
     };
 
     const toggleDayActive = (day) => {
-        switch (day) {
-            case "Monday":
-                setMonday({ ...monday, active: !monday.active });
-                break;
-            case "Tuesday":
-                setTuesday({ ...tuesday, active: !tuesday.active });
-                break;
-            case "Wednesday":
-                setWednesday({ ...wednesday, active: !wednesday.active });
-                break;
-            case "Thursday":
-                setThursday({ ...thursday, active: !thursday.active });
-                break;
-            case "Friday":
-                setFriday({ ...friday, active: !friday.active });
-                break;
-            case "Saturday":
-                setSaturday({ ...saturday, active: !saturday.active });
-                break;
-            case "Sunday":
-                setSunday({ ...sunday, active: !sunday.active });
-                break;
-            default:
-                break;
+        setBusinessHours((prevHours) => ({
+            ...prevHours,
+            [day]: { ...prevHours[day], active: !prevHours[day].active }
+        }));
+    };
+
+    useEffect(() => {
+        const fetchBusinessHours = async () => {
+            try {
+                const response = await axios.get(`${SERVER_URL}api/business-hours/`);
+                if (response.data.length === 0) {
+                    // If no data is found, set default business hours
+                    setBusinessHours(defaultBusinessHours);
+                } else {
+                    // Transform response data into an object for businessHours
+                    const fetchedHours = {};
+                    response.data.forEach(item => {
+                        fetchedHours[item.day] = {
+                            active: item.active,
+                            from: item.from_time.substring(0, 5), // Extract "HH:mm" from "HH:mm:ss"
+                            to: item.to_time.substring(0, 5) // Extract "HH:mm" from "HH:mm:ss"
+                        };
+                    });
+                    setBusinessHours(fetchedHours); // Set transformed state
+                }
+            } catch (error) {
+                console.error('Error fetching business hours:', error);
+                // Set to default in case of an error
+                setBusinessHours(defaultBusinessHours);
+            }
+        };
+
+        fetchBusinessHours();
+    }, []); // Empty dependency array to run only once on mount
+
+
+    const saveBusinessHours = async () => {
+        try {
+            const res = await axios.post(`${SERVER_URL}api/business-hours/`, businessHours); // Adjust the URL as needed
+            alert("Business hours saved successfully!");
+            console.log(res.data);
+            
+        } catch (error) {
+            console.error('Error saving business hours:', error);
+            alert("Failed to save business hours.");
         }
     };
 
@@ -115,71 +117,23 @@ const BusinessHours = () => {
                     Enable
                 </label>
             </div>
-            <div className="timezone">
-                <label>Timezone</label>
-                <select value={timezone} onChange={(e) => setTimezone(e.target.value)}>
-                    <option value="UTC-08:00">UTC-08:00 Pacific Time</option>
-                </select>
-            </div>
-            <DayTimeSelector
-                day="Monday"
-                active={monday.active}
-                from={monday.from}
-                to={monday.to}
-                toggleDayActive={toggleDayActive}
-                handleTimeChange={handleTimeChange}
-            />
-            <DayTimeSelector
-                day="Tuesday"
-                active={tuesday.active}
-                from={tuesday.from}
-                to={tuesday.to}
-                toggleDayActive={toggleDayActive}
-                handleTimeChange={handleTimeChange}
-            />
-            <DayTimeSelector
-                day="Wednesday"
-                active={wednesday.active}
-                from={wednesday.from}
-                to={wednesday.to}
-                toggleDayActive={toggleDayActive}
-                handleTimeChange={handleTimeChange}
-            />
-            <DayTimeSelector
-                day="Thursday"
-                active={thursday.active}
-                from={thursday.from}
-                to={thursday.to}
-                toggleDayActive={toggleDayActive}
-                handleTimeChange={handleTimeChange}
-            />
-            <DayTimeSelector
-                day="Friday"
-                active={friday.active}
-                from={friday.from}
-                to={friday.to}
-                toggleDayActive={toggleDayActive}
-                handleTimeChange={handleTimeChange}
-            />
-            <DayTimeSelector
-                day="Saturday"
-                active={saturday.active}
-                from={saturday.from}
-                to={saturday.to}
-                toggleDayActive={toggleDayActive}
-                handleTimeChange={handleTimeChange}
-            />
-            <DayTimeSelector
-                day="Sunday"
-                active={sunday.active}
-                from={sunday.from}
-                to={sunday.to}
-                toggleDayActive={toggleDayActive}
-                handleTimeChange={handleTimeChange}
-            />
+            <p>Enable this to consider business hours for a global time along with shifts time for attendance.</p>
+            {console.log("business hours")}
+            {console.log(businessHours)}
+            {Object.keys(businessHours).map((day) => (
+                <DayTimeSelector
+                    key={day}
+                    day={day}
+                    active={businessHours[day]?.active} // Safe access
+                    from={businessHours[day]?.from || "09:00"} // Default time
+                    to={businessHours[day]?.to || "17:30"} // Default time
+                    toggleDayActive={toggleDayActive}
+                    handleTimeChange={handleTimeChange}
+                />
+            ))}
 
             <div className="additional-settings">
-                <button>Set up Outside business hours</button>
+                <button onClick={saveBusinessHours}>Save Business Hours</button>
             </div>
         </div>
     );

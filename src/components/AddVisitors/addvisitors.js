@@ -3,9 +3,24 @@ import "./addVisitors.css";
 import Department from "../Enrollment/Department/department";
 import { FaArrowLeft } from "react-icons/fa";
 import axios from "axios";
-const AddVisitor = ({ setData, setActiveTab, data }) => {
+const AddVisitor = ({
+  setData,
+  setActiveTab,
+  data,
+  isEditMode,
+  setIsEditMode,
+  employeeToEdit,
+  editData,
+}) => {
   const [selectedPage, setSelectedPage] = useState(""); // State to control page view
   const [departments, setDepartments] = useState([]);
+
+  const formattedCreateTime = editData?.createTime
+  ? new Date(editData.createTime).toISOString().slice(0, 16)
+  : '';
+  const formattedExitTime = editData?.exitTime
+  ? new Date(editData.exitTime).toISOString().slice(0, 16)
+  : '';
 
   useEffect(() => {
     const fetchOptions = async () => {
@@ -13,21 +28,17 @@ const AddVisitor = ({ setData, setActiveTab, data }) => {
         const departmentResponse = await axios.get(
           "http://localhost:5000/api/fetchDepartment"
         );
-        // const shiftResponse = await axios.get("http://localhost:5000/api/fetchShift");
-        // const enrollSiteResponse = await axios.get("http://localhost:5000/api/fetchLocation");
-        // const overtimeResponse = await axios.get("http://localhost:5000/api/fetchLocation");
-
         setDepartments(departmentResponse.data);
-        // setShifts(shiftResponse.data);
-        // setEnrollSites(enrollSiteResponse.data);
-        // setOvertime(overtimeResponse.data);
+        if (editData) {
+          setNewVisitor({ ...editData });
+        }
       } catch (error) {
         console.error("Error fetching options:", error);
       }
     };
 
     fetchOptions();
-  }, []);
+  }, [editData]);
 
   const handleBackClick = () => {
     setSelectedPage("Back");
@@ -48,7 +59,6 @@ const AddVisitor = ({ setData, setActiveTab, data }) => {
     cardNumber: "",
     visitingReason: "",
     carryingGoods: "",
-    image: null, // Updated to handle file
   });
 
   const handleDepartmentChange = (event) => {
@@ -61,76 +71,78 @@ const AddVisitor = ({ setData, setActiveTab, data }) => {
     }
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    setNewVisitor((prevData) => ({ ...prevData, image: file }));
-  };
-
-  const handleSubmit = (e) => {
+  
+  
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const nextSerialNo = data.length + 1;
-    const newVisitorWithSerial = {
-      ...newVisitor,
-      serialNo: nextSerialNo,
-      contactNo: newVisitor.contactNo.toString(), // Convert phone number to string
-    };
-    setData((prevData) => [...prevData, newVisitorWithSerial]);
-    const addVisitors = {
-      visitorsId: newVisitorWithSerial.serialNo,
-      fName: newVisitorWithSerial.fName,
-      lName: newVisitorWithSerial.lName,
-      certificationNo: newVisitorWithSerial.certificationNo,
+  const visitorData = {
+      visitorsId: newVisitor.visitorsId,
+      fName: newVisitor.fName,
+      lName: newVisitor.lName,
+      certificationNo: newVisitor.certificationNo,
       createTime: new Date().toISOString(),
       exitTime: new Date().toISOString(),
-      email: newVisitorWithSerial.email,
-      contactNo: newVisitorWithSerial.contactNo,
-      visitingDept: newVisitorWithSerial.visitingDept,
-      host: newVisitorWithSerial.host,
-      cardNumber: newVisitorWithSerial.cardNumber,
-      visitingReason: newVisitorWithSerial.visitingReason,
-      carryingGoods: newVisitorWithSerial.carryingGoods,
-      image: newVisitorWithSerial.image, // Updated to handle file
+      email: newVisitor.email,
+      contactNo: newVisitor.contactNo,
+      visitingDept: newVisitor.visitingDept,
+      host: newVisitor.host,
+      cardNumber: newVisitor.cardNumber,
+      visitingReason: newVisitor.visitingReason,
+      carryingGoods: newVisitor.carryingGoods,
     };
+    const updateVisitorData = {
+      // ...visitorData,
+      // _id: newVisitor._id,
+      // createTime: newVisitor.createTime,
+      // exitTime: newVisitor.exitTime,
+      _id: newVisitor._id,
+      visitorsId: newVisitor.visitorsId,
+      fName: newVisitor.fName,
+      lName: newVisitor.lName,
+      certificationNo: newVisitor.certificationNo,
+      createTime: newVisitor.createTime,
+      exitTime: newVisitor.exitTime,      
+      email: newVisitor.email,
+      contactNo: newVisitor.contactNo,
+      visitingDept: newVisitor.visitingDept,
+      host: newVisitor.host,
+      cardNumber: newVisitor.cardNumber,
+      visitingReason: newVisitor.visitingReason,
+      carryingGoods: newVisitor.carryingGoods,
+    };
+  
     try {
-      axios.post(`http://localhost:5000/api/addVisitor`, addVisitors);
+      const response = isEditMode
+        ? await axios.post(`http://localhost:5000/api/updateVisitor`, updateVisitorData)
+        : await axios.post("http://localhost:5000/api/addVisitor", visitorData);
+  
+      if (response.status === (isEditMode ? 200 : 201)) {
+        setData(response.data)
+  
+        setNewVisitor({
+          visitorsId: "",
+          fName: "",
+          lName: "",
+          certificationNo: "",
+          createTime: "",
+          exitTime: "",
+          email: "",
+          contactNo: "",
+          visitingDept: "",
+          host: "",
+          cardNumber: "",
+          visitingReason: "",
+          carryingGoods: "",
+        });
+      }
     } catch (error) {
-      console.log(error);
+      console.error("Error adding/updating visitor:", error);
     }
+  
+    setIsEditMode(false);
     setActiveTab("Visitors");
   };
-
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   const nextSerialNo = data.length + 1;
-
-  //   const formData = new FormData();
-  //   formData.append('id', nextSerialNo);
-  //   formData.append('fName', newVisitor.fName);
-  //   formData.append('lName', newVisitor.lName);
-  //   formData.append('certificationNo', newVisitor.certificationNo);
-  //   formData.append('createTime', new Date().toISOString());
-  //   formData.append('exitTime', "");
-  //   formData.append('email', newVisitor.email);
-  //   formData.append('contactNo', newVisitor.contactNo.toString());
-  //   formData.append('visitingDept', newVisitor.visitingDept);
-  //   formData.append('host', newVisitor.host);
-  //   formData.append('visitingReason', newVisitor.visitingReason);
-  //   formData.append('carryingGoods', newVisitor.carryingGoods);
-  //   if (newVisitor.image) {
-  //     formData.append('image', newVisitor.image); // Adding the image file to form-data
-  //   }
-
-  //   try {
-  //     await axios.post(`http://localhost:5000/api/addVisitor`, formData, {
-  //       headers: {
-  //         'Content-Type': 'multipart/form-data',
-  //       },
-  //     });
-  //     setActiveTab("Visitors");
-  //   } catch (error) {
-  //     console.error("Error while adding visitor:", error);
-  //   }
-  // };
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -158,7 +170,9 @@ const AddVisitor = ({ setData, setActiveTab, data }) => {
                   name="visitorsId"
                   placeholder="Enter Visitor ID"
                   value={newVisitor.visitorsId}
-                  onChange={handleChange}
+                  onChange={(e) =>
+                    setNewVisitor({ ...newVisitor, visitorsId: e.target.value })
+                  }
                   required
                 />
 
@@ -168,7 +182,9 @@ const AddVisitor = ({ setData, setActiveTab, data }) => {
                   name="fName"
                   placeholder="Enter First Name"
                   value={newVisitor.fName}
-                  onChange={handleChange}
+                  onChange={(e) =>
+                    setNewVisitor({ ...newVisitor, fName: e.target.value })
+                  }
                   required
                 />
 
@@ -178,7 +194,9 @@ const AddVisitor = ({ setData, setActiveTab, data }) => {
                   name="lName"
                   placeholder="Enter Last Name"
                   value={newVisitor.lName}
-                  onChange={handleChange}
+                  onChange={(e) =>
+                    setNewVisitor({ ...newVisitor, lName: e.target.value })
+                  }
                   required
                 />
 
@@ -188,7 +206,9 @@ const AddVisitor = ({ setData, setActiveTab, data }) => {
                   name="certificationNo"
                   placeholder="Enter Certification Number"
                   value={newVisitor.certificationNo}
-                  onChange={handleChange}
+                  onChange={(e) =>
+                    setNewVisitor({ ...newVisitor, certificationNo: e.target.value })
+                  }
                   required
                 />
 
@@ -198,7 +218,9 @@ const AddVisitor = ({ setData, setActiveTab, data }) => {
                   name="email"
                   placeholder="Enter Email"
                   value={newVisitor.email}
-                  onChange={handleChange}
+                  onChange={(e) =>
+                    setNewVisitor({ ...newVisitor, email: e.target.value })
+                  }
                   required
                 />
               </div>
@@ -209,7 +231,9 @@ const AddVisitor = ({ setData, setActiveTab, data }) => {
                   name="contactNo"
                   placeholder="Enter Contact Number"
                   value={newVisitor.contactNo}
-                  onChange={handleChange}
+                  onChange={(e) =>
+                    setNewVisitor({ ...newVisitor, contactNo: e.target.value })
+                  }
                   required
                 />
 
@@ -219,7 +243,9 @@ const AddVisitor = ({ setData, setActiveTab, data }) => {
                   name="cardNumber"
                   placeholder="Enter Card Number"
                   value={newVisitor.cardNumber}
-                  onChange={handleChange}
+                  onChange={(e) =>
+                    setNewVisitor({ ...newVisitor, cardNumber: e.target.value })
+                  }
                   required
                 />
 
@@ -229,7 +255,9 @@ const AddVisitor = ({ setData, setActiveTab, data }) => {
                   name="carryingGoods"
                   placeholder="Enter Carrying Goods"
                   value={newVisitor.carryingGoods}
-                  onChange={handleChange}
+                  onChange={(e) =>
+                    setNewVisitor({ ...newVisitor, carryingGoods: e.target.value })
+                  }
                 />
 
                 <label>Visiting Reason</label>
@@ -238,16 +266,11 @@ const AddVisitor = ({ setData, setActiveTab, data }) => {
                   name="visitingReason"
                   placeholder="Enter Visiting Reason"
                   value={newVisitor.visitingReason}
-                  onChange={handleChange}
+                  onChange={(e) =>
+                    setNewVisitor({ ...newVisitor, visitingReason: e.target.value })
+                  }
                 />
 
-                <label>Visitor Image</label>
-                <input
-                  className="visitor-image-input"
-                  type="file"
-                  name="image"
-                  onChange={handleFileChange}
-                />
               </div>
             </div>
           </section>
@@ -261,8 +284,10 @@ const AddVisitor = ({ setData, setActiveTab, data }) => {
                   <input
                     type="datetime-local"
                     name="createTime"
-                    value={newVisitor.createTime}
-                    onChange={handleChange}
+                    value={formattedCreateTime}
+                    onChange={(e) =>
+                      setNewVisitor({ ...newVisitor, createTime: e.target.value })
+                    }
                     required
                   />
 
@@ -289,8 +314,10 @@ const AddVisitor = ({ setData, setActiveTab, data }) => {
                   <input
                     type="datetime-local"
                     name="exitTime"
-                    value={newVisitor.exitTime}
-                    onChange={handleChange}
+                    value={formattedExitTime}
+                    onChange={(e) =>
+                      setNewVisitor({ ...newVisitor, exitTime: e.target.value })
+                    }
                     required
                   />
                   <label>Host</label>
@@ -299,13 +326,16 @@ const AddVisitor = ({ setData, setActiveTab, data }) => {
                     name="host"
                     placeholder="Enter Host Name"
                     value={newVisitor.host}
-                    onChange={handleChange}
+                    onChange={(e) =>
+                      setNewVisitor({ ...newVisitor, host: e.target.value })
+                    }
                   />
                 </div>
               </div>
               <div className="visitor-info-lower">
                 <button className="submit-button" type="submit">
-                  Add Visitor
+                  {isEditMode ? "Update Visitors" : "Add Visitor" }
+                  
                 </button>
                 <button
                   className="cancel-button"

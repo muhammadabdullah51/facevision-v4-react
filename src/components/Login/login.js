@@ -8,6 +8,7 @@ import Google from '../../assets/google.png';
 import Facebook from '../../assets/facebook.png';
 import X from '../../assets/x.png';
 import axios from 'axios';
+import { SERVER_URL } from '../../config';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -21,24 +22,36 @@ const Login = () => {
         if (email && password) {
             setLoading(true); // Start loading
             try {
-                const response = await axios.post('http://localhost:5000/api/auth/login', { email, password });
-                const { data } = response;
+                const response = await axios.post(`${SERVER_URL}auth-lgin/`, { email, password });
+                if(response.data.context.login){
+                    
 
-                // Dispatch the login action with user data and token
-                dispatch(login({  
-                    _id: data._id,
-                    username: data.username,
-                    email: data.email,
-                    phoneNumber: data.phoneNumber,
-                    profilePicture: data.profilePicture,
-                    token: data.token 
-                }));
+                    // Dispatch the login action with user data and token
+                    dispatch(login({  
+                        id: response.data.context.user.id,
+                        firstName: response.data.context.user.firstName,
+                        lastname: response.data.context.user.lastname,
+                        username: response.data.context.user.username,
+                        email: response.data.context.user.email,
+                        phoneNumber: response.data.context.user.phoneNumber,
+                        profilePicture: response.data.context.user.profilePicture,
+                        password: response.data.context.user.password,
+                        token: response.data.token 
+                    }));
+    
+                    // Store token securely if necessary (e.g., in cookies/localStorage)
+                    localStorage.setItem('token', response.data.token);
 
-                // Store token securely if necessary (e.g., in cookies/localStorage)
-                localStorage.setItem('token', data.token);
+                    // Navigate to the dashboard or any protected route
+                    navigate('/dashboard');
+                }
+                console.log(response.data.context);
+                console.log(response.data.msg);
+                console.log(response.data.context.user);
 
-                // Navigate to the dashboard or any protected route
-                navigate('/dashboard');
+                // const { data } = response;
+
+
             } catch (error) {
                 console.error('Login error:', error.response?.data?.message || error.message);
                 alert(error.response?.data?.message || 'Login failed. Please try again.');

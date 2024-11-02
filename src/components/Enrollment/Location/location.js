@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import LocationTable from "./LocationTable";
+import { SERVER_URL } from "../../../config";
 
 const Location = () => {
   const [data, setData] = useState([]);
@@ -12,10 +13,11 @@ const Location = () => {
 
   const fetchLocation = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/fetchLocation');
-      setData(response.data);
+      const response = await axios.get(`${SERVER_URL}pr-loc/`);
+      setData(response.data.context);
+      // console.log(response.data);
     } catch (error) {
-      console.error('Error fetching department data:', error);
+      console.error('Error fetching location data:', error);
     }
   };
   return <div>

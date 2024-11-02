@@ -9,6 +9,8 @@ import addAnimation from "../../assets/Lottie/addAnim.json"
 import updateAnimation from "../../assets/Lottie/updateAnim.json";
 import deleteAnimation from "../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../assets/Lottie/successAnim.json";
+import warningAnimation from "../../assets/Lottie/warningAnim.json";
+import { SERVER_URL } from "../../config";
 
 
 const DeviceTable = ({ data, setData }) => {
@@ -16,7 +18,6 @@ const DeviceTable = ({ data, setData }) => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [formData, setFormData] = useState({
-    _id: "",
     cameraId: null,
     cameraName: "",
     cameraIp: "",
@@ -27,21 +28,20 @@ const DeviceTable = ({ data, setData }) => {
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [warningModal, setWarningModal] = useState(false);
+  const [resMsg, setResMsg] = useState("");
 
 
-  const fetchDevices = useCallback(
-
-    async () => {
+  const fetchDevices = useCallback(async () => {
+    setLoading(true);
       try {
-        const response = await fetch('http://localhost:5000/api/fetchDevices');
-        if (response.ok) {
-          const devices = await response.json();
-          setData(devices);
-        } else {
-          throw new Error('Failed to fetch devices');
-        }
-      } catch (error) {
+        const response = await axios.get(`${SERVER_URL}device/`);
+        const devices = await response.data.context;
+        setData(devices);
+        } catch (error) {
         console.error('Error fetching devices data:', error);
+      }finally{
+        setLoading(false);
       }
     },[setData])
 
@@ -70,10 +70,6 @@ const DeviceTable = ({ data, setData }) => {
         Header: "S.No",
         accessor: "serial",
         Cell: ({ row }) => row.index + 1,
-      },
-      {
-        Header: "Device ID",
-        accessor: "cameraId",
       },
       {
         Header: "Device Name",
@@ -164,7 +160,6 @@ const DeviceTable = ({ data, setData }) => {
 
   const handleEdit = (row) => {
     setFormData({
-      _id: row._id,
       cameraId: row.cameraId,
       cameraName: row.cameraName,
       cameraIp: row.cameraIp,
@@ -175,18 +170,16 @@ const DeviceTable = ({ data, setData }) => {
     setShowEditForm(true);
   };
 
-  const handleDelete = async (cameraId) => {
+  const handleDelete = async (row) => {
     setModalType("delete");
     setShowModal(true);
-    setFormData({...formData, _id: cameraId})
+    setFormData({...formData, cameraId: row.cameraId})
   }
   const confirmDelete = async () => {
     try {
-      const cameraId = formData._id;
-      axios.post(`http://localhost:5000/api/deleteDevices`,{ cameraId});
-      const updatedData = await axios.get('http://localhost:5000/api/fetchDevices');
-      setData(updatedData.data)
-      console.log(`Device deleted ID: ${cameraId}`);
+      await axios.post(`${SERVER_URL}device-del/`,{ cameraId: formData.cameraId});
+      const updatedData = await axios.get(`${SERVER_URL}device/`);
+      setData(updatedData.data.context)
       fetchDevices();
       setShowModal(false);
       setSuccessModal(true);
@@ -213,29 +206,46 @@ const DeviceTable = ({ data, setData }) => {
     setShowModal(true);
   }
   const confirmAdd = async() => {
-    // Add device to the table
-    setData((prevData) => [...prevData, { ...formData, id: Date.now() }]);
+    if(
+      formData.cameraName === "" ||
+      formData.cameraIp === "" ||
+      formData.port === ""
+    ){
+      setResMsg("Please fill in all required fields.")
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    }
     const newDevice = {
-      cameraId : formData.cameraId,
       cameraName: formData.cameraName,
       cameraIp: formData.cameraIp,
       port: formData.port,
-      status: formData.status,
+      // status: formData.status,
     }
 
     try {
-      axios.post(`http://localhost:5000/api/addDevices`, newDevice)
-      const updatedData = await axios.get('http://localhost:5000/api/fetchDevices');
-      setData(updatedData.data)
-      console.log(newDevice);
-      console.log('Device added successfully:');
+      const res = await axios.post(`${SERVER_URL}device/`, newDevice)
       setShowAddForm(false);
-      fetchDevices();
+      setResMsg(res.data.msg)
+      if (res.data.status) {
+        setShowModal(false);
+        setSuccessModal(true);
+        fetchDevices();
+      }else {
+        setShowModal(false);
+        setWarningModal(true);
+        console.log(updatedData.data.msg)
+      }
+      const updatedData = await axios.get(`${SERVER_URL}device/`);
+      setData(updatedData.data.context)
+      setShowAddForm(false);
+      setShowEditForm(false);
       setShowModal(false);
       setSuccessModal(true);
-
+      fetchDevices();
     } catch (error) {
-      console.error('Error adding Device:', error);
+      // console.log(error);
+      setWarningModal(true);
     }
 
     // Reset form data
@@ -266,32 +276,50 @@ const DeviceTable = ({ data, setData }) => {
     setShowModal(true)
   }
   const confirmUpdate = async () => {
+    if(
+      formData.cameraName === "" ||
+      formData.cameraIp === "" ||
+      formData.port === ""
+    ){
+      setResMsg("Please fill in all required fields.")
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    }
     const updatedDevice = {
-      _id: formData._id,
       cameraId: formData.cameraId,
       cameraName: formData.cameraName,
       cameraIp: formData.cameraIp,
       port: formData.port,
-      status: formData.status,
+      // status: formData.status,
     };
     
     try {
-      await axios.post("http://localhost:5000/api/updateDevices", updatedDevice);
-
-      const updatedData = await axios.get('http://localhost:5000/api/fetchDevices');
-      setData(updatedData.data)
-      console.log("doe nUpdated device data:", updatedDevice);
-      console.log('device updated successfully');
+      const res = await axios.post(`${SERVER_URL}device-up/`, updatedDevice);
       fetchDevices()
-      setShowEditForm(false); 
-      setShowModal(false); // Hide the modal
-      setSuccessModal(true); // Show the success modal
+
+      setShowEditForm(false);
+      setShowModal(false);
+      setResMsg(res.data.msg)
+      if (res.data.status) {
+        setSuccessModal(true);
+        fetchDevices();
+      }else {
+        setShowModal(false);
+        setWarningModal(true);
+        console.log(res.data.msg)
+      }
+      setSuccessModal(true);
+
+      const updatedData = await axios.get(`${SERVER_URL}device/`);
+      setData(updatedData.data.context)
+      console.log("done Updated device data:", updatedDevice);
+      console.log('device updated successfully');
     } catch (error) {
-      console.log("Updated device dataasdas:", updatedDevice);
       console.error('Error updating devices:', error);
+      setWarningModal(true);
     }
-    // Hide the edit form
-    setShowEditForm(false);
+   
   };
 
   return (
@@ -321,6 +349,14 @@ const DeviceTable = ({ data, setData }) => {
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
         successModal={successModal}
+      />
+      <ConirmationModal
+        isOpen={warningModal}
+        message={resMsg}
+        onConfirm={() => setWarningModal(false)}
+        onCancel={() => setWarningModal(false)}
+        animationData={warningAnimation}
+        warningModal={warningModal}
       />
       <div className="table-header">
       <form className="form" onSubmit={(e) => e.preventDefault()}>
@@ -378,14 +414,7 @@ const DeviceTable = ({ data, setData }) => {
       {showAddForm && (
         <div className="add-device-form">
           <h3>Add New Device</h3>
-          <input
-            type="text"
-            placeholder="Device ID"
-            value={formData.cameraId}
-            onChange={(e) =>
-              setFormData({ ...formData, cameraId: e.target.value })
-            }
-          />
+         
           <input
             type="text"
             placeholder="Device Name"
@@ -438,14 +467,7 @@ const DeviceTable = ({ data, setData }) => {
       {showEditForm && (
         <div className="add-device-form">
           <h3>Edit Device</h3>
-          <input
-            type="text"
-            placeholder="Device ID"
-            value={formData.cameraId}
-            onChange={(e) =>
-              setFormData({ ...formData, cameraId: e.target.value })
-            }
-          />
+         
           <input
             type="text"
             placeholder="Device Name"

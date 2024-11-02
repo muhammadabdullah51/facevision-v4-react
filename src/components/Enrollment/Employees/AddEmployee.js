@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import Department from "../Department/department";
-import ShiftManagement from "../../Shift_Managment/shift_managment"
+import ShiftManagement from "../../Shift_Managment/shift_managment";
 // import "../../AddVisitors/addvisitors.css";
 import "./employees.css";
 import { FaArrowLeft } from "react-icons/fa";
@@ -9,17 +9,20 @@ import WebcamModal from "./webcam"; // Import the WebcamModal component
 import OvertimeTable from "../../Settings/Setting_Tabs/OvertimeSettings";
 import Location from "../Location/location";
 import LocationTable from "../Location/LocationTable";
-import { useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 
-
-const AddEmployee = ({ setData, setActiveTab, data, isEditMode, employeeToEdit }) => {
+const AddEmployee = ({
+  setData,
+  setActiveTab,
+  data,
+  isEditMode,
+  setIsEditMode,
+  employeeToEdit,
+  editData,
+}) => {
   const [selectedPage, setSelectedPage] = useState("");
-  const [isWebcamOpen, setIsWebcamOpen] = useState(false); // State to control webcam modal visibility
-  // const isEditMode = Boolean(employeeToEdit);
-
-  const location = useLocation();
-  const { formData } = location.state || {};
-
+  const [isWebcamOpen, setIsWebcamOpen] = useState(false);
+  
   const [newEmployee, setNewEmployee] = useState({
     empId: "",
     fName: "",
@@ -62,19 +65,29 @@ const AddEmployee = ({ setData, setActiveTab, data, isEditMode, employeeToEdit }
       updateDate: "2024-09-02",
     },
   ]);
-  
 
   useEffect(() => {
     const fetchOptions = async () => {
+      // console.log(isEditMode)
+
       try {
-        const departmentResponse = await axios.get("http://localhost:5000/api/fetchDepartment");
-        const shiftResponse = await axios.get("http://localhost:5000/api/fetchShift");
-        const enrollSiteResponse = await axios.get("http://localhost:5000/api/fetchLocation");
+        const departmentResponse = await axios.get(
+          "http://localhost:5000/api/fetchDepartment"
+        );
+        const shiftResponse = await axios.get(
+          "http://localhost:5000/api/fetchShift"
+        );
+        const enrollSiteResponse = await axios.get(
+          "http://localhost:5000/api/fetchLocation"
+        );
         // const overtimeResponse = await axios.get("http://localhost:5000/api/fetchLocation");
 
         setDepartments(departmentResponse.data);
         setShifts(shiftResponse.data);
         setEnrollSites(enrollSiteResponse.data);
+        if (editData) {
+          setNewEmployee({ ...editData });
+        }
         // setOvertime(overtimeResponse.data);
       } catch (error) {
         console.error("Error fetching options:", error);
@@ -82,52 +95,13 @@ const AddEmployee = ({ setData, setActiveTab, data, isEditMode, employeeToEdit }
     };
 
     fetchOptions();
-  }, []);
-
-  // useEffect(() => {
-  //   if (isEditMode && employeeToEdit) {
-  //     setNewEmployee({
-  //       empId: employeeToEdit.empId,
-  //       fName: employeeToEdit.fName,
-  //       lName: employeeToEdit.lName,
-  //       email: employeeToEdit.email,
-  //       contactNo: employeeToEdit.contactNo,
-  //       picture: employeeToEdit.picture,
-  //       enrollSite: employeeToEdit.enrollSite,
-  //       gender: employeeToEdit.gender,
-  //       joiningDate: employeeToEdit.joiningDate,
-  //       bankName: employeeToEdit.bankName,
-  //       overtimeAssigned: employeeToEdit.overtimeAssigned,
-  //       department: employeeToEdit.department,
-  //       designationName: employeeToEdit.designationName,
-  //       basicSalary: employeeToEdit.basicSalary,
-  //       accountNo: employeeToEdit.accountNo,
-  //       salaryPeriod: employeeToEdit.salaryPeriod,
-  //       salaryType: employeeToEdit.salaryType,
-  //       enableAttendance: employeeToEdit.enableAttendance,
-  //       enableSchedule: employeeToEdit.enableSchedule,
-  //       enableOvertime: employeeToEdit.enableOvertime,
-  //     });
-  //   }
-  // }, [isEditMode, employeeToEdit]);
-
+  }, [editData]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewEmployee((prev) => ({ ...prev, [name]: value }));
   };
 
-
-
-  // const [departments, setDepartments] = useState([
-  //   "IT",
-  //   "HR",
-  //   "Finance",
-  //   "Marketing",
-  //   "R&D",
-  //   "Sales",
-  //   "Admin",
-  // ]);
   const handleDepartmentChange = (event) => {
     const { value } = event.target;
 
@@ -168,7 +142,7 @@ const AddEmployee = ({ setData, setActiveTab, data, isEditMode, employeeToEdit }
   };
 
   const addEmployees = async () => {
-    const employeeData  = {
+    const employeeData = {
       empId: newEmployee.empId,
       fName: newEmployee.fName,
       lName: newEmployee.lName,
@@ -193,41 +167,75 @@ const AddEmployee = ({ setData, setActiveTab, data, isEditMode, employeeToEdit }
     };
 
     try {
-      axios.post('http://localhost:5000/api/addEmployees', employeeData );
-      console.log(employeeData );
+      axios.post("http://localhost:5000/api/addEmployees", employeeData);
+      console.log(employeeData);
       setSelectedPage("");
     } catch (error) {
       console.log(error);
     }
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  // Create a new FormData object
-  const formData = new FormData();
-  Object.keys(newEmployee).forEach((key) => {
-    formData.append(key, newEmployee[key]);
-  });
+    // Create a new FormData object
+    const formData = new FormData();
+    Object.keys(newEmployee).forEach((key) => {
+      formData.append(key, newEmployee[key]);
+    });
 
-  try {
-    const response = isEditMode
-      ? await axios.put(`http://localhost:5000/api/employees/${newEmployee.empId}`, formData)
-      : await axios.post("http://localhost:5000/api/addEmployees", formData);
+    try {
+      const response = isEditMode
+        ? await axios.post(
+            `http://localhost:5000/api/updateEmployees`,
+            formData
+          )
+        : await axios.post("http://localhost:5000/api/addEmployees", formData);
+      // setActiveTab("Employees");
 
-    if (response.status === (isEditMode ? 200 : 201)) {
-      setData((prevData) => isEditMode
-        ? prevData.map((emp) => (emp.empId === newEmployee.empId ? { ...emp, ...response.data } : emp))
-        : [...prevData, response.data]
+      if (response.status === (isEditMode ? 200 : 201)) {
+        setData((prevData) =>
+          isEditMode
+            ? prevData.map((emp) =>
+                emp.empId === newEmployee.empId
+                  ? { ...emp, ...response.data }
+                  : emp
+              )
+            : [...prevData, response.data]
+        );
+        setNewEmployee({
+          empId: "",
+          fName: "",
+          lName: "",
+          email: "",
+          contactNo: "",
+          picture: "",
+          enrollSite: "",
+          gender: "",
+          joiningDate: "",
+          bankName: "",
+          overtimeAssigned: "",
+          department: "",
+          designationName: "",
+          basicSalary: "",
+          accountNo: "",
+          salaryPeriod: "",
+          salaryType: "",
+          shift: "",
+          enableAttendance: false,
+          enableSchedule: false,
+          enableOvertime: false,
+        });
+      }
+    } catch (error) {
+      console.error(
+        "Error adding/updating employee:",
+        error.response ? error.response.data : error.message
       );
-      setActiveTab("Employees"); // Redirect back to the employee list
     }
-  } catch (error) {
-    console.error("Error adding/updating employee:", error.response ? error.response.data : error.message);
-  }
-};
-
-  
+    setIsEditMode(false)
+    setActiveTab("Employees");
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -238,7 +246,7 @@ const handleSubmit = async (e) => {
     const file = event.target.files[0];
     if (file) {
       setNewEmployee((prevState) => ({ ...prevState, picture: file })); // Store the file object
-  }
+    }
   };
 
   const handleWebcamCapture = (imageSrc) => {
@@ -253,7 +261,12 @@ const handleSubmit = async (e) => {
     <div className="add-employee-main">
       <div>
         <button
-          onClick={() => setActiveTab("Employees")}
+          onClick={() => {
+            setIsEditMode(false);
+            setActiveTab("Employees")
+          }
+          } 
+            
           className="back-button"
         >
           <FaArrowLeft /> Back
@@ -262,17 +275,11 @@ const handleSubmit = async (e) => {
       {selectedPage === "Department" ? (
         <Department setSelectedPage={setSelectedPage} />
       ) : selectedPage === "Shift Management" ? (
-        // Render Shift Management component here
-        // <div>Shift Management Component</div>
-        <ShiftManagement setSelectedPage={setSelectedPage}/>
+        <ShiftManagement setSelectedPage={setSelectedPage} />
       ) : selectedPage === "Overtime Management" ? (
-        // Render Overtime Management component here
-        // <div>Overtime Management Component</div>
-        <OvertimeTable setSelectedPage={setSelectedPage}/>
+        <OvertimeTable setSelectedPage={setSelectedPage} />
       ) : selectedPage === "Enroll Site Management" ? (
-        // Render Enroll Site Management component here
-        // <div>Enroll Site Management Component</div>
-        <Location setSelectedPage={setSelectedPage}/>
+        <Location setSelectedPage={setSelectedPage} />
       ) : (
         <form onSubmit={handleSubmit} className="employee-form">
           <section>
@@ -345,29 +352,43 @@ const handleSubmit = async (e) => {
                   >
                     Capture Picture with Webcam
                   </button>
-                  {newEmployee.picture && (
-                    <div className="captured-image-container">
+                  <div className="captured-image-container">
+                    {isEditMode && (
+                      <div className="empImage">
+                        <img
+                          src={
+                            newEmployee.picture
+                              ? `http://localhost:5000/${newEmployee.picture}`
+                              : "" // Use an empty string instead of a space
+                          }
+                          alt={newEmployee.employeeName}
+                          className="employee-image"
+                        />
+                      </div>
+                    )}
+                    {/* {newEmployee.picture && ( */}
+
+                    {!isEditMode &&  (
                       <img
-                        // src={newEmployee.picture}
-                        src={typeof newEmployee.picture === "string" ? newEmployee.picture : URL.createObjectURL(newEmployee.picture)}
+                        src={
+                          typeof newEmployee.picture === "string"
+                            ? newEmployee.picture // Use the URL directly
+                            : newEmployee.picture instanceof File // Check if it's a File object
+                            ? URL.createObjectURL(newEmployee.picture) // Create a URL for the file object
+                            : "" // Fallback if the picture is neither a string nor a File object
+                        }
                         alt="Captured"
                         className="captured-image"
                       />
-                    </div>
-                  )}
+                    )}
+                  </div>
+                  {/* )}  */}
                   <WebcamModal
                     isOpen={isWebcamOpen}
                     onClose={() => setIsWebcamOpen(false)}
                     onCapture={handleWebcamCapture}
                   />
                   <label>Enrolled Site</label>
-                  {/* <input
-                    type="text"
-                    name="enrollSite"
-                    placeholder="Enter Enrolled Site"
-                    value={newEmployee.enrollSite}
-                    onChange={handleChange}
-                  /> */}
                   <select
                     name="enrollSite"
                     value={newEmployee.enrollSite}
@@ -412,26 +433,24 @@ const handleSubmit = async (e) => {
                     value={newEmployee.bankName}
                     onChange={handleChange}
                   />
-                  
                 </div>
-                
-                <div className="employee-info-inner">
-                <label>Shift</label>
-                <select
-                  name="shift"
-                  value={newEmployee.shift}
-                  onChange={handleShiftChange}
-                  required
-                >
-                  <option value="">Select Shift</option>
-                  {shifts.map((shift, index) => (
-                    <option key={index} value={shift.name}>
-                      {shift.name}
-                    </option>
-                  ))}
-                  <option value="Add-Shift">+ Add New Shift</option>
 
-                </select>
+                <div className="employee-info-inner">
+                  <label>Shift</label>
+                  <select
+                    name="shift"
+                    value={newEmployee.shift}
+                    onChange={handleShiftChange}
+                    required
+                  >
+                    <option value="">Select Shift</option>
+                    {shifts.map((shift, index) => (
+                      <option key={index} value={shift.name}>
+                        {shift.name}
+                      </option>
+                    ))}
+                    <option value="Add-Shift">+ Add New Shift</option>
+                  </select>
                   <label>Overtime Assigned</label>
                   <select
                     name="overtimeAssigned"
@@ -550,13 +569,16 @@ const handleSubmit = async (e) => {
                 </div>
               </div>
               <div className="employee-buttons">
-                <button className="submit-button" type="submit" >
-                {isEditMode ? "Update Employee" : "Add Employee"}
+                <button className="submit-button" type="submit">
+                  {isEditMode ? "Update Employee" : "Add Employee"}
                 </button>
                 <button
                   className="cancel-button"
                   type="button"
-                  onClick={() => setActiveTab("Employees")}
+                  onClick={() => {
+                    setIsEditMode(false)
+                    setActiveTab("Employees")}
+                  } 
                 >
                   Cancel
                 </button>

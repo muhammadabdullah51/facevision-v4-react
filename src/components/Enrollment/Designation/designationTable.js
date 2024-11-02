@@ -8,6 +8,8 @@ import addAnimation from "../../../assets/Lottie/addAnim.json";
 import updateAnimation from "../../../assets/Lottie/updateAnim.json";
 import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../../assets/Lottie/successAnim.json";
+import warningAnimation from "../../../assets/Lottie/warningAnim.json";
+import { SERVER_URL } from "../../../config";
 
 const DesignationTable = ({ data, setData }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -29,19 +31,20 @@ const DesignationTable = ({ data, setData }) => {
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [warningModal, setWarningModal] = useState(false);
+  const [resMsg, setResMsg] = useState("");
+
 
   const fetchDesignation = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch(
-        "http://localhost:5000/api/fetchDesignation"
-      );
-      if (response.ok) {
-        const designation = await response.json();
-        setData(designation);
-      } else {
-        throw new Error("Failed to fetch designation");
-      }
+      const response = await axios.get(`${SERVER_URL}pr-dsg/`);
+      const designation = await response.data.context;
+      setData(designation);
+      // if (response.ok) {
+      // } else {
+      //   throw new Error("Failed to fetch designation");
+      // }
     } catch (error) {
       console.error("Error fetching designation data:", error);
     } finally {
@@ -73,7 +76,6 @@ const DesignationTable = ({ data, setData }) => {
 
   const handleEdit = (row) => {
     setFormData({
-      _id: row._id,
       dsgId: row.dsgId,
       dsgCode: row.dsgCode,
       name: row.name,
@@ -85,18 +87,14 @@ const DesignationTable = ({ data, setData }) => {
   const handleDelete = async (dsgId) => {
     setModalType("delete");
     setShowModal(true);
-    setFormData({ ...formData, _id: dsgId });
+    setFormData({ ...formData, dsgId: dsgId });
   };
   const confirmDelete = async () => {
     try {
-      await axios.post(`http://localhost:5000/api/deleteDesignation`, {
-        dsgId: formData._id,
-      });
-      console.log(`Designation deleted ID: ${formData._id}`);
-      const updatedData = await axios.get(
-        "http://localhost:5000/api/fetchDesignation"
-      );
-      setData(updatedData.data);
+      await axios.post(`${SERVER_URL}pr-dsg-del/`, {dsgId: formData.dsgId,});
+      console.log(`Designation deleted ID: ${formData.dsgId}`);
+      const updatedData = await axios.get(`${SERVER_URL}pr-dsg/`);
+      setData(updatedData.data.context);
       fetchDesignation();
       setShowModal(false);
       setSuccessModal(true);
@@ -107,7 +105,6 @@ const DesignationTable = ({ data, setData }) => {
 
   const handleAdd = () => {
     setFormData({
-      dsgId: null,
       dsgCode: "",
       name: "",
     });
@@ -121,39 +118,45 @@ const DesignationTable = ({ data, setData }) => {
     setShowModal(true);
   };
   const confirmAdd = async () => {
-    if (!formData.name || !formData.dsgCode || !formData.dsgId) {
-      alert("Please fill in all required fields.");
+    if (!formData.name || !formData.dsgCode ) {
+      setResMsg("Please fill in all required fields.")
+      setShowModal(false);
+      setWarningModal(true);
       return;
     }
 
     const designation = {
-      dsgId: formData.dsgId,
       dsgCode: formData.dsgCode,
       name: formData.name,
     };
     try {
-      axios.post(`http://localhost:5000/api/addDesignation`, designation);
-      console.log(designation);
+      const response = await axios.post(`${SERVER_URL}pr-dsg/`, designation);
+      console.log(response.data.msg);
       console.log("Designation Added Succesfully");
       setShowAddForm(false);
+      setResMsg(response.data.msg)
+      if (response.data.status) {
+        setShowModal(false);
+        setSuccessModal(true);
+        fetchDesignation();
+      }else {
+        setShowModal(false);
+        setWarningModal(true);
+        console.log(updatedData.data.msg)
+      }
 
-      const updatedData = await axios.get(
-        "http://localhost:5000/api/fetchDesignation"
-      );
-      setData(updatedData.data);
-      setShowModal(false);
-      setSuccessModal(true);
-      fetchDesignation();
+      const updatedData = await axios.get(`${SERVER_URL}pr-dsg/`);
+      setData(updatedData.data.context);
     } catch (error) {
-      console.log(error);
+      setWarningModal(true);
     }
   };
 
   const handleUpdate = async (row) => {
+    
     console.log(row);
     setModalType("update");
     setFormData({
-      _id: row._id,
       dsgId: row.dsgId,
       dsgCode: row.dsgCode,
       name: row.name,
@@ -162,27 +165,39 @@ const DesignationTable = ({ data, setData }) => {
   };
 
   const confirmUpdate = async () => {
+    if (!formData.name || !formData.dsgCode ) {
+      setResMsg("Please fill in all required fields.")
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    }
     const updatedDepartment = {
-      _id: formData._id,
       dsgId: formData.dsgId,
       dsgCode: formData.dsgCode,
       name: formData.name,
     };
 
     try {
-      await axios.post(
-        "http://localhost:5000/api/updateDesignation",
-        updatedDepartment
-      );
+      const res = await axios.post(`${SERVER_URL}pr-dsg-up/`, updatedDepartment);
       console.log("Designation updated successfully");
       fetchDesignation();
       setShowEditForm(false);
-      // const updatedData = await axios.get('http://localhost:5000/api/fetchDepartment');
-      // setData(updatedData.data);
       setShowModal(false);
+      setResMsg(res.data.msg)
+      if (res.data.status) {
+        setSuccessModal(true);
+        fetchDesignation();
+      }else {
+        setShowModal(false);
+        setWarningModal(true);
+        console.log(res.data.msg)
+      }
       setSuccessModal(true);
+      const updatedData = await axios.get(`${SERVER_URL}pr-dsg/`);
+      setData(updatedData.data.context);
     } catch (error) {
       console.error("Error updating Designation:", error);
+      setWarningModal(true);
     }
   };
 
@@ -212,6 +227,14 @@ const DesignationTable = ({ data, setData }) => {
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
         successModal={successModal}
+      />
+      <ConirmationModal
+        isOpen={warningModal}
+        message={resMsg}
+        onConfirm={() => setWarningModal(false)}
+        onCancel={() => setWarningModal(false)}
+        animationData={warningAnimation}
+        warningModal={warningModal}
       />
 
       <div className="table-header">
@@ -268,14 +291,7 @@ const DesignationTable = ({ data, setData }) => {
       {showAddForm && !showEditForm && (
         <div className="add-department-form">
           <h3>Add New Designation</h3>
-          <input
-            type="text"
-            placeholder="Designation ID"
-            value={formData.dsgId}
-            onChange={(e) =>
-              setFormData({ ...formData, dsgId: e.target.value })
-            }
-          />
+          
           <input
             type="text"
             placeholder="Designation Code"
@@ -304,14 +320,7 @@ const DesignationTable = ({ data, setData }) => {
       {showEditForm && (
         <div className="add-department-form">
           <h3>Edit Designation</h3>
-          <input
-            type="text"
-            placeholder="Designation ID"
-            value={formData.dsgId}
-            onChange={(e) =>
-              setFormData({ ...formData, dsgId: e.target.value })
-            }
-          />
+          
           <input
             type="text"
             placeholder="Designation Code"
@@ -367,7 +376,7 @@ const DesignationTable = ({ data, setData }) => {
                       <FaEdit className="table-edit" />
                     </button>
                     <button
-                      onClick={() => handleDelete(row._id)}
+                      onClick={() => handleDelete(row.dsgId)}
                       style={{ background: "none", border: "none" }}
                     >
                       <FaTrash className="table-delete" />

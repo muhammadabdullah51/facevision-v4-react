@@ -12,7 +12,7 @@ const authSlice = createSlice({
             state.isAuthenticated = true;
             // Store the entire user object in userInfo
             state.userInfo = {
-                _id: action.payload._id,
+                id: action.payload.id,
                 username: action.payload.username,
                 email: action.payload.email,
                 phoneNumber: action.payload.phoneNumber,

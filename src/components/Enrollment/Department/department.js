@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import TableComponent from "./departmentTable";
+import { SERVER_URL } from "../../../config";
 
 const Department = () => {
   const [data, setData] = useState([]);
@@ -14,9 +15,12 @@ const Department = () => {
   const fetchDepartments = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/fetchDepartment"
+        `${SERVER_URL}pr-dpt/`
       );
-      setData(response.data);
+      setData(response.data.context);
+      // console.log(response.data.context);
+
+      
     } catch (error) {
       console.error("Error fetching department data:", error);
     }
