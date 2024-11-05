@@ -6,7 +6,7 @@ const AttendancePolicy = () => {
   return (
     <div className='business-Hours-main'>
       <BusinessHours/>
-      <ScheduleCheckboxes/>
+      {/* <ScheduleCheckboxes/> */}
     </div>
   )
 }

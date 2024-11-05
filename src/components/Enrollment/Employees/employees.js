@@ -6,6 +6,7 @@ import Department from "../Department/department";
 import Designation from "../Designation/designation";
 import Location from "../Location/location";
 import Resign from "../Resign/resign";
+import { SERVER_URL } from "../../../config";
 
 const Employees = () => {
   const [activeTab, setActiveTab] = useState("Employees");
@@ -16,9 +17,7 @@ const Employees = () => {
 
   const fetchEmployees = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:5000/api/fetchEmployees"
-      );
+      const response = await axios.get(`${SERVER_URL}pr-emp/`);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching employee data:", error);
@@ -65,7 +64,6 @@ const Employees = () => {
         );
     }
   };
-
   return (
     <>
       <div className="settings-page">

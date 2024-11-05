@@ -95,7 +95,7 @@
   font-weight: var(--bold-font);
 }
 .captured-image-container img{
-  width: 100%;
+  width: 35%;
   height: auto;
 }
 .presentStatus{

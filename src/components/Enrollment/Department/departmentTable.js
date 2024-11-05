@@ -8,6 +8,7 @@ import addAnimation from "../../../assets/Lottie/addAnim.json";
 import updateAnimation from "../../../assets/Lottie/updateAnim.json";
 import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../../assets/Lottie/successAnim.json";
+import warningAnimation from "../../../assets/Lottie/warningAnim.json";
 import { SERVER_URL } from "../../../config";
 
 
@@ -34,6 +35,8 @@ const TableComponent = ({ data, setData }) => {
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
   const [loading, setLoading] = useState(false); // Loading state
+  const [warningModal, setWarningModal] = useState(false);
+  const [resMsg, setResMsg] = useState("");
 
   // Fetch departments data
   const fetchDepartments = useCallback(async () => {
@@ -113,7 +116,9 @@ const TableComponent = ({ data, setData }) => {
 
   const confirmAdd = async () => {
     if (!formData.name ) {
-      alert("Please fill in all required fields.");
+      setResMsg("Please fill in atleast Department Name fields.")
+      setShowModal(false);
+      setWarningModal(true);
       return;
   }
     const newDepartment = {
@@ -124,18 +129,27 @@ const TableComponent = ({ data, setData }) => {
     };
 
     try {
-      await axios.post(`${SERVER_URL}pr-dpt/`, newDepartment);
+      const response = await axios.post(`${SERVER_URL}pr-dpt/`, newDepartment);
       console.log(newDepartment);
       console.log("Department added successfully:");
       setShowAddForm(false);
+      setResMsg(response.data.msg)
+      if (response.data.status) {
+        setShowModal(false);
+        setSuccessModal(true);
+        fetchDepartments();
+      }else {
+        setShowModal(false);
+        setWarningModal(true);
+        // console.log(updatedData.data.msg)
+      }
       const updatedData = await axios.get(`${SERVER_URL}pr-dpt/`
       );
       setData(updatedData.data.context);
-      setShowModal(false);
-      setSuccessModal(true);
-      fetchDepartments();
+     
     } catch (error) {
       console.error("Error adding department:", error);
+      setWarningModal(true);
     }
 
     // Reset the form data
@@ -171,6 +185,12 @@ const TableComponent = ({ data, setData }) => {
     setShowModal(true);
   };
   const confirmUpdate = async () => {
+    if (!formData.name){
+      setResMsg("Please fill in atleast Department Name fields.")
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    }
     const updatedDepartment = {
       // _id: formData._id,
       dptId: formData.dptId,
@@ -221,6 +241,14 @@ const TableComponent = ({ data, setData }) => {
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
         successModal={successModal}
+      />
+      <ConirmationModal
+        isOpen={warningModal}
+        message={resMsg}
+        onConfirm={() => setWarningModal(false)}
+        onCancel={() => setWarningModal(false)}
+        animationData={warningAnimation}
+        warningModal={warningModal}
       />
 
       <div className="table-header">

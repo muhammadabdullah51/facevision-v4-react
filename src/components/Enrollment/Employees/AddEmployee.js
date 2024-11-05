@@ -10,6 +10,8 @@ import OvertimeTable from "../../Settings/Setting_Tabs/OvertimeSettings";
 import Location from "../Location/location";
 import LocationTable from "../Location/LocationTable";
 import { useLocation } from "react-router-dom";
+import { SERVER_URL } from "../../../config";
+import Designation from "../Designation/designation";
 
 const AddEmployee = ({
   setData,
@@ -22,70 +24,52 @@ const AddEmployee = ({
 }) => {
   const [selectedPage, setSelectedPage] = useState("");
   const [isWebcamOpen, setIsWebcamOpen] = useState(false);
-  
+
   const [newEmployee, setNewEmployee] = useState({
     empId: "",
     fName: "",
     lName: "",
-    email: "",
-    contactNo: "",
-    picture: "",
-    enrollSite: "",
+    dptId: "",
+    dsgId: "",
+    locId: "",
+    xid: "",
+    otid: "",
     gender: "",
+    email: "",
     joiningDate: "",
+    contactNo: "",
+    image1: "",
     bankName: "",
-    overtimeAssigned: "",
-    department: "",
-    designationName: "",
     basicSalary: "",
     accountNo: "",
     salaryPeriod: "",
     salaryType: "",
-    shift: "",
     enableAttendance: false,
-    enableSchedule: false,
     enableOvertime: false,
+    enableSchedule: false,
   });
 
   // New state variables for dropdown options
   const [departments, setDepartments] = useState([]);
+  const [designations, setDesignations] = useState([]);
   const [shifts, setShifts] = useState([]);
+  const [eshift, setEShift] = useState("");
   const [enrollSites, setEnrollSites] = useState([]);
-  const [overtime, setOvertime] = useState([
-    {
-      OTFormulaId: 1,
-      OTCode: "PC001",
-      ratePerHour: "$30",
-      updateDate: "2024-09-01",
-    },
-    {
-      OTFormulaId: 2,
-      OTCode: "PC002",
-      ratePerHour: "$35",
-      updateDate: "2024-09-02",
-    },
-  ]);
+  const [overtime, setOvertime] = useState([]);
 
   useEffect(() => {
     const fetchOptions = async () => {
       // console.log(isEditMode)
 
       try {
-        const departmentResponse = await axios.get(
-          "http://localhost:5000/api/fetchDepartment"
-        );
-        const shiftResponse = await axios.get(
-          "http://localhost:5000/api/fetchShift"
-        );
-        const enrollSiteResponse = await axios.get(
-          "http://localhost:5000/api/fetchLocation"
-        );
-        // const overtimeResponse = await axios.get("http://localhost:5000/api/fetchLocation");
+        const response = await axios.get(`${SERVER_URL}emp-fun/`);
 
-        setDepartments(departmentResponse.data);
-        setShifts(shiftResponse.data);
-        setEnrollSites(enrollSiteResponse.data);
-        if (editData) {
+        setDepartments(response.data.dpt_data);
+        setShifts(response.data.shft_data);
+        setEnrollSites(response.data.loc_data);
+        setOvertime(response.data.ot_data);
+        setDesignations(response.data.dsg_data);
+        if (isEditMode && editData) {
           setNewEmployee({ ...editData });
         }
         // setOvertime(overtimeResponse.data);
@@ -95,7 +79,7 @@ const AddEmployee = ({
     };
 
     fetchOptions();
-  }, [editData]);
+  }, [isEditMode, editData]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -108,7 +92,16 @@ const AddEmployee = ({
     if (value === "Add-Department") {
       setSelectedPage("Department");
     } else {
-      setNewEmployee({ ...newEmployee, department: value });
+      setNewEmployee({ ...newEmployee, dptId: value });
+    }
+  };
+  const handleDesignationChange = (event) => {
+    const { value } = event.target;
+
+    if (value === "Add-Designation") {
+      setSelectedPage("Designation");
+    } else {
+      setNewEmployee({ ...newEmployee, dsgId: value });
     }
   };
   const handleShiftChange = (event) => {
@@ -117,7 +110,7 @@ const AddEmployee = ({
     if (value === "Add-Shift") {
       setSelectedPage("Shift Management");
     } else {
-      setNewEmployee({ ...newEmployee, shift: value });
+      setNewEmployee({ ...newEmployee, xid: value });
     }
   };
 
@@ -127,7 +120,7 @@ const AddEmployee = ({
     if (value === "Add-Overtime") {
       setSelectedPage("Overtime Management");
     } else {
-      setNewEmployee({ ...newEmployee, overtimeAssigned: value });
+      setNewEmployee({ ...newEmployee, otid: value });
     }
   };
 
@@ -137,106 +130,93 @@ const AddEmployee = ({
     if (value === "Add-EnrollSite") {
       setSelectedPage("Enroll Site Management");
     } else {
-      setNewEmployee({ ...newEmployee, enrollSite: value });
+      setNewEmployee({ ...newEmployee, locId: value });
     }
   };
 
-  const addEmployees = async () => {
-    const employeeData = {
-      empId: newEmployee.empId,
-      fName: newEmployee.fName,
-      lName: newEmployee.lName,
-      email: newEmployee.email,
-      contactNo: newEmployee.contactNo,
-      picture: newEmployee.picture,
-      enrollSite: newEmployee.enrollSite,
-      gender: newEmployee.gender,
-      joiningDate: newEmployee.joiningDate,
-      bankName: newEmployee.bankName,
-      overtimeAssigned: newEmployee.overtimeAssigned,
-      department: newEmployee.department,
-      designationName: newEmployee.designationName,
-      basicSalary: newEmployee.basicSalary,
-      accountNo: newEmployee.accountNo,
-      salaryPeriod: newEmployee.salaryPeriod,
-      salaryType: newEmployee.salaryType,
-      shift: newEmployee.shift,
-      enableAttendance: newEmployee.enableAttendance,
-      enableSchedule: newEmployee.enableSchedule,
-      enableOvertime: newEmployee.enableOvertime,
-    };
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
 
-    try {
-      axios.post("http://localhost:5000/api/addEmployees", employeeData);
-      console.log(employeeData);
-      setSelectedPage("");
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  //   // Create a new FormData object
+  //   const formData = new FormData();
+  //   Object.keys(newEmployee).forEach((key) => {
+  //     formData.append(key, newEmployee[key]);
+  //   });
+
+  //   console.log("-----------start----------");
+  //   for (let pair of formData.entries()) {
+  //     console.log(`${pair[0]}: ${pair[1]}`);
+  //   }
+  //   console.log("-----------stop----------");
+  //   console.log(formData.values());
+  //   try {
+  //     const response = isEditMode
+  //       ? await axios.post(`${SERVER_URL}pr-emp-up/`, formData)
+  //       : await axios.post(`${SERVER_URL}pr-emp/`, formData);
+
+  //     setData((prevData) =>
+  //       isEditMode
+  //         ? prevData.map((emp) =>
+  //             emp.empId === newEmployee.empId
+  //               ? { ...emp, ...response.data }
+  //               : emp
+  //           )
+  //         : [...prevData, response.data]
+  //     );
+  //     // if (response.status === (isEditMode ? 200 : 201)) {
+
+  //     // }
+  //   } catch (error) {
+  //     console.error(
+  //       "Error adding/updating employee:",
+  //       error.response ? error.response.data : error.message
+  //     );
+  //   }
+  //   setIsEditMode(false);
+  //   setActiveTab("Employees");
+  // };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     // Create a new FormData object
     const formData = new FormData();
     Object.keys(newEmployee).forEach((key) => {
       formData.append(key, newEmployee[key]);
     });
-
+  
+    // Log each entry to confirm FormData has values
+    // for (let pair of formData.entries()) {
+    //   console.log(`${pair[0]}: ${pair[1]}`);
+    // }
+  
     try {
+      // Send formData as payload to the API
       const response = isEditMode
-        ? await axios.post(
-            `http://localhost:5000/api/updateEmployees`,
-            formData
-          )
-        : await axios.post("http://localhost:5000/api/addEmployees", formData);
-      // setActiveTab("Employees");
-
-      if (response.status === (isEditMode ? 200 : 201)) {
-        setData((prevData) =>
-          isEditMode
-            ? prevData.map((emp) =>
-                emp.empId === newEmployee.empId
-                  ? { ...emp, ...response.data }
-                  : emp
-              )
-            : [...prevData, response.data]
-        );
-        setNewEmployee({
-          empId: "",
-          fName: "",
-          lName: "",
-          email: "",
-          contactNo: "",
-          picture: "",
-          enrollSite: "",
-          gender: "",
-          joiningDate: "",
-          bankName: "",
-          overtimeAssigned: "",
-          department: "",
-          designationName: "",
-          basicSalary: "",
-          accountNo: "",
-          salaryPeriod: "",
-          salaryType: "",
-          shift: "",
-          enableAttendance: false,
-          enableSchedule: false,
-          enableOvertime: false,
-        });
-      }
+        ? await axios.post(`${SERVER_URL}pr-emp-up/`, formData)
+        : await axios.post(`${SERVER_URL}pr-emp/`, formData);
+        console.log(formData)
+  
+      setData((prevData) =>
+        isEditMode
+          ? prevData.map((emp) =>
+              emp.empId === newEmployee.empId
+                ? { ...emp, ...response.data }
+                : emp
+            )
+          : [...prevData, response.data]
+      );
     } catch (error) {
       console.error(
         "Error adding/updating employee:",
         error.response ? error.response.data : error.message
       );
     }
-    setIsEditMode(false)
+  
+    setIsEditMode(false);
     setActiveTab("Employees");
   };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setNewEmployee((prevData) => ({ ...prevData, [name]: value }));
@@ -245,7 +225,7 @@ const AddEmployee = ({
   const handlePictureChange = async (event) => {
     const file = event.target.files[0];
     if (file) {
-      setNewEmployee((prevState) => ({ ...prevState, picture: file })); // Store the file object
+      setNewEmployee((prevState) => ({ ...prevState, image1: file })); // Store the file object
     }
   };
 
@@ -253,7 +233,7 @@ const AddEmployee = ({
     // Update the state with the captured image
     setNewEmployee((prevState) => ({
       ...prevState,
-      picture: imageSrc, // Store the imageSrc in the 'picture' field
+      image1: imageSrc, // Store the imageSrc in the 'picture' field
     }));
   };
 
@@ -263,10 +243,8 @@ const AddEmployee = ({
         <button
           onClick={() => {
             setIsEditMode(false);
-            setActiveTab("Employees")
-          }
-          } 
-            
+            setActiveTab("Employees");
+          }}
           className="back-button"
         >
           <FaArrowLeft /> Back
@@ -276,6 +254,8 @@ const AddEmployee = ({
         <Department setSelectedPage={setSelectedPage} />
       ) : selectedPage === "Shift Management" ? (
         <ShiftManagement setSelectedPage={setSelectedPage} />
+      ) : selectedPage === "Designation" ? (
+        <Designation setSelectedPage={setSelectedPage} />
       ) : selectedPage === "Overtime Management" ? (
         <OvertimeTable setSelectedPage={setSelectedPage} />
       ) : selectedPage === "Enroll Site Management" ? (
@@ -357,30 +337,29 @@ const AddEmployee = ({
                       <div className="empImage">
                         <img
                           src={
-                            newEmployee.picture
-                              ? `http://localhost:5000/${newEmployee.picture}`
+                            newEmployee.image1
+                              ? `${SERVER_URL}${newEmployee.image1}`
                               : "" // Use an empty string instead of a space
                           }
-                          alt={newEmployee.employeeName}
+                          alt={`${newEmployee.fName} ${newEmployee.lName}`}
                           className="employee-image"
                         />
                       </div>
                     )}
-                    {/* {newEmployee.picture && ( */}
 
-                    {!isEditMode &&  (
-                      <img
-                        src={
-                          typeof newEmployee.picture === "string"
-                            ? newEmployee.picture // Use the URL directly
-                            : newEmployee.picture instanceof File // Check if it's a File object
-                            ? URL.createObjectURL(newEmployee.picture) // Create a URL for the file object
-                            : "" // Fallback if the picture is neither a string nor a File object
-                        }
-                        alt="Captured"
-                        className="captured-image"
-                      />
-                    )}
+                    {/* {!isEditMode && ( */}
+                    <img
+                      src={
+                        typeof newEmployee.image1 === "string"
+                          ? newEmployee.image1 // Use the URL directly
+                          : newEmployee.image1 instanceof File // Check if it's a File object
+                          ? URL.createObjectURL(newEmployee.image1) // Create a URL for the file object
+                          : "" // Fallback if the picture is neither a string nor a File object
+                      }
+                      alt="Captured"
+                      className="captured-image"
+                    />
+                    {/* )} */}
                   </div>
                   {/* )}  */}
                   <WebcamModal
@@ -391,12 +370,17 @@ const AddEmployee = ({
                   <label>Enrolled Site</label>
                   <select
                     name="enrollSite"
-                    value={newEmployee.enrollSite}
+                    value={newEmployee.locId}
                     onChange={handleEnrollSiteChange}
                   >
+                    {isEditMode && (
+                      <option value={editData.locId}>
+                        {editData.enrollSite}
+                      </option>
+                    )}
                     <option value="">Select Enrolled Site</option>
                     {enrollSites.map((site, index) => (
-                      <option key={index} value={site.name}>
+                      <option key={site.locId} value={site.locId}>
                         {site.name}
                       </option>
                     ))}
@@ -410,6 +394,9 @@ const AddEmployee = ({
                     onChange={handleChange}
                     required
                   >
+                    {isEditMode && (
+                      <option value={editData.gender}>{editData.gender}</option>
+                    )}
                     <option value="">Select Gender</option>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
@@ -432,6 +419,7 @@ const AddEmployee = ({
                     placeholder="Enter Bank Name"
                     value={newEmployee.bankName}
                     onChange={handleChange}
+                    required
                   />
                 </div>
 
@@ -439,27 +427,34 @@ const AddEmployee = ({
                   <label>Shift</label>
                   <select
                     name="shift"
-                    value={newEmployee.shift}
+                    value={newEmployee.xid}
                     onChange={handleShiftChange}
                     required
                   >
+                    {isEditMode && (
+                      <option value={editData.xid}>{editData.shift}</option>
+                    )}
                     <option value="">Select Shift</option>
                     {shifts.map((shift, index) => (
-                      <option key={index} value={shift.name}>
+                      <option key={shift.shiftId} value={shift.shiftId}>
                         {shift.name}
                       </option>
                     ))}
                     <option value="Add-Shift">+ Add New Shift</option>
                   </select>
+
                   <label>Overtime Assigned</label>
                   <select
                     name="overtimeAssigned"
-                    value={newEmployee.overtimeAssigned}
+                    value={newEmployee.otid}
                     onChange={handleOvertimeChange}
                   >
+                    {isEditMode && (
+                      <option value={editData.otid}>{editData.OTCode}</option>
+                    )}
                     <option value="">Select Overtime</option>
                     {overtime.map((ot) => (
-                      <option key={ot.OTFormulaId} value={ot.OTCode}>
+                      <option key={ot.OTFormulaId} value={ot.OTFormulaId}>
                         {ot.OTCode}
                       </option>
                     ))}
@@ -469,14 +464,19 @@ const AddEmployee = ({
                   <label>Department Name</label>
                   <select
                     name="department"
-                    value={newEmployee.department}
+                    value={newEmployee.dptId}
                     onChange={handleDepartmentChange}
                   >
+                    {isEditMode && (
+                      <option value={editData.dptId}>
+                        {editData.department}
+                      </option>
+                    )}
                     <option value="" disabled>
                       Select a Department
                     </option>
                     {departments.map((dept, index) => (
-                      <option key={index} value={dept.name}>
+                      <option key={dept.dptId} value={dept.dptId}>
                         {dept.name}
                       </option>
                     ))}
@@ -484,13 +484,28 @@ const AddEmployee = ({
                   </select>
 
                   <label>Designation Name</label>
-                  <input
-                    type="text"
-                    name="designationName"
-                    placeholder="Enter Designation"
-                    value={newEmployee.designationName}
-                    onChange={handleChange}
-                  />
+                  <select
+                    name="designation"
+                    value={newEmployee.dsgId}
+                    onChange={handleDesignationChange}
+                  >
+                    {isEditMode && (
+                      <option value={editData.dsgId}>
+                        {editData.designation}
+                      </option>
+                    )}
+                    <option value="" disabled>
+                      Select a Designation
+                    </option>
+                    {designations.map((dsg, index) => (
+                      <option key={dsg.dsgId} value={dsg.dsgId}>
+                        {dsg.name}
+                      </option>
+                    ))}
+                    <option value="Add-Designation">
+                      + Add New Designation
+                    </option>
+                  </select>
 
                   <label>Basic Salary</label>
                   <input
@@ -509,6 +524,7 @@ const AddEmployee = ({
                     placeholder="Enter Account Number"
                     value={newEmployee.accountNo}
                     onChange={handleChange}
+                    required
                   />
 
                   <label>Salary Period</label>
@@ -517,6 +533,11 @@ const AddEmployee = ({
                     value={newEmployee.salaryPeriod}
                     onChange={handleChange}
                   >
+                    {isEditMode && (
+                      <option value={editData.salaryPeriod}>
+                        {editData.salaryPeriod}
+                      </option>
+                    )}
                     <option value="">Select Salary Period</option>
                     <option value="Monthly">Monthly</option>
                     <option value="Bi-Weekly">Bi-Weekly</option>
@@ -529,6 +550,11 @@ const AddEmployee = ({
                     value={newEmployee.salaryType}
                     onChange={handleChange}
                   >
+                    {isEditMode && (
+                      <option value={editData.salaryType}>
+                        {editData.salaryType}
+                      </option>
+                    )}
                     <option value="">Select Salary Type</option>
                     <option value="Fixed">Fixed</option>
                     <option value="Hourly">Hourly</option>
@@ -540,9 +566,14 @@ const AddEmployee = ({
                     value={newEmployee.enableAttendance}
                     onChange={handleChange}
                   >
+                    {isEditMode && (
+                      <option value={editData.enableAttendance}>
+                        {(editData.enableAttendance = true ? "Yes" : "No")}
+                      </option>
+                    )}
                     <option value="">Select Attendance Status</option>
-                    <option value="Yes">Yes</option>
-                    <option value="No">No</option>
+                    <option value="1">Yes</option>
+                    <option value="0">No</option>
                   </select>
 
                   <label>Enable Schedule</label>
@@ -551,9 +582,14 @@ const AddEmployee = ({
                     value={newEmployee.enableSchedule}
                     onChange={handleChange}
                   >
+                    {isEditMode && (
+                      <option value={editData.enableSchedule}>
+                        {(editData.enableSchedule = true ? "Yes" : "No")}
+                      </option>
+                    )}
                     <option value="">Select Schedule Status</option>
-                    <option value="Yes">Yes</option>
-                    <option value="No">No</option>
+                    <option value="1">Yes</option>
+                    <option value="0">No</option>
                   </select>
 
                   <label>Enable Overtime</label>
@@ -562,9 +598,14 @@ const AddEmployee = ({
                     value={newEmployee.enableOvertime}
                     onChange={handleChange}
                   >
+                    {isEditMode && (
+                      <option value={editData.enableOvertime}>
+                        {(editData.enableOvertime = true ? "Yes" : "No")}
+                      </option>
+                    )}
                     <option value="">Select Overtime Status</option>
-                    <option value="Yes">Yes</option>
-                    <option value="No">No</option>
+                    <option value="1">Yes</option>
+                    <option value="0">No</option>
                   </select>
                 </div>
               </div>
@@ -576,9 +617,9 @@ const AddEmployee = ({
                   className="cancel-button"
                   type="button"
                   onClick={() => {
-                    setIsEditMode(false)
-                    setActiveTab("Employees")}
-                  } 
+                    setIsEditMode(false);
+                    setActiveTab("Employees");
+                  }}
                 >
                   Cancel
                 </button>

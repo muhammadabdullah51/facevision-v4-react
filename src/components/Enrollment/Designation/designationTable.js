@@ -22,7 +22,6 @@ const DesignationTable = ({ data, setData }) => {
   };
 
   const [formData, setFormData] = useState({
-    _id: "",
     dsgId: null,
     dsgCode: "",
     name: "",
@@ -41,10 +40,6 @@ const DesignationTable = ({ data, setData }) => {
       const response = await axios.get(`${SERVER_URL}pr-dsg/`);
       const designation = await response.data.context;
       setData(designation);
-      // if (response.ok) {
-      // } else {
-      //   throw new Error("Failed to fetch designation");
-      // }
     } catch (error) {
       console.error("Error fetching designation data:", error);
     } finally {
@@ -74,15 +69,7 @@ const DesignationTable = ({ data, setData }) => {
     (currentPage + 1) * rowsPerPage
   );
 
-  const handleEdit = (row) => {
-    setFormData({
-      dsgId: row.dsgId,
-      dsgCode: row.dsgCode,
-      name: row.name,
-    });
-    setShowAddForm(false);
-    setShowEditForm(true);
-  };
+ 
 
   const handleDelete = async (dsgId) => {
     setModalType("delete");
@@ -102,6 +89,9 @@ const DesignationTable = ({ data, setData }) => {
       console.log(error);
     }
   };
+
+
+
 
   const handleAdd = () => {
     setFormData({
@@ -142,7 +132,7 @@ const DesignationTable = ({ data, setData }) => {
       }else {
         setShowModal(false);
         setWarningModal(true);
-        console.log(updatedData.data.msg)
+        // console.log(updatedData.data.msg)
       }
 
       const updatedData = await axios.get(`${SERVER_URL}pr-dsg/`);
@@ -152,6 +142,16 @@ const DesignationTable = ({ data, setData }) => {
     }
   };
 
+
+  const handleEdit = (row) => {
+    setFormData({
+      dsgId: row.dsgId,
+      dsgCode: row.dsgCode,
+      name: row.name,
+    });
+    setShowAddForm(false);
+    setShowEditForm(true);
+  };
   const handleUpdate = async (row) => {
     
     console.log(row);

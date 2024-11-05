@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { SERVER_URL } from '../../config';
 
 const Navbar = ({ selectedMenu }) => {
     const dispatch = useDispatch();
@@ -18,10 +19,11 @@ const Navbar = ({ selectedMenu }) => {
     useEffect(() => {
         const fetchCompanyLogo = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/company');
-                if (response.data.completed && response.data.companies.length > 0) {
+                const response = await axios.get(`${SERVER_URL}auth-cmp-reg/`);
+                // console.log("company info", response.data.context)
+                if (response.data.context && response.data.context.length > 0) {
                     // Get the logo path from the first company
-                    const logoPath = response.data.companies[0].logo.replace(/\\/g, '/'); // Replace backslashes with forward slashes
+                    const logoPath = response.data.context[0].logo.replace(/\\/g, '/'); // Replace backslashes with forward slashes
                     setCompanyLogo(logoPath);
                 }
             } catch (error) {
@@ -32,6 +34,9 @@ const Navbar = ({ selectedMenu }) => {
         fetchCompanyLogo();
     }, []);
 
+   
+    
+    
     const handleLogout = () => {
         dispatch(logout());
         navigate('/');
@@ -44,7 +49,7 @@ const Navbar = ({ selectedMenu }) => {
           {/* Display Company Logo in the middle */}
           {companyLogo && (
               <img 
-              src={`http://localhost:5000/${companyLogo}`} // Corrected logo path
+              src={`${SERVER_URL}${companyLogo}`} // Corrected logo path
               alt="Company Logo"
               className="navbar-company-logo"
               />

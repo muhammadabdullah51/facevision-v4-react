@@ -10,13 +10,14 @@ import Login from './components/Login/login';
 import Information from './components/Company_Input/companyPage';
 import Dashboard from './components/Dashboard/home';
 import Register from './components/Register/register';
+import { SERVER_URL } from './config';
 // import UserProvider from './UserContext';
 function App() {
   const [companyInfoCompleted, setCompanyInfoCompleted] = useState(false);
 
   useEffect(() => {
     // Make API call to check company info status
-    axios.get('http://localhost:5000/api/company')
+    axios.get(`${SERVER_URL}auth-cmp-reg/`)
       .then(response => {
         setCompanyInfoCompleted(response.data.completed);
       })

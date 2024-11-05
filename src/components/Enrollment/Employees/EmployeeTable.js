@@ -10,6 +10,7 @@ import DesignationTable from "../Designation/designationTable";
 import LocationTable from "../Location/LocationTable";
 import ResignTable from "../Resign/ResignTable";
 import AddEmployee from "./AddEmployee";
+import { SERVER_URL } from "../../../config";
 
 const EmployeeTable = ({
   data,
@@ -37,7 +38,7 @@ const EmployeeTable = ({
     basicSalary: "",
     accountNo: "",
     bankName: "",
-    image: "",
+    image1: "",
   });
 
   const [editData, setEditData] = useState(null);
@@ -73,14 +74,10 @@ const EmployeeTable = ({
 
   const fetchEmployees = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/fetchEmployees");
-      if (response.ok) {
-        const employees = await response.json();
-        setData(employees);
-      } else {
-        throw new Error("Failed to fetch employees");
-      }
-    } catch (error) {
+      const response = await axios.get(`${SERVER_URL}pr-emp/`);
+      console.log(response.data)
+      setData(response.data);
+      } catch (error) {
       console.error("Error fetching employees data:", error);
     }
   };
@@ -90,12 +87,12 @@ const EmployeeTable = ({
     fetchEmployees();
   }, []);
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (empId) => {
     try {
-      axios.post(`http://localhost:5000/api/deleteEmployees`, { id });
-      console.log(`Employee deleted ID: ${id}`);
+      axios.post(`${SERVER_URL}pr-emp-del`, { empId });
+      console.log(`Employee deleted ID: ${empId}`);
       const updatedData = await axios.get(
-        "http://localhost:5000/api/fetchEmployees"
+        `${SERVER_URL}pr-emp`
       );
       setData(updatedData.data);
       fetchEmployees();
@@ -219,8 +216,8 @@ const EmployeeTable = ({
                 <td className="empImage">
                   <img
                     src={
-                      row.picture
-                        ? `http://localhost:5000/${row.picture.replace(
+                      row.image1
+                        ? `${SERVER_URL}${row.image1.replace(
                             /\\/g,
                             "/"
                           )}`
@@ -242,7 +239,7 @@ const EmployeeTable = ({
                       <AddEmployee editData={editData} isEditMode={isEditMode} />
                     )} */}
                     <button
-                      onClick={() => handleDelete(row._id)}
+                      onClick={() => handleDelete(row.empId)}
                       style={{ background: "none", border: "none" }}
                     >
                       <FaTrash className="table-delete" />

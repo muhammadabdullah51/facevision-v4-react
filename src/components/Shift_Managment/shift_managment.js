@@ -7,40 +7,40 @@ import addAnimation from "../../assets/Lottie/addAnim.json";
 import updateAnimation from "../../assets/Lottie/updateAnim.json";
 import deleteAnimation from "../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../assets/Lottie/successAnim.json";
+import warningAnimation from "../../assets/Lottie/warningAnim.json";
 import { SERVER_URL } from "../../config";
 
 const ShiftsTable = () => {
   const [data, setData] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
-  const defaultFormData = {
+  const [formData, setFormData] = useState({
     shiftId: "",
     name: "",
     start_time: "",
+    end_time: "",
     entry_start_time: "",
     entry_end_time: "",
-    end_time: "",
     exit_start_time: "",
     exit_end_time: "",
-  } 
-  const [formData, setFormData] = useState(defaultFormData);
+  });
 
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
   const [loading, setLoading] = useState(false); // Loading state
+
+  const [warningModal, setWarningModal] = useState(false);
+  const [resMsg, setResMsg] = useState("");
+
+
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
 
   const fetchShift = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${SERVER_URL}shft/`);
-      if (response.ok) {
-        const shift = await response.json();
-        setData(response.data.context);
-      } else {
-        throw new Error("Failed to fetch shift");
-      }
+      const response = await axios.get(`${SERVER_URL}shft/`);
+      setData(response.data);
     } catch (error) {
       console.error("Error fetching shift data:", error);
     } finally {
@@ -57,38 +57,20 @@ const ShiftsTable = () => {
       }, 2000);
     }
     return () => clearTimeout(timer);
-  // }, [fetchShift, successModal]);
-  }, [formData, successModal]);
+  }, [fetchShift, successModal]);
 
  
-  const handleEdit = (data) => {
-    setFormData({
-      shiftId: data.shiftId,
-      name: data.name,
-      start_time: data.start_time,
-      entry_start_time: data.entry_start_time,
-      entry_end_time: data.entry_end_time,
-      end_time: data.end_time,
-      exit_start_time: data.exit_start_time,
-      exit_end_time: data.exit_end_time,
-    });
-    console.log(formData)
-    setShowAddForm(false);
-    setShowEditForm(true);
-  };
 
 
 
   const handleDelete = (shiftId) => {
     setModalType("delete");
     setShowModal(true);
-    setFormData({ ...formData, _id: shiftId });
+    setFormData({ ...formData, shiftId: shiftId });
   };
   const confirmDelete = async () => {
-    axios.post(`${SERVER_URL}shft/`, {
-      shiftId: formData._id,
-    });
-    const updatedData = await axios.get("http://localhost:5000/api/fetchShift");
+    await axios.post(`${SERVER_URL}shft-del/`, {shiftId: formData.shiftId,});
+    const updatedData = await axios.get(`${SERVER_URL}shft/`);
     setData(updatedData.data);
     fetchShift();
     setShowModal(false);
@@ -97,21 +79,19 @@ const ShiftsTable = () => {
 
   const handleAdd = () => {
     setFormData({
-      shiftId: (data.length + 1).toString(),
+      shiftId: "",
       name: "",
-      employees: "",
       start_time: "",
+      end_time: "",
       entry_start_time: "",
       entry_end_time: "",
-      end_time: "",
       exit_start_time: "",
       exit_end_time: "",
       totalWorkingDays: "",
       totalWorkingHours: "",
       totalWorkingMinutes: "",
     });
-    setShowAddForm(true);
-    setShowEditForm(false);
+    setShowAddForm(true)
   };
 
   const addShift = async () => {
@@ -119,46 +99,81 @@ const ShiftsTable = () => {
     setShowModal(true);
   };
   const confirmAdd = async () => {
+    if (
+      formData.name === "" ||
+      formData.start_time === "" ||
+      formData.end_time === "" ||
+      formData.entry_start_time === "" 
+    ){
+      setResMsg("Please fill in all required fields.")
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    }
     const newItem = {
-      shiftId: parseInt(formData.shiftId, 10),
-      employees: formData.employees,
       name: formData.name,
       start_time: formData.start_time,
+      end_time: formData.end_time,
       entry_start_time: formData.entry_start_time,
       entry_end_time: formData.entry_end_time,
-      end_time: formData.end_time,
       exit_start_time: formData.exit_start_time,
       exit_end_time: formData.exit_end_time,
-      totalWorkingDays: formData.totalWorkingDays,
-      totalWorkingHours: formData.totalWorkingHours,
-      totalWorkingMinutes: formData.totalWorkingMinutes,
     };
     try {
-      await axios.post(`http://localhost:5000/api/addShift`, newItem);
-      const updatedData = await axios.get(
-        "http://localhost:5000/api/fetchshift"
-      );
+      const response = await axios.post(`${SERVER_URL}shft/`, newItem);
+      console.log("Shift Added Successfully")
+      setShowAddForm(false);
+      setResMsg(response.data.msg)
+        setShowModal(false);
+        setSuccessModal(true);
+        fetchShift();
+      // if (response.data.status) {
+      // }else {
+      //   setShowModal(false);
+      //   setWarningModal(true);
+      // }
+
+      const updatedData = await axios.get(`${SERVER_URL}shft/`);
       setData(updatedData.data);
-      setShowModal(false);
-      setSuccessModal(true);
-      setShowAddForm(false)
-      fetchShift();
+      // setShowAddForm(false)
     } catch (error) {
       console.log(error);
+      setShowModal(false)
+      setWarningModal(true);
     }
+    setFormData({
+      shiftId: "",
+      name: "",
+      start_time: "",
+      end_time: "",
+      entry_start_time: "",
+      entry_end_time: "",
+      exit_start_time: "",
+      exit_end_time: "",
+      totalWorkingDays: "",
+      totalWorkingHours: "",
+      totalWorkingMinutes: "",
+    })
   };
+
+  const handleEdit = (row) => {
+    console.log("row", row)
+    setFormData({...row});
+    console.log("handleEdit" , formData)
+    setShowAddForm(false);
+    setShowEditForm(true);
+  };
+
 
   const updateShift = async(row) => {
     setModalType("update");
     setFormData({
-      _id: row._id,
       shiftId: row.shiftId,
-      employees: row.employees,
       name: row.name,
       start_time: row.start_time,
+      end_time: row.end_time,
       entry_start_time: row.entry_start_time,
       entry_end_time: row.entry_end_time,
-      end_time: row.end_time,
       exit_start_time: row.exit_start_time,
       exit_end_time: row.exit_end_time,
       totalWorkingDays: row.totalWorkingDays,
@@ -166,33 +181,44 @@ const ShiftsTable = () => {
       totalWorkingMinutes: row.totalWorkingMinutes,
     });
     setShowModal(true);
+    console.log("updateShift" , formData)
+
+    
   }
   const confirmUpdate = async () => {
+    if (!formData.name || !formData.start_time || !formData.end_time || !formData.entry_start_time){
+      setResMsg("Please fill in all required fields.")
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    }
+  //  console.log(formData);
+   
     const updatedShift = {
-      shiftId: parseInt(formData.shiftId, 10),
-      employees: formData.employees,
+      shiftId: formData.shiftId,
       name: formData.name,
       start_time: formData.start_time,
+      end_time: formData.end_time,
       entry_start_time: formData.entry_start_time,
       entry_end_time: formData.entry_end_time,
-      end_time: formData.end_time,
       exit_start_time: formData.exit_start_time,
-      exit_end_time: formData.exit_end_time
+      exit_end_time: formData.exit_end_time,
     }
+    console.log("confirmEdit" , formData)
     try {
-      const response = await axios.post(`http://localhost:5000/api/updateShift`, updatedShift);
-      if (response.status === 200) {
-        setShowModal(false);
-        setSuccessModal(true);
-        fetchShift();
-      } else {
-        console.error("Failed to update shift:", response);
-      }
+      const res = await axios.post(`${SERVER_URL}shft-up/`, updatedShift);
+      console.log("Shift updated successfully");
+      setShowEditForm(false);
+      setShowModal(false);
+      setSuccessModal(true);
+      const updatedData = await axios.get(`${SERVER_URL}shft/`);
+      setData(updatedData.data);
     } catch (error) {
       console.error("Error updating shift:", error);
+      setShowModal(false);
+      setWarningModal(true);
     }
-
-  }
+  };
 
 
   const handleSearchChange = (e) => {
@@ -230,6 +256,14 @@ const ShiftsTable = () => {
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
         successModal={successModal}
+      />
+      <ConirmationModal
+        isOpen={warningModal}
+        message={resMsg}
+        onConfirm={() => setWarningModal(false)}
+        onCancel={() => setWarningModal(false)}
+        animationData={warningAnimation}
+        warningModal={warningModal}
       />
 
       <div className="table-header">
@@ -285,17 +319,9 @@ const ShiftsTable = () => {
         </button>
       </div>
 
-      {showAddForm && !showEditForm && (
+      {showAddForm  && !showEditForm && (
         <div className="add-department-form">
           <h3>Add New Shift</h3>
-          <input
-            type="text"
-            placeholder="Shift ID"
-            value={formData.shiftId}
-            onChange={(e) =>
-              setFormData({ ...formData, shiftId: e.target.value })
-            }
-          />
           <input
             type="text"
             placeholder="Shift Name"
@@ -382,25 +408,9 @@ const ShiftsTable = () => {
           </button>
         </div>
       )}
-      {showEditForm && (
+      {!showAddForm  && showEditForm && (
         <div className="add-department-form">
-          <h3>Edit Shift</h3>
-          <input
-            type="text"
-            placeholder="Shift ID"
-            value={formData.shiftId}
-            onChange={(e) =>
-              setFormData({ ...formData, shiftId: e.target.value })
-            }
-          />
-          <input
-            type="Number"
-            placeholder="Employees"
-            value={formData.employees}
-            onChange={(e) =>
-              setFormData({ ...formData, employees: e.target.value })
-            }
-          />
+          <h3>Update Shift</h3>
           <input
             type="text"
             placeholder="Shift Name"
@@ -474,55 +484,19 @@ const ShiftsTable = () => {
                 placeholder="Exit End Time"
                 value={formData.exit_end_time}
                 onChange={(e) =>
-                  setFormData({ ...formData, exit_end_time: e.target.value })
-                }
+                  setFormData({ ...formData, exit_end_time: e.target.value })}
               />
             </div>
           </div>
-          <div>
-            <label>Monthly Working Days</label>
-            <input
-              type="number"
-              placeholder="Monthly Working Days"
-              value={formData.totalWorkingDays}
-              onChange={(e) =>
-                setFormData({ ...formData, totalWorkingDays: e.target.value })
-              }
-            />
-          </div>
-          <div>
-            <label>Daily Working Hours</label>
-            <input
-              type="number"
-              placeholder="Daily Working Hours"
-              value={formData.totalWorkingHours}
-              onChange={(e) =>
-                setFormData({ ...formData, totalWorkingHours: e.target.value })
-              }
-            />
-          </div>
-          <div>
-            <label>Working Minutes</label>
-            <input
-              type="number"
-              placeholder="Working Minutes"
-              value={formData.totalWorkingMinutes}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  totalWorkingMinutes: e.target.value,
-                })
-              }
-            />
-          </div>
-          <button className="submit-button" onClick={updateShift(formData)}>
+          <button className="submit-button" onClick={() => updateShift(formData)}>
             Update Shift
           </button>
-          <button className="cancel-button" onClick={() => setShowAddForm(false)}>
+          <button className="cancel-button" onClick={() => setShowEditForm(false)}>
             Cancel
           </button>
         </div>
       )}
+
 
       <div className="shift-table">
         <table className="table">
@@ -536,8 +510,8 @@ const ShiftsTable = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredData.map((item) => (
-              <tr key={item.shiftId}>
+            {data.map((item, index) => (
+              <tr key={index}>
                 <td>{item.shiftId}</td>
                 <td>{item.name}</td>
                 <td>{item.start_time}</td>
@@ -550,7 +524,7 @@ const ShiftsTable = () => {
                     <FaEdit className="table-edit" />
                   </button>
                   <button
-                    onClick={() => handleDelete(item._id)}
+                    onClick={() => handleDelete(item.shiftId)}
                     style={{ background: "none", border: "none" }}
                   >
                     <FaTrash className="table-delete" />

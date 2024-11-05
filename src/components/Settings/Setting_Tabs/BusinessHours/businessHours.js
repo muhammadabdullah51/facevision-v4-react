@@ -16,11 +16,13 @@ const DayTimeSelector = ({ day, active, from, to, toggleDayActive, handleTimeCha
             </label>
             {active ? (
                 <div className="time-inputs">
+                    <label>From</label>
                     <input
                         type="time"
                         value={from}
                         onChange={(e) => handleTimeChange(day, "from", e.target.value)}
                     />
+                    <label>To</label>
                     <input
                         type="time"
                         value={to}
