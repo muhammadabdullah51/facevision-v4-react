@@ -14,9 +14,9 @@ import { SERVER_URL } from "../../../config";
 import Designation from "../Designation/designation";
 
 const AddEmployee = ({
-  setData,
+  // setData,
   setActiveTab,
-  data,
+  // data,
   isEditMode,
   setIsEditMode,
   employeeToEdit,
@@ -24,6 +24,11 @@ const AddEmployee = ({
 }) => {
   const [selectedPage, setSelectedPage] = useState("");
   const [isWebcamOpen, setIsWebcamOpen] = useState(false);
+
+  
+  const [data, setData] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
 
   const [newEmployee, setNewEmployee] = useState({
     empId: "",
@@ -59,7 +64,6 @@ const AddEmployee = ({
 
   useEffect(() => {
     const fetchOptions = async () => {
-      // console.log(isEditMode)
 
       try {
         const response = await axios.get(`${SERVER_URL}emp-fun/`);
@@ -80,6 +84,22 @@ const AddEmployee = ({
 
     fetchOptions();
   }, [isEditMode, editData]);
+
+  useEffect(() => {
+    let objectUrl;
+  
+    // Check if the image1 property is a File, meaning it’s a newly uploaded image
+    if (newEmployee.image1 instanceof File) {
+      objectUrl = URL.createObjectURL(newEmployee.image1);
+    }
+  
+    // Cleanup function to revoke the object URL when the component unmounts or image changes
+    return () => {
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [newEmployee.image1]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -177,22 +197,17 @@ const AddEmployee = ({
   // };
 
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-  
+  const handleSubmit = async (row) => {
+    setNewEmployee({...row, empId: row.empId})
+    console.log(newEmployee)
     // Create a new FormData object
     const formData = new FormData();
     Object.keys(newEmployee).forEach((key) => {
       formData.append(key, newEmployee[key]);
     });
   
-    // Log each entry to confirm FormData has values
-    // for (let pair of formData.entries()) {
-    //   console.log(`${pair[0]}: ${pair[1]}`);
-    // }
   
     try {
-      // Send formData as payload to the API
       const response = isEditMode
         ? await axios.post(`${SERVER_URL}pr-emp-up/`, formData)
         : await axios.post(`${SERVER_URL}pr-emp/`, formData);
@@ -261,7 +276,9 @@ const AddEmployee = ({
       ) : selectedPage === "Enroll Site Management" ? (
         <Location setSelectedPage={setSelectedPage} />
       ) : (
-        <form onSubmit={handleSubmit} className="employee-form">
+        <form 
+        onSubmit={(e) => e.preventDefault()} 
+        className="employee-form">
           <section>
             <h1>Employee Information</h1>
             <div className="employee-main">
@@ -337,9 +354,11 @@ const AddEmployee = ({
                       <div className="empImage">
                         <img
                           src={
-                            newEmployee.image1
-                              ? `${SERVER_URL}${newEmployee.image1}`
-                              : "" // Use an empty string instead of a space
+                            newEmployee.image1 instanceof File
+                              ? URL.createObjectURL(newEmployee.image1)  // For new file preview
+                              : typeof newEmployee.image1 === "string"
+                              ? `${SERVER_URL}${newEmployee.image1}`    // For existing image URL
+                              : ""
                           }
                           alt={`${newEmployee.fName} ${newEmployee.lName}`}
                           className="employee-image"
@@ -347,21 +366,20 @@ const AddEmployee = ({
                       </div>
                     )}
 
-                    {/* {!isEditMode && ( */}
+
                     <img
                       src={
                         typeof newEmployee.image1 === "string"
-                          ? newEmployee.image1 // Use the URL directly
-                          : newEmployee.image1 instanceof File // Check if it's a File object
-                          ? URL.createObjectURL(newEmployee.image1) // Create a URL for the file object
-                          : "" // Fallback if the picture is neither a string nor a File object
+                          ? newEmployee.image1 
+                          : newEmployee.image1 instanceof File 
+                          ? URL.createObjectURL(newEmployee.image1) 
+                          : "" 
                       }
                       alt="Captured"
                       className="captured-image"
                     />
-                    {/* )} */}
+
                   </div>
-                  {/* )}  */}
                   <WebcamModal
                     isOpen={isWebcamOpen}
                     onClose={() => setIsWebcamOpen(false)}
@@ -610,7 +628,7 @@ const AddEmployee = ({
                 </div>
               </div>
               <div className="employee-buttons">
-                <button className="submit-button" type="submit">
+                <button className="submit-button" type="submit" onClick={isEditMode ? () => handleSubmit(newEmployee) : handleSubmit }>
                   {isEditMode ? "Update Employee" : "Add Employee"}
                 </button>
                 <button

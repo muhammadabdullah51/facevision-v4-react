@@ -13,8 +13,8 @@ import AddEmployee from "./AddEmployee";
 import { SERVER_URL } from "../../../config";
 
 const EmployeeTable = ({
-  data,
-  setData,
+  // data,
+  // setData,
   setActiveTab,
   setSelectedEmployee,
   onEdit,
@@ -23,6 +23,8 @@ const EmployeeTable = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRow, setSelectedRow] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [data, setData] = useState([]);
+
   const [isEditMode, setIsEditMode] = useState(false);
   const [isActiveTab, setIsActiveTab] = useState(false);
   const [formData, setFormData] = useState({
@@ -89,11 +91,9 @@ const EmployeeTable = ({
 
   const handleDelete = async (empId) => {
     try {
-      axios.post(`${SERVER_URL}pr-emp-del`, { empId });
+      await axios.post(`${SERVER_URL}pr-emp-del/`, { empId: empId });
       console.log(`Employee deleted ID: ${empId}`);
-      const updatedData = await axios.get(
-        `${SERVER_URL}pr-emp`
-      );
+      const updatedData = await axios.get(`${SERVER_URL}pr-emp/`);
       setData(updatedData.data);
       fetchEmployees();
     } catch (error) {
@@ -120,8 +120,6 @@ const EmployeeTable = ({
 
   return (
     <div className="department-table">
-      {/* <AddEmployee
-      /> */}
       <EmployeeReportModal
         isOpen={isModalOpen}
         onClose={closeModal}
@@ -217,10 +215,7 @@ const EmployeeTable = ({
                   <img
                     src={
                       row.image1
-                        ? `${SERVER_URL}${row.image1.replace(
-                            /\\/g,
-                            "/"
-                          )}`
+                        ? `${SERVER_URL}${row.image1}`
                         : Default_picture
                     }
                     alt={row.employeeName}

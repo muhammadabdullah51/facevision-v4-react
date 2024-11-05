@@ -23,7 +23,6 @@ const LocationTable = ({ data, setData }) => {
     setCurrentPage(selected);
   };
   const [formData, setFormData] = useState({
-    _id: "",
     locId: null,
     locCode: "",
     name: "",
