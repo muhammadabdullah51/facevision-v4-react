@@ -6,13 +6,13 @@ const ConirmationModal = ({ isOpen, message, onConfirm, onCancel, animationData,
     if (!isOpen) return null;
 
     return (
-      <div className="modal-overlay">
-        <div className="modal-content">
+      <div className="modal-overlay-modal">
+        <div className="modal-content-modal">
           <Lottie animationData={animationData} loop={false} />
           <p>{message}</p>
           {!successModal && !warningModal && (
 
-              <div className="modal-buttons">
+              <div className="modal-buttons-modal">
             <button className="submit-button" onClick={onConfirm}>
               Confirm
             </button>
@@ -23,7 +23,7 @@ const ConirmationModal = ({ isOpen, message, onConfirm, onCancel, animationData,
         )}
           {warningModal && (
 
-              <div className="modal-buttons">
+              <div className="modal-buttons-modal">
             
             <button className="cancel-button" onClick={onCancel}>
               Cancel

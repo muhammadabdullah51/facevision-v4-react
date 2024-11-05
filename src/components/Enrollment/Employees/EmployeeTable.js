@@ -11,6 +11,12 @@ import LocationTable from "../Location/LocationTable";
 import ResignTable from "../Resign/ResignTable";
 import AddEmployee from "./AddEmployee";
 import { SERVER_URL } from "../../../config";
+import ConirmationModal from "../../Modal/conirmationModal";
+import addAnimation from "../../../assets/Lottie/addAnim.json";
+import updateAnimation from "../../../assets/Lottie/updateAnim.json";
+import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
+import successAnimation from "../../../assets/Lottie/successAnim.json";
+import warningAnimation from "../../../assets/Lottie/warningAnim.json";
 
 const EmployeeTable = ({
   // data,
@@ -44,6 +50,13 @@ const EmployeeTable = ({
   });
 
   const [editData, setEditData] = useState(null);
+
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState("");
+  const [successModal, setSuccessModal] = useState(false);
+  const [loading, setLoading] = useState(false); // Loading state
+  const [warningModal, setWarningModal] = useState(false);
+  const [resMsg, setResMsg] = useState("");
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(0);

@@ -246,10 +246,17 @@ const AddEmployee = ({
 
   const handleWebcamCapture = (imageSrc) => {
     // Update the state with the captured image
-    setNewEmployee((prevState) => ({
-      ...prevState,
-      image1: imageSrc, // Store the imageSrc in the 'picture' field
-    }));
+    // setNewEmployee((prevState) => ({
+    //   ...prevState,
+    //   image1: imageSrc, // Store the imageSrc in the 'picture' field
+    // }));
+
+    fetch(imageSrc)
+    .then(res => res.blob())
+    .then(blob => {
+      const file = new File([blob], "webcam-image.jpg", { type: "image/jpeg" });
+      setNewEmployee(prevState => ({ ...prevState, image1: file }));
+    });
   };
 
   return (

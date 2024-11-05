@@ -1,6 +1,7 @@
 import React from "react";
 import Default_picture from '../../../assets/profile.jpg'; // Default image if no image is provided
 import "./modal.css"; // Updated styling for profile-like modal
+import { SERVER_URL } from "../../../config";
 
 const EmployeeReportModal = ({ isOpen, onClose, rowData }) => {
   if (!isOpen) return null;
@@ -15,7 +16,7 @@ const EmployeeReportModal = ({ isOpen, onClose, rowData }) => {
           <div className="emp-img">
             {/* Handle image loading with a fallback to the default image */}
             <img
-              src={rowData.picture ? `http://localhost:5000/${rowData.picture.replace(/\\/g, "/")}` : Default_picture}
+              src={rowData.image1 ? `${SERVER_URL}${rowData.image1}` : Default_picture}
               alt="Employee"
               className="profile-image"
               onError={(e) => {
@@ -31,8 +32,7 @@ const EmployeeReportModal = ({ isOpen, onClose, rowData }) => {
         </div>
         <div className="modal-body">
           <div className="profile-info">
-            <p><strong>Serial No:</strong> {rowData.serialNo}</p>
-            <p><strong>Employee ID:</strong> {rowData.employeeId}</p>
+            <p><strong>Employee ID:</strong> {rowData.empId}</p>
             <p><strong>Enroll Site:</strong> {rowData.enrollSite}</p>
             <p><strong>Salary Type:</strong> {rowData.salaryType}</p>
             <p><strong>Contact No:</strong> {rowData.contactNo}</p>
