@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { FaEdit, FaTrash, FaPlus, FaFileAlt } from "react-icons/fa";
 import ReactPaginate from "react-paginate";
 import "./employees.css";
@@ -87,32 +87,64 @@ const EmployeeTable = ({
     setSelectedRow(null);
   };
 
-  const fetchEmployees = async () => {
-    try {
-      const response = await axios.get(`${SERVER_URL}pr-emp/`);
-      console.log(response.data)
-      setData(response.data);
-      } catch (error) {
-      console.error("Error fetching employees data:", error);
-    }
-  };
+  const fetchEmployees = useCallback(
+
+    async () => {
+      try {
+        const response = await axios.get(`${SERVER_URL}pr-emp/`);
+        console.log(response.data)
+        setData(response.data);
+        } catch (error) {
+        console.error("Error fetching employees data:", error);
+      }
+    },[setData]
+  ) 
 
   // Call fetchDepartments when component mounts
   useEffect(() => {
     fetchEmployees();
-  }, []);
+    let timer;
+    if (successModal) {
+      timer = setTimeout(() => {
+        setSuccessModal(false);
+      }, 2000);
+    }
+    return () => clearTimeout(timer);
+  }, [fetchEmployees, successModal]);
 
-  const handleDelete = async (empId) => {
+  // working handle delete
+  // const handleDelete = async (empId) => {
+  //   try {
+  //     await axios.post(`${SERVER_URL}pr-emp-del/`, { empId: empId });
+  //     console.log(`Employee deleted ID: ${empId}`);
+  //     const updatedData = await axios.get(`${SERVER_URL}pr-emp/`);
+  //     setData(updatedData.data);
+  //     fetchEmployees();
+  //   } catch (error) {
+  //     console.error("Error deleting department:", error);
+  //   }
+  // };
+
+  const handleDelete = async (id) => {
+    setModalType("delete");
+    setShowModal(true);
+    setFormData({...formData, id: id });
+
+  };
+  const confirmDelete = async() => {
+    
     try {
-      await axios.post(`${SERVER_URL}pr-emp-del/`, { empId: empId });
-      console.log(`Employee deleted ID: ${empId}`);
+      await axios.post(`${SERVER_URL}pr-emp-del/`, { id: formData.id });
+      console.log(`Employee deleted `);
       const updatedData = await axios.get(`${SERVER_URL}pr-emp/`);
       setData(updatedData.data);
       fetchEmployees();
+      setShowModal(false);
+      setSuccessModal(true);
     } catch (error) {
       console.error("Error deleting department:", error);
     }
-  };
+  }
 
   const handleAdd = () => {
     onAdd()
@@ -133,6 +165,35 @@ const EmployeeTable = ({
 
   return (
     <div className="department-table">
+      <ConirmationModal
+        isOpen={showModal}
+        message={`Are you sure you want to ${modalType} this employee?`}
+        onConfirm={() =>  confirmDelete()}
+        onCancel={() => setShowModal(false)}
+        animationData={
+          modalType === "create"
+            ? addAnimation
+            : modalType === "update"
+            ? updateAnimation
+            : deleteAnimation
+        }
+      />
+      <ConirmationModal
+        isOpen={successModal}
+        message={`Employee ${modalType}d successfully!`}
+        onConfirm={() => setSuccessModal(false)}
+        onCancel={() => setSuccessModal(false)}
+        animationData={successAnimation}
+        successModal={successModal}
+      />
+      <ConirmationModal
+        isOpen={warningModal}
+        message={resMsg}
+        onConfirm={() => setWarningModal(false)}
+        onCancel={() => setWarningModal(false)}
+        animationData={warningAnimation}
+        warningModal={warningModal}
+      />
       <EmployeeReportModal
         isOpen={isModalOpen}
         onClose={closeModal}
@@ -247,7 +308,7 @@ const EmployeeTable = ({
                       <AddEmployee editData={editData} isEditMode={isEditMode} />
                     )} */}
                     <button
-                      onClick={() => handleDelete(row.empId)}
+                      onClick={() => handleDelete(row.id)}
                       style={{ background: "none", border: "none" }}
                     >
                       <FaTrash className="table-delete" />

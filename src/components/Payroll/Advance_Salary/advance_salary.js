@@ -137,7 +137,7 @@ const AdvanceSalary = () => {
       status: formData.status,
     };
     try {
-      axios.post(`http://localhost:5000/api/addAdvSalary`, advSalary);
+      await axios.post(`http://localhost:5000/api/addAdvSalary`, advSalary);
       const updatedData = await axios.get(
         "http://localhost:5000/api/fetchAdvSalary"
       );

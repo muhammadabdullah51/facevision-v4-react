@@ -100,10 +100,10 @@ const DeviceTable = ({ data, setData }) => {
         Cell: ({ value }) => (
           <span
             className={`status ${
-              value === "Active" ? "activeStatus" : "inactiveStatus"
+              value === "Connected" ? "activeStatus" : "inactiveStatus"
             }`}
           >
-            {value}
+            {value ? "Connected" : "Inactive"}
           </span>
         ),
       },
@@ -439,7 +439,7 @@ const DeviceTable = ({ data, setData }) => {
               setFormData({ ...formData, port: e.target.value })
             }
           />
-          <div className="status-toggle">
+          {/* <div className="status-toggle">
             <label>Status: </label>
             <label className="switch">
               <input
@@ -450,7 +450,7 @@ const DeviceTable = ({ data, setData }) => {
               <span className="slider round"></span>
             </label>
             {formData.status}
-          </div>
+          </div> */}
           <button className="submit-button" onClick={addDevice}>
             Add Device
           </button>
@@ -492,7 +492,7 @@ const DeviceTable = ({ data, setData }) => {
               setFormData({ ...formData, port: e.target.value })
             }
           />
-          <div className="status-toggle">
+          {/* <div className="status-toggle">
             <label>Status: </label>
             <label className="switch">
               <input
@@ -503,7 +503,7 @@ const DeviceTable = ({ data, setData }) => {
               <span className="slider round"></span>
             </label>
             {formData.status}
-          </div>
+          </div> */}
           <button className="submit-button" onClick={handleUpdate}>
             Update Device
           </button>

@@ -5,10 +5,11 @@ import ReactPaginate from "react-paginate";
 import "./leaves.css";
 import axios from "axios";
 import ConirmationModal from "../Modal/conirmationModal";
-import addAnimation from "../../assets/Lottie/addAnim.json"
+import addAnimation from "../../assets/Lottie/addAnim.json";
 import updateAnimation from "../../assets/Lottie/updateAnim.json";
 import deleteAnimation from "../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../assets/Lottie/successAnim.json";
+import { SERVER_URL } from "../../config";
 
 const LeaveTable = ({ data, setData }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -19,7 +20,6 @@ const LeaveTable = ({ data, setData }) => {
   const statuses = ["Pending", "Approved", "Rejected", "Cancelled"];
 
   const [formData, setFormData] = useState({
-    _id: "",
     id: null,
     employee: "",
     leave_type: "",
@@ -37,18 +37,17 @@ const LeaveTable = ({ data, setData }) => {
 
   const fetchLeave = useCallback(async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/fetchLeave");
+      const response = await axios.get(`${SERVER_URL}att-lv-cr/`);
       setData(response.data);
+      console.log(response.data)
     } catch (error) {
-      console.error("Error fetching resignation data:", error);
+      console.error("Error fetching leave data:", error);
     }
   }, [setData]);
 
   const fetchEmployees = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:5000/api/fetchEmployees"
-      );
+      const response = await axios.get(`${SERVER_URL}pr-emp/`);
       setEmployees(response.data);
     } catch (error) {
       console.error("Error fetching employees:", error);
@@ -82,12 +81,8 @@ const LeaveTable = ({ data, setData }) => {
         Cell: ({ row }) => row.index + 1,
       },
       {
-        Header: "Employee ID",
-        accessor: "id",
-      },
-      {
         Header: "Employee Name",
-        accessor: "employee",
+        accessor: "empName",
         Cell: ({ value }) => <span className="bold-fonts">{value}</span>,
       },
       {
@@ -176,16 +171,15 @@ const LeaveTable = ({ data, setData }) => {
 
   const handleEdit = (row) => {
     setFormData({
-      _id: row._id,
       id: row.id,
-      employee: row.employee,
+      empName:row.empName,
       leave_type: row.leave_type,
       start_date: row.start_date,
       end_date: row.end_date,
       reason: row.reason,
       status: row.status,
-      created_at: row.created_at,
     });
+    console.log(formData)
 
     setShowAddForm(false);
     setShowEditForm(true);
@@ -199,22 +193,17 @@ const LeaveTable = ({ data, setData }) => {
 
   const confirmUpdate = async () => {
     const leavePayload = {
-      _id: formData._id,
       id: formData.id,
-      employee: formData.employee,
       leave_type: formData.leave_type,
       start_date: formData.start_date,
       end_date: formData.end_date,
       reason: formData.reason,
       status: formData.status,
-      created_at: formData.created_at,
     };
     console.log(leavePayload);
     try {
-      await axios.post("http://localhost:5000/api/updateLeave", leavePayload);
-      const updatedData = await axios.get(
-        "http://localhost:5000/api/fetchLeave"
-      );
+      await axios.post(`${SERVER_URL}att-lv-up/`, leavePayload);
+      const updatedData = await axios.get(`${SERVER_URL}att-lv-cr/`);
       setData(updatedData.data);
       fetchLeave();
       setShowEditForm(false);
@@ -228,13 +217,12 @@ const LeaveTable = ({ data, setData }) => {
   const handleDelete = async (id) => {
     setModalType("delete");
     setShowModal(true);
-    setFormData({ ...formData, _id: id });
+    setFormData({ id: formData.id });
   };
 
   const confirmDelete = async () => {
-    const id = formData._id;
-    await axios.post("http://localhost:5000/api/deleteLeave", { id });
-    const updatedData = await axios.get("http://localhost:5000/api/fetchLeave");
+    await axios.post(`${SERVER_URL}att-lv-del/`, { id: formData.id.id });
+    const updatedData = await axios.get(`${SERVER_URL}att-lv-cr/`);
     setData(updatedData.data);
     fetchLeave();
     setShowModal(false);
@@ -243,7 +231,6 @@ const LeaveTable = ({ data, setData }) => {
 
   const handleAdd = () => {
     setFormData({
-      id: null,
       employee: "",
       leave_type: "",
       start_date: "",
@@ -263,7 +250,6 @@ const LeaveTable = ({ data, setData }) => {
   };
   const confirmAdd = async () => {
     const leavePayload = {
-      id: formData.id,
       employee: formData.employee,
       leave_type: formData.leave_type,
       start_date: formData.start_date,
@@ -273,10 +259,8 @@ const LeaveTable = ({ data, setData }) => {
       created_at: formData.created_at,
     };
     try {
-      axios.post(`http://localhost:5000/api/addLeave`, leavePayload);
-      const updatedData = await axios.get(
-        "http://localhost:5000/api/fetchLeave"
-      );
+      await axios.post(`${SERVER_URL}att-lv-cr/`, leavePayload);
+      const updatedData = await axios.get(`${SERVER_URL}att-lv-cr/`);
       setData(updatedData.data);
       fetchLeave();
       setShowAddForm(false);
@@ -293,7 +277,6 @@ const LeaveTable = ({ data, setData }) => {
         isOpen={showModal}
         message={`Are you sure you want to ${modalType} this Leave?`}
         onConfirm={() => {
-         
           if (modalType === "create") confirmAdd();
           else if (modalType === "update") confirmUpdate();
           else confirmDelete();
@@ -368,41 +351,49 @@ const LeaveTable = ({ data, setData }) => {
       </div>
 
       {/* Add Leave Form */}
-      {(showAddForm || showEditForm) && (
+      {(showAddForm && !showEditForm) && (
         <div className="add-department-form add-leave-form">
-          <h3>{showAddForm ? "Add New Leave" : "Edit Leave"}</h3>
-          <select
-            value={formData.employee}
+          <h3>Add New Leave</h3>
+          <input
+            list="employeesList"
+            value={formData.employee} // display the employee's name
             onChange={(e) => {
+              // Find the employee based on the name entered in the input
               const selectedEmployee = employees.find(
                 (emp) => `${emp.fName} ${emp.lName}` === e.target.value
               );
+
               setFormData({
                 ...formData,
+                // Set employee name to display in the input
                 employee: e.target.value,
+                // Store the empId (or null if no match is found)
                 id: selectedEmployee ? selectedEmployee.empId : null,
               });
             }}
-          >
-            <option value="">Select Employee</option>
+            placeholder="Search or select an employee"
+          />
+
+          <datalist id="employeesList">
             {employees.map((emp) => (
-              <option key={emp.empId} value={`${emp.fName} ${emp.lName}`}>
-                {emp.fName} {emp.lName}
-              </option>
+              // Display employee's full name as option value
+              <option key={emp.empId} value={emp.empId}>{emp.fName} {emp.lName}</option>
             ))}
-          </select>
+          </datalist>
           <select
             value={formData.leave_type}
             onChange={(e) =>
               setFormData({ ...formData, leave_type: e.target.value })
             }
           >
+            <option value="">Select Leave Type</option>
             {leaveTypes.map((type) => (
               <option key={type} value={type}>
                 {type}
               </option>
             ))}
           </select>
+          <label>Start Date</label>
           <input
             type="date"
             value={formData.start_date}
@@ -410,6 +401,7 @@ const LeaveTable = ({ data, setData }) => {
               setFormData({ ...formData, start_date: e.target.value })
             }
           />
+          <label>End Date</label>
           <input
             type="date"
             value={formData.end_date}
@@ -439,9 +431,86 @@ const LeaveTable = ({ data, setData }) => {
           </select>
           <button
             className="submit-button"
-            onClick={showAddForm ? addLeave : handleUpdate}
+            onClick={addLeave}
           >
-            {showAddForm ? "Add Leave" : "Update Leave"}
+            Add Leave
+          </button>
+          <button
+            className="cancel-button"
+            onClick={() => {
+              setShowAddForm(false);
+              setShowEditForm(false);
+            }}
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+      {(!showAddForm && showEditForm) && (
+        <div className="add-department-form add-leave-form">
+          <h3>Edit Leave</h3>
+          <input
+            type="text"
+            value={formData.empName}
+            readOnly
+            onChange={(e) =>
+              setFormData({ ...formData, empNames: e.target.value })
+            }
+          />
+          <select
+            value={formData.leave_type}
+            onChange={(e) =>
+              setFormData({ ...formData, leave_type: e.target.value })
+            }
+          >
+            <option value="">Select Leave Type</option>
+            {leaveTypes.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+          <label>Start Date</label>
+          <input
+            type="date"
+            value={formData.start_date}
+            onChange={(e) =>
+              setFormData({ ...formData, start_date: e.target.value })
+            }
+          />
+          <label>End Date</label>
+          <input
+            type="date"
+            value={formData.end_date}
+            onChange={(e) =>
+              setFormData({ ...formData, end_date: e.target.value })
+            }
+          />
+          <input
+            type="text"
+            placeholder="Reason"
+            value={formData.reason}
+            onChange={(e) =>
+              setFormData({ ...formData, reason: e.target.value })
+            }
+          />
+          <select
+            value={formData.status}
+            onChange={(e) =>
+              setFormData({ ...formData, status: e.target.value })
+            }
+          >
+            {statuses.map((status) => (
+              <option key={status} value={status}>
+                {status}
+              </option>
+            ))}
+          </select>
+          <button
+            className="submit-button"
+            onClick={() => handleUpdate(formData)}
+          >
+            Update Leave
           </button>
           <button
             className="cancel-button"

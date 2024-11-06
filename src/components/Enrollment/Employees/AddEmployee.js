@@ -13,6 +13,13 @@ import { useLocation } from "react-router-dom";
 import { SERVER_URL } from "../../../config";
 import Designation from "../Designation/designation";
 
+import ConirmationModal from "../../Modal/conirmationModal";
+import addAnimation from "../../../assets/Lottie/addAnim.json";
+import updateAnimation from "../../../assets/Lottie/updateAnim.json";
+import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
+import successAnimation from "../../../assets/Lottie/successAnim.json";
+import warningAnimation from "../../../assets/Lottie/warningAnim.json";
+
 const AddEmployee = ({
   // setData,
   setActiveTab,
@@ -25,10 +32,16 @@ const AddEmployee = ({
   const [selectedPage, setSelectedPage] = useState("");
   const [isWebcamOpen, setIsWebcamOpen] = useState(false);
 
-  
   const [data, setData] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
+
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState("");
+  const [successModal, setSuccessModal] = useState(false);
+  const [loading, setLoading] = useState(false); // Loading state
+  const [warningModal, setWarningModal] = useState(false);
+  const [resMsg, setResMsg] = useState("");
 
   const [newEmployee, setNewEmployee] = useState({
     empId: "",
@@ -58,13 +71,11 @@ const AddEmployee = ({
   const [departments, setDepartments] = useState([]);
   const [designations, setDesignations] = useState([]);
   const [shifts, setShifts] = useState([]);
-  const [eshift, setEShift] = useState("");
   const [enrollSites, setEnrollSites] = useState([]);
   const [overtime, setOvertime] = useState([]);
 
   useEffect(() => {
     const fetchOptions = async () => {
-
       try {
         const response = await axios.get(`${SERVER_URL}emp-fun/`);
 
@@ -87,19 +98,27 @@ const AddEmployee = ({
 
   useEffect(() => {
     let objectUrl;
-  
+
     // Check if the image1 property is a File, meaning it’s a newly uploaded image
     if (newEmployee.image1 instanceof File) {
       objectUrl = URL.createObjectURL(newEmployee.image1);
     }
-  
+
     // Cleanup function to revoke the object URL when the component unmounts or image changes
     return () => {
       if (objectUrl) {
         URL.revokeObjectURL(objectUrl);
       }
+
+      let timer;
+    if (successModal) {
+      timer = setTimeout(() => {
+        setSuccessModal(false);
+      }, 2000);
+    }
+    return () => clearTimeout(timer);
     };
-  }, [newEmployee.image1]);
+  }, [newEmployee.image1, successModal]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -154,25 +173,21 @@ const AddEmployee = ({
     }
   };
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-
+  // working handle submit
+  // const handleSubmit = async (row) => {
+  //   setNewEmployee({...row, empId: row.empId})
+  //   console.log(newEmployee)
   //   // Create a new FormData object
   //   const formData = new FormData();
   //   Object.keys(newEmployee).forEach((key) => {
   //     formData.append(key, newEmployee[key]);
   //   });
 
-  //   console.log("-----------start----------");
-  //   for (let pair of formData.entries()) {
-  //     console.log(`${pair[0]}: ${pair[1]}`);
-  //   }
-  //   console.log("-----------stop----------");
-  //   console.log(formData.values());
   //   try {
   //     const response = isEditMode
   //       ? await axios.post(`${SERVER_URL}pr-emp-up/`, formData)
   //       : await axios.post(`${SERVER_URL}pr-emp/`, formData);
+  //       console.log(formData)
 
   //     setData((prevData) =>
   //       isEditMode
@@ -183,55 +198,97 @@ const AddEmployee = ({
   //           )
   //         : [...prevData, response.data]
   //     );
-  //     // if (response.status === (isEditMode ? 200 : 201)) {
-
-  //     // }
   //   } catch (error) {
   //     console.error(
   //       "Error adding/updating employee:",
   //       error.response ? error.response.data : error.message
   //     );
   //   }
+
   //   setIsEditMode(false);
   //   setActiveTab("Employees");
   // };
 
+  const addEmployee = async () => {
+    setModalType("create");
+    setShowModal(true);
+  };
 
-  const handleSubmit = async (row) => {
-    setNewEmployee({...row, empId: row.empId})
-    console.log(newEmployee)
-    // Create a new FormData object
+  const confirmAdd = async () => {
+    const isFormComplete = Object.values(newEmployee).every(
+      (value) => value !== ""
+    );
+
+    if (!isFormComplete) {
+      setResMsg("Please fill in all required fields.");
+      setShowModal(false);
+      setWarningModal(true);
+      return; // Exit the function early if the form is incomplete
+    }
     const formData = new FormData();
     Object.keys(newEmployee).forEach((key) => {
       formData.append(key, newEmployee[key]);
     });
-  
-  
+
     try {
-      const response = isEditMode
-        ? await axios.post(`${SERVER_URL}pr-emp-up/`, formData)
-        : await axios.post(`${SERVER_URL}pr-emp/`, formData);
-        console.log(formData)
-  
-      setData((prevData) =>
-        isEditMode
-          ? prevData.map((emp) =>
-              emp.empId === newEmployee.empId
-                ? { ...emp, ...response.data }
-                : emp
-            )
-          : [...prevData, response.data]
-      );
+      const response = await axios.post(`${SERVER_URL}pr-emp/`, formData);
+      console.log("Added Employee:", response.data);
+      setShowModal(false);
+      setSuccessModal(true)
     } catch (error) {
       console.error(
-        "Error adding/updating employee:",
+        "Error adding employee:",
         error.response ? error.response.data : error.message
       );
     }
-  
-    setIsEditMode(false);
-    setActiveTab("Employees");
+
+    setTimeout(() => {
+      setActiveTab("Employees");
+    }, 2000); 
   };
+
+  const updateEmployee = (employeeData) => {
+    setNewEmployee(employeeData);
+    setModalType("update");
+    setShowModal(true);
+  };
+
+  const confirmUpdate = async () => {
+    const isFormComplete = Object.values(newEmployee).every(
+      (value) => value !== ""
+    );
+
+    if (!isFormComplete) {
+      setResMsg("Please fill in all required fields.");
+      setShowModal(false);
+      setWarningModal(true);
+      return; // Exit the function early if the form is incomplete
+    }
+    const formData = new FormData();
+    Object.keys(newEmployee).forEach((key) => {
+      formData.append(key, newEmployee[key]);
+    });
+
+    try {
+      const response = await axios.post(`${SERVER_URL}pr-emp-up/`, formData);
+      console.log("Updated Employee:", response.data);
+      setShowModal(false);
+      setSuccessModal(true)
+
+    } catch (error) {
+      console.error(
+        "Error updating employee:",
+        error.response ? error.response.data : error.message
+      );
+    }
+    
+
+    setIsEditMode(false);
+    setTimeout(() => {
+      setActiveTab("Employees");
+    }, 2000); 
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setNewEmployee((prevData) => ({ ...prevData, [name]: value }));
@@ -252,15 +309,49 @@ const AddEmployee = ({
     // }));
 
     fetch(imageSrc)
-    .then(res => res.blob())
-    .then(blob => {
-      const file = new File([blob], "webcam-image.jpg", { type: "image/jpeg" });
-      setNewEmployee(prevState => ({ ...prevState, image1: file }));
-    });
+      .then((res) => res.blob())
+      .then((blob) => {
+        const file = new File([blob], "webcam-image.jpg", {
+          type: "image/jpeg",
+        });
+        setNewEmployee((prevState) => ({ ...prevState, image1: file }));
+      });
   };
 
   return (
     <div className="add-employee-main">
+      <ConirmationModal
+        isOpen={showModal}
+        message={`Are you sure you want to ${modalType} this employee?`}
+        onConfirm={() => {
+          if (modalType === "create") confirmAdd();
+          else confirmUpdate();
+        }}
+        onCancel={() => setShowModal(false)}
+        animationData={
+          modalType === "create"
+            ? addAnimation
+            : modalType === "update"
+            ? updateAnimation
+            : deleteAnimation
+        }
+      />
+      <ConirmationModal
+        isOpen={successModal}
+        message={`Employee ${modalType}d successfully!`}
+        onConfirm={() => setSuccessModal(false)}
+        onCancel={() => setSuccessModal(false)}
+        animationData={successAnimation}
+        successModal={successModal}
+      />
+      <ConirmationModal
+        isOpen={warningModal}
+        message={resMsg}
+        onConfirm={() => setWarningModal(false)}
+        onCancel={() => setWarningModal(false)}
+        animationData={warningAnimation}
+        warningModal={warningModal}
+      />
       <div>
         <button
           onClick={() => {
@@ -283,9 +374,7 @@ const AddEmployee = ({
       ) : selectedPage === "Enroll Site Management" ? (
         <Location setSelectedPage={setSelectedPage} />
       ) : (
-        <form 
-        onSubmit={(e) => e.preventDefault()} 
-        className="employee-form">
+        <form onSubmit={(e) => e.preventDefault()} className="employee-form">
           <section>
             <h1>Employee Information</h1>
             <div className="employee-main">
@@ -362,9 +451,9 @@ const AddEmployee = ({
                         <img
                           src={
                             newEmployee.image1 instanceof File
-                              ? URL.createObjectURL(newEmployee.image1)  // For new file preview
+                              ? URL.createObjectURL(newEmployee.image1) // For new file preview
                               : typeof newEmployee.image1 === "string"
-                              ? `${SERVER_URL}${newEmployee.image1}`    // For existing image URL
+                              ? `${SERVER_URL}${newEmployee.image1}` // For existing image URL
                               : ""
                           }
                           alt={`${newEmployee.fName} ${newEmployee.lName}`}
@@ -373,19 +462,17 @@ const AddEmployee = ({
                       </div>
                     )}
 
-
                     <img
                       src={
                         typeof newEmployee.image1 === "string"
-                          ? newEmployee.image1 
-                          : newEmployee.image1 instanceof File 
-                          ? URL.createObjectURL(newEmployee.image1) 
-                          : "" 
+                          ? newEmployee.image1
+                          : newEmployee.image1 instanceof File
+                          ? URL.createObjectURL(newEmployee.image1)
+                          : ""
                       }
                       alt="Captured"
                       className="captured-image"
                     />
-
                   </div>
                   <WebcamModal
                     isOpen={isWebcamOpen}
@@ -635,7 +722,13 @@ const AddEmployee = ({
                 </div>
               </div>
               <div className="employee-buttons">
-                <button className="submit-button" type="submit" onClick={isEditMode ? () => handleSubmit(newEmployee) : handleSubmit }>
+                <button
+                  className="submit-button"
+                  type="submit"
+                  onClick={
+                    isEditMode ? () => updateEmployee(newEmployee) : addEmployee
+                  }
+                >
                   {isEditMode ? "Update Employee" : "Add Employee"}
                 </button>
                 <button

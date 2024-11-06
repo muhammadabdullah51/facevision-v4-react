@@ -6,9 +6,10 @@ import {
     faTachometerAlt, faUserPlus, faMobileAlt, faCalendarCheck,
     faCalendarAlt, faCogs, faMoneyCheckAlt, faChartBar,
     faUsers, faBan, faCog, faUser, faBuilding, faTag,
-    faMapMarkerAlt, faIdBadge, faSignOutAlt, faChevronDown,
+    faMapMarkerAlt, faIdBadge, faPersonWalkingDashedLineArrowRight, faChevronDown,
     faChevronUp, faHandHoldingUsd , faClipboardCheck ,faAward, faFileInvoiceDollar ,faTabletAlt, faDollarSign
 } from '@fortawesome/free-solid-svg-icons';
+
 
 const menuItems = [
     { label: 'Dashboard', icon: faTachometerAlt },
@@ -17,7 +18,7 @@ const menuItems = [
         { label: 'Designation', icon: faTag },
         { label: 'Location', icon: faMapMarkerAlt },
         { label: 'Employee', icon: faIdBadge },
-        { label: 'Resign', icon: faSignOutAlt }
+        { label: 'Resign', icon: faPersonWalkingDashedLineArrowRight }
     ]},
     { label: 'Devices', icon: faTabletAlt },
     { label: 'Attendance', icon: faCalendarCheck },

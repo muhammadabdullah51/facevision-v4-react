@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ResignTable from "./ResignTable";
 import axios from "axios";
+import { SERVER_URL } from "../../../config";
 
 const Resign = () => {
   const [data, setData] = useState([]);
@@ -12,7 +13,7 @@ const Resign = () => {
 
   const fetchResign = async () => {
     try {
-        const response = await axios.get('http://localhost:5000/api/fetchResign');
+        const response = await axios.get(`${SERVER_URL}pr-emp-rsgn/`);
         setData(response.data);
     } catch (error) {
         console.error('Error fetching resignation data:', error);

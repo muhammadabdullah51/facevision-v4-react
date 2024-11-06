@@ -8,6 +8,7 @@ import addAnimation from "../../../assets/Lottie/addAnim.json";
 import updateAnimation from "../../../assets/Lottie/updateAnim.json";
 import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../../assets/Lottie/successAnim.json";
+import { SERVER_URL } from "../../../config";
 
 const ResignTable = ({ data, setData }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -15,8 +16,7 @@ const ResignTable = ({ data, setData }) => {
   const [showEditForm, setShowEditForm] = useState(false);
   const [employees, setEmployees] = useState([]); // State for employee data
   const [formData, setFormData] = useState({
-    _id: "",
-    resignId: null,
+    resignId: "",
     employee: "",
     date: "",
     reason: "",
@@ -29,23 +29,17 @@ const ResignTable = ({ data, setData }) => {
   const fetchResign = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:5000/api/fetchResign");
-      if (response.ok) {
-        const resign = await response.json();
-        setData(resign);
-      } else {
-        throw new Error("Failed to fetch resigns");
-      }
-    } catch (error) {
+      const response = await axios.get(`${SERVER_URL}pr-emp-rsgn/`);
+      const resign = await response.data;
+      setData(resign);
+     } catch (error) {
       console.error("Error fetching resigns data:", error);
     }
   }, [setData]);
   // Fetch employee data
   const fetchEmployees = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:5000/api/fetchEmployees"
-      ); // Update this URL accordingly
+      const response = await axios.get(`${SERVER_URL}pr-emp/`); /// Update this URL accordingly
       setEmployees(response.data);
     } catch (error) {
       console.error("Error fetching employees:", error);
@@ -74,7 +68,7 @@ const ResignTable = ({ data, setData }) => {
       },
       {
         Header: "Employee Name",
-        accessor: "employee",
+        accessor: "empName",
         Cell: ({ value }) => <span className="bold-fonts">{value}</span>,
       },
       {
@@ -92,13 +86,7 @@ const ResignTable = ({ data, setData }) => {
         Cell: ({ row }) => (
           <div>
             <button
-              onClick={() => handleEdit(row.original)}
-              style={{ background: "none", border: "none" }}
-            >
-              <FaEdit className="table-edit" />
-            </button>
-            <button
-              onClick={() => handleDelete(row.original)}
+              onClick={() => handleDelete(row.original.resignId)}
               style={{ background: "none", border: "none" }}
             >
               <FaTrash className="table-delete" />
@@ -138,30 +126,16 @@ const ResignTable = ({ data, setData }) => {
     useRowSelect
   );
 
-  const handleEdit = (row) => {
-    setFormData({
-      _id: row._id,
-      resignId: row.resignId,
-      employee: row.employee,
-      date: row.date,
-      reason: row.reason,
-    });
-    setShowAddForm(false); // Hide Add Form
-    setShowEditForm(true); // Show Edit Form
-    fetchResign();
-  };
 
-  const handleDelete = (resignId) => {
+  const handleDelete = async(resignId) => {
     setModalType("delete");
     setShowModal(true);
-    setFormData({ ...formData, _id: resignId });
+    setFormData({ resignId });
+    // console.log(formData)
   };
   const confirmDelete = async () => {
-    const resignId = formData._id;
-    await axios.post("http://localhost:5000/api/deleteResign", { resignId });
-    const updatedData = await axios.get(
-      "http://localhost:5000/api/fetchResign"
-    );
+    await axios.post(`${SERVER_URL}pr-emp-rsgn-del/`, { resignId: formData.resignId });
+    const updatedData = await axios.get(`${SERVER_URL}pr-emp-rsgn/`);
     setData(updatedData.data);
     fetchResign();
     setShowModal(false);
@@ -170,7 +144,6 @@ const ResignTable = ({ data, setData }) => {
 
   const handleAdd = () => {
     setFormData({
-      resignId: null,
       employee: "",
       date: "",
       reason: "",
@@ -180,44 +153,7 @@ const ResignTable = ({ data, setData }) => {
     fetchResign();
   };
 
-  const handleUpdate = async (row) => {
-    setModalType("update");
-    setFormData({
-      _id: row._id,
-      resignId: row.resignId,
-      employee: row.employee,
-      date: row.date,
-      reason: row.reason,
-    });
-    setShowModal(true);
-  };
-
-  const confirmUpdate = async () => {
-    setShowAddForm(false);
-    setShowEditForm(true);
-    const updateResign = {
-      _id: formData._id,
-      resignId: formData.id,
-      employee: formData.employee,
-      date: formData.date,
-      reason: formData.reason,
-    };
-    try {
-      axios.post("http://localhost:5000/api/updateResign", updateResign);
-      // const updatedData = await axios.get(
-      //   "http://localhost:5000/api/fetchResign"
-      // );
-      // setData(updatedData.data);
-      fetchResign();
-      setShowAddForm(false); // Hide Add Form
-      setShowEditForm(false);
-      setShowModal(false); // Close the confirmation modal
-      setSuccessModal(true); // Show the success modal
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
+ 
   const addResign = () => {
     setModalType("create");
     setShowModal(true);
@@ -227,7 +163,6 @@ const ResignTable = ({ data, setData }) => {
     setShowEditForm(true);
     console.log(formData);
     setFormData({
-      resignId: null,
       employee: "",
       date: "",
       reason: "",
@@ -238,16 +173,14 @@ const ResignTable = ({ data, setData }) => {
       reason: formData.reason,
     };
     try {
-      axios.post(`http://localhost:5000/api/addResign`, resign);
-      const updatedData = await axios.get(
-        "http://localhost:5000/api/fetchResign"
-      );
+      axios.post(`${SERVER_URL}pr-emp-rsgn/`, resign);
+      const updatedData = await axios.get(`${SERVER_URL}pr-emp-rsgn/`);
       setData(updatedData.data);
+      fetchResign();
       setShowAddForm(false);
       setShowEditForm(false);
       setShowModal(false);
       setSuccessModal(true);
-      fetchResign();
     } catch (error) {
       console.log(error);
     }
@@ -260,7 +193,6 @@ const ResignTable = ({ data, setData }) => {
         message={`Are you sure you want to ${modalType} this Resign?`}
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
-          else if (modalType === "update") confirmUpdate();
           else confirmDelete();
         }}
         onCancel={() => setShowModal(false)}
@@ -334,27 +266,29 @@ const ResignTable = ({ data, setData }) => {
       {showAddForm && !showEditForm && (
         <div className="add-department-form add-leave-form">
           <h3>Add Employee</h3>
-          {/* <input
-            type="text"
-            placeholder="Employee Name"
-            value={formData.employee}
-            onChange={(e) =>
-              setFormData({ ...formData, employee: e.target.value })
-            }
-          /> */}
-          <select
-            value={formData.employee}
-            onChange={(e) =>
-              setFormData({ ...formData, employee: e.target.value })
-            }
-          >
-            <option value="">Select Employee</option>
+          <input
+            list="employeesList"
+            value={formData.employee} // display the employee's name
+            onChange={(e) => {
+              // Find the employee based on the name entered in the input
+              const selectedEmployee = employees.find(
+                (emp) => `${emp.fName} ${emp.lName}` === e.target.value
+              );
+
+              setFormData({
+                ...formData, employee: e.target.value,
+                id: selectedEmployee ? selectedEmployee.empId : null,
+              });
+            }}
+            placeholder="Search or select an employee"
+          />
+
+          <datalist id="employeesList">
             {employees.map((emp) => (
-              <option key={emp.empId} value={`${emp.fName} ${emp.lName}`}>
-                {emp.fName} {emp.lName}
-              </option>
+              // Display employee's full name as option value
+              <option key={emp.empId} value={emp.empId}>{emp.fName} {emp.lName}</option>
             ))}
-          </select>
+          </datalist>
           <input
             type="date"
             placeholder="Date"
@@ -375,50 +309,6 @@ const ResignTable = ({ data, setData }) => {
           <button
             className="cancel-button"
             onClick={() => setShowAddForm(false)}
-          >
-            Cancel
-          </button>
-        </div>
-      )}
-      {showEditForm && (
-        <div className="add-department-form add-leave-form">
-          <h3>Edit Employee</h3>
-          <select
-            value={formData.employee}
-            onChange={(e) =>
-              setFormData({ ...formData, employee: e.target.value })
-            }
-          >
-            <option value="">Select Employee</option>
-            {employees.map((emp) => (
-              <option key={emp.empId} value={`${emp.fName} ${emp.lName}`}>
-                {emp.fName} {emp.lName}
-              </option>
-            ))}
-          </select>
-          <input
-            type="date"
-            placeholder="Date"
-            value={formData.date}
-            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-          />
-          <input
-            type="text"
-            placeholder="Reason"
-            value={formData.reason}
-            onChange={(e) =>
-              setFormData({ ...formData, reason: e.target.value })
-            }
-          />
-          <button
-            className="submit-button"
-            onClick={() => handleUpdate(formData)}
-          >
-            Update Employee
-          </button>
-          <button
-            className="cancel-button"
-            onClick={() => setShowEditForm(false)}
           >
             Cancel
           </button>
