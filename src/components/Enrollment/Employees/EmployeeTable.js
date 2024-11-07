@@ -112,18 +112,6 @@ const EmployeeTable = ({
     return () => clearTimeout(timer);
   }, [fetchEmployees, successModal]);
 
-  // working handle delete
-  // const handleDelete = async (empId) => {
-  //   try {
-  //     await axios.post(`${SERVER_URL}pr-emp-del/`, { empId: empId });
-  //     console.log(`Employee deleted ID: ${empId}`);
-  //     const updatedData = await axios.get(`${SERVER_URL}pr-emp/`);
-  //     setData(updatedData.data);
-  //     fetchEmployees();
-  //   } catch (error) {
-  //     console.error("Error deleting department:", error);
-  //   }
-  // };
 
   const handleDelete = async (id) => {
     setModalType("delete");
@@ -148,8 +136,6 @@ const EmployeeTable = ({
 
   const handleAdd = () => {
     onAdd()
-    // setIsEditMode(false);
-    // setActiveTab("Add Employee"); // Update the activeTab state from parent
   };
 
   // Handle page change

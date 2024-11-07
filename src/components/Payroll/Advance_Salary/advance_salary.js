@@ -8,6 +8,7 @@ import addAnimation from "../../../assets/Lottie/addAnim.json";
 import updateAnimation from "../../../assets/Lottie/updateAnim.json";
 import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../../assets/Lottie/successAnim.json";
+import { SERVER_URL } from "../../../config";
 
 const AdvanceSalary = () => {
   const [data, setData] = useState([]);
@@ -17,7 +18,6 @@ const AdvanceSalary = () => {
   const [showEditForm, setShowEditForm] = useState(false);
 
   const [formData, setFormData] = useState({
-    _id: "",
     id: "",
     empId: "",
     empName: "",
@@ -34,9 +34,7 @@ const AdvanceSalary = () => {
 
   const fetchAdvSalary = useCallback(async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:5000/api/fetchAdvSalary"
-      );
+      const response = await axios.get(`${SERVER_URL}pyr-adv/`);
       console.log(response.data);
       setData(response.data);
     } catch (error) {
@@ -45,9 +43,7 @@ const AdvanceSalary = () => {
   }, [setData]);
   const fetchEmployees = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:5000/api/fetchEmployees"
-      );
+      const response = await axios.get(`${SERVER_URL}pr-emp/`);
       setEmployees(response.data);
     } catch (error) {
       console.error("Error fetching employees:", error);
@@ -70,7 +66,6 @@ const AdvanceSalary = () => {
 
   const handleEdit = (data) => {
     setFormData({
-      _id: data._id,
       id: data.id,
       amount: data.amount,
       reason: data.reason,
@@ -95,9 +90,7 @@ const AdvanceSalary = () => {
   };
   const confirmDelete = async () => {
     try {
-      await axios.post("http://localhost:5000/api/deleteAdvSalary", {
-        id: formData._id,
-      });
+      await axios.post(`${SERVER_URL}`, {id: formData.id,});
       
       fetchAdvSalary();
       setShowModal(false);
@@ -137,10 +130,8 @@ const AdvanceSalary = () => {
       status: formData.status,
     };
     try {
-      await axios.post(`http://localhost:5000/api/addAdvSalary`, advSalary);
-      const updatedData = await axios.get(
-        "http://localhost:5000/api/fetchAdvSalary"
-      );
+      await axios.post(`${SERVER_URL}`, advSalary);
+      const updatedData = await axios.get(`${SERVER_URL}`);
       setData(updatedData.data);
       setShowModal(false);
       setSuccessModal(true);
@@ -153,7 +144,6 @@ const AdvanceSalary = () => {
   const updateAdvSalary = (row) => {
     setModalType("update");
     setFormData({
-      _id: row._id,
       id: row.id,
       amount: row.amount,
       reason: row.reason,
@@ -176,10 +166,8 @@ const AdvanceSalary = () => {
       status: formData.status,
     };
     try {
-      axios.post(`http://localhost:5000/api/updateAdvSalary`, updateAdvSalary);
-      const updatedData = await axios.get(
-        "http://localhost:5000/api/fetchAdvSalary"
-      );
+      axios.post(`${SERVER_URL}`, updateAdvSalary);
+      const updatedData = await axios.get(`${SERVER_URL}`);
       setData(updatedData.data);
       setShowModal(false);
       setSuccessModal(true);

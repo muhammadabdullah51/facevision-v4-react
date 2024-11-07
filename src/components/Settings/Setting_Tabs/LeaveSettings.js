@@ -1,89 +1,226 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEdit, faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
-
 import "./leave.css";
+import axios from "axios";
+import { SERVER_URL } from "../../../config";
+import ConirmationModal from "../../Modal/conirmationModal";
+import addAnimation from "../../../assets/Lottie/addAnim.json";
+import updateAnimation from "../../../assets/Lottie/updateAnim.json";
+import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
+import successAnimation from "../../../assets/Lottie/successAnim.json";
+import warningAnimation from "../../../assets/Lottie/warningAnim.json";
 
 const LeaveTable = () => {
-  // Updated state field names
-  const [data, setData] = useState([
-    { leaveFormulaId: 1, cutCode: "LC001", cutRate: "$20" },
-    { leaveFormulaId: 2, cutCode: "LC002", cutRate: "$25" },
-  ]);
-
+  const [data, setData] = useState([]);
   const [showForm, setShowForm] = useState(false);
-  const [formMode, setFormMode] = useState("add");
-  const [currentItemId, setCurrentItemId] = useState(null);
-  const [cutCode, setCutCode] = useState("");
-  const [cutRate, setCutRate] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [formMode, setFormMode] = useState("add"); // "add" or "edit"
+  const [currentItemId, setCurrentItemId] = useState(null); // Store ID of item being edited
+  const [cutCode, cuttOTCode] = useState("");
+  const [cutRate, setcutRate] = useState("");
+  const [updateDate, setUpdateDate] = useState("");
+  const [searchQuery, setSearchQuery] = useState(""); // State for search query
 
-  // Handle edit with updated field names
-  const handleEdit = (id) => {
-    const itemToEdit = data.find((item) => item.leaveFormulaId === id);
-    if (itemToEdit) {
-      setCutCode(itemToEdit.cutCode);
-      setCutRate(itemToEdit.cutRate);
-      setCurrentItemId(id);
-      setFormMode("edit");
-      setShowForm(true);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [formData, setFormData] = useState({
+    leaveFormulaId: "",
+    cutCode: "",
+    cutRate: "",
+  });
+
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState("");
+  const [successModal, setSuccessModal] = useState(false);
+  const [loading, setLoading] = useState(false); // Loading state
+
+  const [warningModal, setWarningModal] = useState(false);
+  const [resMsg, setResMsg] = useState("");
+
+  const fetchLvs = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${SERVER_URL}pyr-ot/`);
+      setData(response.data);
+    } catch (error) {
+      console.error("Error fetching shift data:", error);
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [setData]);
+
+  useEffect(() => {
+    fetchLvs();
+    let timer;
+    if (successModal) {
+      timer = setTimeout(() => {
+        setSuccessModal(false);
+      }, 2000);
+    }
+    return () => clearTimeout(timer);
+  }, [fetchLvs, successModal]);
+
+  
 
   const handleCancel = () => {
-    setShowForm(false);
+    setShowAddForm(false);
+    setShowEditForm(false);
   };
 
-  const handleDelete = (id) => {
-    setData(data.filter((item) => item.leaveFormulaId !== id));
+  const handleEdit = (row) => {
+    setFormData({ ...row });
+    setShowAddForm(false);
+    setShowEditForm(true);
   };
-
-  const handleAddNew = () => {
-    setFormMode("add");
-    setCutCode("");
-    setCutRate("");
-    setShowForm(true);
+  const updateOTF = async(row) => {
+    setModalType("update");
+    setFormData({ 
+      leaveFormulaId: row.leaveFormulaId,
+      cutCode: row.cutCode,
+      cutRate: row.cutRate,
+    });
+    setShowModal(true);
   };
+  const confirmUpdate = async() => {
+    if(!formData.cutCode || !formData.cutRate ){
+      setResMsg("Please fill in all required fields.")
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    } 
 
-  const handleSaveItem = () => {
-    if (formMode === "add") {
-      const newItem = {
-        leaveFormulaId: data.length + 1,
-        cutCode,
-        cutRate,
-      };
-      setData([...data, newItem]);
-    } else if (formMode === "edit") {
-      const updatedData = data.map((item) =>
-        item.leaveFormulaId === currentItemId
-          ? { ...item, cutCode, cutRate }
-          : item
-      );
-      setData(updatedData);
+    const updatedOTF = {
+      leaveFormulaId: formData.leaveFormulaId,
+      cutCode: formData.cutCode,
+      cutRate: formData.cutRate,
+    };
+    try {
+      const res = await axios.post(`${SERVER_URL}pyr-ot-up/`, updatedOTF);
+      console.log("Overtime updated successfullykjljkljkl");
+      setShowEditForm(false);
+      setShowModal(false);
+      setSuccessModal(true);
+      setResMsg(res.data.msg)
+      const updatedData = await axios.get(`${SERVER_URL}pyr-ot/`);
+      setData(updatedData.data);
+    } catch (error) {
+      console.error("Error updating overtime:", error);
+      setShowModal(false);
+      setWarningModal(true);
     }
-    resetForm();
-  };
 
+  }
+
+
+  const handleAdd = () => {
+    setFormData({
+      cutCode: "",
+      cutRate: "",
+    });
+    setShowAddForm(true);
+  };
+  const addOTF = async () => {
+    setModalType("create");
+    setShowModal(true);
+  }
+  const confirmAdd = async () => {
+    if(!formData.cutCode ||!formData.cutRate ||!formData.updateDate){
+      setResMsg("Please fill in all required fields.")
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    }
+    const newOTF = {
+      cutCode: formData.cutCode,
+      cutRate: formData.cutRate,
+    }
+
+    try {
+      const response = await axios.post(`${SERVER_URL}pyr-ot/`, newOTF);
+      console.log("Overtime Added Successfully")
+      setShowAddForm(false);
+      setResMsg(response.data.msg)
+      setShowModal(false);
+      setSuccessModal(true)
+      const updatedData = await axios.get(`${SERVER_URL}pyr-ot/`);
+      setData(updatedData.data);
+      // setShowAddForm(false)
+    } catch (error) {
+      console.log(error);
+      setShowModal(false)
+      setWarningModal(true);
+    }
+
+  }
+
+
+
+
+  const handleDelete = async (leaveFormulaId) => {
+    setShowModal(true);
+    setModalType("delete");
+    setFormData({...formData, leaveFormulaId: leaveFormulaId})
+  };
+  const confirmDelete = async () => {
+    await axios.post(`${SERVER_URL}pyr-ot-del/`, {leaveFormulaId: formData.leaveFormulaId,});
+    const updatedData = await axios.get(`${SERVER_URL}pyr-ot/`);
+    setData(updatedData.data);
+    fetchLvs();
+    setShowModal(false);
+    setSuccessModal(true);
+  }
   const resetForm = () => {
-    setCutCode("");
-    setCutRate("");
-    setCurrentItemId(null);
-    setFormMode("add");
-    setShowForm(false);
+    setFormData({
+      leaveFormulaId: "",
+      cutCode: "",
+      cutRate: "",
+    });
+    handleCancel();
   };
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
 
-  // Update search to use `cutCode`
   const filteredData = data.filter((item) =>
     item.cutCode.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <div className="department-table">
+      <ConirmationModal
+        isOpen={showModal}
+        message={`Are you sure you want to ${modalType} this Overtime Formula?`}
+        onConfirm={() => {
+          if (modalType === "create") confirmAdd();
+          else if (modalType === "update") confirmUpdate();
+          else confirmDelete();
+        }}
+        onCancel={() => setShowModal(false)}
+        animationData={
+          modalType === "create"
+            ? addAnimation
+            : modalType === "update"
+            ? updateAnimation
+            : deleteAnimation
+        }
+      />
+      <ConirmationModal
+        isOpen={successModal}
+        message={`Overtime Formula ${modalType}d successfully!`}
+        onConfirm={() => setSuccessModal(false)}
+        onCancel={() => setSuccessModal(false)}
+        animationData={successAnimation}
+        successModal={successModal}
+      />
+      <ConirmationModal
+        isOpen={warningModal}
+        message={resMsg}
+        onConfirm={() => setWarningModal(false)}
+        onCancel={() => setWarningModal(false)}
+        animationData={warningAnimation}
+        warningModal={warningModal}
+      />
       <div className="table-header">
         <form className="form">
           <button>
@@ -129,28 +266,61 @@ const LeaveTable = () => {
             </svg>
           </button>
         </form>
-        <button className="add-button" onClick={handleAddNew}>
-          <FaPlus /> Add New Formula
+        <button className="add-button" onClick={handleAdd}>
+          <FaPlus /> Add New Overtime Formula
         </button>
       </div>
 
-      {showForm && (
+      {showAddForm && !showEditForm && (
         <div className="add-leave-form">
-          <h4>{formMode === "add" ? "Add New Leave" : "Edit Leave"}</h4>
+          <h4>Add New Overtime</h4>
           <input
             type="text"
-            placeholder="Leave Code"
-            value={cutCode}
-            onChange={(e) => setCutCode(e.target.value)}
+            placeholder="Pay Code"
+            value={formData.cutCode}
+            onChange={(e) =>
+              setFormData({ ...formData, cutCode: e.target.value })
+            }
           />
           <input
-            type="text"
-            placeholder="Cut Rate Per Hour"
-            value={cutRate}
-            onChange={(e) => setCutRate(e.target.value)}
+            type="number"
+            placeholder="Rate Per Hour"
+            value={formData.cutRate}
+            onChange={(e) =>
+              setFormData({ ...formData, cutRate: e.target.value })
+            }
           />
-          <button className="submit-button" onClick={handleSaveItem}>
-            {formMode === "add" ? "Add" : "Update"}
+       
+          <button className="submit-button" onClick={addOTF}>
+            Add Overtime Formula
+          </button>
+          <button className="cancel-button" onClick={handleCancel}>
+            Cancel
+          </button>
+        </div>
+      )}
+      {!showAddForm && showEditForm && (
+        <div className="add-leave-form">
+          <h4>Edit Overtime Formula</h4>
+          <input
+            type="text"
+            placeholder="Pay Code"
+            value={formData.cutCode}
+            onChange={(e) =>
+              setFormData({ ...formData, cutCode: e.target.value })
+            }
+          />
+          <input
+            type="number"
+            placeholder="Rate Per Hour"
+            value={formData.cutRate}
+            onChange={(e) =>
+              setFormData({ ...formData, cutRate: e.target.value })
+            }
+          />
+         
+          <button className="submit-button" onClick={() => updateOTF(formData)}>
+            Update Overtime Formula
           </button>
           <button className="cancel-button" onClick={handleCancel}>
             Cancel
@@ -162,9 +332,9 @@ const LeaveTable = () => {
         <table className="table">
           <thead>
             <tr>
-              <th>Id</th>
-              <th>Leave Code</th>
-              <th>Cut Rate Per Hour</th>
+              <th>Formula ID</th>
+              <th>Pay Code</th>
+              <th>Rate Per Hour</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -176,7 +346,7 @@ const LeaveTable = () => {
                 <td>{item.cutRate}</td>
                 <td>
                   <button
-                    onClick={() => handleEdit(item.leaveFormulaId)}
+                    onClick={() => handleEdit(item)}
                     style={{ background: "none", border: "none" }}
                   >
                     <FaEdit className="table-edit" />

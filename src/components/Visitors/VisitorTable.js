@@ -1,9 +1,15 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { useTable, usePagination, useRowSelect } from "react-table";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import ReactPaginate from "react-paginate";
 import "./visitors.css";
 import axios from "axios";
+import ConirmationModal from "../Modal/conirmationModal";
+import addAnimation from "../../assets/Lottie/addAnim.json";
+import updateAnimation from "../../assets/Lottie/updateAnim.json";
+import deleteAnimation from "../../assets/Lottie/deleteAnim.json";
+import successAnimation from "../../assets/Lottie/successAnim.json";
+import warningAnimation from "../../assets/Lottie/warningAnim.json";
 
 const VisitorTable = ({
   // data,
@@ -15,6 +21,13 @@ const VisitorTable = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [data, setData] = useState([]);
+
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState("");
+  const [successModal, setSuccessModal] = useState(false);
+  const [loading, setLoading] = useState(false); // Loading state
+  const [warningModal, setWarningModal] = useState(false);
+  const [resMsg, setResMsg] = useState("");
 
   const [formData, setFormData] = useState({
     _id: "",
@@ -58,11 +71,7 @@ const VisitorTable = ({
   // Define visitor table columns
   const columns = useMemo(
     () => [
-      // {
-      //   Header: "SNo",
-      //   accessor: "srNo",
-      //   Cell: ({ row }) => row.index + 1,
-      // },
+     
       {
         Header: "Visitor ID",
         accessor: "visitorsId",
@@ -133,7 +142,7 @@ const VisitorTable = ({
               <FaEdit className="table-edit" />
             </button>
             <button
-              onClick={() => handleDelete(row.original)}
+              onClick={() => handleDelete(row.original._id)}
               style={{ background: "none", border: "none" }}
             >
               <FaTrash className="table-delete" />
@@ -174,11 +183,8 @@ const VisitorTable = ({
     useRowSelect
   );
 
-  useEffect(() => {
-    fetchVisitors();
-  }, []);
-
-  const fetchVisitors = async () => {
+  
+  const fetchVisitors = useCallback( async () => {
     try {
       const response = await axios.get(
         "http://localhost:5000/api/fetchVisitor"
@@ -188,50 +194,93 @@ const VisitorTable = ({
     } catch (error) {
       console.error("Error fetching resignation data:", error);
     }
-  };
+  },[setData])
+
+  useEffect(() => {
+    fetchVisitors();
+    let timer;
+    if (successModal) {
+      timer = setTimeout(() => {
+        setSuccessModal(false);
+      }, 2000);
+    }
+    return () => clearTimeout(timer);
+  }, [fetchVisitors, successModal]);
 
 
   // Handle Edit
   const handleEdit = (row) => {
-    // setFormData({
-    //   visitorsId: row.visitorsId,
-    //   fName: row.fName,
-    //   lName: row.lName,
-    //   certificationNo: row.certificationNo,
-    //   createTime: row.createTime,
-    //   exitTime: row.exitTime,
-    //   email: row.email,
-    //   contactNo: row.contactNo,
-    //   visitingDept: row.visitingDept,
-    //   host: row.host,
-    //   cardNumber: row.cardNumber,
-    //   visitingReason: row.visitingReason,
-    //   carryingGoods: row.carryingGoods,
-    // });
-    
-    onEdit(row)
+   onEdit(row)
   };
 
-  // Handle Delete
+  // working Handle Delete
+  // const handleDelete = async (row) => {
+  //   const visitorsId = row._id;
+  //   axios.post("http://localhost:5000/api/deleteVisitor", { visitorsId });
+  //   const updatedData = await axios.get(
+  //     "http://localhost:5000/api/fetchVisitor"
+  //   );
+  //   setData(updatedData.data);
+  //   fetchVisitors();
+  // };
   const handleDelete = async (row) => {
-    const visitorsId = row._id;
-    axios.post("http://localhost:5000/api/deleteVisitor", { visitorsId });
-    const updatedData = await axios.get(
-      "http://localhost:5000/api/fetchVisitor"
-    );
-    setData(updatedData.data);
-    fetchVisitors();
+    setModalType("delete");
+    setShowModal(true);
+    setFormData({...formData });
   };
+
+
+  const confirmDelete = async() => {
+    try {
+      await axios.post("http://localhost:5000/api/deleteVisitor", { visitorsId: formData._id });
+      const updatedData = await axios.get("http://localhost:5000/api/fetchVisitor");
+      setData(updatedData.data);
+      fetchVisitors();
+      setShowModal(false);
+      setSuccessModal(true);
+      
+    } catch (error) {
+      console.log(error);
+    }
+  } 
 
   const handleAdd = () => {
     onAdd()
-    // setActiveTab("Add Visitor"); // Update the activeTab state from parent
   };
 
  
 
   return (
     <div className="visitor-table">
+      <ConirmationModal
+        isOpen={showModal}
+        message={`Are you sure you want to ${modalType} this employee?`}
+        onConfirm={() =>  confirmDelete()}
+        onCancel={() => setShowModal(false)}
+        animationData={
+          modalType === "create"
+            ? addAnimation
+            : modalType === "update"
+            ? updateAnimation
+            : deleteAnimation
+        }
+      />
+       <ConirmationModal
+        isOpen={successModal}
+        message={`Employee ${modalType}d successfully!`}
+        onConfirm={() => setSuccessModal(false)}
+        onCancel={() => setSuccessModal(false)}
+        animationData={successAnimation}
+        successModal={successModal}
+      />
+      <ConirmationModal
+        isOpen={warningModal}
+        message={resMsg}
+        onConfirm={() => setWarningModal(false)}
+        onCancel={() => setWarningModal(false)}
+        animationData={warningAnimation}
+        warningModal={warningModal}
+      />
       <div className="table-header">
         <form className="form" onSubmit={(e) => e.preventDefault()}>
           <button type="submit">

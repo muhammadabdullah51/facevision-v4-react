@@ -96,7 +96,7 @@
     align-items: center;
     gap: 10px;
     transition: background-color 0.3s ease;
-    font-size: var(--sidebar-font-dropdown);
+    font-size: var(--sidebar-font);
     color:var(--text-color);
 }
 .sidebar-icon{

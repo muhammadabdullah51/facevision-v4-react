@@ -81,19 +81,21 @@
 }
 .export-btn {
     display: flex;
-    align-items: center;
+    align-items:self-end;
+    flex-wrap: wrap;
     justify-content: center;
     background-color: var(--success-button-color);
     border: 5px solid var(--success-button-color);
     color: #fff;
     border-radius: 4px;
-    padding: 0.1% 0.6%;
+    padding: 0% 0.6% 1% 0.6%;
     cursor: pointer;
     font-size: 0.8vw;
     transition: background-color 0.3s;
     height: 4vh;
     font-style: normal;
     width:9vw;
+    
 }
 .export-buttons{
     display: flex;

@@ -389,7 +389,12 @@ const BlockListTable = ({ data, setData }) => {
           </button>
           <button
             className="cancel-button"
-            onClick={() => setShowAddForm(false)}
+            onClick={() => {
+
+              setShowEditForm(false)
+              setShowAddForm(false)
+            }
+            } 
           >
             Cancel
           </button>

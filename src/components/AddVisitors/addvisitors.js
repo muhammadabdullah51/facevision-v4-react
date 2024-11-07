@@ -3,6 +3,12 @@ import "./addVisitors.css";
 import Department from "../Enrollment/Department/department";
 import { FaArrowLeft } from "react-icons/fa";
 import axios from "axios";
+import ConirmationModal from "../Modal/conirmationModal";
+import addAnimation from "../../assets/Lottie/addAnim.json";
+import updateAnimation from "../../assets/Lottie/updateAnim.json";
+import deleteAnimation from "../../assets/Lottie/deleteAnim.json";
+import successAnimation from "../../assets/Lottie/successAnim.json";
+import warningAnimation from "../../assets/Lottie/warningAnim.json";
 const AddVisitor = ({
   setData,
   setActiveTab,
@@ -29,21 +35,26 @@ const AddVisitor = ({
           "http://localhost:5000/api/fetchDepartment"
         );
         setDepartments(departmentResponse.data);
-        if (editData) {
-          setNewVisitor({ ...editData });
+        if (isEditMode && editData) {
+          setNewVisitor({
+            ...editData,
+            createTime: editData.createTime
+              ? new Date(editData.createTime).toISOString().slice(0, 16)
+              : "",
+            exitTime: editData.exitTime
+              ? new Date(editData.exitTime).toISOString().slice(0, 16)
+              : "",
+          });
         }
       } catch (error) {
         console.error("Error fetching options:", error);
       }
     };
-
+  
     fetchOptions();
-  }, [editData]);
+  }, [isEditMode && editData]);
 
-  const handleBackClick = () => {
-    setSelectedPage("Back");
-    setActiveTab("Visitors");
-  };
+ 
 
   const [newVisitor, setNewVisitor] = useState({
     visitorsId: "",
@@ -61,6 +72,29 @@ const AddVisitor = ({
     carryingGoods: "",
   });
 
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState("");
+  const [successModal, setSuccessModal] = useState(false);
+  const [loading, setLoading] = useState(false); // Loading state
+  const [warningModal, setWarningModal] = useState(false);
+  const [resMsg, setResMsg] = useState("");
+
+  useEffect(()=>{
+    let timer;
+
+    if (successModal) {
+      timer = setTimeout(() => {
+        setSuccessModal(false);
+      }, 2000);
+    }
+    return () => clearTimeout(timer);
+  },[successModal])
+
+  const handleBackClick = () => {
+    setSelectedPage("Back");
+    setActiveTab("Visitors");
+  };
+
   const handleDepartmentChange = (event) => {
     const { value } = event.target;
 
@@ -72,7 +106,117 @@ const AddVisitor = ({
   };
 
   
+
+  const addVisitor = async () => {
+    setModalType("create");
+    setShowModal(true);
+  };
+  const confirmAdd = async () => {
+    if (
+      !newVisitor.visitorsId ||
+     !newVisitor.fName ||
+     !newVisitor.lName ||
+     !newVisitor.certificationNo ||
+     !newVisitor.email ||
+     !newVisitor.contactNo ||
+     !newVisitor.visitingDept ||
+     !newVisitor.host ||
+     !newVisitor.cardNumber ||
+     !newVisitor.visitingReason ||
+     !newVisitor.carryingGoods
+    ) {
+      setResMsg("Please fill in all required fields.");
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    }
+    setLoading(true);
+    const visitorData = {
+      visitorsId: newVisitor.visitorsId,
+      fName: newVisitor.fName,
+      lName: newVisitor.lName,
+      certificationNo: newVisitor.certificationNo,
+      createTime: new Date().toISOString(),
+      exitTime: new Date().toISOString(),
+      email: newVisitor.email,
+      contactNo: newVisitor.contactNo,
+      visitingDept: newVisitor.visitingDept,
+      host: newVisitor.host,
+      cardNumber: newVisitor.cardNumber,
+      visitingReason: newVisitor.visitingReason,
+      carryingGoods: newVisitor.carryingGoods,
+    };
+    try {
+      await axios.post(`http://localhost:5000/api/addVisitor`, visitorData)
+      setShowModal(false);
+      setSuccessModal(true)
+    } catch (error) {
+      console.error(error)
+    }
+    setTimeout(() => {
+      setActiveTab("Visitors");
+    }, 2000); 
+  }
+
+
+
+
+
+  const updateVisitor = (visitors) => {
+    setNewVisitor(visitors);
+    setModalType("update");
+    setShowModal(true);
+  }
   
+  const confirmUpdate = async () => {
+    if (
+      newVisitor.visitorsId === "" ||
+     !newVisitor.fName ||
+     !newVisitor.lName ||
+     !newVisitor.certificationNo ||
+     !newVisitor.email ||
+     !newVisitor.contactNo ||
+     !newVisitor.visitingDept ||
+     !newVisitor.host ||
+     !newVisitor.cardNumber ||
+     !newVisitor.visitingReason ||
+     !newVisitor.carryingGoods
+    ) {
+      setResMsg("Please fill in all required fields.");
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    }
+    setLoading(true);
+    const updateVisitorData = {
+      _id: newVisitor._id,
+      visitorsId: newVisitor.visitorsId,
+      fName: newVisitor.fName,
+      lName: newVisitor.lName,
+      certificationNo: newVisitor.certificationNo,
+      createTime: newVisitor.createTime,
+      exitTime: newVisitor.exitTime,      
+      email: newVisitor.email,
+      contactNo: newVisitor.contactNo,
+      visitingDept: newVisitor.visitingDept,
+      host: newVisitor.host,
+      cardNumber: newVisitor.cardNumber,
+      visitingReason: newVisitor.visitingReason,
+      carryingGoods: newVisitor.carryingGoods,
+    };
+    try {
+      await axios.put(`http://localhost:5000/api/updateVisitor`, updateVisitorData)
+      setShowModal(false);
+      setSuccessModal(true)
+    } catch (error) {
+      console.error(error)
+    }
+    setTimeout(() => {
+      setActiveTab("Visitors");
+    }, 2000); 
+  }
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
   const visitorData = {
@@ -91,10 +235,6 @@ const AddVisitor = ({
       carryingGoods: newVisitor.carryingGoods,
     };
     const updateVisitorData = {
-      // ...visitorData,
-      // _id: newVisitor._id,
-      // createTime: newVisitor.createTime,
-      // exitTime: newVisitor.exitTime,
       _id: newVisitor._id,
       visitorsId: newVisitor.visitorsId,
       fName: newVisitor.fName,
@@ -151,6 +291,38 @@ const AddVisitor = ({
 
   return (
     <div className="add-visitor-main">
+      <ConirmationModal
+        isOpen={showModal}
+        message={`Are you sure you want to ${modalType} this employee?`}
+        onConfirm={() => {
+          if (modalType === "create") confirmAdd();
+          else confirmUpdate();
+        }}
+        onCancel={() => setShowModal(false)}
+        animationData={
+          modalType === "create"
+            ? addAnimation
+            : modalType === "update"
+            ? updateAnimation
+            : deleteAnimation
+        }
+      />
+      <ConirmationModal
+        isOpen={successModal}
+        message={`Employee ${modalType}d successfully!`}
+        onConfirm={() => setSuccessModal(false)}
+        onCancel={() => setSuccessModal(false)}
+        animationData={successAnimation}
+        successModal={successModal}
+      />
+      <ConirmationModal
+        isOpen={warningModal}
+        message={resMsg}
+        onConfirm={() => setWarningModal(false)}
+        onCancel={() => setWarningModal(false)}
+        animationData={warningAnimation}
+        warningModal={warningModal}
+      />
       <div>
         <button onClick={handleBackClick} className="back-button">
           <FaArrowLeft /> Back
@@ -159,7 +331,7 @@ const AddVisitor = ({
       {selectedPage === "Department" ? (
         <Department setSelectedPage={setSelectedPage} />
       ) : (
-        <form onSubmit={handleSubmit} className="visitor-form">
+        <form onSubmit={(e) => e.preventDefault()} className="visitor-form">
           <section>
             <h1>Visitor Information</h1>
             <div className="visitor-uper">
@@ -284,7 +456,8 @@ const AddVisitor = ({
                   <input
                     type="datetime-local"
                     name="createTime"
-                    value={formattedCreateTime}
+                    // value={formattedCreateTime}
+                    value={newVisitor.createTime}
                     onChange={(e) =>
                       setNewVisitor({ ...newVisitor, createTime: e.target.value })
                     }
@@ -314,7 +487,8 @@ const AddVisitor = ({
                   <input
                     type="datetime-local"
                     name="exitTime"
-                    value={formattedExitTime}
+                    // value={formattedExitTime}
+                    value={newVisitor.exitTime}
                     onChange={(e) =>
                       setNewVisitor({ ...newVisitor, exitTime: e.target.value })
                     }
@@ -333,7 +507,9 @@ const AddVisitor = ({
                 </div>
               </div>
               <div className="visitor-info-lower">
-                <button className="submit-button" type="submit">
+                <button className="submit-button" type="submit"
+                onClick={isEditMode ? () => updateVisitor(newVisitor) : addVisitor}
+                >
                   {isEditMode ? "Update Visitors" : "Add Visitor" }
                   
                 </button>
