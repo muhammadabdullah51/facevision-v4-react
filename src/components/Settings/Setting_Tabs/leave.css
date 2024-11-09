@@ -1,10 +1,3 @@
-/* .leave-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-} */
-
 .table-container {
     width: 97%;
 }
@@ -82,7 +75,7 @@
 .export-btn {
     display: flex;
     align-items:self-end;
-    flex-wrap: wrap;
+    /* flex-wrap: wrap; */
     justify-content: center;
     background-color: var(--success-button-color);
     border: 5px solid var(--success-button-color);

@@ -373,6 +373,7 @@ const LeaveTable = ({ data, setData }) => {
             }}
             placeholder="Search or select an employee"
           />
+          
 
           <datalist id="employeesList">
             {employees.map((emp) => (
@@ -380,6 +381,8 @@ const LeaveTable = ({ data, setData }) => {
               <option key={emp.empId} value={emp.empId}>{emp.fName} {emp.lName}</option>
             ))}
           </datalist>
+
+
           <select
             value={formData.leave_type}
             onChange={(e) =>

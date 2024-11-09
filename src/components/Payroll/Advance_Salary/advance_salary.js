@@ -16,15 +16,13 @@ const AdvanceSalary = () => {
   const [employees, setEmployees] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
-
+  const date = Date()
   const [formData, setFormData] = useState({
-    id: "",
     empId: "",
-    empName: "",
     amount: "",
     reason: "",
     date: "",
-    status: "Pending",
+    month: "",
   });
 
   const [showModal, setShowModal] = useState(false);
@@ -35,7 +33,7 @@ const AdvanceSalary = () => {
   const fetchAdvSalary = useCallback(async () => {
     try {
       const response = await axios.get(`${SERVER_URL}pyr-adv/`);
-      console.log(response.data);
+      console.log(response.data)
       setData(response.data);
     } catch (error) {
       console.error("Error fetching AdvSalary data:", error);
@@ -65,15 +63,8 @@ const AdvanceSalary = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const handleEdit = (data) => {
-    setFormData({
-      id: data.id,
-      amount: data.amount,
-      reason: data.reason,
-      date: data.date,
-      empId: data.empId,
-      empName: data.empName,
-      status: data.status,
-    });
+    setFormData({...data});
+    console.log(formData)
     setShowAddForm(false);
     setShowEditForm(true);
   };
@@ -83,15 +74,15 @@ const AdvanceSalary = () => {
     setShowEditForm(false);
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (advSalaryId) => {
     setModalType("delete");
     setShowModal(true);
-    setFormData({ ...formData, _id: id });
+    setFormData({ ...formData, advSalaryId: advSalaryId });
   };
   const confirmDelete = async () => {
     try {
-      await axios.post(`${SERVER_URL}`, {id: formData.id,});
-      
+      await axios.post(`${SERVER_URL}pyr-adv-del/`, { id: formData.advSalaryId });
+
       fetchAdvSalary();
       setShowModal(false);
       setSuccessModal(true);
@@ -102,13 +93,11 @@ const AdvanceSalary = () => {
 
   const handleAddNew = () => {
     setFormData({
-      id: (data.length + 1).toString(),
+      empId: "",
       amount: "",
       reason: "",
       date: "",
-      empId: "",
-      empName: "",
-      status: "",
+      month: "",
     });
     setShowAddForm(true);
     setShowEditForm(false);
@@ -121,53 +110,50 @@ const AdvanceSalary = () => {
 
   const confirmAdd = async () => {
     const advSalary = {
-      id: parseInt(formData.id, 10),
+      empId: formData.empId,
       amount: formData.amount,
       reason: formData.reason,
       date: formData.date,
-      empId: formData.empId,
-      empName: formData.empName,
-      status: formData.status,
+      month:formData.month,
     };
     try {
-      await axios.post(`${SERVER_URL}`, advSalary);
-      const updatedData = await axios.get(`${SERVER_URL}`);
+      await axios.post(`${SERVER_URL}pyr-adv/`, advSalary);
+      const updatedData = await axios.get(`${SERVER_URL}pyr-adv/`);
       setData(updatedData.data);
       setShowModal(false);
+      setShowAddForm(false);
       setSuccessModal(true);
       fetchAdvSalary();
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
+    
   };
 
   const updateAdvSalary = (row) => {
     setModalType("update");
     setFormData({
-      id: row.id,
+      advSalaryId: formData.advSalaryId,
       amount: row.amount,
       reason: row.reason,
       date: row.date,
-      empId: row.empId,
-      empName: row.empName,
-      status: row.status,
+      month: row.month,
     });
+    console.log(formData)
     setShowModal(true);
   };
   const confirmUpdate = async () => {
     const updateAdvSalary = {
-      _id: formData._id,
-      id: parseInt(formData.id, 10),
+      id: formData.advSalaryId,
+      empId: formData.empId,
       amount: formData.amount,
       reason: formData.reason,
       date: formData.date,
-      empId: formData.empId,
-      empName: formData.empName,
-      status: formData.status,
+      month: formData.month,
     };
     try {
-      axios.post(`${SERVER_URL}`, updateAdvSalary);
-      const updatedData = await axios.get(`${SERVER_URL}`);
+      axios.post(`${SERVER_URL}pyr-adv-up/`, updateAdvSalary);
+      const updatedData = await axios.get(`${SERVER_URL}pyr-adv/`);
       setData(updatedData.data);
       setShowModal(false);
       setSuccessModal(true);
@@ -179,7 +165,6 @@ const AdvanceSalary = () => {
     }
   };
 
-
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
@@ -187,9 +172,9 @@ const AdvanceSalary = () => {
   const filteredData = data.filter(
     (item) =>
       item.empName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.status?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.empId?.toString().includes(searchQuery) ||
       item.date?.toLowerCase().includes(searchQuery) ||
+      item.month?.toLowerCase().includes(searchQuery) ||
       item.reason?.toLowerCase().includes(searchQuery)
   );
 
@@ -276,13 +261,6 @@ const AdvanceSalary = () => {
         <div className="add-leave-form">
           <h3>Edit Advance Salary</h3>
           <input
-            type="text"
-            placeholder="Adv Salary ID"
-            value={formData.id}
-            onChange={(e) => setFormData({ ...formData, id: e.target.value })}
-            readOnly
-          />
-          <input
             type="Number"
             placeholder="Amount"
             value={formData.amount}
@@ -290,7 +268,6 @@ const AdvanceSalary = () => {
               setFormData({ ...formData, amount: e.target.value })
             }
           />
-          
           <input
             type="text"
             placeholder="Reason"
@@ -305,50 +282,73 @@ const AdvanceSalary = () => {
             value={formData.date}
             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
           />
+          <select
+          value={formData.month}
+          onChange={(e) =>
+            setFormData({...formData, month: e.target.value })
+          }
+          >
+            <option value="1">January</option>
+            <option value="2">February</option>
+            <option value="3">March</option>
+            <option value="4">April</option>
+            <option value="5">May</option>
+            <option value="6">June</option>
+            <option value="7">July</option>
+            <option value="8">August</option>
+            <option value="9">September</option>
+            <option value="10">October</option>
+            <option value="11">November</option>
+            <option value="12">December</option>
+          </select>
+         
           <input
-            type="text"
-            placeholder="Employee ID"
-            value={formData.empId}
-            readOnly
-            onChange={(e) =>
-              setFormData({ ...formData, empId: e.target.value })
-            }
+            list="employeesList"
+            value={formData.empId} // This will store and display the empId
+            onChange={(e) => {
+              // Find the employee based on empId entered in the input
+              const selectedEmployee = employees.find(
+                (emp) => emp.empId === e.target.value
+              );
+
+              setFormData({
+                ...formData,
+                // Set empId to the selected empId from the datalist
+                empId: e.target.value,
+                // Set empName based on the selected empId, or empty if no match
+                empName: selectedEmployee
+                  ? `${selectedEmployee.fName} ${selectedEmployee.lName}`
+                  : "",
+              });
+            }}
+            placeholder="Enter or select Employee ID"
           />
+          <datalist id="employeesList">
+            {employees.map((emp) => (
+              <option key={emp.empId} value={emp.empId}>
+                {emp.fName} {emp.lName}
+              </option>
+            ))}
+          </datalist>
           <select
             value={formData.empName}
             onChange={(e) => {
+              // Find the employee based on selected name
               const selectedEmployee = employees.find(
                 (emp) => `${emp.fName} ${emp.lName}` === e.target.value
-              )
-                setFormData({
+              );
+
+              setFormData({
                 ...formData,
                 empName: e.target.value,
                 empId: selectedEmployee ? selectedEmployee.empId : null,
               });
             }}
+            readOnly
           >
-            <option value="">Select Employee</option>
-            {employees.map((emp) => (
-              <option key={emp.empId} value={`${emp.fName} ${emp.lName}`}>
-                {emp.fName} {emp.lName}
-              </option>
-            ))}
+            <option value="">{formData.empName || "Select Employee"}</option>
           </select>
           
-
-          <select
-            value={formData.status}
-            onChange={(e) =>
-              setFormData({ ...formData, status: e.target.value })
-            }
-          >
-            <option value="">Select Status</option>
-            <option value="Pending">Pending</option>
-            <option value="Approved">Approved</option>
-            <option value="Rejected">Rejected</option>
-          </select>
-          
-
           <button className="submit-button" onClick={addAdvSalary}>
             Add Advance Salary
           </button>
@@ -361,13 +361,6 @@ const AdvanceSalary = () => {
         <div className="add-leave-form">
           <h3>Add New Advance Salary</h3>
           <input
-            type="text"
-            placeholder="Adv Salary ID"
-            value={formData.id}
-            onChange={(e) => setFormData({ ...formData, id: e.target.value })}
-            readOnly
-          />
-          <input
             type="Number"
             placeholder="Amount"
             value={formData.amount}
@@ -375,7 +368,7 @@ const AdvanceSalary = () => {
               setFormData({ ...formData, amount: e.target.value })
             }
           />
-         
+
           <input
             type="text"
             placeholder="Reason"
@@ -390,48 +383,60 @@ const AdvanceSalary = () => {
             value={formData.date}
             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
           />
+           <select
+          value={formData.month}
+          onChange={(e) =>
+            setFormData({...formData, month: e.target.value })
+          }
+          >
+            <option value="1">January</option>
+            <option value="2">February</option>
+            <option value="3">March</option>
+            <option value="4">April</option>
+            <option value="5">May</option>
+            <option value="6">June</option>
+            <option value="7">July</option>
+            <option value="8">August</option>
+            <option value="9">September</option>
+            <option value="10">October</option>
+            <option value="11">November</option>
+            <option value="12">December</option>
+          </select>
+          
+
           <input
-            type="text"
-            placeholder="Employee ID"
-            value={formData.empId}
-            onChange={(e) =>
-              setFormData({ ...formData, empId: e.target.value })
-            }
-          />
-          <select
-            value={formData.empName}
+            list="employeesList"
+            value={formData.empId} // This will store and display the empId
+            readOnly
             onChange={(e) => {
+              // Find the employee based on empId entered in the input
               const selectedEmployee = employees.find(
-                (emp) => `${emp.fName} ${emp.lName}` === e.target.value
+                (emp) => emp.empId === e.target.value
               );
+
               setFormData({
                 ...formData,
-                empName: e.target.value,
-                empId: selectedEmployee ? selectedEmployee.empId : null,
+                // Set empId to the selected empId from the datalist
+                empId: e.target.value,
+                // Set empName based on the selected empId, or empty if no match
+                empName: selectedEmployee
+                  ? `${selectedEmployee.fName} ${selectedEmployee.lName}`
+                  : "",
               });
             }}
-          >
-            <option value="">Select Employee</option>
+            placeholder="Enter or select Employee ID"
+          />
+
+          <datalist id="employeesList">
             {employees.map((emp) => (
-              <option key={emp.empId} value={`${emp.fName} ${emp.lName}`}>
+              <option key={emp.empId} value={emp.empId}>
                 {emp.fName} {emp.lName}
               </option>
             ))}
-          </select>
+          </datalist>
 
 
-          <select
-            value={formData.status}
-            onChange={(e) =>
-              setFormData({ ...formData, status: e.target.value })
-            }
-          >
-            <option value="">Select Status</option>
-            <option value="Pending">Pending</option>
-            <option value="Approved">Approved</option>
-            <option value="Rejected">Rejected</option>
-          </select>
-          
+
           <button
             className="submit-button"
             onClick={() => updateAdvSalary(formData)}
@@ -454,32 +459,20 @@ const AdvanceSalary = () => {
               <th>Amount</th>
               <th>Reason</th>
               <th>Date</th>
-              <th>Status</th>
+              <th>Month</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
             {filteredData.map((adv) => (
-              <tr key={adv._id}>
-                <td>{adv.id}</td>
+              <tr key={adv.advSalaryId}>
+                <td>{adv.advSalaryId}</td>
                 <td>{adv.empId}</td>
                 <td className="bold-fonts">{adv.empName}</td>
                 <td className="bold-fonts">{adv.amount}</td>
                 <td>{adv.reason}</td>
                 <td>{adv.date}</td>
-                <td>
-                  <span
-                    className={`status ${
-                      adv.status === "Pending"
-                        ? "lateStatus"
-                        : adv.status === "Rejected"
-                        ? "absentStatus"
-                        : "presentStatus"
-                    }`}
-                  >
-                    {adv.status}
-                  </span>
-                </td>
+                <td>{adv.month}</td>
                 <td>
                   <button
                     // className="edit-button"
@@ -489,7 +482,7 @@ const AdvanceSalary = () => {
                     <FaEdit className="table-edit" />
                   </button>
                   <button
-                    onClick={() => handleDelete(adv._id)}
+                    onClick={() => handleDelete(adv.advSalaryId)}
                     style={{ background: "none", border: "none" }}
                   >
                     <FaTrash className="table-delete" />

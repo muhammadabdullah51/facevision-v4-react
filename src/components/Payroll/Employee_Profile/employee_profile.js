@@ -173,7 +173,7 @@ const EmplyeeProfile = () => {
   };
 
   const filteredData = data.filter((item) =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+    item.name.toLowerCase().includes(searchQuery.toLowerCase()) 
   );
 
   const exportToPDF = () => {
@@ -255,7 +255,7 @@ const EmplyeeProfile = () => {
                 <input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search..."
+                  placeholder="Search by Employee Name..."
                   className="input"
                   type="text"
                 />
