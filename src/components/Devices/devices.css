@@ -1,3 +1,29 @@
+.disconnected{
+    border: none;
+    border: 1px solid red;
+    color: red;
+}
+.late{
+    border: 1px solid #e2a600;
+    color: #e2a600;
+    font-weight: 900;
+    padding: 0.6vh 0.9vw;
+    border-radius: 5px;
+    /* background-color: #a37000; */
+}
+.not-late{
+    border: 1px solid #d62661;
+    color: #d62661;
+    font-weight: 900;
+    padding: 0.6vh 0.9vw;
+    border-radius: 5px;
+    /* background-color: #a37000; */
+}
+.connected{
+    border: none;
+    border: 1px solid #05cb05;
+    color: #05cb05;
+}
 .green-dot {
     display: inline-block;
     width: 8px;

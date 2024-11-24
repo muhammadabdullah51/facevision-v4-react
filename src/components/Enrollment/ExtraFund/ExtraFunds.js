@@ -9,6 +9,8 @@ import addAnimation from "../../../assets/Lottie/addAnim.json";
 import updateAnimation from "../../../assets/Lottie/updateAnim.json";
 import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../../assets/Lottie/successAnim.json";
+import warningAnimation from "../../../assets/Lottie/warningAnim.json";
+import { SERVER_URL } from "../../../config";
 
 const ExtraFunds = () => {
   const [data, setData] = useState([]);
@@ -18,7 +20,6 @@ const ExtraFunds = () => {
   const [formData, setFormData] = useState({
     id: "",
     empId: "",
-    empName: "",
     extraFundAmount: "",
     returnInMonths: "",
     paidAmount: "",
@@ -33,9 +34,12 @@ const ExtraFunds = () => {
   const [successModal, setSuccessModal] = useState(false);
   const [loading, setLoading] = useState(false); // Loading state
 
+  const [warningModal, setWarningModal] = useState(false);
+  const [resMsg, setResMsg] = useState("");
+
   const fetchLoan = useCallback(async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/fetchLoan");
+      const response = await axios.get(`${SERVER_URL}pyr-ext/`);
       console.log(response.data);
       setData(response.data);
     } catch (error) {
@@ -44,9 +48,7 @@ const ExtraFunds = () => {
   }, [setData]);
   const fetchEmployees = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:5000/api/fetchEmployees"
-      );
+      const response = await axios.get(`${SERVER_URL}pr-emp/`);
       setEmployees(response.data);
     } catch (error) {
       console.error("Error fetching employees:", error);
@@ -77,12 +79,13 @@ const ExtraFunds = () => {
   const handleDelete = async (id) => {
     setModalType("delete");
     setShowModal(true);
-    setFormData({ ...formData, _id: id });
+    setFormData({ ...formData, id: id });
+    console.log(formData)
   };
   const confirmDelete = async () => {
     try {
-      await axios.post(`http://localhost:5000/api/deleteLoan`, {
-        id: formData._id,
+      await axios.post(`${SERVER_URL}pyr-ext-del/`, {
+        id: formData.id,
       });
       fetchLoan();
       setShowModal(false);
@@ -94,14 +97,9 @@ const ExtraFunds = () => {
 
   const handleAddNew = () => {
     setFormData({
-      id: (data.length + 1).toString(),
       empId: "",
-      empName: "",
       extraFundAmount: "",
       returnInMonths: "",
-      paidAmount: "",
-      pendingAmount: "",
-      nextMonthPayable: "",
       reason: "",
       date: "",
       type: "Pending",
@@ -117,28 +115,35 @@ const ExtraFunds = () => {
   const confirmAdd = async () => {
     if (
       !formData.empId ||
-      !formData.empName ||
       !formData.extraFundAmount ||
-      !formData.pending 
+      !formData.returnInMonths ||
+      !formData.reason ||
+      !formData.date ||
+      !formData.type
     ) {
-      alert("Please fill in all required fields.");
+      setResMsg("Please fill in all required fields.");
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    }
+    if (formData.extraFundAmount < 1 || formData.returnInMonths < 1) {
+      setResMsg("Values Can't be Negative or zero");
+      setShowModal(false);
+      setWarningModal(true);
       return;
     }
 
     const newLoan = {
-      id: formData.id,
       empId: formData.empId,
-      empName: formData.empName,
       extraFundAmount: formData.extraFundAmount,
       returnInMonths: formData.returnInMonths,
-      paidAmount: formData.paidAmount,
-      pendingAmount: formData.pendingAmount,
-      nextMonthPayable: formData.nextMonthPayable,
+      date: formData.date,
       reason: formData.reason,
       type: formData.type,
     };
+    console.log(newLoan);
     try {
-      await axios.post("http://localhost:5000/api/addLoan", newLoan);
+      await axios.post(`${SERVER_URL}pyr-ext/`, newLoan);
       setShowModal(false);
       setSuccessModal(true);
       setShowAddForm(false);
@@ -150,14 +155,12 @@ const ExtraFunds = () => {
   // Handle form data changes
   const handleEdit = (data) => {
     setFormData({
-      _id: data._id,
+      id: data.id,
       empId: data.empId,
-      empName: data.empName,
       extraFundAmount: data.extraFundAmount,
       returnInMonths: data.returnInMonths,
       paidAmount: data.paidAmount,
-      pendingAmount: data.pendingAmount,
-      nextMonthPayable: data.nextMonthPayable,
+      date: data.date,
       reason: data.reason,
       type: data.type,
     });
@@ -168,45 +171,47 @@ const ExtraFunds = () => {
   const updateLoan = (row) => {
     setModalType("update");
     setFormData({
-      _id: row._id,
+      id: row.id,
       empId: row.empId,
-      empName: row.empName,
       extraFundAmount: row.extraFundAmount,
       returnInMonths: row.returnInMonths,
       paidAmount: row.paidAmount,
-      pendingAmount: row.pendingAmount,
-      nextMonthPayable: row.nextMonthPayable,
       reason: row.reason,
-      type: row.type,
+      date: row.date,
     });
     setShowModal(true);
   };
 
   const confirmUpdate = async () => {
     if (
-      !formData.empId ||
-      !formData.empName ||
       !formData.extraFundAmount ||
-      !formData.pending 
+      !formData.returnInMonths ||
+      !formData.reason ||
+      !formData.date 
     ) {
-      alert("Please fill in all required fields.");
+      setResMsg("Please fill in all required fields.");
+      setShowModal(false);
+      setWarningModal(true);
       return;
     }
+    if (formData.extraFundAmount < 1 || formData.returnInMonths < 1) {
+      setResMsg("Values Can't be Negative or zero");
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    }
+
     try {
       const updateLoan = {
-        _id: formData._id,
-        empId: formData.empId,
-        empName: formData.empName,
+        id: formData.id,
         extraFundAmount: formData.extraFundAmount,
         returnInMonths: formData.returnInMonths,
         paidAmount: formData.paidAmount,
-        pendingAmount: formData.pendingAmount,
-        nextMonthPayable: formData.nextMonthPayable,
         reason: formData.reason,
-        type: formData.type,
+        date: formData.date,
       };
       console.log(updateLoan);
-      await axios.post("http://localhost:5000/api/updateLoan", updateLoan);
+      await axios.post(`${SERVER_URL}pyr-ext-up/`, updateLoan);
       setShowModal(false);
       setSuccessModal(true);
       setShowEditForm(false);
@@ -222,7 +227,7 @@ const ExtraFunds = () => {
       item.type?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.empId?.toString().includes(searchQuery) ||
       item.paid?.toLowerCase().includes(searchQuery) ||
-      item.pending?.toLowerCase().includes(searchQuery) ||
+      item.pendingAmount?.toLowerCase().includes(searchQuery) ||
       item.extraFundAmount?.toLowerCase().includes(searchQuery)
   );
 
@@ -230,7 +235,11 @@ const ExtraFunds = () => {
     <div className="department-table">
       <ConirmationModal
         isOpen={showModal}
-        message={`Are you sure you want to ${modalType} this Advance Salary?`}
+        message={
+          formData.type === "NotPayable"
+            ? `Are you sure you want to ${modalType} this Extra Fund as NOT PAYABLE amount?`
+            : `Are you sure you want to ${modalType} this Extra Fund as PAYABLE amount?`
+        }
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
           else if (modalType === "update") confirmUpdate();
@@ -247,12 +256,21 @@ const ExtraFunds = () => {
       />
       <ConirmationModal
         isOpen={successModal}
-        message={`Advance Salary ${modalType}d successfully!`}
+        message={`Extra Fund ${modalType}d successfully!`}
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
         successModal={successModal}
       />
+      <ConirmationModal
+        isOpen={warningModal}
+        message={resMsg}
+        onConfirm={() => setWarningModal(false)}
+        onCancel={() => setWarningModal(false)}
+        animationData={warningAnimation}
+        warningModal={warningModal}
+      />
+
       <div className="table-header">
         <form className="form" onSubmit={(e) => e.preventDefault()}>
           <button type="submit">
@@ -308,92 +326,76 @@ const ExtraFunds = () => {
       {showAddForm && !showEditForm && (
         <div className="add-leave-form">
           <h3>Add New Extra Funds</h3>
+          <label>Select Employee</label>
           <input
-            type="text"
-            placeholder="Loan ID"
-            value={formData.id}
-            onChange={(e) => setFormData({ ...formData, id: e.target.value })}
-            readOnly
-          />
-          <input
-            type="text"
-            placeholder="Employee ID"
-            value={formData.empId}
-            readOnly
-            onChange={(e) =>
-              setFormData({ ...formData, empId: e.target.value })
-            }
-          />
-          <select
-            value={formData.empName}
+            list="employeesList"
+            value={formData.empId} // display the employee's name
             onChange={(e) => {
-              const selectedEmployee = employees.find(
-                (emp) => `${emp.fName} ${emp.lName}` === e.target.value
-              );
-              setFormData({
-                ...formData,
-                empName: e.target.value,
-                empId: selectedEmployee ? selectedEmployee.empId : null,
-              });
+              setFormData({ ...formData, empId: e.target.value });
             }}
-          >
-            <option value="">Select Employee</option>
+            placeholder="Search or select an employee"
+          />
+
+          <datalist id="employeesList">
             {employees.map((emp) => (
-              <option key={emp.empId} value={`${emp.fName} ${emp.lName}`}>
+              // Display employee's full name as option value
+              <option key={emp.empId} value={emp.empId}>
                 {emp.fName} {emp.lName}
               </option>
             ))}
-          </select>
+          </datalist>
+          <label>Given Amount</label>
           <input
-            type="Number"
-            placeholder="Given Loan"
+            type="number"
+            placeholder="Given Amount"
             value={formData.extraFundAmount}
             onChange={(e) =>
               setFormData({ ...formData, extraFundAmount: e.target.value })
             }
           />
-          <input
-            type="text"
-            placeholder="Paid Amount"
-            value={formData.paidAmount}
-            onChange={(e) =>
-              setFormData({ ...formData, paidAmount: e.target.value })
-            }
-          />
-          <input
-            type="number"
-            name="pending"
-            placeholder="Pending Amount"
-            value={formData.pending}
-            onChange={(e) =>
-              setFormData({ ...formData, pending: e.target.value })
-            }
-          />
-          <input
-            type="text"
-            placeholder="Return In Months"
-            value={formData.returnInMonths}
-            onChange={(e) =>
-              setFormData({ ...formData, returnInMonths: e.target.value })
-            }
-          />
-          <input
-            type="Number"
-            placeholder="Next Month Payable"
-            value={formData.nextMonthPayable}
-            onChange={(e) =>
-              setFormData({ ...formData, nextMonthPayable: e.target.value })
-            }
-          />
-         
+          {formData.type !== "NotPayable" && (
+            <>
+              <label>Return In Months</label>
+              <input
+                type="number"
+                placeholder="Return In Months"
+                value={formData.returnInMonths}
+                onChange={(e) =>
+                  setFormData({ ...formData, returnInMonths: e.target.value })
+                }
+              />
+            </>
+          )}
 
+          <label>Date</label>
+          <input
+            type="date"
+            placeholder="Date"
+            value={formData.date}
+            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+          />
+          <label>Reason</label>
+          <input
+            type="text"
+            placeholder="Reason"
+            value={formData.reason}
+            onChange={(e) =>
+              setFormData({ ...formData, reason: e.target.value })
+            }
+          />
           <select
             value={formData.type}
-            onChange={(e) =>
-              setFormData({ ...formData, type: e.target.value })
-            }
+            onChange={(e) => {
+              const selectedType = e.target.value;
+              setFormData({
+                ...formData,
+                type: selectedType,
+                returnInMonths:
+                  selectedType === "NotPayable" ? "1" : formData.returnInMonths,
+              });
+            }}
           >
-             <option value="">Select Type</option>
+            <option value="">Select Type</option>
             <option value="payable">Payable</option>
             <option value="NotPayable">Not Payable</option>
           </select>
@@ -409,89 +411,87 @@ const ExtraFunds = () => {
       {showEditForm && (
         <div className="add-leave-form">
           <h3>Update Loan</h3>
+          <label>Selected Employee</label>
           <input
-            type="text"
-            placeholder="Loan ID"
-            value={formData.id}
-            onChange={(e) => setFormData({ ...formData, id: e.target.value })}
             readOnly
-          />
-          <input
-            type="text"
-            placeholder="Employee ID"
-            value={formData.empId}
-            readOnly
-            onChange={(e) =>
-              setFormData({ ...formData, empId: e.target.value })
-            }
-          />
-          <select
-            value={formData.empName}
+            list="employeesList"
+            value={formData.empId} // display the employee's name
             onChange={(e) => {
-              const selectedEmployee = employees.find(
-                (emp) => `${emp.fName} ${emp.lName}` === e.target.value
-              );
-              setFormData({
-                ...formData,
-                empName: e.target.value,
-                empId: selectedEmployee ? selectedEmployee.empId : null,
-              });
+              setFormData({ ...formData, empId: e.target.value });
             }}
-          >
-            <option value="">Select Employee</option>
+            placeholder="Search or select an employee"
+          />
+
+          <datalist id="employeesList">
             {employees.map((emp) => (
-              <option key={emp.empId} value={`${emp.fName} ${emp.lName}`}>
+              // Display employee's full name as option value
+              <option key={emp.empId} value={emp.empId}>
                 {emp.fName} {emp.lName}
               </option>
             ))}
-          </select>
+          </datalist>
+          <label>Given Amount</label>
           <input
-            type="Number"
-            placeholder="Given Loan"
+            type="number"
+            placeholder="Given Amount"
             value={formData.extraFundAmount}
             onChange={(e) =>
               setFormData({ ...formData, extraFundAmount: e.target.value })
             }
           />
+
+          {formData.type !== "NotPayable" && (
+            <>
+              <label>Return In Months</label>
+              <input
+                type="number"
+                placeholder="Return In Months"
+                value={formData.returnInMonths}
+                onChange={(e) =>
+                  setFormData({ ...formData, returnInMonths: e.target.value })
+                }
+              />
+            </>
+          )}
+          <label>Paid Amount</label>
           <input
-            type="text"
+            type="number"
             placeholder="Paid Amount"
             value={formData.paidAmount}
             onChange={(e) =>
               setFormData({ ...formData, paidAmount: e.target.value })
             }
           />
+
+          <label>Date</label>
           <input
-            type="number"
-            name="pending"
-            placeholder="Pending Amount"
-            value={formData.pending}
-            onChange={(e) =>
-              setFormData({ ...formData, pending: e.target.value })
-            }
+            type="date"
+            placeholder="Date"
+            value={formData.date}
+            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
           />
+          <label>Reason</label>
           <input
             type="text"
-            placeholder="Retun In Month"
-            value={formData.returnInMonths}
+            placeholder="Reason"
+            value={formData.reason}
             onChange={(e) =>
-              setFormData({ ...formData, returnInMonths: e.target.value })
+              setFormData({ ...formData, reason: e.target.value })
             }
           />
-          <input
-            type="Number"
-            placeholder="Next Month Payable"
-            value={formData.nextMonthPayable}
-            onChange={(e) =>
-              setFormData({ ...formData, nextMonthPayable: e.target.value })
-            }
-          />
-         
+          <label>Selected Type</label>
           <select
+            disabled
             value={formData.type}
-            onChange={(e) =>
-              setFormData({ ...formData, type: e.target.value })
-            }
+            onChange={(e) => {
+              const selectedType = e.target.value;
+              setFormData({
+                ...formData,
+                type: selectedType,
+                returnInMonths:
+                  selectedType === "NotPayable" ? "1" : formData.returnInMonths,
+              });
+            }}
           >
             <option value="">Select Type</option>
             <option value="payable">Payable</option>
@@ -530,7 +530,7 @@ const ExtraFunds = () => {
           </thead>
           <tbody>
             {filteredData.map((adv) => (
-              <tr key={adv._id}>
+              <tr key={adv.id}>
                 <td>{adv.id}</td>
                 <td>{adv.empId}</td>
                 <td className="bold-fonts">{adv.empName}</td>
@@ -538,14 +538,14 @@ const ExtraFunds = () => {
                 <td>{adv.paidAmount}</td>
                 <td>{adv.pendingAmount}</td>
                 <td>{adv.returnInMonths}</td>
-                <td>{adv.nextMonthPayable}</td>
+                <td>{adv.nextPayable}</td>
                 <td>{adv.date}</td>
                 <td>{adv.reason}</td>
                 <td>
                   <span
                     className={`status ${
-                      adv.type === "Pending"
-                        ? "lateStatus"
+                      adv.type === "payable"
+                        ? "absentStatus"
                         : adv.type === "Rejected"
                         ? "absentStatus"
                         : "presentStatus"
@@ -555,15 +555,17 @@ const ExtraFunds = () => {
                   </span>
                 </td>
                 <td>
+                  {adv.type.toLowerCase() === "payable" && (
+                    <button
+                      onClick={() => handleEdit(adv)}
+                      style={{ background: "none", border: "none" }}
+                    >
+                      <FaEdit className="table-edit" />
+                    </button>
+                  )}
+
                   <button
-                    // className="edit-button"
-                    onClick={() => handleEdit(adv)}
-                    style={{ background: "none", border: "none" }}
-                  >
-                    <FaEdit className="table-edit" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(adv._id)}
+                    onClick={() => handleDelete(adv.id)}
                     style={{ background: "none", border: "none" }}
                   >
                     <FaTrash className="table-delete" />

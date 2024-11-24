@@ -14,6 +14,7 @@ const Devices = () => {
         try {
             const response = await axios.get(`${SERVER_URL}device/`);
             setData(response.data.context);
+            console.log(response.data.context);
         } catch (error) {
             console.error('Error fetching Devices data:', error);
         }

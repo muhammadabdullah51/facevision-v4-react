@@ -1,279 +1,509 @@
-import React, { useState, useMemo, useCallback } from "react";
-import { useTable, usePagination } from "react-table";
+import React, { useCallback, useEffect, useState } from "react";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
-import ReactPaginate from "react-paginate";
-import './shift_managment.css'
+import "../Enrollment/Department/department.css";
+import axios from "axios";
+import ConirmationModal from "../Modal/conirmationModal";
+import addAnimation from "../../assets/Lottie/addAnim.json";
+import updateAnimation from "../../assets/Lottie/updateAnim.json";
+import deleteAnimation from "../../assets/Lottie/deleteAnim.json";
+import successAnimation from "../../assets/Lottie/successAnim.json";
+import warningAnimation from "../../assets/Lottie/warningAnim.json";
+import { SERVER_URL } from "../../config";
 
-const ShiftManagementTable = ({ data, setData }) => {
-  const [searchQuery, setSearchQuery] = useState("");
+const ShiftManagementTable = () => {
+  const [data, setData] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
+  const [selectedItems, setSelectedItems] = useState([]);
+  const days = [
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+    "sunday",
+  ];
   const [formData, setFormData] = useState({
-    ShiftId: null,
-    shiftName: "",
-    startTime: "",
-    entryStartTime: "",
-    entryEndTime: "",
-    endTime: "",
-    exitStartTime: "",
-    exitEndTime: "",
+    shiftId: "",
+    name: "",
+    entry_status: "",
+    exit_status: "",
+    start_time: "",
+    end_time: "",
+    entry_start_time: "",
+    entry_end_time: "",
+    exit_start_time: "",
+    exit_end_time: "",
+    holidays: [],
   });
 
-  const columns = useMemo(
-    () => [
-      {
-        Header: "S.No",
-        accessor: "serial",
-        Cell: ({ row }) => row.index + 1,
-      },
-      {
-        Header: "ID",
-        accessor: "ShiftId",
-      },
-      {
-        Header: "Shift Name",
-        accessor: "shiftName",
-        Cell: ({ value }) => <span className="bold-fonts">{value}</span>,
-      },
-      {
-        Header: "Start Time",
-        accessor: "startTime",
-      },
-      {
-        Header: "End Time",
-        accessor: "endTime",
-      },
-      {
-        Header: "Action",
-        accessor: "action",
-        Cell: ({ row }) => (
-          <div>
-            <button
-              onClick={() => handleEdit(row.original)}
-              style={{ background: "none", border: "none" }}
-            >
-              <FaEdit className="table-edit" />
-            </button>
-            <button
-              onClick={() => handleDelete(row.original)}
-              style={{ background: "none", border: "none" }}
-            >
-              <FaTrash className="table-delete" />
-            </button>
-          </div>
-        ),
-      },
-    ],
-    []
-  );
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState("");
+  const [successModal, setSuccessModal] = useState(false);
+  const [loading, setLoading] = useState(false); // Loading state
 
-  const filteredData = useMemo(
-    () =>
-      data.filter((row) =>
-        Object.values(row).some((val) =>
-          String(val).toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      ),
-    [data, searchQuery]
-  );
+  const [warningModal, setWarningModal] = useState(false);
+  const [resMsg, setResMsg] = useState("");
 
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    prepareRow,
-    page,
-    pageOptions,
-    gotoPage,
-  } = useTable(
-    {
-      columns,
-      data: filteredData,
-      initialState: { pageIndex: 0 },
-    },
-    usePagination
-  );
+  const [searchQuery, setSearchQuery] = useState(""); // State for search query
 
-  const handleEdit = (row) => {
-    setFormData({
-      ShiftId: row.ShiftId,
-      shiftName: row.shiftName,
-      startTime: row.startTime,
-      entryStartTime: row.entryStartTime,
-      entryEndTime: row.entryEndTime,
-      endTime: row.endTime,
-      exitStartTime: row.exitStartTime,
-      exitEndTime: row.exitEndTime,
-    });
-    setShowAddForm(false);
-    setShowEditForm(true);
+  const fetchShift = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${SERVER_URL}shft/`);
+      console.log(response.data);
+      setData(response.data);
+    } catch (error) {
+      console.error("Error fetching shift data:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [setData]);
+
+  useEffect(() => {
+    fetchShift();
+    let timer;
+    if (successModal) {
+      timer = setTimeout(() => {
+        setSuccessModal(false);
+      }, 2000);
+    }
+    return () => clearTimeout(timer);
+  }, [fetchShift, successModal]);
+
+  const handleDelete = (shiftId) => {
+    setModalType("delete");
+    setShowModal(true);
+    setFormData({ ...formData, shiftId: shiftId });
   };
-
-  const handleDelete = (row) => {
-    setData((prevData) => prevData.filter((item) => item.ShiftId !== row.ShiftId));
+  const confirmDelete = async () => {
+    await axios.post(`${SERVER_URL}shft-del/`, { shiftId: formData.shiftId });
+    const updatedData = await axios.get(`${SERVER_URL}shft/`);
+    setData(updatedData.data);
+    fetchShift();
+    setShowModal(false);
+    setSuccessModal(true);
   };
 
   const handleAdd = () => {
     setFormData({
-      ShiftId: null,
-      shiftName: "",
-      startTime: "",
-      entryStartTime: "",
-      entryEndTime: "",
-      endTime: "",
-      exitStartTime: "",
-      exitEndTime: "",
+      shiftId: "",
+      name: "",
+      entry_status: "",
+      exit_status: "",
+      start_time: "",
+      end_time: "",
+      entry_start_time: "",
+      entry_end_time: "",
+      exit_start_time: "",
+      exit_end_time: "",
+      holidays: [],
+      // totalWorkingDays: "",
+      // totalWorkingHours: "",
+      // totalWorkingMinutes: "",
     });
+    setSelectedItems([]);
     setShowAddForm(true);
-    setShowEditForm(false);
   };
 
-  const addLeave = () => {
-    // Add leave to the table
-    setData((prevData) => [...prevData, { ...formData, ShiftId: Date.now() }]);
+  const addShift = async () => {
+    setModalType("create");
+    setShowModal(true);
+  };
+  const confirmAdd = async () => {
+    if (
+      formData.name === "" ||
+      formData.start_time === "" ||
+      formData.end_time === "" ||
+      formData.exit_status === "" ||
+      formData.entry_status === ""
+    ) {
+      setResMsg("Please fill in all required fields.");
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    }
+    const newItem = {
+      name: formData.name,
+      entry_status: formData.entry_status,
+      exit_status: formData.exit_status,
+      start_time: formData.start_time,
+      end_time: formData.end_time,
+      entry_start_time: formData.entry_start_time,
+      entry_end_time: formData.entry_end_time,
+      exit_start_time: formData.exit_start_time,
+      exit_end_time: formData.exit_end_time,
+      holidays: selectedItems,
+    };
+    try {
+      const response = await axios.post(`${SERVER_URL}shft/`, newItem);
+      console.log(response);
+      console.log("Shift Added Successfully");
+      setShowAddForm(false);
+      setResMsg(response.data.msg);
+      setShowModal(false);
+      setSuccessModal(true);
+      fetchShift();
+      // setSelectedItems(null);
 
-    // Reset form data
+      const updatedData = await axios.get(`${SERVER_URL}shft/`);
+      console.log(updatedData.data);
+      setData(updatedData.data);
+      // setShowAddForm(false)
+    } catch (error) {
+      console.log(error);
+      setShowModal(false);
+      setWarningModal(true);
+    }
     setFormData({
-      ShiftId: null,
-      shiftName: "",
-      startTime: "",
-      entryStartTime: "",
-      entryEndTime: "",
-      endTime: "",
-      exitStartTime: "",
-      exitEndTime: "",
+      shiftId: "",
+      name: "",
+      entry_status: "",
+      exit_status: "",
+      start_time: "",
+      end_time: "",
+      entry_start_time: "",
+      entry_end_time: "",
+      exit_start_time: "",
+      exit_end_time: "",
+      totalWorkingDays: "",
+      totalWorkingHours: "",
+      totalWorkingMinutes: "",
+      holidays: [],
     });
+  };
 
-    // Hide form
+  const handleEdit = (row) => {
+    console.log("row", row);
+    setFormData({
+      shiftId: row.shiftId,
+      name: row.name,
+      entry_status: row.entry_status,
+      exit_status: row.exit_status,
+      start_time: row.start_time,
+      end_time: row.end_time,
+      entry_start_time: row.entry_start_time,
+      entry_end_time: row.entry_end_time,
+      exit_start_time: row.exit_start_time,
+      exit_end_time: row.exit_end_time,
+      holidays: row.holidays || [],
+      totalWorkingDays: row.totalWorkingDays,
+      totalWorkingHours: row.totalWorkingHours,
+      totalWorkingMinutes: row.totalWorkingMinutes,
+    });
+    setSelectedItems(row.holidays || []);
+    console.log("handleEdit", formData);
     setShowAddForm(false);
+    setShowEditForm(true);
   };
 
-  const handleUpdate = () => {
-    // Update the leave data
-    setData((prevData) =>
-      prevData.map((item) => (item.ShiftId === formData.ShiftId ? { ...formData } : item))
-    );
-
-    // Optionally reset form data
+  const updateShift = async (row) => {
+    setModalType("update");
     setFormData({
-      ShiftId: null,
-      shiftName: "",
-      startTime: "",
-      entryStartTime: "",
-      entryEndTime: "",
-      endTime: "",
-      exitStartTime: "",
-      exitEndTime: "",
+      shiftId: row.shiftId,
+      name: row.name,
+      entry_status: row.entry_status,
+      exit_status: row.exit_status,
+      start_time: row.start_time,
+      end_time: row.end_time,
+      entry_start_time: row.entry_start_time,
+      entry_end_time: row.entry_end_time,
+      exit_start_time: row.exit_start_time,
+      exit_end_time: row.exit_end_time,
+      holidays: row.holidays || [],
+      totalWorkingDays: row.totalWorkingDays,
+      totalWorkingHours: row.totalWorkingHours,
+      totalWorkingMinutes: row.totalWorkingMinutes,
     });
-
-    // Hide the edit form
-    setShowEditForm(false);
+    setSelectedItems(row.holidays || []);
+    setShowModal(true);
+    console.log("updateShift", formData);
   };
+
+  const formatTime = (time) => {
+    // Ensure the time exists and split to take only hours and minutes
+    return time ? time.split(":").slice(0, 2).join(":") : "";
+  };
+
+  const confirmUpdate = async () => {
+    if (
+      !formData.name ||
+      !formData.start_time ||
+      !formData.end_time ||
+      !formData.entry_start_time ||
+      !formData.exit_status ||
+      !formData.entry_status
+    ) {
+      setResMsg("Please fill in all required fields.");
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    }
+    //  console.log(formData);
+
+    const updatedShift = {
+      shiftId: formData.shiftId,
+      name: formData.name,
+      entry_status: formData.entry_status,
+      exit_status: formData.exit_status,
+      start_time: formatTime(formData.start_time),
+      end_time: formatTime(formData.end_time),
+      entry_start_time: formatTime(formData.entry_start_time),
+      entry_end_time: formatTime(formData.entry_end_time),
+      exit_start_time: formatTime(formData.exit_start_time),
+      exit_end_time: formatTime(formData.exit_end_time),
+      holidays: selectedItems,
+    };
+    console.log("confirmEdit", formData);
+    try {
+      const res = await axios.post(`${SERVER_URL}shft-up/`, updatedShift);
+      console.log("Shift updated successfully");
+      setShowEditForm(false);
+      setShowModal(false);
+      setSuccessModal(true);
+      setSelectedItems([]);
+      const updatedData = await axios.get(`${SERVER_URL}shft/`);
+      setData(updatedData.data);
+    } catch (error) {
+      console.error("Error updating shift:", error);
+      setShowModal(false);
+      setWarningModal(true);
+    }
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const filteredData = data.filter(
+    (item) =>
+      item.name && item.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
-    <div className="leave-table">
+    <div className="department-table">
+      <ConirmationModal
+        isOpen={showModal}
+        message={`Are you sure you want to ${modalType} this Shift?`}
+        onConfirm={() => {
+          if (modalType === "create") confirmAdd();
+          else if (modalType === "update") confirmUpdate();
+          else confirmDelete();
+        }}
+        onCancel={() => setShowModal(false)}
+        animationData={
+          modalType === "create"
+            ? addAnimation
+            : modalType === "update"
+            ? updateAnimation
+            : deleteAnimation
+        }
+      />
+      <ConirmationModal
+        isOpen={successModal}
+        message={`Shift ${modalType}d successfully!`}
+        onConfirm={() => setSuccessModal(false)}
+        onCancel={() => setSuccessModal(false)}
+        animationData={successAnimation}
+        successModal={successModal}
+      />
+      <ConirmationModal
+        isOpen={warningModal}
+        message={resMsg}
+        onConfirm={() => setWarningModal(false)}
+        onCancel={() => setWarningModal(false)}
+        animationData={warningAnimation}
+        warningModal={warningModal}
+      />
+
       <div className="table-header">
+        <form className="form" onSubmit={(e) => e.preventDefault()}>
+          <button type="submit">
+            <svg
+              width="17"
+              height="16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-labelledby="search"
+            >
+              <path
+                d="M7.667 12.667A5.333 5.333 0 107.667 2a5.333 5.333 0 000 10.667zM14.334 14l-2.9-2.9"
+                stroke="currentColor"
+                strokeWidth="1.333"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              ></path>
+            </svg>
+          </button>
+          <input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search..."
+            className="input"
+            type="text"
+          />
+          <button
+            className="reset"
+            type="button"
+            onClick={() => setSearchQuery("")}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </form>
         <button className="add-button" onClick={handleAdd}>
-          <FaPlus className="add-icon" /> Add Shift
+          <FaPlus></FaPlus>
+          Add New Shift
         </button>
       </div>
 
-      {/* Add Leave Form */}
-      {showAddForm && (
+      {showAddForm && !showEditForm && (
         <div className="add-department-form">
           <h3>Add New Shift</h3>
           <input
             type="text"
-            placeholder="Shift ID"
-            value={formData.ShiftId}
-            onChange={(e) =>
-              setFormData({ ...formData, ShiftId: e.target.value })
-            }
-          />
-          <input
-            type="text"
             placeholder="Shift Name"
-            value={formData.shiftName}
-            onChange={(e) =>
-              setFormData({ ...formData, shiftName: e.target.value })
-            }
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           />
-
-            <h5>Entry Time Configuration</h5>
+          <h5>Entry Time Configuration</h5>
           <div className="form-time">
             <div>
-            <label>Start Time</label>
-            <input
-              type="time"
-              placeholder="Start Time"
-              value={formData.startTime}
-              onChange={(e) =>
-                setFormData({ ...formData, startTime: e.target.value })
-              }
-            />
+              <label>Start Time</label>
+              <input
+                type="time"
+                placeholder="Start Time"
+                value={formData.start_time}
+                onChange={(e) =>
+                  setFormData({ ...formData, start_time: e.target.value })
+                }
+              />
             </div>
             <div>
-            <label>Entry Start Time</label>
-            <input
-              type="time"
-              placeholder="Entry Start Time"
-              value={formData.entryStartTime}
-              onChange={(e) =>
-                setFormData({ ...formData, entryStartTime: e.target.value })
-              }
-            />
+              <label>Entry Start Time</label>
+              <input
+                type="time"
+                placeholder="Entry Start Time"
+                value={formData.entry_start_time}
+                onChange={(e) =>
+                  setFormData({ ...formData, entry_start_time: e.target.value })
+                }
+              />
             </div>
             <div>
-            <label>Entry End Time</label>
-            <input
-              type="time"
-              placeholder="Entry End Time"
-              value={formData.entryEndTime}
-              onChange={(e) =>
-                setFormData({ ...formData, entryEndTime: e.target.value })
-              }
-            />
+              <label>Entry End Time</label>
+              <input
+                type="time"
+                placeholder="Entry End Time"
+                value={formData.entry_end_time}
+                onChange={(e) =>
+                  setFormData({ ...formData, entry_end_time: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <label>On Entry Late</label>
+              <select className="selectbox"
+                name="entry_status"
+                value={formData.entry_status}
+                onChange={(e) =>
+                  setFormData({ ...formData, entry_status: e.target.value })
+                }
+              >
+                <option value="">Select Option</option>
+                <option value="Late">Late</option>
+                <option value="Absent">Absent</option>
+              </select>
             </div>
           </div>
-
-            <h5>Exit Time Configuration</h5>
+          <h5>Exit Time Configuration</h5>
           <div className="form-time">
             <div>
-            <label>Start Time</label>
-            <input
-              type="time"
-              placeholder="Exit Time"
-              value={formData.endTime}
-              onChange={(e) =>
-                setFormData({ ...formData, endTime: e.target.value })
-              }
-            />
+              <label>End Time</label>
+              <input
+                type="time"
+                placeholder="End Time"
+                value={formData.end_time}
+                onChange={(e) =>
+                  setFormData({ ...formData, end_time: e.target.value })
+                }
+              />
             </div>
             <div>
-            <label>Entry Start Time</label>
-            <input
-              type="time"
-              placeholder="Exit Start Time"
-              value={formData.exitStartTime}
-              onChange={(e) =>
-                setFormData({ ...formData, exitStartTime: e.target.value })
-              }
-            />
+              <label>Exit Start Time</label>
+              <input
+                type="time"
+                placeholder="Exit Start Time"
+                value={formData.exit_start_time}
+                onChange={(e) =>
+                  setFormData({ ...formData, exit_start_time: e.target.value })
+                }
+              />
             </div>
             <div>
-            <label>Entry End Time</label>
-            <input
-              type="time"
-              placeholder="Exit End Time"
-              value={formData.exitEndTime}
-              onChange={(e) =>
-                setFormData({ ...formData, exitEndTime: e.target.value })
-              }
-            />
+              <label>Exit End Time</label>
+              <input
+                type="time"
+                placeholder="Exit End Time"
+                value={formData.exit_end_time}
+                onChange={(e) =>
+                  setFormData({ ...formData, exit_end_time: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <label>On Exit Late</label>
+              <select className="selectbox"
+                name="exit_status"
+                value={formData.exit_status}
+                onChange={(e) =>
+                  setFormData({ ...formData, exit_status: e.target.value })
+                }
+              >
+                <option value="">Select Option</option>
+                <option value="Late">Late</option>
+                <option value="Missing">Missing</option>
+              </select>
             </div>
           </div>
-
-          <button className="submit-button" onClick={addLeave}>
+          <h4>Select Holidays:</h4>
+          <div className="item-list-Selected">
+            {days.map((item) => (
+              <div className="items" key={item}>
+                <label className="checkbox-container">
+                  <input
+                    type="checkbox"
+                    value={item}
+                    checked={selectedItems.includes(item)}
+                    onChange={(e) => {
+                      const { value, checked } = e.target;
+                      setSelectedItems((prevItems) =>
+                        checked
+                          ? [...prevItems, value]
+                          : prevItems.filter((i) => i !== value)
+                      );
+                    }}
+                  />
+                  <span className="checkmark"></span>
+                  {item}
+                </label>
+              </div>
+            ))}
+          </div>
+          <button className="submit-button" onClick={addShift}>
             Add Shift
           </button>
           <button
@@ -284,145 +514,222 @@ const ShiftManagementTable = ({ data, setData }) => {
           </button>
         </div>
       )}
-
-      {/* Edit Leave Form */}
-      {showEditForm && (
+      {!showAddForm && showEditForm && (
         <div className="add-department-form">
-        <h3>Add New Shift</h3>
-        <input
-          type="text"
-          placeholder="Shift ID"
-          value={formData.ShiftId}
-          onChange={(e) =>
-            setFormData({ ...formData, ShiftId: e.target.value })
-          }
-        />
-        <input
-          type="text"
-          placeholder="Shift Name"
-          value={formData.shiftName}
-          onChange={(e) =>
-            setFormData({ ...formData, shiftName: e.target.value })
-          }
-        />
-
+          <h3>Update Shift</h3>
+          <input
+            type="text"
+            placeholder="Shift Name"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          />
           <h5>Entry Time Configuration</h5>
-        <div className="form-time">
-          <div>
-          <label>Start Time</label>
-          <input
-            type="time"
-            placeholder="Start Time"
-            value={formData.startTime}
-            onChange={(e) =>
-              setFormData({ ...formData, startTime: e.target.value })
-            }
-          />
+          <div className="form-time">
+            <div>
+              <label>Start Time</label>
+              <input
+                type="time"
+                placeholder="Start Time"
+                value={formData.start_time}
+                onChange={(e) =>
+                  setFormData({ ...formData, start_time: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <label>Entry Start Time</label>
+              <input
+                type="time"
+                placeholder="Entry Start Time"
+                value={formData.entry_start_time}
+                onChange={(e) =>
+                  setFormData({ ...formData, entry_start_time: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <label>Entry End Time</label>
+              <input
+                type="time"
+                placeholder="Entry End Time"
+                value={formData.entry_end_time}
+                onChange={(e) =>
+                  setFormData({ ...formData, entry_end_time: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <label>On Entry Late</label>
+              <select className="selectbox"
+                name="entry_status"
+                value={formData.entry_status}
+                onChange={(e) =>
+                  setFormData({ ...formData, entry_status: e.target.value })
+                }
+              >
+                <option value="">Select Option</option>
+                <option value="Late">Late</option>
+                <option value="Absent">Absent</option>
+              </select>
+            </div>
           </div>
-          <div>
-          <label>Entry Start Time</label>
-          <input
-            type="time"
-            placeholder="Entry Start Time"
-            value={formData.entryStartTime}
-            onChange={(e) =>
-              setFormData({ ...formData, entryStartTime: e.target.value })
-            }
-          />
-          </div>
-          <div>
-          <label>Entry End Time</label>
-          <input
-            type="time"
-            placeholder="Entry End Time"
-            value={formData.entryEndTime}
-            onChange={(e) =>
-              setFormData({ ...formData, entryEndTime: e.target.value })
-            }
-          />
-          </div>
-        </div>
-
           <h5>Exit Time Configuration</h5>
-        <div className="form-time">
-          <div>
-          <label>Start Time</label>
-          <input
-            type="time"
-            placeholder="Exit Time"
-            value={formData.endTime}
-            onChange={(e) =>
-              setFormData({ ...formData, endTime: e.target.value })
-            }
-          />
+          <div className="form-time">
+            <div>
+              <label>End Time</label>
+              <input
+                type="time"
+                placeholder="End Time"
+                value={formData.end_time}
+                onChange={(e) =>
+                  setFormData({ ...formData, end_time: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <label>Exit Start Time</label>
+              <input
+                type="time"
+                placeholder="Exit Start Time"
+                value={formData.exit_start_time}
+                onChange={(e) =>
+                  setFormData({ ...formData, exit_start_time: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <label>Exit End Time</label>
+              <input
+                type="time"
+                placeholder="Exit End Time"
+                value={formData.exit_end_time}
+                onChange={(e) =>
+                  setFormData({ ...formData, exit_end_time: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <label>On Exit Late</label>
+              <select className="selectbox"
+                name="exit_status"
+                value={formData.exit_status}
+                onChange={(e) =>
+                  setFormData({ ...formData, exit_status: e.target.value })
+                }
+              >
+                <option value="">Select Option</option>
+                <option value="Late">Late</option>
+                <option value="Missing">Missing</option>
+              </select>
+            </div>
           </div>
-          <div>
-          <label>Entry Start Time</label>
-          <input
-            type="time"
-            placeholder="Exit Start Time"
-            value={formData.exitStartTime}
-            onChange={(e) =>
-              setFormData({ ...formData, exitStartTime: e.target.value })
-            }
-          />
+          <h4>Select Holidays:</h4>
+          <div className="item-list-Selected">
+            {days.map((item) => (
+              <div className="items" key={item}>
+                <label className="checkbox-container">
+                  <input
+                    type="checkbox"
+                    value={item}
+                    checked={selectedItems.includes(item)}
+                    onChange={(e) => {
+                      const { value, checked } = e.target;
+                      setSelectedItems((prevItems) =>
+                        checked
+                          ? [...prevItems, value]
+                          : prevItems.filter((i) => i !== value)
+                      );
+                      setFormData((prevFormData) => ({
+                        ...prevFormData,
+                        holidays: checked
+                          ? [...prevFormData.holidays, value]
+                          : prevFormData.holidays.filter((i) => i !== value),
+                      }));
+                    }}
+                  />
+                  <span className="checkmark"></span>
+                  {item}
+                </label>
+              </div>
+            ))}
           </div>
-          <div>
-          <label>Entry End Time</label>
-          <input
-            type="time"
-            placeholder="Exit End Time"
-            value={formData.exitEndTime}
-            onChange={(e) =>
-              setFormData({ ...formData, exitEndTime: e.target.value })
-            }
-          />
-          </div>
-        </div>
-          <button className="submit-button" onClick={handleUpdate}>
+          <button
+            className="submit-button"
+            onClick={() => updateShift(formData)}
+          >
             Update Shift
           </button>
           <button
             className="cancel-button"
-            onClick={() => setShowAddForm(false)}
+            onClick={() => setShowEditForm(false)}
           >
             Cancel
           </button>
         </div>
       )}
 
-      <table {...getTableProps()} className="table">
-        <thead>
-          {headerGroups.map((headerGroup) => (
-            <tr {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map((column) => (
-                <th {...column.getHeaderProps()}>{column.render("Header")}</th>
-              ))}
+      <div className="shift-table">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Shift ID</th>
+              <th>Shift Name</th>
+              <th>Entry Time</th>
+              <th>On Entry Late</th>
+              <th>Exit Time</th>
+              <th>On Exit Late</th>
+              <th>Holidays</th>
+              <th>Actions</th>
             </tr>
-          ))}
-        </thead>
-        <tbody {...getTableBodyProps()}>
-          {page.map((row) => {
-            prepareRow(row);
-            return (
-              <tr {...row.getRowProps()}>
-                {row.cells.map((cell) => (
-                  <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
-                ))}
+          </thead>
+          <tbody>
+            {data.map((item, index) => (
+              <tr key={index}>
+                <td>{item.shiftId}</td>
+                <td>{item.name}</td>
+                <td>{item.start_time}</td>
+                <td><span
+                className= {` ${
+                  item.entry_status === "Late" ? "late" : "disconnected"
+                }`}>
+                  {item.entry_status}
+                 </span>
+                  </td>
+                <td>{item.end_time}</td>
+                <td><span
+                className= {` ${
+                  item.exit_status === "Late" ? "late" : "not-late"
+                }`}>
+                  {item.exit_status}
+                 </span></td>
+                <td className="accessible-items">
+                  {Array.isArray(item.holidays) && item.holidays.length > 0
+                    ? item.holidays.map((holiday, index) => (
+                        <span key={index} style={{ marginRight: "5px" }}>
+                          {holiday}
+                        </span>
+                      ))
+                    : "No Holidays"}
+                </td>
+                <td>
+                  <button
+                    onClick={() => handleEdit(item)}
+                    style={{ background: "none", border: "none" }}
+                  >
+                    <FaEdit className="table-edit" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(item.shiftId)}
+                    style={{ background: "none", border: "none" }}
+                  >
+                    <FaTrash className="table-delete" />
+                  </button>
+                </td>
               </tr>
-            );
-          })}
-        </tbody>
-      </table>
-
-      <ReactPaginate
-        previousLabel={"Previous"}
-        nextLabel={"Next"}
-        pageCount={pageOptions.length}
-        onPageChange={({ selected }) => gotoPage(selected)}
-        containerClassName={"pagination"}
-        activeClassName={"active"}
-      />
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

@@ -181,7 +181,7 @@ const UsersTable = () => {
     setShowModal(true);
   }
   const confirmUpdate = async() => {
-    await axios.post
+    // await axios.post
 
   }
 

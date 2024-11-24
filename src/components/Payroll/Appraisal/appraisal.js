@@ -8,7 +8,9 @@ import addAnimation from "../../../assets/Lottie/addAnim.json";
 import updateAnimation from "../../../assets/Lottie/updateAnim.json";
 import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../../assets/Lottie/successAnim.json";
+import warningAnimation from "../../../assets/Lottie/warningAnim.json";
 
+import { SERVER_URL } from "../../../config";
 
 const Appraisal = () => {
   const [data, setData] = useState([]);
@@ -20,7 +22,6 @@ const Appraisal = () => {
   const [formData, setFormData] = useState({
     id: "",
     empId: "",
-    empName: "",
     appraisal: "",
     reason: "",
     date: "",
@@ -32,35 +33,29 @@ const Appraisal = () => {
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
   const [loading, setLoading] = useState(false); // Loading state
+  const [warningModal, setWarningModal] = useState(false);
+  const [resMsg, setResMsg] = useState("");
 
- 
-  const fetchAppraisals = useCallback(
-
-    async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:5000/api/fetchAppraisal"
-        );
-        console.log(response.data);
-        setData(response.data);
-      } catch (error) {
-        console.error("Error fetching appraisals data:", error);
-      }
-    }, [setData]
-  ) 
+  const fetchAppraisals = useCallback(async () => {
+    try {
+      const response = await axios.get(`${SERVER_URL}pyr-appr/`);
+      console.log(response.data);
+      setData(response.data);
+    } catch (error) {
+      console.error("Error fetching appraisals data:", error);
+    }
+  }, [setData]);
   const fetchEmployees = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:5000/api/fetchEmployees"
-      );
+      const response = await axios.get(`${SERVER_URL}pr-emp/`);
       setEmployees(response.data);
     } catch (error) {
       console.error("Error fetching employees:", error);
     }
   };
 
-   // Fetch the data when the component mounts
-   useEffect(() => {
+  // Fetch the data when the component mounts
+  useEffect(() => {
     fetchAppraisals();
     fetchEmployees();
     let timer;
@@ -77,10 +72,8 @@ const Appraisal = () => {
   // Handle form data changes
   const handleEdit = (data) => {
     setFormData({
-      _id: data._id,
       id: data.id,
       empId: data.empId,
-      empName: data.empName,
       appraisal: data.appraisal,
       reason: data.reason,
       date: data.date,
@@ -101,11 +94,12 @@ const Appraisal = () => {
     setModalType("delete");
     setShowModal(true);
     setFormData({ ...formData, _id: id });
-  }
+  };
   const confirmDelete = async () => {
+    console.log(formData.id);
     try {
-      await axios.post(`http://localhost:5000/api/deleteAppraisal`, { id: formData._id });
-      
+      await axios.post(`${SERVER_URL}pyr-appr-del/`, { id: formData.id });
+
       fetchAppraisals();
       setShowModal(false);
       setSuccessModal(true);
@@ -116,9 +110,7 @@ const Appraisal = () => {
 
   const handleAddNew = () => {
     setFormData({
-      id: (data.length + 1).toString(),
       empId: "",
-      empName: "",
       appraisal: "",
       reason: "",
       date: "",
@@ -131,26 +123,37 @@ const Appraisal = () => {
   const addAppraisal = () => {
     setModalType("create");
     setShowModal(true);
-  }
+  };
   const confirmAdd = async () => {
+    if (
+      formData.empId === "" ||
+      formData.appraisal === "" ||
+      formData.reason === "" ||
+      formData.date === ""
+    ) {
+      setResMsg("Please fill in all required fields.");
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    }
+    if (formData.appraisal < 1) {
+      setResMsg("Values Can't be Negative or zero");
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    }
     const newAppraisal = {
-      id: parseInt(formData.id, 10),
       empId: formData.empId,
-      empName: formData.empName,
       appraisal: formData.appraisal,
       reason: formData.reason,
       date: formData.date,
       status: formData.status,
       desc: formData.desc,
     };
+    console.log(newAppraisal);
     try {
-      await axios.post(
-        "http://localhost:5000/api/addAppraisal",
-        newAppraisal
-      );
-      const updatedData = await axios.get(
-        "http://localhost:5000/api/fetchAppraisal"
-      );
+      await axios.post(`${SERVER_URL}pyr-appr/`, newAppraisal);
+      const updatedData = await axios.get(`${SERVER_URL}pyr-appr/`);
       setData(updatedData.data);
       setShowAddForm(false);
       setShowModal(false);
@@ -159,11 +162,10 @@ const Appraisal = () => {
     } catch (error) {
       console.log(error);
     }
-  }
+  };
   const updateAppraisal = (row) => {
     setModalType("update");
     setFormData({
-      _id: row._id,
       id: row.id,
       empId: row.empId,
       empName: row.empName,
@@ -172,14 +174,31 @@ const Appraisal = () => {
       date: row.date,
       status: row.status,
       desc: row.desc,
-    })
+    });
     setShowModal(true);
-  }
-  const confirmUpdate = async() => {
+  };
+  const confirmUpdate = async () => {
+    if (
+      formData.empId === "" ||
+      formData.appraisal === "" ||
+      formData.reason === "" ||
+      formData.date === ""
+    ) {
+      setResMsg("Please fill in all required fields.");
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    }
+    if (formData.appraisal < 1) {
+      setResMsg("Values Can't be Negative or zero");
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    }
+    
     try {
       const updateAppraisal = {
-        _id: formData._id,
-        id: parseInt(formData.id, 10),
+        id: formData.id,
         empId: formData.empId,
         empName: formData.empName,
         appraisal: formData.appraisal,
@@ -188,14 +207,10 @@ const Appraisal = () => {
         status: formData.status,
         desc: formData.desc,
       };
+
       console.log(updateAppraisal);
-      await axios.post(
-        "http://localhost:5000/api/updateAppraisal",
-        updateAppraisal
-      );
-      const updatedData = await axios.get(
-        "http://localhost:5000/api/fetchAppraisal"
-      );
+      await axios.post(`${SERVER_URL}pyr-appr-up/`, updateAppraisal);
+      const updatedData = await axios.get(`${SERVER_URL}pyr-appr/`);
       setData(updatedData.data);
       setShowModal(false);
       setSuccessModal(true);
@@ -204,9 +219,7 @@ const Appraisal = () => {
     } catch (error) {
       console.log(error);
     }
-  }
- 
-
+  };
 
   const filteredData = data.filter(
     (item) =>
@@ -245,6 +258,14 @@ const Appraisal = () => {
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
         successModal={successModal}
+      />
+      <ConirmationModal
+        isOpen={warningModal}
+        message={resMsg}
+        onConfirm={() => setWarningModal(false)}
+        onCancel={() => setWarningModal(false)}
+        animationData={warningAnimation}
+        warningModal={warningModal}
       />
       <div className="table-header">
         <form className="form" onSubmit={(e) => e.preventDefault()}>
@@ -301,45 +322,26 @@ const Appraisal = () => {
       {showAddForm && !showEditForm && (
         <div className="add-leave-form">
           <h3>Add New Appraisal</h3>
+          <label>Select Employee</label>
           <input
-            type="text"
-            placeholder="Appraisal ID"
-            value={formData.id}
-            onChange={(e) => setFormData({ ...formData, id: e.target.value })}
-            readOnly
-          />
-          <input
-            type="text"
-            placeholder="Employee ID"
-            value={formData.empId}
-            readOnly
-            onChange={(e) =>
-              setFormData({ ...formData, empId: e.target.value })
-            }
-          />
-          <select
-            value={formData.empName}
+            list="employeesList"
+            value={formData.empId} // display the employee's name
             onChange={(e) => {
-              const selectedEmployee = employees.find(
-                (emp) => `${emp.fName} ${emp.lName}` === e.target.value
-              );
-              setFormData({
-                ...formData,
-                empName: e.target.value,
-                empId: selectedEmployee ? selectedEmployee.empId : null,
-              });
+              setFormData({ ...formData, empId: e.target.value });
             }}
-          >
-            <option value="">Select Employee</option>
+            placeholder="Search or select an employee"
+          />
+
+          <datalist id="employeesList">
             {employees.map((emp) => (
-              <option
-                key={emp.empId}
-                value={`${emp.fName} ${emp.lName}`}
-              >
+              // Display employee's full name as option value
+              <option key={emp.empId} value={emp.empId}>
                 {emp.fName} {emp.lName}
               </option>
             ))}
-          </select>
+          </datalist>
+
+          <label>Appraisal Amount</label>
           <input
             type="Number"
             placeholder="Appraisal"
@@ -348,6 +350,8 @@ const Appraisal = () => {
               setFormData({ ...formData, appraisal: e.target.value })
             }
           />
+
+          <label>Reason</label>
           <input
             type="text"
             placeholder="Reason"
@@ -356,12 +360,16 @@ const Appraisal = () => {
               setFormData({ ...formData, reason: e.target.value })
             }
           />
+
+          <label>Date</label>
           <input
             type="Date"
             placeholder="Date"
             value={formData.date}
             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
           />
+
+          <label>Select Status</label>
 
           <select
             value={formData.status}
@@ -375,16 +383,18 @@ const Appraisal = () => {
             <option value="Rejected">Rejected</option>
           </select>
 
+          <label>Description</label>
+
           <textarea
             name="desc"
             placeholder="Description"
             value={formData.desc}
-            onChange={(e) =>
-              setFormData({ ...formData, desc: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, desc: e.target.value })}
           />
 
-          <button className="submit-button" onClick={addAppraisal}>Add Appraisal</button>
+          <button className="submit-button" onClick={addAppraisal}>
+            Add Appraisal
+          </button>
           <button className="cancel-button" onClick={handleCancel}>
             Cancel
           </button>
@@ -393,45 +403,27 @@ const Appraisal = () => {
       {showEditForm && (
         <div className="add-leave-form">
           <h3>Update Appraisal</h3>
+          <label>Selected Employee</label>
           <input
-            type="text"
-            placeholder="Appraisal ID"
-            value={formData.id}
-            onChange={(e) => setFormData({ ...formData, id: e.target.value })}
             readOnly
-          />
-          <input
-            type="text"
-            placeholder="Employee ID"
-            value={formData.empId}
-            readOnly
-            onChange={(e) =>
-              setFormData({ ...formData, empId: e.target.value })
-            }
-          />
-          <select
-            value={formData.empName}
+            list="employeesList"
+            value={formData.empId} // display the employee's name
             onChange={(e) => {
-              const selectedEmployee = employees.find(
-                (emp) => `${emp.fName} ${emp.lName}` === e.target.value
-              );
-              setFormData({
-                ...formData,
-                empName: e.target.value,
-                empId: selectedEmployee ? selectedEmployee.empId : null,
-              });
+              setFormData({ ...formData, empId: e.target.value });
             }}
-          >
-            <option value="">Select Employee</option>
+            placeholder="Search or select an employee"
+          />
+
+          <datalist id="employeesList">
             {employees.map((emp) => (
-              <option
-                key={emp.empId}
-                value={`${emp.fName} ${emp.lName}`}
-              >
+              // Display employee's full name as option value
+              <option key={emp.empId} value={emp.empId}>
                 {emp.fName} {emp.lName}
               </option>
             ))}
-          </select>
+          </datalist>
+
+          <label>Appraisal Amount</label>
           <input
             type="Number"
             placeholder="Appraisal"
@@ -440,6 +432,7 @@ const Appraisal = () => {
               setFormData({ ...formData, appraisal: e.target.value })
             }
           />
+          <label>Reason</label>
           <input
             type="text"
             placeholder="Reason"
@@ -448,12 +441,14 @@ const Appraisal = () => {
               setFormData({ ...formData, reason: e.target.value })
             }
           />
+          <label>Date</label>
           <input
             type="Date"
             placeholder="Date"
             value={formData.date}
             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
           />
+          <label>Select Status</label>
 
           <select
             value={formData.status}
@@ -467,16 +462,20 @@ const Appraisal = () => {
             <option value="Rejected">Rejected</option>
           </select>
 
+          <label>Description</label>
           <textarea
             name="desc"
             placeholder="Description"
             value={formData.desc}
-            onChange={(e) =>
-              setFormData({ ...formData, desc: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, desc: e.target.value })}
           />
 
-          <button className="submit-button" onClick={() => updateAppraisal(formData)}>Update Appraisal</button>
+          <button
+            className="submit-button"
+            onClick={() => updateAppraisal(formData)}
+          >
+            Update Appraisal
+          </button>
           <button className="cancel-button" onClick={handleCancel}>
             Cancel
           </button>

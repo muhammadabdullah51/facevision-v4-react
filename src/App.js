@@ -38,6 +38,7 @@ function App() {
           <Route path="/companyInformation" element={<Information />} />
           <Route path="/dashboard" element={<Dashboard />} /> */}
           <Route path="/" element={<Login />} />
+          {/* <Route path="/" element={<Dashboard />} /> */}
           <Route path="/Signup" element={<Register />} />
           <Route path="/companyInformation" element={!companyInfoCompleted ?  <Information /> : <Navigate to="/" /> }/>
           <Route path="/dashboard" element={<Dashboard />} />

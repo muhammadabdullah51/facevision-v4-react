@@ -11,6 +11,9 @@ import addAnimation from "../../../assets/Lottie/addAnim.json";
 import updateAnimation from "../../../assets/Lottie/updateAnim.json";
 import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../../assets/Lottie/successAnim.json";
+import warningAnimation from "../../../assets/Lottie/warningAnim.json";
+
+import { SERVER_URL } from "../../../config";
 
 const Bonuses = () => {
   const [data, setData] = useState([]);
@@ -20,7 +23,6 @@ const Bonuses = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [formData, setFormData] = useState({
-    _id: "",
     id: "",
     bonusName: "",
     bonusDuration: "",
@@ -31,13 +33,14 @@ const Bonuses = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
+  const [warningModal, setWarningModal] = useState(false);
+  const [resMsg, setResMsg] = useState("");
+
   const [loading, setLoading] = useState(false); // Loading state
 
   const fetchBouneses = useCallback(async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:5000/api/fetchBouneses"
-      );
+      const response = await axios.get(`${SERVER_URL}pyr-bns/`);
       console.log(response.data);
       setData(response.data);
     } catch (error) {
@@ -66,15 +69,13 @@ const Bonuses = () => {
   const handleDelete = async (id) => {
     setModalType("delete");
     setShowModal(true);
-    setFormData({ ...formData, _id: id });
+    setFormData({ ...formData, id: id });
   };
   const confirmDelete = async () => {
-    axios.post("http://localhost:5000/api/deleteBouneses", {
-      id: formData._id,
+    axios.post(`${SERVER_URL}pyr-bns-del/`, {
+      id: formData.id,
     });
-    const updatedData = await axios.get(
-      "http://localhost:5000/api/fetchBouneses"
-    );
+    const updatedData = await axios.get(`${SERVER_URL}pyr-bns/`);
     setData(updatedData.data);
     setShowModal(false);
     setSuccessModal(true);
@@ -83,7 +84,6 @@ const Bonuses = () => {
 
   const handleAddNew = () => {
     setFormData({
-      id: (data.length + 1).toString(),
       bonusName: "",
       bonusDuration: "",
       bonusAmount: "",
@@ -103,22 +103,26 @@ const Bonuses = () => {
       !formData.bonusAmount ||
       !formData.bonusDate
     ) {
-      alert("Please fill in all required fields.");
+      setResMsg("Please fill in all required fields.");
+      setShowModal(false);
+      setWarningModal(true);
+    }
+    if (formData.bonusDuration < 1 || formData.bonusAmount < 1) {
+      setResMsg("Values Can't be Negative or zero");
+      setShowModal(false);
+      setWarningModal(true);
       return;
     }
 
     const bouneses = {
-      id: parseInt(formData.id, 10),
       bonusName: formData.bonusName,
       bonusDuration: formData.bonusDuration,
       bonusAmount: formData.bonusAmount,
       bonusDate: formData.bonusDate,
     };
     try {
-      axios.post(`http://localhost:5000/api/addBouneses`, bouneses);
-      const updatedData = await axios.get(
-        "http://localhost:5000/api/fetchBouneses"
-      );
+      axios.post(`${SERVER_URL}pyr-bns/`, bouneses);
+      const updatedData = await axios.get(`${SERVER_URL}pyr-bns/`);
       setData(updatedData.data);
       setShowModal(false);
       setSuccessModal(true);
@@ -131,7 +135,6 @@ const Bonuses = () => {
 
   const handleEdit = (data) => {
     setFormData({
-      _id: data._id,
       id: data.id,
       bonusName: data.bonusName,
       bonusDuration: data.bonusDuration,
@@ -144,11 +147,11 @@ const Bonuses = () => {
   const updateBonus = (row) => {
     setModalType("update");
     setFormData({
-      _id: row._id,
       id: row.id,
       bonusName: row.bonusName,
       bonusDuration: row.bonusDuration,
       bonusAmount: row.bonusAmount,
+      bonusDate: row.bonusDate,
     })
     setShowModal(true);
   }
@@ -163,19 +166,17 @@ const Bonuses = () => {
       return;
     }
     const updateBounses = {
-      _id: formData._id,
-      id: parseInt(formData.id, 10),
+      id: formData.id,
       bonusName: formData.bonusName,
       bonusDuration: formData.bonusDuration,
       bonusAmount: formData.bonusAmount,
       bonusDate: formData.bonusDate,
+      
     };
     console.log(updateBounses);
     try {
-      await axios.post(`http://localhost:5000/api/updateBouneses`, updateBounses);
-      const updatedData = await axios.get(
-        "http://localhost:5000/api/fetchBouneses"
-      );
+      await axios.post(`${SERVER_URL}pyr-bns-up/`, updateBounses);
+      const updatedData = await axios.get(`${SERVER_URL}pyr-bns/`);
       setData(updatedData.data);
       setShowModal(false);
       setSuccessModal(true);
@@ -220,6 +221,14 @@ const Bonuses = () => {
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
         successModal={successModal}
+      />
+      <ConirmationModal
+        isOpen={warningModal}
+        message={resMsg}
+        onConfirm={() => setWarningModal(false)}
+        onCancel={() => setWarningModal(false)}
+        animationData={warningAnimation}
+        warningModal={warningModal}
       />
       <div className="table-header">
         <form className="form" onSubmit={(e) => e.preventDefault()}>
@@ -276,13 +285,7 @@ const Bonuses = () => {
       {showAddForm && !showEditForm && (
         <div className="add-leave-form">
           <h3>Add New Bonus</h3>
-          <input
-            type="text"
-            placeholder="Bonus ID"
-            value={formData.id}
-            onChange={(e) => setFormData({ ...formData, id: e.target.value })}
-            readOnly={formMode === "edit"}
-          />
+          <label>Bonus Name</label>
           <input
             type="text"
             placeholder="Bonus Name"
@@ -291,7 +294,7 @@ const Bonuses = () => {
               setFormData({ ...formData, bonusName: e.target.value })
             }
           />
-
+          <label>Bonus Duration</label>
           <select
             className="bonus-duration"
             value={formData.bonusDuration}
@@ -306,6 +309,8 @@ const Bonuses = () => {
             <option value="6-Month">6-Month</option>
             <option value="Yearly">Yearly</option>
           </select>
+
+          <label>Bonus Amount</label>
           <input
             type="number"
             placeholder="Bonus Amount"
@@ -314,6 +319,7 @@ const Bonuses = () => {
               setFormData({ ...formData, bonusAmount: e.target.value })
             }
           />
+          <label>Bonus Date</label>
           <input
             type="date"
             placeholder="Bonus Date"
@@ -329,13 +335,7 @@ const Bonuses = () => {
       {showEditForm && (
         <div className="add-leave-form">
           <h3>Edit Bonus</h3>
-          <input
-            type="text"
-            placeholder="Bonus ID"
-            value={formData.id}
-            onChange={(e) => setFormData({ ...formData, id: e.target.value })}
-            readOnly={formMode === "edit"}
-          />
+          <label>Bonus Name</label>
           <input
             type="text"
             placeholder="Bonus Name"
@@ -344,7 +344,7 @@ const Bonuses = () => {
               setFormData({ ...formData, bonusName: e.target.value })
             }
           />
-
+          <label>Bonus Duration</label>
           <select
             className="bonus-duration"
             value={formData.bonusDuration}
@@ -359,6 +359,7 @@ const Bonuses = () => {
             <option value="6-Month">6-Month</option>
             <option value="Yearly">Yearly</option>
           </select>
+          <label>Bonus Amount</label>
           <input
             type="number"
             placeholder="Bonus Amount"
@@ -367,7 +368,9 @@ const Bonuses = () => {
               setFormData({ ...formData, bonusAmount: e.target.value })
             }
           />
+          <label>Bonus Date</label>
           <input
+          readOnly
             type="date"
             placeholder="Bonus Date"
             value={formData.bonusDate}
@@ -375,7 +378,7 @@ const Bonuses = () => {
               setFormData({ ...formData, bonusDate: e.target.value })
             }
           />
-          <button className="submit-button" onClick={()=> updateBonus(formData)}>Edit Bonus</button>
+          <button className="submit-button" onClick={()=> updateBonus(formData)}>Update Bonus</button>
           <button className="cancel-button" onClick={handleCancel}>Cancel</button>
         </div>
       )}
@@ -409,7 +412,7 @@ const Bonuses = () => {
                     <FaEdit className="table-edit" />
                   </button>
                   <button
-                    onClick={() => handleDelete(bonus._id)}
+                    onClick={() => handleDelete(bonus.id)}
                     style={{ background: "none", border: "none" }}
                   >
                     <FaTrash className="table-delete" />

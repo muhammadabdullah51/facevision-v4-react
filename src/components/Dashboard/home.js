@@ -27,6 +27,7 @@ import AdvanceSalary from '../Payroll/Advance_Salary/advance_salary';
 import Appraisal from '../Payroll/Appraisal/appraisal';
 import Loan from '../Payroll/Loan/loan';
 import ExtraFunds from '../Enrollment/ExtraFund/ExtraFunds';
+import CheckInOut from '../Attendence/checkinout';
 
 const Home = () => {
 
@@ -63,8 +64,10 @@ const Home = () => {
                 return <Resign />;
             case 'Devices':
                 return <Device />;
-            case 'Attendance':
+            case 'Details':
                 return <Attendance />;
+            case 'Check In/Out':
+                return <CheckInOut />;
             case 'Leaves':
                 return <Leaves />;
             case 'Shift Management':

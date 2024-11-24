@@ -9,6 +9,7 @@ import addAnimation from "../../assets/Lottie/addAnim.json";
 import updateAnimation from "../../assets/Lottie/updateAnim.json";
 import deleteAnimation from "../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../assets/Lottie/successAnim.json";
+import warningAnimation from "../../assets/Lottie/warningAnim.json";
 import { SERVER_URL } from "../../config";
 
 const LeaveTable = ({ data, setData }) => {
@@ -34,6 +35,9 @@ const LeaveTable = ({ data, setData }) => {
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const [warningModal, setWarningModal] = useState(false);
+  const [resMsg, setResMsg] = useState("");
 
   const fetchLeave = useCallback(async () => {
     try {
@@ -192,6 +196,20 @@ const LeaveTable = ({ data, setData }) => {
   };
 
   const confirmUpdate = async () => {
+    if(
+      formData.employee === "" ||
+      formData.leave_type === "" ||
+      formData.start_date === "" ||
+      formData.end_date === "" ||
+      formData.reason === "" ||
+      formData.status === "" ||
+      formData.created_at === ""
+      ) {
+        setResMsg("Please fill in all required fields.")
+        setShowModal(false);
+        setWarningModal(true);
+        return;
+    }
     const leavePayload = {
       id: formData.id,
       leave_type: formData.leave_type,
@@ -218,10 +236,13 @@ const LeaveTable = ({ data, setData }) => {
     setModalType("delete");
     setShowModal(true);
     setFormData({ id: formData.id });
+    console.log(formData.id)
+
   };
 
   const confirmDelete = async () => {
-    await axios.post(`${SERVER_URL}att-lv-del/`, { id: formData.id.id });
+    console.log(formData)
+    const response = await axios.post(`${SERVER_URL}att-lv-del/`, { id: formData.id.id });
     const updatedData = await axios.get(`${SERVER_URL}att-lv-cr/`);
     setData(updatedData.data);
     fetchLeave();
@@ -249,6 +270,20 @@ const LeaveTable = ({ data, setData }) => {
     setShowModal(true);
   };
   const confirmAdd = async () => {
+    if(
+      formData.employee === "" ||
+      formData.leave_type === "" ||
+      formData.start_date === "" ||
+      formData.end_date === "" ||
+      formData.reason === "" ||
+      formData.status === "" ||
+      formData.created_at === ""
+      ) {
+        setResMsg("Please fill in all required fields.")
+        setShowModal(false);
+        setWarningModal(true);
+        return;
+    }
     const leavePayload = {
       employee: formData.employee,
       leave_type: formData.leave_type,
@@ -457,7 +492,7 @@ const LeaveTable = ({ data, setData }) => {
             value={formData.empName}
             readOnly
             onChange={(e) =>
-              setFormData({ ...formData, empNames: e.target.value })
+              setFormData({ ...formData, empName: e.target.value })
             }
           />
           <select

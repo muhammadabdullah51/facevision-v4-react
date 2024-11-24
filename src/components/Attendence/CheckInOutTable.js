@@ -12,7 +12,7 @@ import deleteAnimation from "../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../assets/Lottie/warningAnim.json";
 
-const AttendanceTable = ({ data, setData }) => {
+const CheckInOutTable = ({ data, setData }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
@@ -116,11 +116,11 @@ const AttendanceTable = ({ data, setData }) => {
         Header: "Date",
         accessor: "date", // Keeps the original field name
       },
-      {
-        Header: "Attendance Marked",
-        accessor: "attendance_marked",
-        Cell: ({ value }) => (value ? "Yes" : "No"),
-      },
+    //   {
+    //     Header: "Attendance Marked",
+    //     accessor: "attendance_marked",
+    //     Cell: ({ value }) => (value ? "Yes" : "No"),
+    //   },
       {
         Header: "Status",
         accessor: "status",
@@ -140,10 +140,10 @@ const AttendanceTable = ({ data, setData }) => {
           </span>
         ),
       },
-      {
-        Header: "Location",
-        accessor: "locName",
-      },
+    //   {
+    //     Header: "Location",
+    //     accessor: "locName",
+    //   },
       {
         Header: "Action",
         accessor: "action",
@@ -279,60 +279,60 @@ const AttendanceTable = ({ data, setData }) => {
     setSuccessModal(true);
   };
 
-  const handleAdd = () => {
-    setFormData({
-      empId: "",
-      time_in: "",
-      time_out: "",
-      date: "",
-      attendance_marked: 'by Admin',
-      status: "",
-      location: "",
-    });
+//   const handleAdd = () => {
+//     setFormData({
+//       empId: "",
+//       time_in: "",
+//       time_out: "",
+//       date: "",
+//       attendance_marked: 'by Admin',
+//       status: "",
+//       location: "",
+//     });
 
-    setShowAddForm(true);
-    setShowEditForm(false);
-  };
+//     setShowAddForm(true);
+//     setShowEditForm(false);
+//   };
 
-  const addAtt = async () => {
-    setModalType("create");
-    setShowModal(true);
-  };
-  const confirmAdd = async () => {
-    if (
-      !formData.empId ||
-      !formData.time_in ||
-      !formData.time_out ||
-      !formData.date ||
-      !formData.status
-    ) {
-      setResMsg("Please fill in all required fields.");
-      setShowModal(false);
-      setWarningModal(true);
-      return;
-    }
-    const payload = {
-      empId: formData.empId,
-      time_in: formData.time_in,
-      time_out: formData.time_out,
-      date: formData.date,
-      attendance_marked: 'by Admin',
-      status: formData.status,
-      location: formData.location,
-    };
-    console.log(payload)
-    try {
-      await axios.post(`${SERVER_URL}manual-att/`, payload);
-      const updatedData = await axios.get(`${SERVER_URL}all-attendance/`);
-      setData(updatedData.data);
-      fetchAtt();
-      setShowAddForm(false);
-      setShowModal(false);
-      setSuccessModal(true);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+//   const addAtt = async () => {
+//     setModalType("create");
+//     setShowModal(true);
+//   };
+//   const confirmAdd = async () => {
+//     if (
+//       !formData.empId ||
+//       !formData.time_in ||
+//       !formData.time_out ||
+//       !formData.date ||
+//       !formData.status
+//     ) {
+//       setResMsg("Please fill in all required fields.");
+//       setShowModal(false);
+//       setWarningModal(true);
+//       return;
+//     }
+//     const payload = {
+//       empId: formData.empId,
+//       time_in: formData.time_in,
+//       time_out: formData.time_out,
+//       date: formData.date,
+//       attendance_marked: 'by Admin',
+//       status: formData.status,
+//       location: formData.location,
+//     };
+//     console.log(payload)
+//     try {
+//       await axios.post(`${SERVER_URL}manual-att/`, payload);
+//       const updatedData = await axios.get(`${SERVER_URL}all-attendance/`);
+//       setData(updatedData.data);
+//       fetchAtt();
+//       setShowAddForm(false);
+//       setShowModal(false);
+//       setSuccessModal(true);
+//     } catch (error) {
+//       console.log(error);
+//     }
+//   };
 
   return (
     <div className="department-table">
@@ -340,8 +340,9 @@ const AttendanceTable = ({ data, setData }) => {
         isOpen={showModal}
         message={`Are you sure you want to ${modalType} this Manual Attendance?`}
         onConfirm={() => {
-          if (modalType === "create") confirmAdd();
-          else if (modalType === "update") confirmUpdate();
+        //   if (modalType === "create") confirmAdd();
+        //   else if (modalType === "update") confirmUpdate();
+          if (modalType === "update") confirmUpdate();
           else confirmDelete();
         }}
         onCancel={() => setShowModal(false)}
@@ -416,12 +417,12 @@ const AttendanceTable = ({ data, setData }) => {
             </svg>
           </button>
         </form>
-        <button className="add-button" onClick={handleAdd}>
+        {/* <button className="add-button" onClick={handleAdd}>
           <FaPlus className="add-icon" /> Add Manual Attendance
-        </button>
+        </button> */}
       </div>
 
-      {showAddForm && !showEditForm && (
+      {/* {showAddForm && !showEditForm && (
         <div className="add-department-form add-leave-form">
           <h3>Add Manual Attendance</h3>
           <input
@@ -485,20 +486,7 @@ const AttendanceTable = ({ data, setData }) => {
             <option value="late">Late</option>
           </select>
 
-          <label>Select Location</label>
-          <select
-            value={formData.location}
-            onChange={(e) =>
-              setFormData({ ...formData, location: e.target.value })
-            }
-          >
-            <option value="">Select Location</option>
-            {locations.map((loc) => (
-              <option key={loc.locId} value={loc.locId}>
-                {loc.name}
-              </option>
-            ))}
-          </select>
+        
           <button className="submit-button" onClick={addAtt}>
             Add Attendance
           </button>
@@ -512,7 +500,7 @@ const AttendanceTable = ({ data, setData }) => {
             Cancel
           </button>
         </div>
-      )}
+      )} */}
       {!showAddForm && showEditForm && (
         <div className="add-department-form add-leave-form">
           <h3>Edit Manual Attendance</h3>
@@ -564,7 +552,7 @@ const AttendanceTable = ({ data, setData }) => {
             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
           />
           <label>Mark Attandance</label>
-          <select
+          {/* <select
             disabled
             value={formData.attendance_marked}
             onChange={(e) =>
@@ -572,7 +560,7 @@ const AttendanceTable = ({ data, setData }) => {
             }
           >
             <option value="by Admin" >{formData.attendance_marked}</option>
-          </select>
+          </select> */}
 
           <label>Select Status</label>
           <select
@@ -587,7 +575,7 @@ const AttendanceTable = ({ data, setData }) => {
             <option value="late">Late</option>
           </select>
 
-          <label>Select Location</label>
+          {/* <label>Select Location</label>
           <select
             value={formData.location}
             onChange={(e) =>
@@ -600,7 +588,7 @@ const AttendanceTable = ({ data, setData }) => {
                 {loc.name}
               </option>
             ))}
-          </select>
+          </select> */}
           
           <button
             className="submit-button"
@@ -665,4 +653,4 @@ const AttendanceTable = ({ data, setData }) => {
   );
 };
 
-export default AttendanceTable;
+export default CheckInOutTable;

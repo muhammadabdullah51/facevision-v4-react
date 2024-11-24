@@ -8,6 +8,7 @@ import addAnimation from "../../../assets/Lottie/addAnim.json";
 import updateAnimation from "../../../assets/Lottie/updateAnim.json";
 import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../../assets/Lottie/successAnim.json";
+import warningAnimation from "../../../assets/Lottie/warningAnim.json";
 import { SERVER_URL } from "../../../config";
 
 const ResignTable = ({ data, setData }) => {
@@ -25,6 +26,9 @@ const ResignTable = ({ data, setData }) => {
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const [warningModal, setWarningModal] = useState(false);
+  const [resMsg, setResMsg] = useState("");
 
   const fetchResign = useCallback(async () => {
     setLoading(true);
@@ -131,7 +135,6 @@ const ResignTable = ({ data, setData }) => {
     setModalType("delete");
     setShowModal(true);
     setFormData({ resignId });
-    // console.log(formData)
   };
   const confirmDelete = async () => {
     await axios.post(`${SERVER_URL}pr-emp-rsgn-del/`, { resignId: formData.resignId });
@@ -159,6 +162,16 @@ const ResignTable = ({ data, setData }) => {
     setShowModal(true);
   };
   const confirmAdd = async () => {
+    if (
+     !formData.employee ||
+     !formData.date ||
+     !formData.reason
+    ) {
+      setResMsg("Please fill in all required fields.")
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    }
     setShowAddForm(false);
     setShowEditForm(true);
     console.log(formData);
@@ -211,6 +224,14 @@ const ResignTable = ({ data, setData }) => {
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
         successModal={successModal}
+      />
+      <ConirmationModal
+        isOpen={warningModal}
+        message={resMsg}
+        onConfirm={() => setWarningModal(false)}
+        onCancel={() => setWarningModal(false)}
+        animationData={warningAnimation}
+        warningModal={warningModal}
       />
       <div className="table-header">
         <form className="form" onSubmit={(e) => e.preventDefault()}>

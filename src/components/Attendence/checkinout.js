@@ -1,19 +1,19 @@
-import React, { useState } from "react";
-import AttendanceTable from "./AttendanceTable";
-import CheckInOut from "./checkinout";
-import CheckInOutTable from "./CheckInOutTable";
+import React, { useState } from 'react'
+import CheckInOutTable from './CheckInOutTable';
+import AttendanceTable from './AttendanceTable';
+import Attendance from './attendence';
 
-const Attendance = () => {
+const CheckInOut = () => {
     const [data, setData] = useState([])
-    const [changeTab, setChangeTab] = useState("Details");
+    const [changeTab, setChangeTab] = useState("Check In / Out");
     const renderTabContent = () => {
       switch (changeTab) {
-        case "Check In / Out":
-          return <CheckInOutTable data = {data} setData = {setData}/>;;
+        case "Details":
+          return <AttendanceTable data = {data} setData = {setData}/>;
         default:
           return (
             <div>
-              <AttendanceTable data = {data} setData = {setData} />
+              <CheckInOutTable data = {data} setData = {setData} />
             </div>
           );
       }
@@ -39,9 +39,8 @@ const Attendance = () => {
         </div>
         <div className="tab-content">{renderTabContent()}</div>
       </div>
-        
-      </>
+        </>
     );
-};
+}
 
-export default Attendance;
+export default CheckInOut

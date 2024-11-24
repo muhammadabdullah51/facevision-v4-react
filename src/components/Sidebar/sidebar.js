@@ -7,7 +7,8 @@ import {
     faCalendarAlt, faCogs, faMoneyCheckAlt, faChartBar,
     faUsers, faBan, faCog, faUser, faBuilding, faTag,
     faMapMarkerAlt, faIdBadge, faPersonWalkingDashedLineArrowRight, faChevronDown,
-    faChevronUp, faHandHoldingUsd , faClipboardCheck ,faAward, faFileInvoiceDollar ,faTabletAlt, faDollarSign
+    faChevronUp, faHandHoldingUsd , faClipboardCheck ,faAward, faFileInvoiceDollar ,
+    faTabletAlt, faDollarSign, faInfoCircle, faCheckCircle 
 } from '@fortawesome/free-solid-svg-icons';
 
 
@@ -21,7 +22,10 @@ const menuItems = [
         { label: 'Resign', icon: faPersonWalkingDashedLineArrowRight }
     ]},
     { label: 'Devices', icon: faTabletAlt },
-    { label: 'Attendance', icon: faCalendarCheck },
+    { label: 'Attendance', icon: faCalendarCheck, submenu: [
+        { label: 'Details', icon: faInfoCircle },
+        { label: 'Check In/Out', icon: faCheckCircle }
+    ] },
     { label: 'Leaves', icon: faCalendarAlt },
     { label: 'Shift Management', icon: faCogs },
     { label: 'Payroll', icon: faMoneyCheckAlt, submenu: [

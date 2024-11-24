@@ -1,17 +1,16 @@
 import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { useTable, usePagination } from "react-table";
-import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+import { FaEdit, FaTrash, FaPlus, FaDownload } from "react-icons/fa";
 import ReactPaginate from "react-paginate";
 import "./devices.css"; // Custom CSS for styling
 import axios from "axios";
 import ConirmationModal from "../Modal/conirmationModal";
-import addAnimation from "../../assets/Lottie/addAnim.json"
+import addAnimation from "../../assets/Lottie/addAnim.json";
 import updateAnimation from "../../assets/Lottie/updateAnim.json";
 import deleteAnimation from "../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../assets/Lottie/warningAnim.json";
 import { SERVER_URL } from "../../config";
-
 
 const DeviceTable = ({ data, setData }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -22,7 +21,6 @@ const DeviceTable = ({ data, setData }) => {
     cameraName: "",
     cameraIp: "",
     port: "",
-    status: "Inactive",
   });
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
@@ -31,19 +29,19 @@ const DeviceTable = ({ data, setData }) => {
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
 
-
   const fetchDevices = useCallback(async () => {
     setLoading(true);
-      try {
-        const response = await axios.get(`${SERVER_URL}device/`);
-        const devices = await response.data.context;
-        setData(devices);
-        } catch (error) {
-        console.error('Error fetching devices data:', error);
-      }finally{
-        setLoading(false);
-      }
-    },[setData])
+    try {
+      const response = await axios.get(`${SERVER_URL}device/`);
+      const devices = await response.data.context;
+      setData(devices);
+      console.log(devices);
+    } catch (error) {
+      console.error("Error fetching devices data:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [setData]);
 
   // Call fetchDepartments when component mounts
   useEffect(() => {
@@ -64,6 +62,72 @@ const DeviceTable = ({ data, setData }) => {
     }));
   }, []);
 
+  // const handleDownload = async (rowData) => {
+  //   const cameraIP = rowData.cameraIP; // Get the camera IP from the row data
+  //   const port = rowData.port; // Get the port from the row data
+    
+  //   // Construct the URL for the HTTP request
+  //   const url = `http://${cameraIP}:${port}/download`;  // Modify the endpoint as required
+    
+  //   // Prepare the data to send in the POST request (adjust as needed)
+  //   const requestData = {
+  //     // Include any data you need in the body of the POST request
+  //     cameraId: rowData.cameraId,
+  //     action: "download", // You can customize this action or data as required
+  //   };
+  
+  //   try {
+  //     // Send the POST request
+  //     const response = await fetch(url, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(requestData),
+  //     });
+  
+  //     // Handle the response from the server
+  //     if (response.ok) {
+  //       const data = await response.json();
+  //       console.log("Download initiated:", data);
+  //       // Optionally, show a success message or handle the response data
+  //     } else {
+  //       console.error("Error initiating download:", response.statusText);
+  //       // Optionally, show an error message to the user
+  //     }
+  //   } catch (error) {
+  //     console.error("Network error:", error);
+  //     // Optionally, handle network errors or display an alert
+  //   }
+  // };
+
+  const handleDownload = async (rowData) => {
+    // Prepare the data to send in the POST request
+    const requestData = {
+      cameraIp: rowData.cameraIp, // Include the camera IP in the payload
+      port: rowData.port,        // Include the port in the payload
+      // cameraId: rowData.cameraId, // Other necessary data
+      // action: "download",         // Custom action or command
+    };
+    console.log(requestData)
+  
+    try {
+      // Send the POST request
+      const response = await axios.post(`${SERVER_URL}fetch-data/`, requestData);
+  
+      // Handle the response from the server
+      console.log("Download initiated:", response.data);
+      // if (response.status === 200) {
+      //   // Optionally, show a success message or handle the response data
+      // } else {
+      //   console.error("Error initiating download:", response.statusText);
+      //   // Optionally, show an error message to the user
+      // }
+    } catch (error) {
+      console.error("Network error:", error);
+      // Optionally, handle network errors or display an alert
+    }
+  };
   const columns = useMemo(
     () => [
       {
@@ -74,9 +138,7 @@ const DeviceTable = ({ data, setData }) => {
       {
         Header: "Device Name",
         accessor: "cameraName",
-        Cell: ({ value }) => (
-          <span className='bold-fonts'>{value}</span>
-        ),
+        Cell: ({ value }) => <span className="bold-fonts">{value}</span>,
       },
       {
         Header: "Device IP",
@@ -100,10 +162,10 @@ const DeviceTable = ({ data, setData }) => {
         Cell: ({ value }) => (
           <span
             className={`status ${
-              value === "Connected" ? "activeStatus" : "inactiveStatus"
+              value === "Connected" ? "connected" : "disconnected"
             }`}
           >
-            {value ? "Connected" : "Inactive"}
+            {value}
           </span>
         ),
       },
@@ -123,6 +185,12 @@ const DeviceTable = ({ data, setData }) => {
               style={{ background: "none", border: "none" }}
             >
               <FaTrash className="table-delete" />
+            </button>
+            <button
+              onClick={() => handleDownload(row.original)}
+              style={{ background: "none", border: "none" }}
+            >
+              <FaDownload className="table-edit" />
             </button>
           </div>
         ),
@@ -164,7 +232,6 @@ const DeviceTable = ({ data, setData }) => {
       cameraName: row.cameraName,
       cameraIp: row.cameraIp,
       port: row.port,
-      status: row.status,
     });
     setShowAddForm(false);
     setShowEditForm(true);
@@ -173,18 +240,20 @@ const DeviceTable = ({ data, setData }) => {
   const handleDelete = async (row) => {
     setModalType("delete");
     setShowModal(true);
-    setFormData({...formData, cameraId: row.cameraId})
-  }
+    setFormData({ ...formData, cameraId: row.cameraId });
+  };
   const confirmDelete = async () => {
     try {
-      await axios.post(`${SERVER_URL}device-del/`,{ cameraId: formData.cameraId});
+      await axios.post(`${SERVER_URL}device-del/`, {
+        cameraId: formData.cameraId,
+      });
       const updatedData = await axios.get(`${SERVER_URL}device/`);
-      setData(updatedData.data.context)
+      setData(updatedData.data.context);
       fetchDevices();
       setShowModal(false);
       setSuccessModal(true);
     } catch (error) {
-      console.error('Error deleting Device:', error);
+      console.error("Error deleting Device:", error);
     }
   };
 
@@ -194,24 +263,23 @@ const DeviceTable = ({ data, setData }) => {
       cameraName: "",
       cameraIp: "",
       port: "",
-      status: "Inactive",
     });
     setShowAddForm(true);
     setShowEditForm(false);
     fetchDevices();
   };
 
-  const addDevice = async() => {
+  const addDevice = async () => {
     setModalType("create");
     setShowModal(true);
-  }
-  const confirmAdd = async() => {
-    if(
+  };
+  const confirmAdd = async () => {
+    if (
       formData.cameraName === "" ||
       formData.cameraIp === "" ||
       formData.port === ""
-    ){
-      setResMsg("Please fill in all required fields.")
+    ) {
+      setResMsg("Please fill in all required fields.");
       setShowModal(false);
       setWarningModal(true);
       return;
@@ -220,24 +288,23 @@ const DeviceTable = ({ data, setData }) => {
       cameraName: formData.cameraName,
       cameraIp: formData.cameraIp,
       port: formData.port,
-      // status: formData.status,
-    }
+    };
 
     try {
-      const res = await axios.post(`${SERVER_URL}device/`, newDevice)
+      const res = await axios.post(`${SERVER_URL}device/`, newDevice);
       setShowAddForm(false);
-      setResMsg(res.data.msg)
+      setResMsg(res.data.msg);
       if (res.data.status) {
         setShowModal(false);
         setSuccessModal(true);
         fetchDevices();
-      }else {
+      } else {
         setShowModal(false);
         setWarningModal(true);
-        console.log(updatedData.data.msg)
+        console.log(updatedData.data.msg);
       }
       const updatedData = await axios.get(`${SERVER_URL}device/`);
-      setData(updatedData.data.context)
+      setData(updatedData.data.context);
       setShowAddForm(false);
       setShowEditForm(false);
       setShowModal(false);
@@ -254,14 +321,12 @@ const DeviceTable = ({ data, setData }) => {
       cameraName: "",
       cameraIp: "",
       port: "",
-      status: "Inactive",
     });
 
     // Hide form
     setShowAddForm(false);
   };
-  
-  
+
   const handleUpdate = async () => {
     setModalType("update");
     setFormData({
@@ -271,17 +336,17 @@ const DeviceTable = ({ data, setData }) => {
       cameraIp: formData.cameraIp,
       port: formData.port,
       status: formData.status,
-    })
-    console.log(formData)
-    setShowModal(true)
-  }
+    });
+    console.log(formData);
+    setShowModal(true);
+  };
   const confirmUpdate = async () => {
-    if(
+    if (
       formData.cameraName === "" ||
       formData.cameraIp === "" ||
       formData.port === ""
-    ){
-      setResMsg("Please fill in all required fields.")
+    ) {
+      setResMsg("Please fill in all required fields.");
       setShowModal(false);
       setWarningModal(true);
       return;
@@ -293,33 +358,32 @@ const DeviceTable = ({ data, setData }) => {
       port: formData.port,
       // status: formData.status,
     };
-    
+
     try {
       const res = await axios.post(`${SERVER_URL}device-up/`, updatedDevice);
-      fetchDevices()
+      fetchDevices();
 
       setShowEditForm(false);
       setShowModal(false);
-      setResMsg(res.data.msg)
+      setResMsg(res.data.msg);
       if (res.data.status) {
         setSuccessModal(true);
         fetchDevices();
-      }else {
+      } else {
         setShowModal(false);
         setWarningModal(true);
-        console.log(res.data.msg)
+        console.log(res.data.msg);
       }
       setSuccessModal(true);
 
       const updatedData = await axios.get(`${SERVER_URL}device/`);
-      setData(updatedData.data.context)
+      setData(updatedData.data.context);
       console.log("done Updated device data:", updatedDevice);
-      console.log('device updated successfully');
+      console.log("device updated successfully");
     } catch (error) {
-      console.error('Error updating devices:', error);
+      console.error("Error updating devices:", error);
       setWarningModal(true);
     }
-   
   };
 
   return (
@@ -328,7 +392,6 @@ const DeviceTable = ({ data, setData }) => {
         isOpen={showModal}
         message={`Are you sure you want to ${modalType} this Device?`}
         onConfirm={() => {
-         
           if (modalType === "create") confirmAdd();
           else if (modalType === "update") confirmUpdate();
           else confirmDelete();
@@ -359,7 +422,7 @@ const DeviceTable = ({ data, setData }) => {
         warningModal={warningModal}
       />
       <div className="table-header">
-      <form className="form" onSubmit={(e) => e.preventDefault()}>
+        <form className="form" onSubmit={(e) => e.preventDefault()}>
           <button type="submit">
             <svg
               width="17"
@@ -414,7 +477,7 @@ const DeviceTable = ({ data, setData }) => {
       {showAddForm && (
         <div className="add-device-form">
           <h3>Add New Device</h3>
-         
+
           <input
             type="text"
             placeholder="Device Name"
@@ -435,9 +498,7 @@ const DeviceTable = ({ data, setData }) => {
             type="text"
             placeholder="Device Port"
             value={formData.port}
-            onChange={(e) =>
-              setFormData({ ...formData, port: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, port: e.target.value })}
           />
           {/* <div className="status-toggle">
             <label>Status: </label>
@@ -467,7 +528,7 @@ const DeviceTable = ({ data, setData }) => {
       {showEditForm && (
         <div className="add-device-form">
           <h3>Edit Device</h3>
-         
+
           <input
             type="text"
             placeholder="Device Name"
@@ -488,9 +549,7 @@ const DeviceTable = ({ data, setData }) => {
             type="text"
             placeholder="Device Port"
             value={formData.port}
-            onChange={(e) =>
-              setFormData({ ...formData, port: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, port: e.target.value })}
           />
           {/* <div className="status-toggle">
             <label>Status: </label>

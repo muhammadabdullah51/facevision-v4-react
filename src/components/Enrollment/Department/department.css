@@ -1,3 +1,12 @@
+.selectbox{
+    width: 98.4%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
 .search-input {
     width: 15%;
     padding: 10px;
