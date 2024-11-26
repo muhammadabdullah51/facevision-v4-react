@@ -7,35 +7,28 @@ import LeaveSettings from './Setting_Tabs/LeaveSettings';
 import OvertimeSettings from './Setting_Tabs/OvertimeSettings';
 import ShiftSettings from './Setting_Tabs/ShiftSettings';
 import User from './Setting_Tabs/User';
+import GeneralSettings from './generalSettings';
+import AdvancesSettings from './advancedSettings';
 
 const Settings = () => {
-    const [activeTab, setActiveTab] = useState('attendance-policy');
+    const [activeTab, setActiveTab] = useState('general-setting');
 
     const renderTabContent = () => {
         switch (activeTab) {
-            case 'attendance-policy':
-                return <AttendancePolicy />;
-            case 'users':
-                return <Users/>;
-            case 'leave-settings':
-                return <LeaveSettings />;
-            case 'overtime-settings':
-                return <OvertimeSettings />;  
-            // case 'shift-settings':
-            //     return <ShiftSettings />;
+            case 'general-setting':
+                return <GeneralSettings />;
+            case 'advanced-settings':
+                return <AdvancesSettings/>;
             default:
-                return <AttendancePolicy />;
+                return <GeneralSettings />;
         }
     };
 
     return (
         <div className="settings-page">
-            <div className="tabs">
-                <button className={`${activeTab === 'attendance-policy' ? 'active' : ''}`} onClick={() => setActiveTab('attendance-policy')}>Attendance Policy</button>
-                <button className={`${activeTab === 'users' ? 'active' : ''}`} onClick={() => setActiveTab('users')}>Access Control</button>
-                <button className={`${activeTab === 'leave-settings' ? 'active' : ''}`} onClick={() => setActiveTab('leave-settings')}>Leaves Formula</button>
-                <button className={`${activeTab === 'overtime-settings' ? 'active' : ''}`} onClick={() => setActiveTab('overtime-settings')}>Overtime Formula</button>
-                {/* <button className={`${activeTab === 'shift-settings' ? 'active' : ''}`} onClick={() => setActiveTab('shift-settings')}>Shift Settings</button> */}
+            <div className="tabs1">
+                <button className={`${activeTab === 'general-setting' ? 'active' : ''}`} onClick={() => setActiveTab('general-setting')}>General Settings</button>
+                <button className={`${activeTab === 'advanced-settings' ? 'active' : ''}`} onClick={() => setActiveTab('advanced-settings')}>Advanced Settings</button>
             </div>
             <div className="tab-content">
                 {renderTabContent()}

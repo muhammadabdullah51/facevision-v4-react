@@ -99,7 +99,7 @@ const OvertimeTable = () => {
     };
     try {
       const res = await axios.post(`${SERVER_URL}pyr-ot-up/`, updatedOTF);
-      console.log("Overtime updated successfullykjljkljkl");
+      console.log("Overtime updated successfully");
       setShowEditForm(false);
       setShowModal(false);
       setSuccessModal(true);

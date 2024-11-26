@@ -8,6 +8,7 @@ import axios from "axios";
 import WebcamModal from "./webcam"; // Import the WebcamModal component
 import OvertimeTable from "../../Settings/Setting_Tabs/OvertimeSettings";
 import Location from "../Location/location";
+import LeaveTable from "../../Settings/Setting_Tabs/LeaveSettings";
 import LocationTable from "../Location/LocationTable";
 import { useLocation } from "react-router-dom";
 import { SERVER_URL } from "../../../config";
@@ -51,7 +52,8 @@ const AddEmployee = ({
     dsgId: "",
     locId: "",
     xid: "",
-    otid: "",
+    otId: "",
+    lvfId: "",
     gender: "",
     email: "",
     joiningDate: "",
@@ -73,6 +75,7 @@ const AddEmployee = ({
   const [shifts, setShifts] = useState([]);
   const [enrollSites, setEnrollSites] = useState([]);
   const [overtime, setOvertime] = useState([]);
+  const [lvf, setLvf] = useState([]);
 
   useEffect(() => {
     const fetchOptions = async () => {
@@ -84,6 +87,7 @@ const AddEmployee = ({
         setEnrollSites(response.data.loc_data);
         setOvertime(response.data.ot_data);
         setDesignations(response.data.dsg_data);
+        setLvf(response.data.lvf_data);
         if (isEditMode && editData) {
           setNewEmployee({ ...editData });
         }
@@ -159,7 +163,7 @@ const AddEmployee = ({
     if (value === "Add-Overtime") {
       setSelectedPage("Overtime Management");
     } else {
-      setNewEmployee({ ...newEmployee, otid: value });
+      setNewEmployee({ ...newEmployee, otId: value });
     }
   };
 
@@ -172,42 +176,17 @@ const AddEmployee = ({
       setNewEmployee({ ...newEmployee, locId: value });
     }
   };
+  const handleLeaveFormulaChange = (event) => {
+    const { value } = event.target;
 
-  // working handle submit
-  // const handleSubmit = async (row) => {
-  //   setNewEmployee({...row, empId: row.empId})
-  //   console.log(newEmployee)
-  //   // Create a new FormData object
-  //   const formData = new FormData();
-  //   Object.keys(newEmployee).forEach((key) => {
-  //     formData.append(key, newEmployee[key]);
-  //   });
+    if (value === "Add-Leave-Formula") {
+      setSelectedPage("Leave Formula");
+    } else {
+      setNewEmployee({ ...newEmployee, lvfId: value });
+    }
+  };
 
-  //   try {
-  //     const response = isEditMode
-  //       ? await axios.post(`${SERVER_URL}pr-emp-up/`, formData)
-  //       : await axios.post(`${SERVER_URL}pr-emp/`, formData);
-  //       console.log(formData)
 
-  //     setData((prevData) =>
-  //       isEditMode
-  //         ? prevData.map((emp) =>
-  //             emp.empId === newEmployee.empId
-  //               ? { ...emp, ...response.data }
-  //               : emp
-  //           )
-  //         : [...prevData, response.data]
-  //     );
-  //   } catch (error) {
-  //     console.error(
-  //       "Error adding/updating employee:",
-  //       error.response ? error.response.data : error.message
-  //     );
-  //   }
-
-  //   setIsEditMode(false);
-  //   setActiveTab("Employees");
-  // };
 
   const addEmployee = async () => {
     setModalType("create");
@@ -373,6 +352,8 @@ const AddEmployee = ({
         <OvertimeTable setSelectedPage={setSelectedPage} />
       ) : selectedPage === "Enroll Site Management" ? (
         <Location setSelectedPage={setSelectedPage} />
+      ) : selectedPage === "Leave Formula" ? (
+        <LeaveTable setSelectedPage={setSelectedPage} />
       ) : (
         <form onSubmit={(e) => e.preventDefault()} className="employee-form">
           <section>
@@ -558,19 +539,37 @@ const AddEmployee = ({
                   <label>Overtime Assigned</label>
                   <select
                     name="overtimeAssigned"
-                    value={newEmployee.otid}
+                    value={ newEmployee.otId}
                     onChange={handleOvertimeChange}
                   >
                     {isEditMode && (
-                      <option value={editData.otid}>{editData.OTCode}</option>
+                      <option value={editData.otId}>{editData.OTCode}</option>
                     )}
                     <option value="">Select Overtime</option>
                     {overtime.map((ot) => (
-                      <option key={ot.OTFormulaId} value={ot.OTFormulaId}>
+                      <option key={isEditMode? ot.otId : ot.OTFormulaId} value={ot.OTFormulaId}>
                         {ot.OTCode}
                       </option>
                     ))}
                     <option value="Add-Overtime">+ Add Overtime</option>
+                  </select>
+
+                  <label>Leave Formula Assigned</label>
+                  <select
+                    name="overtimeAssigned"
+                    value={newEmployee.lvfId}
+                    onChange={handleLeaveFormulaChange}
+                  >
+                    {isEditMode && (
+                      <option value={editData.lvfId}>{editData.cutCode}</option>
+                    )}
+                    <option value="">Select Leave Formula</option>
+                    {lvf.map((lvf) => (
+                      <option key={lvf.leaveFormulaId} value={lvf.leaveFormulaId}>
+                        {lvf.cutCode}
+                      </option>
+                    ))}
+                    <option value="Add-Leave-Formula">+ Add Leave Formula</option>
                   </select>
 
                   <label>Department Name</label>

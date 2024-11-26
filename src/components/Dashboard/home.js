@@ -100,12 +100,17 @@ const Home = () => {
                 return <p>Select a menu item from the sidebar to see the content.</p>;
         }
     };
+    const handleSettingMenu = (menu) => {
+        setSelectedMenu(menu);
+    };
+
+  
 
     return (
         <div className="dashboard">
             <Sidebar onMenuChange={handleMenuChange} />
             <div className="dashboard-content">
-                <Navbar selectedMenu={selectedMenu} />
+                <Navbar onMenuChange={handleSettingMenu}/>
                 <div className="main-content">
                     {renderContent()}
                 </div>

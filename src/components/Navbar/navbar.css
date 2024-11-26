@@ -1,3 +1,95 @@
+.navbar-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 10px 20px;
+    background-color: #333;
+    color: #fff;
+}
+
+.navbar-content {
+    margin-top: 20px;
+    padding: 20px;
+    width: 100%;
+    text-align: center;
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+}
+
+.navbar-dropdown {
+    position: relative;
+    display: inline-block;
+    width: 20px;
+}
+
+.setting-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #fff;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: end;
+    gap: 5px;
+}
+
+.setting-menu {
+    position: absolute;
+    width: 11vw;
+    right: 22%;
+    top: 119%;
+    background-color: #e6e6e6;
+    box-shadow: 0 0px 10px rgba(0, 0, 0, 0.4);
+    border-radius: 20px;
+    list-style: none;
+    padding: 10px;
+    margin: 0;
+    z-index: 1000;
+    display: block;
+    background-color: rgba(255, 255, 255, 0.4);
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+    padding: 20px;
+    font-weight: bold;
+
+}
+
+.setting-menu li {
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.setting-menu li:hover {
+    background-color: #f0f0f0;
+}
+
+
+
+.setting-toggle img {
+    width: 50%;
+    border-radius: 50px;
+    object-fit: cover;
+    padding: 5px;
+    background: #e3e3e3;
+}
+
+ul.setting-menu li {
+    display: flex;
+    gap: 0.5vw;
+}
+
+
+
 .navbar {
     background-color: var(--sidebar-color);
     color: var(--text-color);
@@ -18,6 +110,7 @@
 .navbar-links {
     display: flex;
     align-items: center;
+    width: 5vw;
 }
 
 .navbar-email {
@@ -49,11 +142,10 @@
     margin-top: 10px;
     padding: 0% 1%;
     margin: 10px;
-    background-color: var(--hover-color);
-    box-shadow: var(--box-shadow);
+    position: relative;
 }
 
-.navbar-company-logo{
+.navbar-company-logo {
     width: 3vw;
 }
 
@@ -66,16 +158,19 @@
 }
 
 @media (min-width: 700px) and (max-width:1000px) {
-    .navbar{
-        width: unset;
+    .navbar-links {
+        width: 8vw;
     }
-    .navbar-selected{
+
+    .navbar-selected {
         font-size: medium;
     }
-    .navbar-company-logo{
-        width: 10vw;
+
+    .navbar-company-logo {
+        width: 5vw;
     }
-    .navbar-email{
+
+    .navbar-email {
         font-size: 2.8vw;
     }
 }

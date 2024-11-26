@@ -71,6 +71,7 @@
     display: flex;
     flex-direction: row;
     gap: 3vw;
+    width: 60%;
 }
 .export-btn {
     display: flex;
@@ -152,13 +153,14 @@
     width: 0;
 }
 .checkmark {
-    position: absolute;
+    /* position: absolute;
     top: 0;
-    left: 0;
+    left: 0; */
     height: 15px;       /* Smaller checkbox size */
     width: 15px;
     background-color: #eee;
     border: 1px solid #ccc; /* Thinner border */
+    /* margin-left: 2vw; */
 }
 .checkbox-container input:checked ~ .checkmark {
     background-color: #7341DA;
@@ -184,7 +186,7 @@
     display: grid;
     grid-template-columns: repeat(4, 1fr); /* 4 items per row */
     grid-gap: 1vw; /* Spacing between items */
-    margin-top: 1vh;
+    margin: 1vh 0 4vh 0;
 }
 .accessible-items {
     /* display: inline-block; */

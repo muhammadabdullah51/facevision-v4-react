@@ -13,12 +13,6 @@ import warningAnimation from "../../../assets/Lottie/warningAnim.json";
 
 const LeaveTable = () => {
   const [data, setData] = useState([]);
-  const [showForm, setShowForm] = useState(false);
-  const [formMode, setFormMode] = useState("add"); // "add" or "edit"
-  const [currentItemId, setCurrentItemId] = useState(null); // Store ID of item being edited
-  const [cutCode, cuttOTCode] = useState("");
-  const [cutRate, setcutRate] = useState("");
-  const [updateDate, setUpdateDate] = useState("");
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
 
   const [showAddForm, setShowAddForm] = useState(false);
@@ -40,7 +34,8 @@ const LeaveTable = () => {
   const fetchLvs = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${SERVER_URL}pyr-ot/`);
+      const response = await axios.get(`${SERVER_URL}pyr-lvf/`);
+      console.log(response.data);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching shift data:", error);
@@ -95,16 +90,16 @@ const LeaveTable = () => {
       cutRate: formData.cutRate,
     };
     try {
-      const res = await axios.post(`${SERVER_URL}pyr-ot-up/`, updatedOTF);
-      console.log("Overtime updated successfullykjljkljkl");
+      const res = await axios.post(`${SERVER_URL}pyr-lvf-up/`, updatedOTF);
+      console.log("Leave updated successfullykjljkljkl");
       setShowEditForm(false);
       setShowModal(false);
       setSuccessModal(true);
       setResMsg(res.data.msg)
-      const updatedData = await axios.get(`${SERVER_URL}pyr-ot/`);
+      const updatedData = await axios.get(`${SERVER_URL}pyr-lvf/`);
       setData(updatedData.data);
     } catch (error) {
-      console.error("Error updating overtime:", error);
+      console.error("Error updating Leave:", error);
       setShowModal(false);
       setWarningModal(true);
     }
@@ -124,7 +119,7 @@ const LeaveTable = () => {
     setShowModal(true);
   }
   const confirmAdd = async () => {
-    if(!formData.cutCode ||!formData.cutRate ||!formData.updateDate){
+    if(!formData.cutCode ||!formData.cutRate){
       setResMsg("Please fill in all required fields.")
       setShowModal(false);
       setWarningModal(true);
@@ -136,13 +131,13 @@ const LeaveTable = () => {
     }
 
     try {
-      const response = await axios.post(`${SERVER_URL}pyr-ot/`, newOTF);
-      console.log("Overtime Added Successfully")
+      const response = await axios.post(`${SERVER_URL}pyr-lvf/`, newOTF);
+      console.log("Leave Added Successfully")
       setShowAddForm(false);
       setResMsg(response.data.msg)
       setShowModal(false);
       setSuccessModal(true)
-      const updatedData = await axios.get(`${SERVER_URL}pyr-ot/`);
+      const updatedData = await axios.get(`${SERVER_URL}pyr-lvf/`);
       setData(updatedData.data);
       // setShowAddForm(false)
     } catch (error) {
@@ -162,8 +157,8 @@ const LeaveTable = () => {
     setFormData({...formData, leaveFormulaId: leaveFormulaId})
   };
   const confirmDelete = async () => {
-    await axios.post(`${SERVER_URL}pyr-ot-del/`, {leaveFormulaId: formData.leaveFormulaId,});
-    const updatedData = await axios.get(`${SERVER_URL}pyr-ot/`);
+    await axios.post(`${SERVER_URL}pyr-lvf-del/`, {leaveFormulaId: formData.leaveFormulaId,});
+    const updatedData = await axios.get(`${SERVER_URL}pyr-lvf/`);
     setData(updatedData.data);
     fetchLvs();
     setShowModal(false);
@@ -171,7 +166,6 @@ const LeaveTable = () => {
   }
   const resetForm = () => {
     setFormData({
-      leaveFormulaId: "",
       cutCode: "",
       cutRate: "",
     });
@@ -190,7 +184,7 @@ const LeaveTable = () => {
     <div className="department-table">
       <ConirmationModal
         isOpen={showModal}
-        message={`Are you sure you want to ${modalType} this Overtime Formula?`}
+        message={`Are you sure you want to ${modalType} this Leave Formula?`}
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
           else if (modalType === "update") confirmUpdate();
@@ -207,7 +201,7 @@ const LeaveTable = () => {
       />
       <ConirmationModal
         isOpen={successModal}
-        message={`Overtime Formula ${modalType}d successfully!`}
+        message={`Leave Formula ${modalType}d successfully!`}
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
@@ -267,16 +261,16 @@ const LeaveTable = () => {
           </button>
         </form>
         <button className="add-button" onClick={handleAdd}>
-          <FaPlus /> Add New Overtime Formula
+          <FaPlus /> Add New Leave Formula
         </button>
       </div>
 
       {showAddForm && !showEditForm && (
         <div className="add-leave-form">
-          <h4>Add New Overtime</h4>
+          <h4>Add New Leave</h4>
           <input
             type="text"
-            placeholder="Pay Code"
+            placeholder="Cut Code"
             value={formData.cutCode}
             onChange={(e) =>
               setFormData({ ...formData, cutCode: e.target.value })
@@ -284,7 +278,7 @@ const LeaveTable = () => {
           />
           <input
             type="number"
-            placeholder="Rate Per Hour"
+            placeholder="Cut Per Hour"
             value={formData.cutRate}
             onChange={(e) =>
               setFormData({ ...formData, cutRate: e.target.value })
@@ -292,7 +286,7 @@ const LeaveTable = () => {
           />
        
           <button className="submit-button" onClick={addOTF}>
-            Add Overtime Formula
+            Add Leave Formula
           </button>
           <button className="cancel-button" onClick={handleCancel}>
             Cancel
@@ -301,10 +295,10 @@ const LeaveTable = () => {
       )}
       {!showAddForm && showEditForm && (
         <div className="add-leave-form">
-          <h4>Edit Overtime Formula</h4>
+          <h4>Edit Leave Formula</h4>
           <input
             type="text"
-            placeholder="Pay Code"
+            placeholder="Cut Code"
             value={formData.cutCode}
             onChange={(e) =>
               setFormData({ ...formData, cutCode: e.target.value })
@@ -312,7 +306,7 @@ const LeaveTable = () => {
           />
           <input
             type="number"
-            placeholder="Rate Per Hour"
+            placeholder="Cut Per Hour"
             value={formData.cutRate}
             onChange={(e) =>
               setFormData({ ...formData, cutRate: e.target.value })
@@ -320,7 +314,7 @@ const LeaveTable = () => {
           />
          
           <button className="submit-button" onClick={() => updateOTF(formData)}>
-            Update Overtime Formula
+            Update Leave Formula
           </button>
           <button className="cancel-button" onClick={handleCancel}>
             Cancel
@@ -333,8 +327,8 @@ const LeaveTable = () => {
           <thead>
             <tr>
               <th>Formula ID</th>
-              <th>Pay Code</th>
-              <th>Rate Per Hour</th>
+              <th>Cut Code</th>
+              <th>Cut Per Hour</th>
               <th>Actions</th>
             </tr>
           </thead>
