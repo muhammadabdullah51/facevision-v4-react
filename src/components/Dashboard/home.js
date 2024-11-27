@@ -28,6 +28,8 @@ import Appraisal from '../Payroll/Appraisal/appraisal';
 import Loan from '../Payroll/Loan/loan';
 import ExtraFunds from '../Enrollment/ExtraFund/ExtraFunds';
 import CheckInOut from '../Attendence/checkinout';
+import Allowance from '../Payroll/Allowances/Allowances';
+import Tax from '../Payroll/Tax/Tax';
 
 const Home = () => {
 
@@ -86,8 +88,12 @@ const Home = () => {
                 return <Appraisal />;
             case 'Loan':
                 return <Loan />;
+            case 'Allowances':
+                return <Allowance />;
             case 'Extra Funds':
                 return <ExtraFunds />;
+            case 'Taxes':
+                return <Tax />;
             case 'Visitors':
                 return <Visitors />;
             case 'Block Employee':
@@ -110,7 +116,7 @@ const Home = () => {
         <div className="dashboard">
             <Sidebar onMenuChange={handleMenuChange} />
             <div className="dashboard-content">
-                <Navbar onMenuChange={handleSettingMenu}/>
+                <Navbar onMenuChange={handleSettingMenu} selectedMenu={selectedMenu} setSelectedMenu={setSelectedMenu}/>
                 <div className="main-content">
                     {renderContent()}
                 </div>

@@ -8,7 +8,7 @@ import {
     faUsers, faBan, faCog, faUser, faBuilding, faTag,
     faMapMarkerAlt, faIdBadge, faPersonWalkingDashedLineArrowRight, faChevronDown,
     faChevronUp, faHandHoldingUsd , faClipboardCheck ,faAward, faFileInvoiceDollar ,
-    faTabletAlt, faDollarSign, faInfoCircle, faCheckCircle 
+    faTabletAlt, faDollarSign, faInfoCircle, faCheckCircle, faFileInvoice, faMoneyBillWave
 } from '@fortawesome/free-solid-svg-icons';
 
 
@@ -35,7 +35,9 @@ const menuItems = [
         { label: 'Appraisal', icon: faClipboardCheck },
         { label: 'Loan', icon: faFileInvoiceDollar  },
         { label: 'Extra Funds', icon: faDollarSign  },
-        { label: 'Bonuses', icon: faAward }
+        { label: 'Bonuses', icon: faAward },
+        { label: 'Allowances', icon: faMoneyBillWave },
+        { label: 'Taxes', icon: faFileInvoice }
     ]},
     { label: 'Reports', icon: faChartBar },
     { label: 'Visitors', icon: faUsers },

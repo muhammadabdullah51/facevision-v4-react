@@ -14,12 +14,12 @@ const menuItems = [
   { label: 'Logout', icon: faSignOutAlt, key: 'logout' },  // Only keeping logout
 ];
 
-const Navbar = ({ onMenuChange }) => {
+const Navbar = ({ onMenuChange, selectedMenu, setSelectedMenu }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [companyLogo, setCompanyLogo] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [selectedMenu, setSelectedMenu] = useState('dashboard'); // Default menu state
+  // const [selectedMenu, setSelectedMenu] = useState('dashboard'); // Default menu state
 
   const userInfo = useSelector((state) => state.auth.userInfo);
 
