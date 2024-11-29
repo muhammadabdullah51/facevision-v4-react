@@ -33,9 +33,9 @@ const AllowanceSettings = () => {
   const fetchTax = useCallback(async () => {
     setLoading(true);
     try {
-      // const response = await axios.get(`${SERVER_URL}pyr-lvf/`);
-      // console.log(response.data);
-      // setData(response.data);
+      const response = await axios.get(`${SERVER_URL}allowance-types/`);
+      console.log(response.data);
+      setData(response.data);
     } catch (error) {
       console.error("Error fetching allowances data:", error);
     } finally {
@@ -79,26 +79,28 @@ const AllowanceSettings = () => {
       setWarningModal(true);
       return;
     }
-
+  
     const updatedOTF = {
-      id: formData.id,
       type: formData.type,
     };
+  
     try {
-      const res = await axios.post(`${SERVER_URL}pyr-lvf-up/`, updatedOTF);
-      console.log("Leave updated successfullykjljkljkl");
+      const res = await axios.put(`${SERVER_URL}allowance-types/${formData.id}/`, updatedOTF);
+      console.log("Allowance updated successfully");
       setShowEditForm(false);
       setShowModal(false);
       setSuccessModal(true);
       setResMsg(res.data.msg);
-      const updatedData = await axios.get(`${SERVER_URL}pyr-lvf/`);
+  
+      const updatedData = await axios.get(`${SERVER_URL}allowance-types/`);
       setData(updatedData.data);
     } catch (error) {
-      console.error("Error updating Leave:", error);
+      console.error("Error updating allowance:", error);
       setShowModal(false);
       setWarningModal(true);
     }
   };
+  
 
   const handleAdd = () => {
     setFormData({
@@ -117,20 +119,24 @@ const AllowanceSettings = () => {
       setWarningModal(true);
       return;
     }
+  
     const newOTF = {
       type: formData.type,
     };
-
+  
+    console.log("Payload to be sent:", newOTF); // Log payload for debugging
+  
     try {
-      const response = await axios.post(`${SERVER_URL}pyr-lvf/`, newOTF);
+      const response = await axios.post(`${SERVER_URL}allowance-types/`, newOTF);
+      console.log("Response from server:", response.data);
       setShowAddForm(false);
-      setResMsg(response.data.msg);
       setShowModal(false);
       setSuccessModal(true);
-      const updatedData = await axios.get(`${SERVER_URL}pyr-lvf/`);
+  
+      const updatedData = await axios.get(`${SERVER_URL}allowance-types/`);
       setData(updatedData.data);
     } catch (error) {
-      console.log(error);
+      console.error("Error adding allowance:", error.response?.data || error.message);
       setShowModal(false);
       setWarningModal(true);
     }
@@ -142,13 +148,21 @@ const AllowanceSettings = () => {
     setFormData({ ...formData, id: id });
   };
   const confirmDelete = async () => {
-    await axios.post(`${SERVER_URL}pyr-lvf-del/`, { id: formData.id });
-    const updatedData = await axios.get(`${SERVER_URL}pyr-lvf/`);
-    setData(updatedData.data);
-    fetchTax();
-    setShowModal(false);
-    setSuccessModal(true);
+    try {
+      await axios.delete(`${SERVER_URL}allowance-types/${formData.id}/`);
+      const updatedData = await axios.get(`${SERVER_URL}allowance-types/`);
+      setData(updatedData.data);
+      fetchTax(); // Ensure this properly refreshes the data elsewhere in your app
+      setShowModal(false);
+      setSuccessModal(true);
+      console.log("Allowance deleted successfully");
+    } catch (error) {
+      console.error("Error deleting allowance:", error);
+      setShowModal(false);
+      setWarningModal(true);
+    }
   };
+  
   const resetForm = () => {
     setFormData({
       type: "",
@@ -227,7 +241,8 @@ const AllowanceSettings = () => {
             required
             type="text"
           />
-          <button className="reset" type="reset">
+          <button className="reset" type="reset"
+          onClick={() => setSearchQuery("")}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-6 w-6"
@@ -253,7 +268,7 @@ const AllowanceSettings = () => {
         <div className="add-leave-form">
           <h4>Add New Allowance</h4>
           <input
-            type="number"
+            type="text"
             placeholder="Allowance Type"
             value={formData.type}
             onChange={(e) => setFormData({ ...formData, type: e.target.value })}
@@ -271,7 +286,7 @@ const AllowanceSettings = () => {
           <h4>Edit Allowance</h4>
 
           <input
-            type="number"
+            type="text"
             placeholder="Allowance Type"
             value={formData.type}
             onChange={(e) => setFormData({ ...formData, type: e.target.value })}

@@ -97,6 +97,7 @@
     gap: 2vw;
     align-items: center;
     justify-content: end;
+    width: -webkit-fill-available;
 }
 .export-btn a{
     color: white;

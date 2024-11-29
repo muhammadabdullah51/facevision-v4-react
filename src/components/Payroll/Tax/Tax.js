@@ -24,10 +24,11 @@ const Tax = () => {
   const [showEditForm, setShowEditForm] = useState(false);
   const [formData, setFormData] = useState({
     id: "",
-    bonusName: "",
-    bonusDuration: "",
-    bonusAmount: "",
-    bonusDate: "",
+    type: "",
+    nature: "",
+    percentage: "",
+    amount: "",
+    date: "",
   });
 
   const [showModal, setShowModal] = useState(false);
@@ -35,21 +36,34 @@ const Tax = () => {
   const [successModal, setSuccessModal] = useState(false);
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
+  const [taxSettings, setTaxSettings] = useState("");
 
   const [loading, setLoading] = useState(false); // Loading state
 
-  const fetchBouneses = useCallback(async () => {
+  const TaxSettings = async () => {
     try {
-      const response = await axios.get(`${SERVER_URL}pyr-bns/`);
+      const response = await axios.get(`${SERVER_URL}tax-types/`);
+      setTaxSettings(response.data);
+      console.log(taxSettings);
+    } catch (error) {
+      console.error("Error fetching tax names:", error);
+    }
+  };
+
+  const fetchTax = useCallback(async () => {
+    try {
+      const response = await axios.get(`${SERVER_URL}taxes/`);
       console.log(response.data);
       setData(response.data);
     } catch (error) {
-      console.error("Error fetching bonus data:", error);
+      console.error("Error fetching tax data:", error);
     }
   }, [setData]);
 
+
   useEffect(() => {
-    fetchBouneses();
+    fetchTax();
+    TaxSettings();
     let timer;
     if (successModal) {
       timer = setTimeout(() => {
@@ -57,7 +71,7 @@ const Tax = () => {
       }, 2000);
     }
     return () => clearTimeout(timer);
-  }, [fetchBouneses, successModal]);
+  }, [fetchTax, successModal]);
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -72,22 +86,23 @@ const Tax = () => {
     setFormData({ ...formData, id: id });
   };
   const confirmDelete = async () => {
-    axios.post(`${SERVER_URL}pyr-bns-del/`, {
+    axios.post(`${SERVER_URL}taxes/`, {
       id: formData.id,
     });
-    const updatedData = await axios.get(`${SERVER_URL}pyr-bns/`);
+    const updatedData = await axios.get(`${SERVER_URL}taxes/`);
     setData(updatedData.data);
     setShowModal(false);
     setSuccessModal(true);
-    fetchBouneses();
+    fetchTax();
   };
 
   const handleAddNew = () => {
     setFormData({
-      bonusName: "",
-      bonusDuration: "",
-      bonusAmount: "",
-      bonusDate: "",
+      type: "",
+      nature:"",
+      percentage:"",
+      amount: "",
+      date: "",
     });
     setShowAddForm(true);
     setShowEditForm(false);
@@ -97,37 +112,44 @@ const Tax = () => {
     setShowModal(true);
   };
   const confirmAdd = async () => {
-    if (
-      !formData.bonusName ||
-      !formData.bonusDuration ||
-      !formData.bonusAmount ||
-      !formData.bonusDate
-    ) {
+    if (!formData.type || !formData.nature || !formData.date) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
       setWarningModal(true);
     }
-    if (formData.bonusDuration < 1 || formData.bonusAmount < 1) {
-      setResMsg("Values Can't be Negative or zero");
-      setShowModal(false);
-      setWarningModal(true);
-      return;
+    if(formData.nature === 'percentage' ){
+
+      if (formData.percentage < 1) {
+        setResMsg("Values Can't be Negative or zero");
+        setShowModal(false);
+        setWarningModal(true);
+        return;
+      }
+    } else if(formData.nature === 'fixedamount' ){
+
+      if (formData.amount < 1) {
+        setResMsg("Values Can't be Negative or zero");
+        setShowModal(false);
+        setWarningModal(true);
+        return;
+      }
     }
 
     const bouneses = {
-      bonusName: formData.bonusName,
-      bonusDuration: formData.bonusDuration,
-      bonusAmount: formData.bonusAmount,
-      bonusDate: formData.bonusDate,
+      type: formData.type,
+      nature:formData.nature,
+      percentage:formData.percentage,
+      amount: formData.amount,
+      date: formData.date,
     };
     try {
-      axios.post(`${SERVER_URL}pyr-bns/`, bouneses);
-      const updatedData = await axios.get(`${SERVER_URL}pyr-bns/`);
+      axios.post(`${SERVER_URL}taxes/`, bouneses);
+      const updatedData = await axios.get(`${SERVER_URL}taxes/`);
       setData(updatedData.data);
       setShowModal(false);
       setSuccessModal(true);
-      setShowAddForm(false)
-      fetchBouneses();
+      setShowAddForm(false);
+      fetchTax();
     } catch (error) {
       console.log(error);
     }
@@ -136,70 +158,85 @@ const Tax = () => {
   const handleEdit = (data) => {
     setFormData({
       id: data.id,
-      bonusName: data.bonusName,
-      bonusDuration: data.bonusDuration,
-      bonusAmount: data.bonusAmount,
-      bonusDate: data.bonusDate,
+      type: data.type,
+      nature: data.nature,
+      percentage: data.percentage,
+      amount: data.amount,
+      date: data.date,
     });
-    setShowEditForm(true)
+    setShowEditForm(true);
   };
 
   const updateBonus = (row) => {
     setModalType("update");
     setFormData({
       id: row.id,
-      bonusName: row.bonusName,
-      bonusDuration: row.bonusDuration,
-      bonusAmount: row.bonusAmount,
-      bonusDate: row.bonusDate,
-    })
+      type: row.type,
+      nature: row.nature,
+      percentage: row.percentage,
+      amount: row.amount,
+      date: row.date,
+    });
     setShowModal(true);
-  }
+  };
   const confirmUpdate = async () => {
-    if (
-      formData.bonusName === "" ||
-      formData.bonusDuration === "" ||
-      formData.bonusAmount === "" ||
-      formData.bonusDate === ""
-    ) {
-      alert("Please fill in all required fields.");
-      return;
+    if (!formData.type || !formData.nature || !formData.date) {
+      setResMsg("Please fill in all required fields.");
+      setShowModal(false);
+      setWarningModal(true);
+    }
+    if(formData.nature === 'percentage' ){
+
+      if (formData.percentage < 1) {
+        setResMsg("Values Can't be Negative or zero");
+        setShowModal(false);
+        setWarningModal(true);
+        return;
+      }
+    } else if(formData.nature === 'fixedamount' ){
+
+      if (formData.amount < 1) {
+        setResMsg("Values Can't be Negative or zero");
+        setShowModal(false);
+        setWarningModal(true);
+        return;
+      }
     }
     const updateBounses = {
       id: formData.id,
-      bonusName: formData.bonusName,
-      bonusDuration: formData.bonusDuration,
-      bonusAmount: formData.bonusAmount,
-      bonusDate: formData.bonusDate,
-      
+      type: formData.type,
+      nature: formData.nature,
+      percentage: formData.percentage,
+      amount: formData.amount,
+      date: formData.date,
     };
     console.log(updateBounses);
     try {
-      await axios.post(`${SERVER_URL}pyr-bns-up/`, updateBounses);
-      const updatedData = await axios.get(`${SERVER_URL}pyr-bns/`);
+      await axios.post(`${SERVER_URL}taxes/`, updateBounses);
+      const updatedData = await axios.get(`${SERVER_URL}taxes/`);
       setData(updatedData.data);
       setShowModal(false);
       setSuccessModal(true);
       setShowEditForm(false);
-      fetchBouneses();
+      fetchTax();
     } catch (error) {
       console.log(error);
     }
-  }
+  };
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
 
   const filteredData = data.filter((item) =>
-    item.bonusName.toLowerCase().includes(searchQuery.toLowerCase())
+    item.type.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <div className="department-table">
       <ConirmationModal
         isOpen={showModal}
-        message={`Are you sure you want to ${modalType} this Advance Salary?`}
+        message={`Are you sure you want to ${modalType} this Tax?`}
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
           else if (modalType === "update") confirmUpdate();
@@ -216,7 +253,7 @@ const Tax = () => {
       />
       <ConirmationModal
         isOpen={successModal}
-        message={`Advance Salary ${modalType}d successfully!`}
+        message={`Tax ${modalType}d successfully!`}
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
@@ -278,108 +315,175 @@ const Tax = () => {
           </button>
         </form>
         <button className="add-button" onClick={handleAddNew}>
-          <FaPlus /> Add New Bonus
+          <FaPlus /> Add New Tax
         </button>
       </div>
 
       {showAddForm && !showEditForm && (
         <div className="add-leave-form">
-          <h3>Add New Bonus</h3>
-          <label>Bonus Name</label>
+          <h3>Add New Tax</h3>
+          <label>Tax Type</label>
           <input
+            list="taxTypesList"
             type="text"
-            placeholder="Bonus Name"
-            value={formData.bonusName}
-            onChange={(e) =>
-              setFormData({ ...formData, bonusName: e.target.value })
-            }
+            placeholder="Tax Type"
+            value={formData.type}
+            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
           />
-          <label>Bonus Duration</label>
+
+          <datalist id="taxTypesList">
+            {taxSettings.map((tax) => (
+              // Display tax type as option value
+              <option key={tax.id} value={tax.type}>
+                {tax.type}
+              </option>
+            ))}
+          </datalist>
+
+            <label>Nature</label>
           <select
-            className="bonus-duration"
-            value={formData.bonusDuration}
-            onChange={(e) =>
-              setFormData({ ...formData, bonusDuration: e.target.value })
-            }
+          value={formData.nature}
+          onChange={(e) =>
+            setFormData({...formData, nature: e.target.value })
+          }
           >
-            <option value="">Select Duration</option>
-            <option value="Weekly">Weekly</option>
-            <option value="Monthly">Monthly</option>
-            <option value="3-Month">3-Month</option>
-            <option value="6-Month">6-Month</option>
-            <option value="Yearly">Yearly</option>
+            <option value="fixedamount">Fixed Amount</option>
+            <option value="percentage">Percentage</option>
           </select>
 
-          <label>Bonus Amount</label>
+          {formData.nature === 'percentage' ? (
+            <>
+              <label>Percentage %</label>
+              <input
+              type="number"
+              placeholder="Percentage %"
+              value={formData.percentage}
+              onChange={(e) =>
+                setFormData({ ...formData, percentage: e.target.value })
+              }
+              />
+            </>
+        ) : (
+          <>
+          <label>Amount</label>
           <input
             type="number"
-            placeholder="Bonus Amount"
-            value={formData.bonusAmount}
+            placeholder="Tax Amount"
+            value={formData.amount}
             onChange={(e) =>
-              setFormData({ ...formData, bonusAmount: e.target.value })
+              setFormData({ ...formData, amount: e.target.value })
             }
           />
-          <label>Bonus Date</label>
+          </>
+        )}
+          
+          <label>Amount</label>
+          <input
+            type="number"
+            placeholder="Tax Amount"
+            value={formData.amount}
+            onChange={(e) =>
+              setFormData({ ...formData, amount: e.target.value })
+            }
+          />
+          <label>Date</label>
           <input
             type="date"
-            placeholder="Bonus Date"
-            value={formData.bonusDate}
-            onChange={(e) =>
-              setFormData({ ...formData, bonusDate: e.target.value })
-            }
+            placeholder="Tax Date"
+            value={formData.date}
+            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
           />
-          <button className="submit-button" onClick={addBonus}>Add Bonus</button>
-          <button className="cancel-button" onClick={handleCancel}>Cancel</button>
+          <button className="submit-button" onClick={addBonus}>
+            Add Tax
+          </button>
+          <button className="cancel-button" onClick={handleCancel}>
+            Cancel
+          </button>
         </div>
       )}
       {showEditForm && (
         <div className="add-leave-form">
-          <h3>Edit Bonus</h3>
-          <label>Bonus Name</label>
+          <h3>Edit Tax</h3>
+          <label>Tax Type</label>
           <input
+            list="taxTypesList"
             type="text"
-            placeholder="Bonus Name"
-            value={formData.bonusName}
-            onChange={(e) =>
-              setFormData({ ...formData, bonusName: e.target.value })
-            }
+            placeholder="Tax Type"
+            value={formData.type}
+            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
           />
-          <label>Bonus Duration</label>
+
+          <datalist id="taxTypesList">
+            {taxSettings.map((tax) => (
+              // Display tax type as option value
+              <option key={tax.id} value={tax.type}>
+                {tax.type}
+              </option>
+            ))}
+          </datalist>
+
+            <label>Nature</label>
           <select
-            className="bonus-duration"
-            value={formData.bonusDuration}
-            onChange={(e) =>
-              setFormData({ ...formData, bonusDuration: e.target.value })
-            }
+          value={formData.nature}
+          onChange={(e) =>
+            setFormData({...formData, nature: e.target.value })
+          }
           >
-            <option value="">Select Duration</option>
-            <option value="Weekly">Weekly</option>
-            <option value="Monthly">Monthly</option>
-            <option value="3-Month">3-Month</option>
-            <option value="6-Month">6-Month</option>
-            <option value="Yearly">Yearly</option>
+            <option value="fixedamount">Fixed Amount</option>
+            <option value="percentage">Percentage</option>
           </select>
-          <label>Bonus Amount</label>
+
+          {formData.nature === 'percentage' ? (
+            <>
+              <label>Percentage %</label>
+              <input
+              type="number"
+              placeholder="Percentage %"
+              value={formData.percentage}
+              onChange={(e) =>
+                setFormData({ ...formData, percentage: e.target.value })
+              }
+              />
+            </>
+        ) : (
+          <>
+          <label>Amount</label>
           <input
             type="number"
-            placeholder="Bonus Amount"
-            value={formData.bonusAmount}
+            placeholder="Tax Amount"
+            value={formData.amount}
             onChange={(e) =>
-              setFormData({ ...formData, bonusAmount: e.target.value })
+              setFormData({ ...formData, amount: e.target.value })
             }
           />
-          <label>Bonus Date</label>
+          </>
+        )}
+          
+          <label>Amount</label>
           <input
-          readOnly
-            type="date"
-            placeholder="Bonus Date"
-            value={formData.bonusDate}
+            type="number"
+            placeholder="Tax Amount"
+            value={formData.amount}
             onChange={(e) =>
-              setFormData({ ...formData, bonusDate: e.target.value })
+              setFormData({ ...formData, amount: e.target.value })
             }
           />
-          <button className="submit-button" onClick={()=> updateBonus(formData)}>Update Bonus</button>
-          <button className="cancel-button" onClick={handleCancel}>Cancel</button>
+          <label>Date</label>
+          <input
+            type="date"
+            placeholder="Tax Date"
+            value={formData.date}
+            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+          />
+          <button
+            className="submit-button"
+            onClick={() => updateBonus(formData)}
+          >
+            Update Tax
+          </button>
+          <button className="cancel-button" onClick={handleCancel}>
+            Cancel
+          </button>
         </div>
       )}
 
@@ -387,22 +491,20 @@ const Tax = () => {
         <table className="table">
           <thead>
             <tr>
-              <th>Bonus ID</th>
-              <th>Bonus Name</th>
-              <th>Bonus Duration</th>
-              <th>Bonus Amount</th>
-              <th>Bonus Date</th>
+              <th>ID</th>
+              <th>Tax Type</th>
+              <th>Amount</th>
+              <th>Date</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
             {filteredData.map((bonus) => (
-              <tr key={bonus._id}>
+              <tr key={bonus.id}>
                 <td>{bonus.id}</td>
-                <td className="bold-fonts">{bonus.bonusName}</td>
-                <td>{bonus.bonusDuration}</td>
-                <td>{bonus.bonusAmount}</td>
-                <td>{bonus.bonusDate}</td>
+                <td className="bold-fonts">{bonus.type}</td>
+                <td>{bonus.amount}</td>
+                <td>{bonus.date}</td>
                 <td>
                   <button
                     // className="edit-button"

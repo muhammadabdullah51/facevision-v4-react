@@ -33,9 +33,9 @@ const TaxSettings = () => {
   const fetchTax = useCallback(async () => {
     setLoading(true);
     try {
-      // const response = await axios.get(`${SERVER_URL}pyr-lvf/`);
-      // console.log(response.data);
-      // setData(response.data);
+      const response = await axios.get(`${SERVER_URL}tax-types/`);
+      console.log(response.data);
+      setData(response.data);
     } catch (error) {
       console.error("Error fetching taxes data:", error);
     } finally {
@@ -85,16 +85,17 @@ const TaxSettings = () => {
       type: formData.type,
     };
     try {
-      const res = await axios.post(`${SERVER_URL}pyr-lvf-up/`, updatedOTF);
-      console.log("Leave updated successfully");
+      const res = await axios.put(`${SERVER_URL}tax-types/${formData.id}/`, updatedOTF);
+      console.log("Tax type updated successfully");
       setShowEditForm(false);
       setShowModal(false);
       setSuccessModal(true);
       setResMsg(res.data.msg);
-      const updatedData = await axios.get(`${SERVER_URL}pyr-lvf/`);
+  
+      const updatedData = await axios.get(`${SERVER_URL}tax-types/`);
       setData(updatedData.data);
     } catch (error) {
-      console.error("Error updating Leave:", error);
+      console.error("Error updating tax type:", error);
       setShowModal(false);
       setWarningModal(true);
     }
@@ -122,13 +123,11 @@ const TaxSettings = () => {
     };
 
     try {
-      const response = await axios.post(`${SERVER_URL}pyr-lvf/`, newOTF);
-      console.log("Leave Added Successfully");
+      const response = await axios.post(`${SERVER_URL}tax-types/`, newOTF);
       setShowAddForm(false);
-      setResMsg(response.data.msg);
       setShowModal(false);
       setSuccessModal(true);
-      const updatedData = await axios.get(`${SERVER_URL}pyr-lvf/`);
+      const updatedData = await axios.get(`${SERVER_URL}tax-types/`);
       setData(updatedData.data);
       // setShowAddForm(false)
     } catch (error) {
@@ -142,14 +141,22 @@ const TaxSettings = () => {
     setShowModal(true);
     setModalType("delete");
     setFormData({ ...formData, id: id });
+    console.log(id)
   };
   const confirmDelete = async () => {
-    await axios.post(`${SERVER_URL}pyr-lvf-del/`, { id: formData.id });
-    const updatedData = await axios.get(`${SERVER_URL}pyr-lvf/`);
-    setData(updatedData.data);
-    fetchTax();
-    setShowModal(false);
-    setSuccessModal(true);
+    try {
+      await axios.delete(`${SERVER_URL}tax-types/${formData.id}/`);
+      const updatedData = await axios.get(`${SERVER_URL}tax-types/`);
+      setData(updatedData.data);
+      fetchTax(); // Ensure fetchTax properly refreshes data elsewhere in your app
+      setShowModal(false);
+      setSuccessModal(true);
+      console.log("Tax type deleted successfully");
+    } catch (error) {
+      console.error("Error deleting tax type:", error);
+      setShowModal(false);
+      setWarningModal(true);
+    }
   };
   const resetForm = () => {
     setFormData({
@@ -229,7 +236,8 @@ const TaxSettings = () => {
             required
             type="text"
           />
-          <button className="reset" type="reset">
+          <button className="reset" type="reset"
+           onClick={() => setSearchQuery("")}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-6 w-6"
@@ -255,7 +263,7 @@ const TaxSettings = () => {
         <div className="add-leave-form">
           <h4>Add New Tax</h4>
           <input
-            type="number"
+            type="text"
             placeholder="Tax Type"
             value={formData.type}
             onChange={(e) => setFormData({ ...formData, type: e.target.value })}
@@ -273,7 +281,7 @@ const TaxSettings = () => {
           <h4>Edit Tax</h4>
 
           <input
-            type="number"
+            type="text"
             placeholder="Tax Type"
             value={formData.type}
             onChange={(e) => setFormData({ ...formData, type: e.target.value })}

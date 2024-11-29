@@ -13,14 +13,13 @@ import successAnimation from "../../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../../assets/Lottie/warningAnim.json";
 import { SERVER_URL } from "../../../config";
 
-
 const AssignAllowance = () => {
   const [data, setData] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [formMode, setFormMode] = useState("add");
   const [currentItemId, setCurrentItemId] = useState(null);
   const [employees, setEmployees] = useState([]);
-  const [bonuses, setBonuses] = useState([]);
+  const [allowances, setAllowances] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -28,8 +27,8 @@ const AssignAllowance = () => {
   const [formData, setFormData] = useState({
     id: "",
     empId: "",
-    bonusId: "",
-    bonusAssignDate: "",
+    awlcId: "",
+    date: "",
   });
 
   const [showModal, setShowModal] = useState(false);
@@ -40,12 +39,11 @@ const AssignAllowance = () => {
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
 
-
-  const fetchEmployeesBonus = useCallback(async () => {
+  const fetchAssignAllowances = useCallback(async () => {
     try {
-      const response = await axios.get(`${SERVER_URL}pyr-asg-bns/`);
+      const response = await axios.get(`${SERVER_URL}assign-allowances/`);
       setData(response.data);
-      console.log(response.data)
+      console.log(response.data);
     } catch (error) {
       console.error("Error fetching employee bonuses:", error);
     }
@@ -59,20 +57,20 @@ const AssignAllowance = () => {
     }
   };
 
-  const fetchBonuses = async () => {
+  const fetchAllowances = async () => {
     try {
-      const response = await axios.get(`${SERVER_URL}pyr-bns/`);
+      const response = await axios.get(`${SERVER_URL}allowances/`);
       console.log("Fetched bonuses:", response.data);
-      setBonuses(response.data);
+      setAllowances(response.data);
     } catch (error) {
       console.error("Error fetching bonuses:", error);
     }
   };
 
   useEffect(() => {
-    fetchEmployeesBonus();
+    fetchAssignAllowances();
     fetchEmployees();
-    fetchBonuses();
+    fetchAllowances();
     let timer;
     if (successModal) {
       timer = setTimeout(() => {
@@ -80,31 +78,29 @@ const AssignAllowance = () => {
       }, 2000);
     }
     return () => clearTimeout(timer);
-  }, [fetchEmployeesBonus, successModal]);
+  }, [fetchAssignAllowances, successModal]);
 
   const handleDelete = async (id) => {
     setModalType("delete");
     setShowModal(true);
     setFormData({ ...formData, id: id });
   };
-  const confirmDelete = async (id) => {
+  const confirmDelete = async () => {
     try {
-      await axios.post(`${SERVER_URL}pyr-asg-bns-del/`, {
-        id: formData.id,
-      });
-      await fetchEmployeesBonus(); // Refresh data after deletion
+      await axios.delete(`${SERVER_URL}assign-allowances/${formData.id}/`); // Use DELETE method and the correct URL with the `id`
+      await fetchAssignAllowances(); // Refresh data after deletion
       setShowModal(false);
       setSuccessModal(true);
     } catch (error) {
-      console.error("Error deleting bonus:", error);
+      console.error("Error deleting allowance assignment:", error);
     }
   };
 
   const handleAddNew = () => {
     setFormData({
       empId: "",
-      bonusId: "",
-      bonusAssignDate: "",
+      awlcId: "",
+      date: "",
     });
     setShowAddForm(true);
     setShowEditForm(false);
@@ -115,26 +111,26 @@ const AssignAllowance = () => {
   };
 
   const confirmAdd = async () => {
-    if (!formData.empId || !formData.bonusId || !formData.bonusAssignDate) {
+    if (!formData.empId || !formData.awlcId || !formData.date) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
       setWarningModal(true);
       return;
     }
-    console.log(formData)
-    await axios.post(`${SERVER_URL}pyr-asg-bns/`, formData);
+    console.log(formData);
+    await axios.post(`${SERVER_URL}assign-allowances/`, formData);
     setShowModal(false);
     setSuccessModal(true);
     setShowAddForm(false);
-    fetchEmployeesBonus();
+    fetchAssignAllowances();
   };
 
   const handleEdit = (item) => {
     setFormData({
       id: item.id,
       empId: item.empId,
-      bonusId: item.bonusId,
-      bonusAssignDate: item.bonusAssignDate,
+      awlcId: item.awlcId,
+      date: item.date,
     });
     setShowAddForm(false);
     setShowEditForm(true);
@@ -144,35 +140,33 @@ const AssignAllowance = () => {
     setFormData({
       id: row.id,
       empId: row.empId,
-      bonusId: row.bonusId,
-      bonusAssignDate: row.bonusAssignDate,
+      awlcId: row.awlcId,
+      date: row.date,
     });
     setShowModal(true);
   };
   const confirmUpdate = async () => {
-    if (!formData.empId || !formData.bonusId || !formData.bonusAssignDate) {
+    if (!formData.empId || !formData.awlcId || !formData.date) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
       setWarningModal(true);
       return;
     }
-    await axios.post(`${SERVER_URL}pyr-asg-bns-up/`, formData);
-    setShowModal(false);
-    setSuccessModal(true);
-    setShowEditForm(false);
-    fetchEmployeesBonus();
-  };
-  const handleSaveItem = async () => {
+
     try {
-      if (formMode === "add") {
-        await axios.post(`${SERVER_URL}pyr-asg-bns/`, formData);
-      } else {
-        await axios.post(`${SERVER_URL}pyr-asg-bns/`, formData);
-      }
-      await fetchEmployeesBonus(); // Refresh data after add/update
-      resetForm();
+      // Use the PUT method and pass the `id` to update the specific resource
+      await axios.put(
+        `${SERVER_URL}assign-allowances/${formData.id}/`,
+        formData
+      );
+      setShowModal(false);
+      setSuccessModal(true);
+      setShowEditForm(false);
+      fetchAssignAllowances(); // Refresh data after updating
     } catch (error) {
-      console.error("Error saving bonus:", error);
+      console.error("Error updating allowance assignment:", error);
+      setShowModal(false);
+      setWarningModal(true);
     }
   };
 
@@ -180,8 +174,8 @@ const AssignAllowance = () => {
     setFormData({
       id: "",
       empId: "",
-      bonusId: "",
-      bonusAssignDate: "",
+      awlcId: "",
+      date: "",
     });
     setCurrentItemId(null);
     setFormMode("add");
@@ -191,7 +185,7 @@ const AssignAllowance = () => {
   const handleSearchChange = (e) => setSearchQuery(e.target.value);
 
   const filteredData = data.filter((item) =>
-    item.bonusName.toLowerCase().includes(searchQuery.toLowerCase())
+    item.empName.toLowerCase().includes(searchQuery.toLowerCase())
   );
   const handleCancel = () => {
     setShowAddForm(false);
@@ -200,13 +194,14 @@ const AssignAllowance = () => {
 
   return (
     <div className="department-table">
-       <ConirmationModal
+      <ConirmationModal
         isOpen={showModal}
-        message={modalType === 'create' 
-          ? `Are you sure you want to confirm Assign Bonus?`
-          : modalType === 'update' 
-          ? 'Are you sure you want to update Assigned Bonus?'
-          : `Are you sure you want to delete Assigned Bonus?`
+        message={
+          modalType === "create"
+            ? `Are you sure you want to confirm Assign Allowance?`
+            : modalType === "update"
+            ? "Are you sure you want to update Assigned Allowance?"
+            : `Are you sure you want to delete Assigned Allowance?`
         }
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
@@ -224,13 +219,13 @@ const AssignAllowance = () => {
       />
       <ConirmationModal
         isOpen={successModal}
-        message={`Assign Bonus ${modalType}d successfully!`}
+        message={`Assign Allowance ${modalType}d successfully!`}
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
         successModal={successModal}
       />
-       <ConirmationModal
+      <ConirmationModal
         isOpen={warningModal}
         message={resMsg}
         onConfirm={() => setWarningModal(false)}
@@ -244,54 +239,60 @@ const AssignAllowance = () => {
           onClick={handleAddNew}
           style={{ margin: "5vh 0 2vh 0", justifyContent: "end" }}
         >
-          <FaPlus /> Assign New Bonus
+          <FaPlus /> Assign New Allowance
         </button>
       </div>
       {showAddForm && !showEditForm && (
         <div className="add-leave-form">
-          <h3>Assign Bonus to Employee</h3>
-          
+          <h3>Assign Allowance to Employee</h3>
+
           <input
-            list="employeesList"
-            value={formData.empId} // display the employee's name
-            onChange={(e) => {
-              setFormData({ ...formData, empId: e.target.value });
-            }}
+            type="text"
+            list="employeesList" // Link to the datalist by id
             placeholder="Search or select an employee"
+            value={
+              employees.find((emp) => emp.id === formData.empId)
+                ? `${
+                    employees.find((emp) => emp.id === formData.empId).fName
+                  } ${employees.find((emp) => emp.id === formData.empId).lName}`
+                : "" // Display the full name based on the selected ID
+            }
+            onChange={(e) => {
+              const selectedId = employees.find(
+                (emp) => `${emp.fName} ${emp.lName}` === e.target.value
+              )?.id;
+              setFormData({ ...formData, empId: selectedId });
+            }}
           />
 
           <datalist id="employeesList">
             {employees.map((emp) => (
-              // Display employee's full name as option value
-              <option key={emp.empId} value={emp.empId}>
+              <option key={emp.id} value={`${emp.fName} ${emp.lName}`}>
                 {emp.fName} {emp.lName}
               </option>
             ))}
           </datalist>
 
-
           <select
-            value={formData.bonusId}
+            value={formData.awlcId}
             onChange={(e) =>
-              setFormData({ ...formData, bonusId: e.target.value })
+              setFormData({ ...formData, awlcId: e.target.value })
             }
           >
-            <option value="">Select Bonus</option>
-            {bonuses.map((bonus) => (
+            <option value="">Select Allowance</option>
+            {allowances.map((bonus) => (
               <option key={bonus.id} value={bonus.id}>
-                {bonus.bonusName}
+                {bonus.allowanceName}
               </option>
             ))}
           </select>
           <input
             type="date"
-            value={formData.bonusAssignDate}
-            onChange={(e) =>
-              setFormData({ ...formData, bonusAssignDate: e.target.value })
-            }
+            value={formData.date}
+            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
           />
           <button className="submit-button" onClick={addAssign}>
-            Assign Bonus
+            Assign Allowance
           </button>
           <button className="cancel-button" onClick={handleCancel}>
             Cancel
@@ -300,94 +301,105 @@ const AssignAllowance = () => {
       )}
       {showEditForm && (
         <div className="add-leave-form">
-          <h3>Update Assigned Bonus</h3>
-          
+          <h3>Update Assigned Allowance</h3>
+
           <input
+            type="text"
             disabled
-            list="employeesList"
-            value={formData.empId} // display the employee's name
-            onChange={(e) => {
-              setFormData({ ...formData, empId: e.target.value });
-            }}
+            list="employeesList" // Link to the datalist by id
             placeholder="Search or select an employee"
+            value={
+              employees.find((emp) => emp.id === formData.empId)
+                ? `${
+                    employees.find((emp) => emp.id === formData.empId).fName
+                  } ${employees.find((emp) => emp.id === formData.empId).lName}`
+                : "" // Display the full name based on the selected ID
+            }
+            onChange={(e) => {
+              const selectedId = employees.find(
+                (emp) => `${emp.fName} ${emp.lName}` === e.target.value
+              )?.id;
+              setFormData({ ...formData, empId: selectedId });
+            }}
           />
 
           <datalist id="employeesList">
             {employees.map((emp) => (
-              // Display employee's full name as option value
-              <option key={emp.empId} value={emp.empId}>
+              <option key={emp.id} value={`${emp.fName} ${emp.lName}`}>
                 {emp.fName} {emp.lName}
               </option>
             ))}
           </datalist>
 
-
           <select
-            value={formData.bonusId}
+            value={formData.awlcId}
             onChange={(e) =>
-              setFormData({ ...formData, bonusId: e.target.value })
+              setFormData({ ...formData, awlcId: e.target.value })
             }
           >
-            <option value="">Select Bonus</option>
-            {bonuses.map((bonus) => (
+            <option value="">Select Allowance</option>
+            {allowances.map((bonus) => (
               <option key={bonus.id} value={bonus.id}>
-                {bonus.bonusName}
+                {bonus.allowanceName}
               </option>
             ))}
           </select>
           <input
             type="date"
-            value={formData.bonusAssignDate}
-            onChange={(e) =>
-              setFormData({ ...formData, bonusAssignDate: e.target.value })
-            }
+            value={formData.date}
+            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
           />
-          <button className="submit-button" onClick={() => updateAssign(formData)}>
-            Update Assigned Bonus
+          <button
+            className="submit-button"
+            onClick={() => updateAssign(formData)}
+          >
+            Update Assigned Allowance
           </button>
           <button className="cancel-button" onClick={handleCancel}>
             Cancel
           </button>
         </div>
       )}
-      <table className="table">
-        <thead>
-          <tr>
-            <th>Bonus ID</th>
-            <th>Employee ID</th>
-            <th>Employee Name</th>
-            <th>Bonus Name</th>
-            <th>Awarded Date</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredData.map((bonus) => (
-            <tr key={bonus.id}>
-              <td>{bonus.id}</td>
-              <td>{bonus.empId}</td>
-              <td className="bold-fonts">{bonus.empName}</td>
-              <td className="bold-fonts">{bonus.bonusName}</td>
-              <td>{bonus.bonusAssignDate}</td>
-              <td>
-                <button
-                  // className="edit-button"
-                  onClick={() => handleEdit(bonus)}
-                  style={{ background: "none", border: "none" }}
-                >
-                  <FaEdit className="table-edit" />
-                </button>
-                <button
-                  onClick={() => handleDelete(bonus.id)}
-                  style={{ background: "none", border: "none" }}
-                >
-                  <FaTrash className="table-delete" />
-                </button>
-              </td>
+      <div className="departments-table">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Employee ID</th>
+              <th>Employee Name</th>
+              <th>Allowance Name</th>
+              <th>Date</th>
+              <th>Action</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredData.map((bonus) => (
+              <tr key={bonus.id}>
+                <td>{bonus.id}</td>
+                <td>{bonus.employeeId}</td>
+                <td className="bold-fonts">{bonus.empName}</td>
+                <td className="bold-fonts">{bonus.allowanceName}</td>
+                <td>{bonus.date}</td>
+                <td>
+                  <button
+                    // className="edit-button"
+                    onClick={() => handleEdit(bonus)}
+                    style={{ background: "none", border: "none" }}
+                  >
+                    <FaEdit className="table-edit" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(bonus.id)}
+                    style={{ background: "none", border: "none" }}
+                  >
+                    <FaTrash className="table-delete" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

@@ -45,6 +45,10 @@
     margin-right: 3px;
     color: var(--theam-color);
     font-size: var(--icon-size);
+    transition: .3s;
+}
+.report-selector-icon:hover{
+    transform: scale(1.1);
 }
 
 .generate-report-button {

@@ -278,7 +278,13 @@ const ShiftManagementTable = () => {
 
   const filteredData = data.filter(
     (item) =>
-      item.name && item.name.toLowerCase().includes(searchQuery.toLowerCase())
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.shiftId.toString().includes(searchQuery) ||
+      item.start_time.toLowerCase().includes(searchQuery) ||
+      item.end_time.toLowerCase().includes(searchQuery) ||
+      item.exit_status.toLowerCase().includes(searchQuery) ||
+      item.entry_status.toLowerCase().includes(searchQuery) ||
+      item.holidays.map((holiday) => holiday.toLowerCase()).includes(searchQuery)
   );
 
   return (
@@ -416,7 +422,8 @@ const ShiftManagementTable = () => {
             </div>
             <div>
               <label>On Entry Late</label>
-              <select className="selectbox"
+              <select
+                className="selectbox"
                 name="entry_status"
                 value={formData.entry_status}
                 onChange={(e) =>
@@ -466,7 +473,8 @@ const ShiftManagementTable = () => {
             </div>
             <div>
               <label>On Exit Late</label>
-              <select className="selectbox"
+              <select
+                className="selectbox"
                 name="exit_status"
                 value={formData.exit_status}
                 onChange={(e) =>
@@ -560,7 +568,8 @@ const ShiftManagementTable = () => {
             </div>
             <div>
               <label>On Entry Late</label>
-              <select className="selectbox"
+              <select
+                className="selectbox"
                 name="entry_status"
                 value={formData.entry_status}
                 onChange={(e) =>
@@ -610,7 +619,8 @@ const ShiftManagementTable = () => {
             </div>
             <div>
               <label>On Exit Late</label>
-              <select className="selectbox"
+              <select
+                className="selectbox"
                 name="exit_status"
                 value={formData.exit_status}
                 onChange={(e) =>
@@ -668,7 +678,7 @@ const ShiftManagementTable = () => {
         </div>
       )}
 
-      <div className="shift-table">
+      <div className="departments-table">
         <table className="table">
           <thead>
             <tr>
@@ -683,25 +693,30 @@ const ShiftManagementTable = () => {
             </tr>
           </thead>
           <tbody>
-            {data.map((item, index) => (
+            {filteredData.map((item, index) => (
               <tr key={index}>
                 <td>{item.shiftId}</td>
                 <td>{item.name}</td>
                 <td>{item.start_time}</td>
-                <td><span
-                className= {` ${
-                  item.entry_status === "Late" ? "late" : "disconnected"
-                }`}>
-                  {item.entry_status}
-                 </span>
-                  </td>
+                <td>
+                  <span
+                    className={` ${
+                      item.entry_status === "Late" ? "late" : "disconnected"
+                    }`}
+                  >
+                    {item.entry_status}
+                  </span>
+                </td>
                 <td>{item.end_time}</td>
-                <td><span
-                className= {` ${
-                  item.exit_status === "Late" ? "late" : "not-late"
-                }`}>
-                  {item.exit_status}
-                 </span></td>
+                <td>
+                  <span
+                    className={` ${
+                      item.exit_status === "Late" ? "late" : "not-late"
+                    }`}
+                  >
+                    {item.exit_status}
+                  </span>
+                </td>
                 <td className="accessible-items">
                   {Array.isArray(item.holidays) && item.holidays.length > 0
                     ? item.holidays.map((holiday, index) => (

@@ -22,12 +22,13 @@ const Allowance = () => {
   const [currentItemId, setCurrentItemId] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
+  const [allSettings, setAllSettings] = useState("");
+
   const [formData, setFormData] = useState({
     id: "",
-    bonusName: "",
-    bonusDuration: "",
-    bonusAmount: "",
-    bonusDate: "",
+    type: "",
+    amount: "",
+    date: "",
   });
 
   const [showModal, setShowModal] = useState(false);
@@ -38,9 +39,19 @@ const Allowance = () => {
 
   const [loading, setLoading] = useState(false); // Loading state
 
-  const fetchBouneses = useCallback(async () => {
+  const fetchAllSettings = async () => {
     try {
-      const response = await axios.get(`${SERVER_URL}pyr-bns/`);
+      const response = await axios.get(`${SERVER_URL}allowance-types/`);
+      setAllSettings(response.data);
+      console.log(allSettings);
+    } catch (error) {
+      console.error("Error fetching allowance names:", error);
+    }
+  };
+
+  const fetchAllowances = useCallback(async () => {
+    try {
+      const response = await axios.get(`${SERVER_URL}allowances/`);
       console.log(response.data);
       setData(response.data);
     } catch (error) {
@@ -49,7 +60,8 @@ const Allowance = () => {
   }, [setData]);
 
   useEffect(() => {
-    fetchBouneses();
+    fetchAllowances();
+    fetchAllSettings();
     let timer;
     if (successModal) {
       timer = setTimeout(() => {
@@ -57,7 +69,7 @@ const Allowance = () => {
       }, 2000);
     }
     return () => clearTimeout(timer);
-  }, [fetchBouneses, successModal]);
+  }, [fetchAllowances, successModal]);
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -72,22 +84,25 @@ const Allowance = () => {
     setFormData({ ...formData, id: id });
   };
   const confirmDelete = async () => {
-    axios.post(`${SERVER_URL}pyr-bns-del/`, {
-      id: formData.id,
-    });
-    const updatedData = await axios.get(`${SERVER_URL}pyr-bns/`);
-    setData(updatedData.data);
-    setShowModal(false);
-    setSuccessModal(true);
-    fetchBouneses();
+    try {
+      await axios.delete(`${SERVER_URL}allowances/${formData.id}/`);
+      const updatedData = await axios.get(`${SERVER_URL}allowances/`);
+      setData(updatedData.data);
+      setShowModal(false);
+      setSuccessModal(true);
+      fetchAllowances();
+    } catch (error) {
+      console.error("Error deleting allowance:", error);
+      setShowModal(false);
+      setWarningModal(true);
+    }
   };
 
   const handleAddNew = () => {
     setFormData({
-      bonusName: "",
-      bonusDuration: "",
-      bonusAmount: "",
-      bonusDate: "",
+      type: "",
+      amount: "",
+      date: "",
     });
     setShowAddForm(true);
     setShowEditForm(false);
@@ -97,17 +112,12 @@ const Allowance = () => {
     setShowModal(true);
   };
   const confirmAdd = async () => {
-    if (
-      !formData.bonusName ||
-      !formData.bonusDuration ||
-      !formData.bonusAmount ||
-      !formData.bonusDate
-    ) {
+    if (!formData.type || !formData.amount || !formData.date) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
       setWarningModal(true);
     }
-    if (formData.bonusDuration < 1 || formData.bonusAmount < 1) {
+    if (formData.amount < 1) {
       setResMsg("Values Can't be Negative or zero");
       setShowModal(false);
       setWarningModal(true);
@@ -115,19 +125,19 @@ const Allowance = () => {
     }
 
     const bouneses = {
-      bonusName: formData.bonusName,
-      bonusDuration: formData.bonusDuration,
-      bonusAmount: formData.bonusAmount,
-      bonusDate: formData.bonusDate,
+      type: formData.type,
+      amount: formData.amount,
+      date: formData.date,
     };
+    console.log(bouneses)
     try {
-      axios.post(`${SERVER_URL}pyr-bns/`, bouneses);
-      const updatedData = await axios.get(`${SERVER_URL}pyr-bns/`);
+      axios.post(`${SERVER_URL}allowances/`, bouneses);
+      const updatedData = await axios.get(`${SERVER_URL}allowances/`);
       setData(updatedData.data);
       setShowModal(false);
       setSuccessModal(true);
-      setShowAddForm(false)
-      fetchBouneses();
+      setShowAddForm(false);
+      fetchAllowances();
     } catch (error) {
       console.log(error);
     }
@@ -136,70 +146,66 @@ const Allowance = () => {
   const handleEdit = (data) => {
     setFormData({
       id: data.id,
-      bonusName: data.bonusName,
-      bonusDuration: data.bonusDuration,
-      bonusAmount: data.bonusAmount,
-      bonusDate: data.bonusDate,
+      type: data.type,
+      amount: data.amount,
+      date: data.date,
     });
-    setShowEditForm(true)
+    setShowEditForm(true);
   };
 
   const updateBonus = (row) => {
     setModalType("update");
     setFormData({
       id: row.id,
-      bonusName: row.bonusName,
-      bonusDuration: row.bonusDuration,
-      bonusAmount: row.bonusAmount,
-      bonusDate: row.bonusDate,
-    })
+      type: row.type,
+      amount: row.amount,
+      date: row.date,
+    });
     setShowModal(true);
-  }
+  };
   const confirmUpdate = async () => {
-    if (
-      formData.bonusName === "" ||
-      formData.bonusDuration === "" ||
-      formData.bonusAmount === "" ||
-      formData.bonusDate === ""
-    ) {
-      alert("Please fill in all required fields.");
-      return;
+    if (!formData.type || !formData.amount || !formData.date) {
+      setResMsg("Please fill in all required fields.");
+      setShowModal(false);
+      setWarningModal(true);
     }
-    const updateBounses = {
-      id: formData.id,
-      bonusName: formData.bonusName,
-      bonusDuration: formData.bonusDuration,
-      bonusAmount: formData.bonusAmount,
-      bonusDate: formData.bonusDate,
-      
+   
+
+    const updateBonuses = {
+      type: formData.type,
+      amount: formData.amount,
+      date: formData.date,
     };
-    console.log(updateBounses);
+
     try {
-      await axios.post(`${SERVER_URL}pyr-bns-up/`, updateBounses);
-      const updatedData = await axios.get(`${SERVER_URL}pyr-bns/`);
+      await axios.put(`${SERVER_URL}allowances/${formData.id}/`, updateBonuses);
+      const updatedData = await axios.get(`${SERVER_URL}allowances/`);
       setData(updatedData.data);
       setShowModal(false);
       setSuccessModal(true);
       setShowEditForm(false);
-      fetchBouneses();
+      fetchAllowances();
     } catch (error) {
-      console.log(error);
+      console.error("Error updating allowance:", error);
+      setShowModal(false);
+      setWarningModal(true);
     }
-  }
+  };
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
 
   const filteredData = data.filter((item) =>
-    item.bonusName.toLowerCase().includes(searchQuery.toLowerCase())
+    item.allowanceName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.amount.toLowerCase().includes(searchQuery.toLowerCase()) 
   );
 
   return (
     <div className="department-table">
       <ConirmationModal
         isOpen={showModal}
-        message={`Are you sure you want to ${modalType} this Advance Salary?`}
+        message={`Are you sure you want to ${modalType} this Allowance?`}
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
           else if (modalType === "update") confirmUpdate();
@@ -216,7 +222,7 @@ const Allowance = () => {
       />
       <ConirmationModal
         isOpen={successModal}
-        message={`Advance Salary ${modalType}d successfully!`}
+        message={`Allowance ${modalType}d successfully!`}
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
@@ -278,108 +284,117 @@ const Allowance = () => {
           </button>
         </form>
         <button className="add-button" onClick={handleAddNew}>
-          <FaPlus /> Add New Bonus
+          <FaPlus /> Add New Allowance
         </button>
       </div>
 
       {showAddForm && !showEditForm && (
         <div className="add-leave-form">
-          <h3>Add New Bonus</h3>
-          <label>Bonus Name</label>
+          <h3>Add New Allowance</h3>
+          <label>Allowance Type</label>
           <input
             type="text"
-            placeholder="Bonus Name"
-            value={formData.bonusName}
-            onChange={(e) =>
-              setFormData({ ...formData, bonusName: e.target.value })
-            }
+            list="allowanceTypesList" // Link to the datalist by id
+            placeholder="Allowance Type"
+            value={
+              allSettings.find((setting) => setting.id === formData.type)
+                ?.type || ""
+            } // Display the type based on the selected id
+            onChange={(e) => {
+              const selectedId = allSettings.find(
+                (setting) => setting.type === e.target.value
+              )?.id;
+              setFormData({ ...formData, type: selectedId });
+            }}
           />
-          <label>Bonus Duration</label>
-          <select
-            className="bonus-duration"
-            value={formData.bonusDuration}
-            onChange={(e) =>
-              setFormData({ ...formData, bonusDuration: e.target.value })
-            }
-          >
-            <option value="">Select Duration</option>
-            <option value="Weekly">Weekly</option>
-            <option value="Monthly">Monthly</option>
-            <option value="3-Month">3-Month</option>
-            <option value="6-Month">6-Month</option>
-            <option value="Yearly">Yearly</option>
-          </select>
 
-          <label>Bonus Amount</label>
+          <datalist id="allowanceTypesList">
+            {allSettings.map((setting) => (
+              // Display each allowance type from allSettings
+              <option key={setting.id} value={setting.type}>
+                {setting.type}
+              </option>
+            ))}
+          </datalist>
+
+          <label>Allowance Amount</label>
           <input
             type="number"
-            placeholder="Bonus Amount"
-            value={formData.bonusAmount}
+            placeholder="Allowance Amount"
+            value={formData.amount}
             onChange={(e) =>
-              setFormData({ ...formData, bonusAmount: e.target.value })
+              setFormData({ ...formData, amount: e.target.value })
             }
           />
-          <label>Bonus Date</label>
+          <label>Allowance Date</label>
           <input
             type="date"
-            placeholder="Bonus Date"
-            value={formData.bonusDate}
-            onChange={(e) =>
-              setFormData({ ...formData, bonusDate: e.target.value })
-            }
+            placeholder="Allowance Date"
+            value={formData.date}
+            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
           />
-          <button className="submit-button" onClick={addBonus}>Add Bonus</button>
-          <button className="cancel-button" onClick={handleCancel}>Cancel</button>
+          <button className="submit-button" onClick={addBonus}>
+            Add Allowance
+          </button>
+          <button className="cancel-button" onClick={handleCancel}>
+            Cancel
+          </button>
         </div>
       )}
       {showEditForm && (
         <div className="add-leave-form">
-          <h3>Edit Bonus</h3>
-          <label>Bonus Name</label>
+          <h3>Edit Allowance</h3>
+          <label>Allowance Type</label>
           <input
             type="text"
-            placeholder="Bonus Name"
-            value={formData.bonusName}
-            onChange={(e) =>
-              setFormData({ ...formData, bonusName: e.target.value })
-            }
+            list="allowanceTypesList" // Link to the datalist by id
+            placeholder="Allowance Type"
+            value={
+              allSettings.find((setting) => setting.id === formData.type)
+                ?.type || ""
+            } // Display the type based on the selected id
+            onChange={(e) => {
+              const selectedId = allSettings.find(
+                (setting) => setting.type === e.target.value
+              )?.id;
+              setFormData({ ...formData, type: selectedId });
+            }}
           />
-          <label>Bonus Duration</label>
-          <select
-            className="bonus-duration"
-            value={formData.bonusDuration}
-            onChange={(e) =>
-              setFormData({ ...formData, bonusDuration: e.target.value })
-            }
-          >
-            <option value="">Select Duration</option>
-            <option value="Weekly">Weekly</option>
-            <option value="Monthly">Monthly</option>
-            <option value="3-Month">3-Month</option>
-            <option value="6-Month">6-Month</option>
-            <option value="Yearly">Yearly</option>
-          </select>
-          <label>Bonus Amount</label>
+
+          <datalist id="allowanceTypesList">
+            {allSettings.map((setting) => (
+              // Display each allowance type from allSettings
+              <option key={setting.id} value={setting.type}>
+                {setting.type}
+              </option>
+            ))}
+          </datalist>
+
+          <label>Allowance Amount</label>
           <input
             type="number"
-            placeholder="Bonus Amount"
-            value={formData.bonusAmount}
+            placeholder="Allowance Amount"
+            value={formData.amount}
             onChange={(e) =>
-              setFormData({ ...formData, bonusAmount: e.target.value })
+              setFormData({ ...formData, amount: e.target.value })
             }
           />
-          <label>Bonus Date</label>
+          <label>Allowance Date</label>
           <input
-          readOnly
             type="date"
-            placeholder="Bonus Date"
-            value={formData.bonusDate}
-            onChange={(e) =>
-              setFormData({ ...formData, bonusDate: e.target.value })
-            }
+            placeholder="Allowance Date"
+            value={formData.date}
+            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
           />
-          <button className="submit-button" onClick={()=> updateBonus(formData)}>Update Bonus</button>
-          <button className="cancel-button" onClick={handleCancel}>Cancel</button>
+          <button
+            className="submit-button"
+            onClick={() => updateBonus(formData)}
+          >
+            Update Allowance
+          </button>
+          <button className="cancel-button" onClick={handleCancel}>
+            Cancel
+          </button>
         </div>
       )}
 
@@ -387,22 +402,20 @@ const Allowance = () => {
         <table className="table">
           <thead>
             <tr>
-              <th>Bonus ID</th>
-              <th>Bonus Name</th>
-              <th>Bonus Duration</th>
-              <th>Bonus Amount</th>
-              <th>Bonus Date</th>
+              <th>ID</th>
+              <th>Allowance Type</th>
+              <th>Amount</th>
+              <th>Date</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
             {filteredData.map((bonus) => (
-              <tr key={bonus._id}>
+              <tr key={bonus.id}>
                 <td>{bonus.id}</td>
-                <td className="bold-fonts">{bonus.bonusName}</td>
-                <td>{bonus.bonusDuration}</td>
-                <td>{bonus.bonusAmount}</td>
-                <td>{bonus.bonusDate}</td>
+                <td className="bold-fonts">{bonus.allowanceName}</td>
+                <td>{bonus.amount}</td>
+                <td>{bonus.date}</td>
                 <td>
                   <button
                     // className="edit-button"
@@ -427,5 +440,4 @@ const Allowance = () => {
     </div>
   );
 };
-
 export default Allowance;

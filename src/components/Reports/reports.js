@@ -342,7 +342,7 @@ const Reports = () => {
           )}
 
           <div className="dropdown">
-            <button className="generate-report-button">
+            <button className="button export-csv">
               <FontAwesomeIcon icon={faCog} className="button-icon" />
               Generate Report
             </button>

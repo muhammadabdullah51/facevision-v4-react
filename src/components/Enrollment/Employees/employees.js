@@ -10,6 +10,8 @@ import { SERVER_URL } from "../../../config";
 
 const Employees = () => {
   const [activeTab, setActiveTab] = useState("Employees");
+  const [changeTab, setChangeTab] = useState("Employees");
+
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [editData, setEditData] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -25,7 +27,8 @@ const Employees = () => {
   };
   useEffect(() => {
     fetchEmployees();
-  }, []);
+    setActiveTab("Employees");
+  }, [changeTab]);
 
   const handleEdit = (row) => {
     setEditData(row);
@@ -40,7 +43,6 @@ const Employees = () => {
     setSelectedEmployee(null);
   }
 
-  const [changeTab, setChangeTab] = useState("Employees");
   const renderTabContent = () => {
     switch (changeTab) {
       case "Department":

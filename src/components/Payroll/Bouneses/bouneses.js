@@ -157,12 +157,19 @@ const Bonuses = () => {
   }
   const confirmUpdate = async () => {
     if (
-      formData.bonusName === "" ||
-      formData.bonusDuration === "" ||
-      formData.bonusAmount === "" ||
-      formData.bonusDate === ""
+      !formData.bonusName ||
+      !formData.bonusDuration ||
+      !formData.bonusAmount ||
+      !formData.bonusDate
     ) {
-      alert("Please fill in all required fields.");
+      setResMsg("Please fill in all required fields.");
+      setShowModal(false);
+      setWarningModal(true);
+    }
+    if (formData.bonusDuration < 1 || formData.bonusAmount < 1) {
+      setResMsg("Values Can't be Negative or zero");
+      setShowModal(false);
+      setWarningModal(true);
       return;
     }
     const updateBounses = {

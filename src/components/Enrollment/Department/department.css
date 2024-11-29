@@ -131,7 +131,10 @@
     color: var(--success-button-color);
     font-size: var(--icon-size);
 }
-
+svg.table-edit:hover, svg.table-delete:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 6px rgba(115, 65, 218, 0.3);
+}
 svg.table-edit{
     color: var(--edit-svg-color);
     transition: .3s ease;

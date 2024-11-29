@@ -13,7 +13,6 @@ import successAnimation from "../../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../../assets/Lottie/warningAnim.json";
 import { SERVER_URL } from "../../../config";
 
-
 const AssignBonus = () => {
   const [data, setData] = useState([]);
   const [showForm, setShowForm] = useState(false);
@@ -40,12 +39,11 @@ const AssignBonus = () => {
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
 
-
   const fetchEmployeesBonus = useCallback(async () => {
     try {
       const response = await axios.get(`${SERVER_URL}pyr-asg-bns/`);
       setData(response.data);
-      console.log(response.data)
+      console.log(response.data);
     } catch (error) {
       console.error("Error fetching employee bonuses:", error);
     }
@@ -121,7 +119,7 @@ const AssignBonus = () => {
       setWarningModal(true);
       return;
     }
-    console.log(formData)
+    console.log(formData);
     await axios.post(`${SERVER_URL}pyr-asg-bns/`, formData);
     setShowModal(false);
     setSuccessModal(true);
@@ -200,13 +198,14 @@ const AssignBonus = () => {
 
   return (
     <div className="department-table">
-       <ConirmationModal
+      <ConirmationModal
         isOpen={showModal}
-        message={modalType === 'create' 
-          ? `Are you sure you want to confirm Assign Bonus?`
-          : modalType === 'update' 
-          ? 'Are you sure you want to update Assigned Bonus?'
-          : `Are you sure you want to delete Assigned Bonus?`
+        message={
+          modalType === "create"
+            ? `Are you sure you want to confirm Assign Bonus?`
+            : modalType === "update"
+            ? "Are you sure you want to update Assigned Bonus?"
+            : `Are you sure you want to delete Assigned Bonus?`
         }
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
@@ -230,7 +229,7 @@ const AssignBonus = () => {
         animationData={successAnimation}
         successModal={successModal}
       />
-       <ConirmationModal
+      <ConirmationModal
         isOpen={warningModal}
         message={resMsg}
         onConfirm={() => setWarningModal(false)}
@@ -250,7 +249,7 @@ const AssignBonus = () => {
       {showAddForm && !showEditForm && (
         <div className="add-leave-form">
           <h3>Assign Bonus to Employee</h3>
-          
+
           <input
             list="employeesList"
             value={formData.empId} // display the employee's name
@@ -268,7 +267,6 @@ const AssignBonus = () => {
               </option>
             ))}
           </datalist>
-
 
           <select
             value={formData.bonusId}
@@ -301,7 +299,7 @@ const AssignBonus = () => {
       {showEditForm && (
         <div className="add-leave-form">
           <h3>Update Assigned Bonus</h3>
-          
+
           <input
             disabled
             list="employeesList"
@@ -320,7 +318,6 @@ const AssignBonus = () => {
               </option>
             ))}
           </datalist>
-
 
           <select
             value={formData.bonusId}
@@ -342,7 +339,10 @@ const AssignBonus = () => {
               setFormData({ ...formData, bonusAssignDate: e.target.value })
             }
           />
-          <button className="submit-button" onClick={() => updateAssign(formData)}>
+          <button
+            className="submit-button"
+            onClick={() => updateAssign(formData)}
+          >
             Update Assigned Bonus
           </button>
           <button className="cancel-button" onClick={handleCancel}>
@@ -350,44 +350,47 @@ const AssignBonus = () => {
           </button>
         </div>
       )}
-      <table className="table">
-        <thead>
-          <tr>
-            <th>Bonus ID</th>
-            <th>Employee ID</th>
-            <th>Employee Name</th>
-            <th>Bonus Name</th>
-            <th>Awarded Date</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredData.map((bonus) => (
-            <tr key={bonus.id}>
-              <td>{bonus.id}</td>
-              <td>{bonus.empId}</td>
-              <td className="bold-fonts">{bonus.empName}</td>
-              <td className="bold-fonts">{bonus.bonusName}</td>
-              <td>{bonus.bonusAssignDate}</td>
-              <td>
-                <button
-                  // className="edit-button"
-                  onClick={() => handleEdit(bonus)}
-                  style={{ background: "none", border: "none" }}
-                >
-                  <FaEdit className="table-edit" />
-                </button>
-                <button
-                  onClick={() => handleDelete(bonus.id)}
-                  style={{ background: "none", border: "none" }}
-                >
-                  <FaTrash className="table-delete" />
-                </button>
-              </td>
+
+      <div className="departments-table">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Bonus ID</th>
+              <th>Employee ID</th>
+              <th>Employee Name</th>
+              <th>Bonus Name</th>
+              <th>Awarded Date</th>
+              <th>Action</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredData.map((bonus) => (
+              <tr key={bonus.id}>
+                <td>{bonus.id}</td>
+                <td>{bonus.empId}</td>
+                <td className="bold-fonts">{bonus.empName}</td>
+                <td className="bold-fonts">{bonus.bonusName}</td>
+                <td>{bonus.bonusAssignDate}</td>
+                <td>
+                  <button
+                    // className="edit-button"
+                    onClick={() => handleEdit(bonus)}
+                    style={{ background: "none", border: "none" }}
+                  >
+                    <FaEdit className="table-edit" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(bonus.id)}
+                    style={{ background: "none", border: "none" }}
+                  >
+                    <FaTrash className="table-delete" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

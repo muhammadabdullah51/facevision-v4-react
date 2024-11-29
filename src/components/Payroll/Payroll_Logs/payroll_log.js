@@ -222,7 +222,8 @@ const PayrollLogs = () => {
     .slice(0, 10); // Limit to 10 entries
 
   const exportToPDF = () => {
-    const doc = new jsPDF();
+    const doc = new jsPDF('l', 'mm', 'legal'); // Set to 'landscape' and 'legal' size (216 x 356 mm)
+
     doc.autoTable({
       head: [
         [
@@ -245,7 +246,6 @@ const PayrollLogs = () => {
       ],
       body: filteredData.map((item, index) => [
         index + 1,
-        item.id,
         item.empId,
         item.fname + " " + item.lname,
         item.allotedWorkingHours,
@@ -261,6 +261,29 @@ const PayrollLogs = () => {
         item.accountNo,
         item.pay,
       ]),
+      styles: {
+        overflow: 'linebreak', // Allow text to wrap
+        fontSize: 8, // Adjust font size to fit more content
+        cellPadding: 2, // Adjust padding for better spacing
+        lineWidth: 0.1, // Set the line width for borders
+        lineColor: [0, 0, 0], // Set the border color to black
+      },
+      tableWidth: 'auto', // Automatically adjust column widths
+      didDrawCell: (data) => {
+        const { row, column, cell } = data;
+  
+        // No background color or other styling applied, just basic borders
+        doc.setTextColor(0, 0, 0); // Set text color to black for all cells
+  
+        // Add border around each cell
+        doc.setLineWidth(0.1); // Border thickness
+        doc.setDrawColor(0, 0, 0); // Border color (black)
+        doc.rect(cell.x, cell.y, cell.width, cell.height); // Draw rectangle (border) around each cell
+      },
+      didDrawPage: (data) => {
+        // Add a title or additional content on the first page
+        doc.text('Employee Salary Report', 20, 10);
+      },
     });
     doc.save("payroll-logs.pdf");
   };
@@ -286,16 +309,33 @@ const PayrollLogs = () => {
           />
         </div>
         <div className="export-buttons">
-          <button className="export-btn">
-            <CSVLink data={filteredData} filename="payroll-logs.csv">
-              <FontAwesomeIcon icon={faFileCsv} className="button-icon" />
-              Export to CSV
-            </CSVLink>
-          </button>
-          <button className="export-btn" onClick={exportToPDF}>
-            <FontAwesomeIcon icon={faFilePdf} className="button-icon" />
-            Export to PDF
-          </button>
+        <button className="button export-csv">
+                            <CSVLink
+                              data={filteredData}
+                              filename="employee-profile.csv"
+                            >
+                              <div className="icon-group">
+                                <FontAwesomeIcon
+                                  icon={faFileCsv}
+                                  className="button-icon"
+                                />
+                            Export to CSV
+                              </div>
+                            </CSVLink>
+                          </button>
+
+                          <button
+                            className="button export-pdf"
+                            onClick={exportToPDF}
+                          >
+                            <div className="icon-group">
+                              <FontAwesomeIcon
+                                icon={faFilePdf}
+                                className="button-icon"
+                              />
+                            </div>
+                            Export to PDF
+                          </button>
         </div>
       </div>
 

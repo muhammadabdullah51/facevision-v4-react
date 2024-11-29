@@ -1,0 +1,283 @@
+/* .salary-slip {
+    width: 80%;
+    margin: 20px auto;
+    padding: 30px;
+    border: 1px solid #ddd;
+    font-family: 'Times New Roman', Times, serif;
+    color: #333;
+    position: relative;
+  } */
+  .salary-slip {
+    width: 210mm; /* A4 width */
+    min-height: 297mm; /* A4 height */
+    padding: 20mm; /* Add margins */
+    box-sizing: border-box;
+    background-color: #fff; /* White background for PDF */
+    margin: auto;
+  }
+  .header-salary {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 0.5px solid #000;
+    padding-bottom: 10px;
+  }
+  
+  .logo-text h2,  .logo-text p{
+    margin: 0;
+    padding: 0;
+    text-align: start;
+
+  }
+  
+  .employee-details {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  
+  .employee-details div {
+    width: 48%;
+    text-align: left;
+    padding: 0 4%;
+  }
+  
+  .earnings-deductions {
+    display: flex;
+    justify-content: space-evenly;
+    margin-top: 20px;
+    width: 100%;
+    margin: auto;
+  }
+  
+  .tableSalary {
+    width: 47%;
+  }
+  
+  .tableSalary table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+  
+  .tableSalary table th, .tableSalary table td {
+    border: 1px solid #ddd;
+    text-align: left;
+    padding: 8px;
+  }
+  
+  .tableSalary table th {
+    background-color: #f4f4f4;
+  }
+  
+  .summary {
+    margin-top: 20px;
+    border-top: 0.5px solid #000;
+    padding-top: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+    align-items: end;
+  }
+  
+  .summary p {
+    margin: 5px 0;
+    width: 30%;
+    text-align: left;
+  }
+  
+  .modal-salary {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    width: 100%;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    justify-content: center;
+}
+th.th-amount, td.th-amount{
+    text-align: end;
+}
+th.th-component, td.th-component{
+    text-align: start;
+}
+.th-sr{
+    width: 7%;
+}
+.close-Salary{
+    font-size: 15px;
+    background: transparent;
+    color: var(--delete-svg-color);
+    text-align: end;
+
+}
+.close-Salary button{
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--delete-svg-color);
+    font-size: 20px;
+}
+.print-salary{
+    font-size: 15px;
+    background: transparent;
+    text-align: end;
+
+}
+.print-salary button{
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--theam-color);
+    font-size: 20px;
+}
+.btn-container{
+    display: flex;
+    justify-content: flex-end;
+}
+.logo-controller{
+  width: 8%;
+  height: auto;
+  border: 0.5px solid grey;
+  padding: 10px;
+  border-radius: 5px;
+}
+.logo-controller img{
+  width: 100%;
+}
+.cmp-detail{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: start;
+  align-items: center;
+  gap: 1vw;
+}
+.salary-slip-button:hover{
+  transform: scale(1.1);
+}
+.salary-slip-button{
+  color: var(--theam-color);
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.3s ease-in-out;
+}
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 20px;
+  font-size: 0.5vw;
+  font-weight: bold;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(115, 65, 218, 0.3);
+  width: 100%;
+  max-width: 250px; /* Maximum width for buttons */
+  height: 50px;
+}
+
+/* Download All Salary Slips Button */
+.button.download-all {
+  background: linear-gradient(45deg, #7341DA, #5A34AC);
+}
+
+.button.download-all:hover {
+  background: linear-gradient(45deg, #5A34AC, #472882);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 12px rgba(90, 52, 172, 0.5);
+}
+
+.button.download-all:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 6px rgba(115, 65, 218, 0.3);
+}
+
+/* Export to CSV Button */
+.button.export-csv {
+  background: linear-gradient(45deg, #5A34AC, #472882);
+}
+
+.button.export-csv:hover {
+  background: linear-gradient(45deg, #7341DA, #5A34AC);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 12px rgba(115, 65, 218, 0.5);
+}
+
+.button.export-csv:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 6px rgba(90, 52, 172, 0.3);
+}
+
+/* Export to PDF Button */
+.button.export-pdf {
+  background: linear-gradient(45deg, #7341DA, #5A34AC);
+}
+
+.button.export-pdf:hover {
+  background: linear-gradient(45deg, #5A34AC, #472882);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 12px rgba(90, 52, 172, 0.5);
+}
+
+.button.export-pdf:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 6px rgba(115, 65, 218, 0.3);
+}
+
+/* Shared Icon Group */
+.icon-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Icon Styling */
+.folder-icon, .button-icon {
+  font-size: 18px;
+}
+
+/* Bounce Animation for Download Arrow */
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* Responsive Design */
+.button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  margin: 0 auto;
+}
+.export-csv svg, .icon-group{
+  color: #fff;
+}
+
+
+/* For small screens (mobile) */
+@media (max-width: 876px) {
+  .button {
+      font-size: 0.6vw; /* Smaller font size for mobile */
+  }
+}
+
+/* For medium screens (tablets) */
+@media (max-width: 1500px) {
+  .button {
+      font-size: 1vw; /* Slightly larger font size for tablets */
+  }
+}

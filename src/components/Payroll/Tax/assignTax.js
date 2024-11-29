@@ -13,7 +13,6 @@ import successAnimation from "../../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../../assets/Lottie/warningAnim.json";
 import { SERVER_URL } from "../../../config";
 
-
 const AssignTax = () => {
   const [data, setData] = useState([]);
   const [showForm, setShowForm] = useState(false);
@@ -28,8 +27,8 @@ const AssignTax = () => {
   const [formData, setFormData] = useState({
     id: "",
     empId: "",
-    bonusId: "",
-    bonusAssignDate: "",
+    txId: "",
+    date: "",
   });
 
   const [showModal, setShowModal] = useState(false);
@@ -40,12 +39,11 @@ const AssignTax = () => {
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
 
-
   const fetchEmployeesBonus = useCallback(async () => {
     try {
-      const response = await axios.get(`${SERVER_URL}pyr-asg-bns/`);
+      const response = await axios.get(`${SERVER_URL}assign-taxes/`);
       setData(response.data);
-      console.log(response.data)
+      console.log(response.data);
     } catch (error) {
       console.error("Error fetching employee bonuses:", error);
     }
@@ -89,9 +87,7 @@ const AssignTax = () => {
   };
   const confirmDelete = async (id) => {
     try {
-      await axios.post(`${SERVER_URL}pyr-asg-bns-del/`, {
-        id: formData.id,
-      });
+      await axios.delete(`${SERVER_URL}assign-taxes/${formData.id}/`);
       await fetchEmployeesBonus(); // Refresh data after deletion
       setShowModal(false);
       setSuccessModal(true);
@@ -103,8 +99,8 @@ const AssignTax = () => {
   const handleAddNew = () => {
     setFormData({
       empId: "",
-      bonusId: "",
-      bonusAssignDate: "",
+      txId: "",
+      date: "",
     });
     setShowAddForm(true);
     setShowEditForm(false);
@@ -115,14 +111,14 @@ const AssignTax = () => {
   };
 
   const confirmAdd = async () => {
-    if (!formData.empId || !formData.bonusId || !formData.bonusAssignDate) {
+    if (!formData.empId || !formData.txId || !formData.date) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
       setWarningModal(true);
       return;
     }
-    console.log(formData)
-    await axios.post(`${SERVER_URL}pyr-asg-bns/`, formData);
+    console.log(formData);
+    await axios.post(`${SERVER_URL}assign-taxes/`, formData);
     setShowModal(false);
     setSuccessModal(true);
     setShowAddForm(false);
@@ -133,8 +129,8 @@ const AssignTax = () => {
     setFormData({
       id: item.id,
       empId: item.empId,
-      bonusId: item.bonusId,
-      bonusAssignDate: item.bonusAssignDate,
+      txId: item.txId,
+      date: item.date,
     });
     setShowAddForm(false);
     setShowEditForm(true);
@@ -144,19 +140,19 @@ const AssignTax = () => {
     setFormData({
       id: row.id,
       empId: row.empId,
-      bonusId: row.bonusId,
-      bonusAssignDate: row.bonusAssignDate,
+      txId: row.txId,
+      date: row.date,
     });
     setShowModal(true);
   };
   const confirmUpdate = async () => {
-    if (!formData.empId || !formData.bonusId || !formData.bonusAssignDate) {
+    if (!formData.empId || !formData.txId || !formData.date) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
       setWarningModal(true);
       return;
     }
-    await axios.post(`${SERVER_URL}pyr-asg-bns-up/`, formData);
+    await axios.put(`${SERVER_URL}assign-taxes/${formData.id}/`, formData);
     setShowModal(false);
     setSuccessModal(true);
     setShowEditForm(false);
@@ -165,9 +161,9 @@ const AssignTax = () => {
   const handleSaveItem = async () => {
     try {
       if (formMode === "add") {
-        await axios.post(`${SERVER_URL}pyr-asg-bns/`, formData);
+        await axios.post(`${SERVER_URL}assign-taxes/`, formData);
       } else {
-        await axios.post(`${SERVER_URL}pyr-asg-bns/`, formData);
+        await axios.post(`${SERVER_URL}assign-taxes/`, formData);
       }
       await fetchEmployeesBonus(); // Refresh data after add/update
       resetForm();
@@ -180,8 +176,8 @@ const AssignTax = () => {
     setFormData({
       id: "",
       empId: "",
-      bonusId: "",
-      bonusAssignDate: "",
+      txId: "",
+      date: "",
     });
     setCurrentItemId(null);
     setFormMode("add");
@@ -200,13 +196,14 @@ const AssignTax = () => {
 
   return (
     <div className="department-table">
-       <ConirmationModal
+      <ConirmationModal
         isOpen={showModal}
-        message={modalType === 'create' 
-          ? `Are you sure you want to confirm Assign Bonus?`
-          : modalType === 'update' 
-          ? 'Are you sure you want to update Assigned Bonus?'
-          : `Are you sure you want to delete Assigned Bonus?`
+        message={
+          modalType === "create"
+            ? `Are you sure you want to confirm Assign Allowance?`
+            : modalType === "update"
+            ? "Are you sure you want to update Assigned Allowance?"
+            : `Are you sure you want to delete Assigned Allowance?`
         }
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
@@ -224,13 +221,13 @@ const AssignTax = () => {
       />
       <ConirmationModal
         isOpen={successModal}
-        message={`Assign Bonus ${modalType}d successfully!`}
+        message={`Assign Allowance ${modalType}d successfully!`}
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
         successModal={successModal}
       />
-       <ConirmationModal
+      <ConirmationModal
         isOpen={warningModal}
         message={resMsg}
         onConfirm={() => setWarningModal(false)}
@@ -244,13 +241,13 @@ const AssignTax = () => {
           onClick={handleAddNew}
           style={{ margin: "5vh 0 2vh 0", justifyContent: "end" }}
         >
-          <FaPlus /> Assign New Bonus
+          <FaPlus /> Assign New Allowance
         </button>
       </div>
       {showAddForm && !showEditForm && (
         <div className="add-leave-form">
-          <h3>Assign Bonus to Employee</h3>
-          
+          <h3>Assign Allowance to Employee</h3>
+
           <input
             list="employeesList"
             value={formData.empId} // display the employee's name
@@ -269,14 +266,11 @@ const AssignTax = () => {
             ))}
           </datalist>
 
-
           <select
-            value={formData.bonusId}
-            onChange={(e) =>
-              setFormData({ ...formData, bonusId: e.target.value })
-            }
+            value={formData.txId}
+            onChange={(e) => setFormData({ ...formData, txId: e.target.value })}
           >
-            <option value="">Select Bonus</option>
+            <option value="">Select Allowance</option>
             {bonuses.map((bonus) => (
               <option key={bonus.id} value={bonus.id}>
                 {bonus.bonusName}
@@ -285,13 +279,11 @@ const AssignTax = () => {
           </select>
           <input
             type="date"
-            value={formData.bonusAssignDate}
-            onChange={(e) =>
-              setFormData({ ...formData, bonusAssignDate: e.target.value })
-            }
+            value={formData.date}
+            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
           />
           <button className="submit-button" onClick={addAssign}>
-            Assign Bonus
+            Assign Allowance
           </button>
           <button className="cancel-button" onClick={handleCancel}>
             Cancel
@@ -300,8 +292,8 @@ const AssignTax = () => {
       )}
       {showEditForm && (
         <div className="add-leave-form">
-          <h3>Update Assigned Bonus</h3>
-          
+          <h3>Update Assigned Allowance</h3>
+
           <input
             disabled
             list="employeesList"
@@ -321,14 +313,11 @@ const AssignTax = () => {
             ))}
           </datalist>
 
-
           <select
-            value={formData.bonusId}
-            onChange={(e) =>
-              setFormData({ ...formData, bonusId: e.target.value })
-            }
+            value={formData.txId}
+            onChange={(e) => setFormData({ ...formData, txId: e.target.value })}
           >
-            <option value="">Select Bonus</option>
+            <option value="">Select Allowance</option>
             {bonuses.map((bonus) => (
               <option key={bonus.id} value={bonus.id}>
                 {bonus.bonusName}
@@ -337,57 +326,60 @@ const AssignTax = () => {
           </select>
           <input
             type="date"
-            value={formData.bonusAssignDate}
-            onChange={(e) =>
-              setFormData({ ...formData, bonusAssignDate: e.target.value })
-            }
+            value={formData.date}
+            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
           />
-          <button className="submit-button" onClick={() => updateAssign(formData)}>
-            Update Assigned Bonus
+          <button
+            className="submit-button"
+            onClick={() => updateAssign(formData)}
+          >
+            Update Assigned Allowance
           </button>
           <button className="cancel-button" onClick={handleCancel}>
             Cancel
           </button>
         </div>
       )}
-      <table className="table">
-        <thead>
-          <tr>
-            <th>Bonus ID</th>
-            <th>Employee ID</th>
-            <th>Employee Name</th>
-            <th>Bonus Name</th>
-            <th>Awarded Date</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredData.map((bonus) => (
-            <tr key={bonus.id}>
-              <td>{bonus.id}</td>
-              <td>{bonus.empId}</td>
-              <td className="bold-fonts">{bonus.empName}</td>
-              <td className="bold-fonts">{bonus.bonusName}</td>
-              <td>{bonus.bonusAssignDate}</td>
-              <td>
-                <button
-                  // className="edit-button"
-                  onClick={() => handleEdit(bonus)}
-                  style={{ background: "none", border: "none" }}
-                >
-                  <FaEdit className="table-edit" />
-                </button>
-                <button
-                  onClick={() => handleDelete(bonus.id)}
-                  style={{ background: "none", border: "none" }}
-                >
-                  <FaTrash className="table-delete" />
-                </button>
-              </td>
+      <div className="departments-table">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Bonus ID</th>
+              <th>Employee ID</th>
+              <th>Employee Name</th>
+              <th>Allowance Name</th>
+              <th>Date</th>
+              <th>Action</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredData.map((bonus) => (
+              <tr key={bonus.id}>
+                <td>{bonus.id}</td>
+                <td>{bonus.empId}</td>
+                <td className="bold-fonts">{bonus.empName}</td>
+                <td className="bold-fonts">{bonus.bonusName}</td>
+                <td>{bonus.date}</td>
+                <td>
+                  <button
+                    // className="edit-button"
+                    onClick={() => handleEdit(bonus)}
+                    style={{ background: "none", border: "none" }}
+                  >
+                    <FaEdit className="table-edit" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(bonus.id)}
+                    style={{ background: "none", border: "none" }}
+                  >
+                    <FaTrash className="table-delete" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
