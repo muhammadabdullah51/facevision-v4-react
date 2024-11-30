@@ -7,33 +7,26 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { SERVER_URL } from "../../../config";
 
 const SalarySlip = ({ salaryDetails }) => {
-    
-      
-
-
-
   return (
     <>
-      
       <div className="salary-slip">
         {/* Header */}
         <header className="header-salary">
-            <div className="cmp-detail">
-
+          <div className="cmp-detail">
             <div className="logo-controller">
-            <img             
-            src={`${SERVER_URL}${salaryDetails.companyLogo}`}
-            alt="" />
+              <img src={`${SERVER_URL}${salaryDetails.companyLogo}`} alt="" />
             </div>
-          <div className="logo-text">
-            <h2>{salaryDetails.companyName}</h2>
-            <p>Salary Slip</p>
+            <div className="logo-text">
+              <h2>{salaryDetails.companyName}</h2>
+              <p>Salary Slip</p>
+            </div>
           </div>
-            </div>
-            <div>
-
-          <h3> <small>Salary Period</small> {salaryDetails.salaryPeriod}</h3>
-            </div>
+          <div>
+            <h3>
+              {" "}
+              <small>Salary Period</small> {salaryDetails.salaryPeriod}
+            </h3>
+          </div>
         </header>
 
         {/* Employee Details */}
@@ -60,16 +53,20 @@ const SalarySlip = ({ salaryDetails }) => {
           </div>
           <div>
             <p>
-              <strong>Total Working Days:</strong> {salaryDetails.totalWorkingDays}
+              <strong>Total Working Days:</strong>{" "}
+              {salaryDetails.totalWorkingDays}
             </p>
             <p>
-              <strong>Total Working Hours:</strong> {salaryDetails.totalWorkingHours}
+              <strong>Total Working Hours:</strong>{" "}
+              {salaryDetails.totalWorkingHours}
             </p>
             <p>
-              <strong>Total Working Minutes:</strong> {salaryDetails.totalWorkingMinutes}
+              <strong>Total Working Minutes:</strong>{" "}
+              {salaryDetails.totalWorkingMinutes}
             </p>
             <p>
-              <strong>Attempted Working Hours:</strong> {salaryDetails.attemptWorkingHours}
+              <strong>Attempted Working Hours:</strong>{" "}
+              {salaryDetails.attemptWorkingHours}
             </p>
           </div>
         </section>
@@ -94,7 +91,7 @@ const SalarySlip = ({ salaryDetails }) => {
                 </tr>
                 <tr>
                   <td>2</td>
-                  <td >Overtime Hours Pay</td>
+                  <td>Overtime Hours Pay</td>
                   <td className="th-amount">Rs. {salaryDetails.otHoursPay}</td>
                 </tr>
                 <tr>
@@ -107,6 +104,13 @@ const SalarySlip = ({ salaryDetails }) => {
                   <td>Extra Fund</td>
                   <td className="th-amount">Rs. {salaryDetails.extraFund}</td>
                 </tr>
+                {salaryDetails.allowances.map((allowance, index) => (
+                  <tr key={index}>
+                    <td>{index + 5}</td>
+                    <td>{allowance.allowanceName}</td>
+                    <td className="th-amount">Rs. {allowance.amount}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -133,9 +137,16 @@ const SalarySlip = ({ salaryDetails }) => {
                 </tr>
                 <tr>
                   <td>3</td>
-                  <td>App Charges</td>
+                  <td>Appraisal</td>
                   <td className="th-amount">Rs. {salaryDetails.app}</td>
                 </tr>
+                {salaryDetails.taxes.map((tax, index) => (
+                  <tr key={index}>
+                    <td>{index + 4}</td>
+                    <td>{tax.taxName}</td>
+                    <td className="th-amount">Rs. {tax.deductedAmount}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

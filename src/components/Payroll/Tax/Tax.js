@@ -26,7 +26,7 @@ const Tax = () => {
     id: "",
     type: "",
     nature: "",
-    percentage: "",
+    percent: "",
     amount: "",
     date: "",
   });
@@ -86,9 +86,7 @@ const Tax = () => {
     setFormData({ ...formData, id: id });
   };
   const confirmDelete = async () => {
-    axios.post(`${SERVER_URL}taxes/`, {
-      id: formData.id,
-    });
+    axios.delete(`${SERVER_URL}taxes/${formData.id}/`);
     const updatedData = await axios.get(`${SERVER_URL}taxes/`);
     setData(updatedData.data);
     setShowModal(false);
@@ -100,7 +98,7 @@ const Tax = () => {
     setFormData({
       type: "",
       nature:"",
-      percentage:"",
+      percent:"",
       amount: "",
       date: "",
     });
@@ -119,12 +117,13 @@ const Tax = () => {
     }
     if(formData.nature === 'percentage' ){
 
-      if (formData.percentage < 1) {
-        setResMsg("Values Can't be Negative or zero");
+      if (formData.percent < 1 || formData.percent > 100) {
+        setResMsg("Values Can't be Less than 1 or Greater then 100");
         setShowModal(false);
         setWarningModal(true);
         return;
       }
+      
     } else if(formData.nature === 'fixedamount' ){
 
       if (formData.amount < 1) {
@@ -138,10 +137,11 @@ const Tax = () => {
     const bouneses = {
       type: formData.type,
       nature:formData.nature,
-      percentage:formData.percentage,
-      amount: formData.amount,
+      percent:formData.nature == 'fixedamount' ? 0 : formData.percent,
+      amount: formData.nature == 'percentage' ? 0 : formData.amount,
       date: formData.date,
     };
+    console.log(bouneses)
     try {
       axios.post(`${SERVER_URL}taxes/`, bouneses);
       const updatedData = await axios.get(`${SERVER_URL}taxes/`);
@@ -160,7 +160,7 @@ const Tax = () => {
       id: data.id,
       type: data.type,
       nature: data.nature,
-      percentage: data.percentage,
+      percent: data.percent,
       amount: data.amount,
       date: data.date,
     });
@@ -173,8 +173,8 @@ const Tax = () => {
       id: row.id,
       type: row.type,
       nature: row.nature,
-      percentage: row.percentage,
-      amount: row.amount,
+      percent:formData.nature == 'fixedamount' ? 0 : formData.percent,
+      amount: formData.nature == 'percentage' ? 0 : formData.amount,
       date: row.date,
     });
     setShowModal(true);
@@ -187,8 +187,8 @@ const Tax = () => {
     }
     if(formData.nature === 'percentage' ){
 
-      if (formData.percentage < 1) {
-        setResMsg("Values Can't be Negative or zero");
+      if (formData.percent < 1 || formData.percent > 100) {
+        setResMsg("Values Can't be Less than 1 or Greater then 100");
         setShowModal(false);
         setWarningModal(true);
         return;
@@ -206,13 +206,13 @@ const Tax = () => {
       id: formData.id,
       type: formData.type,
       nature: formData.nature,
-      percentage: formData.percentage,
-      amount: formData.amount,
+      percent:formData.nature == 'fixedamount' ? 0 : formData.percent,
+      amount: formData.nature == 'percentage' ? 0 : formData.amount,
       date: formData.date,
     };
     console.log(updateBounses);
     try {
-      await axios.post(`${SERVER_URL}taxes/`, updateBounses);
+      await axios.put(`${SERVER_URL}taxes/${formData.id}/`, updateBounses);
       const updatedData = await axios.get(`${SERVER_URL}taxes/`);
       setData(updatedData.data);
       setShowModal(false);
@@ -229,7 +229,7 @@ const Tax = () => {
   };
 
   const filteredData = data.filter((item) =>
-    item.type.toLowerCase().includes(searchQuery.toLowerCase())
+    item.taxName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -324,18 +324,26 @@ const Tax = () => {
           <h3>Add New Tax</h3>
           <label>Tax Type</label>
           <input
-            list="taxTypesList"
             type="text"
-            placeholder="Tax Type"
-            value={formData.type}
-            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+            list="taxType" // Link to the datalist by id
+            placeholder="Allowance Type"
+            value={
+              taxSettings.find((setting) => setting.id === formData.type)
+                ?.type || ""
+            } // Display the type based on the selected id
+            onChange={(e) => {
+              const selectedId = taxSettings.find(
+                (setting) => setting.type === e.target.value
+              )?.id;
+              setFormData({ ...formData, type: selectedId });
+            }}
           />
 
-          <datalist id="taxTypesList">
-            {taxSettings.map((tax) => (
-              // Display tax type as option value
-              <option key={tax.id} value={tax.type}>
-                {tax.type}
+          <datalist id="taxType">
+            {taxSettings.map((setting) => (
+              // Display each allowance type from allSettings
+              <option key={setting.id} value={setting.type}>
+                {setting.type}
               </option>
             ))}
           </datalist>
@@ -347,6 +355,7 @@ const Tax = () => {
             setFormData({...formData, nature: e.target.value })
           }
           >
+            <option value="">Select Nature</option>
             <option value="fixedamount">Fixed Amount</option>
             <option value="percentage">Percentage</option>
           </select>
@@ -357,9 +366,9 @@ const Tax = () => {
               <input
               type="number"
               placeholder="Percentage %"
-              value={formData.percentage}
+              value={formData.percent}
               onChange={(e) =>
-                setFormData({ ...formData, percentage: e.target.value })
+                setFormData({ ...formData, percent: e.target.value })
               }
               />
             </>
@@ -377,15 +386,7 @@ const Tax = () => {
           </>
         )}
           
-          <label>Amount</label>
-          <input
-            type="number"
-            placeholder="Tax Amount"
-            value={formData.amount}
-            onChange={(e) =>
-              setFormData({ ...formData, amount: e.target.value })
-            }
-          />
+          
           <label>Date</label>
           <input
             type="date"
@@ -406,18 +407,26 @@ const Tax = () => {
           <h3>Edit Tax</h3>
           <label>Tax Type</label>
           <input
-            list="taxTypesList"
             type="text"
-            placeholder="Tax Type"
-            value={formData.type}
-            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+            list="taxType" // Link to the datalist by id
+            placeholder="Allowance Type"
+            value={
+              taxSettings.find((setting) => setting.id === formData.type)
+                ?.type || ""
+            } // Display the type based on the selected id
+            onChange={(e) => {
+              const selectedId = taxSettings.find(
+                (setting) => setting.type === e.target.value
+              )?.id;
+              setFormData({ ...formData, type: selectedId });
+            }}
           />
 
-          <datalist id="taxTypesList">
-            {taxSettings.map((tax) => (
-              // Display tax type as option value
-              <option key={tax.id} value={tax.type}>
-                {tax.type}
+          <datalist id="taxType">
+            {taxSettings.map((setting) => (
+              // Display each allowance type from allSettings
+              <option key={setting.id} value={setting.type}>
+                {setting.type}
               </option>
             ))}
           </datalist>
@@ -439,10 +448,11 @@ const Tax = () => {
               <input
               type="number"
               placeholder="Percentage %"
-              value={formData.percentage}
+              value={formData.percent}
               onChange={(e) =>
-                setFormData({ ...formData, percentage: e.target.value })
+                setFormData({ ...formData, percent: e.target.value })
               }
+              
               />
             </>
         ) : (
@@ -459,15 +469,8 @@ const Tax = () => {
           </>
         )}
           
-          <label>Amount</label>
-          <input
-            type="number"
-            placeholder="Tax Amount"
-            value={formData.amount}
-            onChange={(e) =>
-              setFormData({ ...formData, amount: e.target.value })
-            }
-          />
+         
+          
           <label>Date</label>
           <input
             type="date"
@@ -493,7 +496,8 @@ const Tax = () => {
             <tr>
               <th>ID</th>
               <th>Tax Type</th>
-              <th>Amount</th>
+              <th>Nature</th>
+              <th>Amount / Percentage</th>
               <th>Date</th>
               <th>Action</th>
             </tr>
@@ -502,8 +506,9 @@ const Tax = () => {
             {filteredData.map((bonus) => (
               <tr key={bonus.id}>
                 <td>{bonus.id}</td>
-                <td className="bold-fonts">{bonus.type}</td>
-                <td>{bonus.amount}</td>
+                <td className="bold-fonts">{bonus.taxName}</td>
+                <td>{bonus.nature}</td>
+                <td>{bonus.amount == 0 ? bonus.percent : bonus.amount} {bonus.percent != 0 ? '%' : 'Rs'}</td>
                 <td>{bonus.date}</td>
                 <td>
                   <button

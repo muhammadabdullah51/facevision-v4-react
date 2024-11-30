@@ -23,12 +23,17 @@ const AssignTax = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [departments, setDepartments] = useState([]);
+  const [designations, setDesignations] = useState([]);
+  const [enrollSites, setEnrollSites] = useState([]);
 
   const [formData, setFormData] = useState({
     id: "",
     empId: "",
     txId: "",
     date: "",
+    value: "",
+    assignTo: "",
   });
 
   const [showModal, setShowModal] = useState(false);
@@ -57,20 +62,31 @@ const AssignTax = () => {
     }
   };
 
-  const fetchBonuses = async () => {
+  const fetchTax = async () => {
     try {
-      const response = await axios.get(`${SERVER_URL}pyr-bns/`);
+      const response = await axios.get(`${SERVER_URL}taxes/`);
       console.log("Fetched bonuses:", response.data);
       setBonuses(response.data);
     } catch (error) {
       console.error("Error fetching bonuses:", error);
     }
   };
+  const fetchOptions = async () => {
+    try {
+      const response = await axios.get(`${SERVER_URL}emp-fun/`);
+      setDepartments(response.data.dpt_data);
+      setEnrollSites(response.data.loc_data);
+      setDesignations(response.data.dsg_data);
+    } catch (error) {
+      console.error("Error fetching options:", error);
+    }
+  };
 
   useEffect(() => {
     fetchEmployeesBonus();
     fetchEmployees();
-    fetchBonuses();
+    fetchTax();
+    fetchOptions();
     let timer;
     if (successModal) {
       timer = setTimeout(() => {
@@ -101,6 +117,8 @@ const AssignTax = () => {
       empId: "",
       txId: "",
       date: "",
+      assignTo: "",
+      value:'',
     });
     setShowAddForm(true);
     setShowEditForm(false);
@@ -111,7 +129,8 @@ const AssignTax = () => {
   };
 
   const confirmAdd = async () => {
-    if (!formData.empId || !formData.txId || !formData.date) {
+   
+    if (!formData.txId || !formData.date) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
       setWarningModal(true);
@@ -126,11 +145,14 @@ const AssignTax = () => {
   };
 
   const handleEdit = (item) => {
+   
     setFormData({
       id: item.id,
       empId: item.empId,
       txId: item.txId,
       date: item.date,
+      value: item.value,
+      assignTo: item.assignTo,
     });
     setShowAddForm(false);
     setShowEditForm(true);
@@ -142,6 +164,8 @@ const AssignTax = () => {
       empId: row.empId,
       txId: row.txId,
       date: row.date,
+      value: row.value,
+      assignTo: row.assignTo,
     });
     setShowModal(true);
   };
@@ -178,6 +202,7 @@ const AssignTax = () => {
       empId: "",
       txId: "",
       date: "",
+      assignTo: "",
     });
     setCurrentItemId(null);
     setFormMode("add");
@@ -187,7 +212,7 @@ const AssignTax = () => {
   const handleSearchChange = (e) => setSearchQuery(e.target.value);
 
   const filteredData = data.filter((item) =>
-    item.bonusName.toLowerCase().includes(searchQuery.toLowerCase())
+    item.taxName.toLowerCase().includes(searchQuery.toLowerCase())
   );
   const handleCancel = () => {
     setShowAddForm(false);
@@ -200,10 +225,10 @@ const AssignTax = () => {
         isOpen={showModal}
         message={
           modalType === "create"
-            ? `Are you sure you want to confirm Assign Allowance?`
+            ? `Are you sure you want to confirm Assign Tax?`
             : modalType === "update"
-            ? "Are you sure you want to update Assigned Allowance?"
-            : `Are you sure you want to delete Assigned Allowance?`
+            ? "Are you sure you want to update Assigned Tax?"
+            : `Are you sure you want to delete Assigned Tax?`
         }
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
@@ -221,7 +246,7 @@ const AssignTax = () => {
       />
       <ConirmationModal
         isOpen={successModal}
-        message={`Assign Allowance ${modalType}d successfully!`}
+        message={`Assign Tax ${modalType}d successfully!`}
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
@@ -241,49 +266,140 @@ const AssignTax = () => {
           onClick={handleAddNew}
           style={{ margin: "5vh 0 2vh 0", justifyContent: "end" }}
         >
-          <FaPlus /> Assign New Allowance
+          <FaPlus /> Assign New Tax
         </button>
       </div>
       {showAddForm && !showEditForm && (
         <div className="add-leave-form">
-          <h3>Assign Allowance to Employee</h3>
+          <h3>Assign Tax to Employee</h3>
+          <label>Assign Tax</label>
+          <select
+            value={formData.assignTo}
+            onChange={(e) =>
+              setFormData({ ...formData, assignTo: e.target.value })
+            }
+          >
+            <option value="">Select Options</option>
+            <option value="emp">Assign to Employee</option>
+            <option value="all">Assign to All Employees</option>
+            <option value="byDsg">By Designation</option>
+            <option value="byDpt">By Department</option>
+            <option value="byLoc">By Location</option>
+          </select>
+          {formData.assignTo == "emp" && (
+            <>
+              <input
+                type="text"
+                list="employeesList" // Link to the datalist by id
+                placeholder="Search or select an employee"
+                value={
+                  employees.find((emp) => emp.id === formData.empId)
+                    ? `${
+                        employees.find((emp) => emp.id === formData.empId).fName
+                      } ${
+                        employees.find((emp) => emp.id === formData.empId).lName
+                      }`
+                    : "" // Display the full name based on the selected ID
+                }
+                onChange={(e) => {
+                  const selectedId = employees.find(
+                    (emp) => `${emp.fName} ${emp.lName}` === e.target.value
+                  )?.id;
+                  setFormData({ ...formData, empId: selectedId });
+                }}
+              />
 
-          <input
-            list="employeesList"
-            value={formData.empId} // display the employee's name
-            onChange={(e) => {
-              setFormData({ ...formData, empId: e.target.value });
-            }}
-            placeholder="Search or select an employee"
-          />
+              <datalist id="employeesList">
+                {employees.map((emp) => (
+                  <option key={emp.id} value={`${emp.fName} ${emp.lName}`}>
+                    {emp.fName} {emp.lName}
+                  </option>
+                ))}
+              </datalist>
+            </>
+          )}
 
-          <datalist id="employeesList">
-            {employees.map((emp) => (
-              // Display employee's full name as option value
-              <option key={emp.empId} value={emp.empId}>
-                {emp.fName} {emp.lName}
-              </option>
-            ))}
-          </datalist>
+          {formData.assignTo == "byLoc" && (
+            <>
+              <label>Enrolled Sites</label>
+              <select
+                name="enrollSite"
+                value={formData.locId}
+                onChange={(e) =>
+                  setFormData({...formData, value: e.target.value})
+                }
+              >
+                <option value="">Select Enrolled Site</option>
+                {enrollSites.map((site, index) => (
+                  <option key={site.locId} value={site.locId}>
+                    {site.name}
+                  </option>
+                ))}
+              </select>
+              
+            </>
+          )}
+          {formData.assignTo == "byDsg" && (
+            <>
+              <label>Designations</label>
+              <select
+                name="enrollSite"
+                value={formData.dgsId}
+                onChange={(e) =>
+                  setFormData({...formData, value: e.target.value})
+                }
+              >
+                <option value="">Select Designation</option>
+                {designations.map((site, index) => (
+                  <option key={site.dsgId} value={site.dsgId}>
+                    {site.name}
+                  </option>
+                ))}
+              </select>
+              
+            </>
+          )}
+          {formData.assignTo == "byDpt" && (
+            <>
+              <label>Departments</label>
+              <select
+                name="enrollSite"
+                value={formData.dptId}
+                onChange={(e) =>
+                  setFormData({...formData, value: e.target.value})
+                }
+              >
+                <option value="">Select Department</option>
+                {departments.map((site, index) => (
+                  <option key={site.dptId} value={site.dptId}>
+                    {site.name}
+                  </option>
+                ))}
+              </select>
+              
+            </>
+          )}
 
+          <label>Select Tax Type</label>
           <select
             value={formData.txId}
             onChange={(e) => setFormData({ ...formData, txId: e.target.value })}
           >
-            <option value="">Select Allowance</option>
+            <option value="">Select Tax</option>
             {bonuses.map((bonus) => (
               <option key={bonus.id} value={bonus.id}>
-                {bonus.bonusName}
+                {bonus.taxName} {bonus.amount == 0 ? bonus.percent : bonus.amount} {bonus.percent != 0 ? '%' : 'Rs'}
               </option>
             ))}
           </select>
+          <label>Date</label>
           <input
             type="date"
             value={formData.date}
             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
           />
           <button className="submit-button" onClick={addAssign}>
-            Assign Allowance
+            Assign Tax
           </button>
           <button className="cancel-button" onClick={handleCancel}>
             Cancel
@@ -292,22 +408,31 @@ const AssignTax = () => {
       )}
       {showEditForm && (
         <div className="add-leave-form">
-          <h3>Update Assigned Allowance</h3>
+          <h3>Update Assigned Tax</h3>
 
           <input
+            type="text"
             disabled
-            list="employeesList"
-            value={formData.empId} // display the employee's name
-            onChange={(e) => {
-              setFormData({ ...formData, empId: e.target.value });
-            }}
+            list="employeesList" // Link to the datalist by id
             placeholder="Search or select an employee"
+            value={
+              employees.find((emp) => emp.id === formData.empId)
+                ? `${
+                    employees.find((emp) => emp.id === formData.empId).fName
+                  } ${employees.find((emp) => emp.id === formData.empId).lName}`
+                : "" // Display the full name based on the selected ID
+            }
+            onChange={(e) => {
+              const selectedId = employees.find(
+                (emp) => `${emp.fName} ${emp.lName}` === e.target.value
+              )?.id;
+              setFormData({ ...formData, empId: selectedId });
+            }}
           />
 
           <datalist id="employeesList">
             {employees.map((emp) => (
-              // Display employee's full name as option value
-              <option key={emp.empId} value={emp.empId}>
+              <option key={emp.id} value={`${emp.fName} ${emp.lName}`}>
                 {emp.fName} {emp.lName}
               </option>
             ))}
@@ -317,10 +442,10 @@ const AssignTax = () => {
             value={formData.txId}
             onChange={(e) => setFormData({ ...formData, txId: e.target.value })}
           >
-            <option value="">Select Allowance</option>
+            <option value="">Select Tax</option>
             {bonuses.map((bonus) => (
               <option key={bonus.id} value={bonus.id}>
-                {bonus.bonusName}
+                {bonus.taxName}
               </option>
             ))}
           </select>
@@ -333,7 +458,7 @@ const AssignTax = () => {
             className="submit-button"
             onClick={() => updateAssign(formData)}
           >
-            Update Assigned Allowance
+            Update Assigned Tax
           </button>
           <button className="cancel-button" onClick={handleCancel}>
             Cancel
@@ -347,7 +472,7 @@ const AssignTax = () => {
               <th>Bonus ID</th>
               <th>Employee ID</th>
               <th>Employee Name</th>
-              <th>Allowance Name</th>
+              <th>Tax Name</th>
               <th>Date</th>
               <th>Action</th>
             </tr>
@@ -356,9 +481,9 @@ const AssignTax = () => {
             {filteredData.map((bonus) => (
               <tr key={bonus.id}>
                 <td>{bonus.id}</td>
-                <td>{bonus.empId}</td>
+                <td>{bonus.employeeId}</td>
                 <td className="bold-fonts">{bonus.empName}</td>
-                <td className="bold-fonts">{bonus.bonusName}</td>
+                <td className="bold-fonts">{bonus.taxName}</td>
                 <td>{bonus.date}</td>
                 <td>
                   <button
