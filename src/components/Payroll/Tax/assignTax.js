@@ -118,7 +118,7 @@ const AssignTax = () => {
       txId: "",
       date: "",
       assignTo: "",
-      value:'',
+      value: "",
     });
     setShowAddForm(true);
     setShowEditForm(false);
@@ -129,7 +129,6 @@ const AssignTax = () => {
   };
 
   const confirmAdd = async () => {
-   
     if (!formData.txId || !formData.date) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
@@ -145,7 +144,6 @@ const AssignTax = () => {
   };
 
   const handleEdit = (item) => {
-   
     setFormData({
       id: item.id,
       empId: item.empId,
@@ -295,25 +293,39 @@ const AssignTax = () => {
                 value={
                   employees.find((emp) => emp.id === formData.empId)
                     ? `${
+                        employees.find((emp) => emp.id === formData.empId).empId
+                      } ${
                         employees.find((emp) => emp.id === formData.empId).fName
                       } ${
                         employees.find((emp) => emp.id === formData.empId).lName
                       }`
-                    : "" // Display the full name based on the selected ID
+                    : formData.empId || "" // Display empId, fName, and lName of the selected employee or user input
                 }
                 onChange={(e) => {
-                  const selectedId = employees.find(
-                    (emp) => `${emp.fName} ${emp.lName}` === e.target.value
-                  )?.id;
-                  setFormData({ ...formData, empId: selectedId });
+                  const value = e.target.value;
+
+                  // Find the employee based on empId, fName, or lName
+                  const selectedEmployee = employees.find(
+                    (emp) =>
+                      `${emp.empId} ${emp.fName} ${emp.lName}` === value ||
+                      emp.empId === value ||
+                      emp.fName === value ||
+                      emp.lName === value
+                  );
+
+                  setFormData({
+                    ...formData,
+                    empId: selectedEmployee ? selectedEmployee.id : value, // Update empId if matched, otherwise store raw input
+                  });
                 }}
               />
 
               <datalist id="employeesList">
                 {employees.map((emp) => (
-                  <option key={emp.id} value={`${emp.fName} ${emp.lName}`}>
-                    {emp.fName} {emp.lName}
-                  </option>
+                  <option
+                    key={emp.id}
+                    value={`${emp.empId} ${emp.fName} ${emp.lName}`} // Format: empId fName lName
+                  />
                 ))}
               </datalist>
             </>
@@ -326,7 +338,7 @@ const AssignTax = () => {
                 name="enrollSite"
                 value={formData.locId}
                 onChange={(e) =>
-                  setFormData({...formData, value: e.target.value})
+                  setFormData({ ...formData, value: e.target.value })
                 }
               >
                 <option value="">Select Enrolled Site</option>
@@ -336,7 +348,6 @@ const AssignTax = () => {
                   </option>
                 ))}
               </select>
-              
             </>
           )}
           {formData.assignTo == "byDsg" && (
@@ -346,7 +357,7 @@ const AssignTax = () => {
                 name="enrollSite"
                 value={formData.dgsId}
                 onChange={(e) =>
-                  setFormData({...formData, value: e.target.value})
+                  setFormData({ ...formData, value: e.target.value })
                 }
               >
                 <option value="">Select Designation</option>
@@ -356,7 +367,6 @@ const AssignTax = () => {
                   </option>
                 ))}
               </select>
-              
             </>
           )}
           {formData.assignTo == "byDpt" && (
@@ -366,7 +376,7 @@ const AssignTax = () => {
                 name="enrollSite"
                 value={formData.dptId}
                 onChange={(e) =>
-                  setFormData({...formData, value: e.target.value})
+                  setFormData({ ...formData, value: e.target.value })
                 }
               >
                 <option value="">Select Department</option>
@@ -376,7 +386,6 @@ const AssignTax = () => {
                   </option>
                 ))}
               </select>
-              
             </>
           )}
 
@@ -388,7 +397,9 @@ const AssignTax = () => {
             <option value="">Select Tax</option>
             {bonuses.map((bonus) => (
               <option key={bonus.id} value={bonus.id}>
-                {bonus.taxName} {bonus.amount == 0 ? bonus.percent : bonus.amount} {bonus.percent != 0 ? '%' : 'Rs'}
+                {bonus.taxName}{" "}
+                {bonus.amount == 0 ? bonus.percent : bonus.amount}{" "}
+                {bonus.percent != 0 ? "%" : "Rs"}
               </option>
             ))}
           </select>
@@ -418,22 +429,28 @@ const AssignTax = () => {
             value={
               employees.find((emp) => emp.id === formData.empId)
                 ? `${
+                    employees.find((emp) => emp.id === formData.empId).empId
+                  } ${
                     employees.find((emp) => emp.id === formData.empId).fName
                   } ${employees.find((emp) => emp.id === formData.empId).lName}`
-                : "" // Display the full name based on the selected ID
+                : "" // Display empId, fName, and lName of the selected employee
             }
             onChange={(e) => {
-              const selectedId = employees.find(
-                (emp) => `${emp.fName} ${emp.lName}` === e.target.value
-              )?.id;
-              setFormData({ ...formData, empId: selectedId });
+              const selectedEmployee = employees.find(
+                (emp) =>
+                  `${emp.empId} ${emp.fName} ${emp.lName}` === e.target.value
+              );
+              setFormData({ ...formData, empId: selectedEmployee?.id });
             }}
           />
 
           <datalist id="employeesList">
             {employees.map((emp) => (
-              <option key={emp.id} value={`${emp.fName} ${emp.lName}`}>
-                {emp.fName} {emp.lName}
+              <option
+                key={emp.id}
+                value={`${emp.empId} ${emp.fName} ${emp.lName}`} // Format: empId fName lName
+              >
+                {emp.empId} {emp.fName} {emp.lName}
               </option>
             ))}
           </datalist>

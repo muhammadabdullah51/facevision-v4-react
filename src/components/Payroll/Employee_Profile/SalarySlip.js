@@ -66,7 +66,7 @@ const SalarySlip = ({ salaryDetails }) => {
             </p>
             <p>
               <strong>Attempted Working Hours:</strong>{" "}
-              {salaryDetails.attemptWorkingHours}
+              {salaryDetails.attempt_working_hours}
             </p>
           </div>
         </section>
@@ -101,8 +101,8 @@ const SalarySlip = ({ salaryDetails }) => {
                 </tr>
                 <tr>
                   <td>4</td>
-                  <td>Extra Fund</td>
-                  <td className="th-amount">Rs. {salaryDetails.extraFund}</td>
+                  <td>Appraisal</td>
+                  <td className="th-amount">Rs. {salaryDetails.app}</td>
                 </tr>
                 {salaryDetails.allowances.map((allowance, index) => (
                   <tr key={index}>
@@ -137,8 +137,8 @@ const SalarySlip = ({ salaryDetails }) => {
                 </tr>
                 <tr>
                   <td>3</td>
-                  <td>Appraisal</td>
-                  <td className="th-amount">Rs. {salaryDetails.app}</td>
+                  <td>Extra Fund</td>
+                  <td className="th-amount">Rs. {salaryDetails.extraFund}</td>
                 </tr>
                 {salaryDetails.taxes.map((tax, index) => (
                   <tr key={index}>
@@ -155,16 +155,16 @@ const SalarySlip = ({ salaryDetails }) => {
         {/* Summary */}
         <section className="summary">
           <p>
-            <strong>Daily Salary:</strong> Rs. {salaryDetails.dailySalary}
+            <strong>Basic Salary:</strong> Rs. {salaryDetails.basicSalary}
           </p>
           <p>
-            <strong>Calculated Pay:</strong> Rs. {salaryDetails.calcPay}
+            <strong>Calculated Pay:</strong> Rs. {salaryDetails.calculate_pay}
           </p>
           <p>
             <strong>Total Overtime Hours:</strong> {salaryDetails.otHours}
           </p>
           <p>
-            <strong>Total Net Pay:</strong> Rs. {salaryDetails.calcPay}
+            <strong>Total Net Pay:</strong> Rs. {salaryDetails.calculate_pay}
           </p>
         </section>
       </div>

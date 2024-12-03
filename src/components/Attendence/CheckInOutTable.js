@@ -16,31 +16,29 @@ const CheckInOutTable = ({ data, setData }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
-  const [employees, setEmployees] = useState([]);
-  const [locations, setLocations] = useState([]);
   const [formData, setFormData] = useState({
-    allAttendanceId: null,
+    id: "",
     empId: "",
-    employee: "",
-    time_in: "",
-    time_out: "",
+    fName: "",
+    lName: "",
+    time: "",
     date: "",
-    attendance_marked: false,
-    status: "Absent",
-    location: "",
+    status: "",
+    ip: "",
   });
 
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [employees, setEmployees] = useState([]);
 
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
 
   const fetchAtt = useCallback(async () => {
     try {
-      const response = await axios.get(`${SERVER_URL}all-attendance/`);
+      const response = await axios.get(`${SERVER_URL}att-chkinout/`);
       setData(response.data);
       console.log(response.data);
     } catch (error) {
@@ -51,29 +49,15 @@ const CheckInOutTable = ({ data, setData }) => {
   const fetchEmployees = async () => {
     try {
       const response = await axios.get(`${SERVER_URL}pr-emp/`);
-      console.log(response.data);
       setEmployees(response.data);
     } catch (error) {
       console.error("Error fetching employees:", error);
     }
   };
-  const fetchloc = async () => {
-    try {
-      const response = await axios.get(`${SERVER_URL}pr-loc/`);
-      // console.log(response.data.context);
-      const location = response.data.context;
-      setLocations(location);
-      console.log(location)
-    } catch (error) {
-      console.error("Error fetching location:", error);
-    }
-  };
 
-  
   useEffect(() => {
-    fetchAtt()
+    fetchAtt();
     fetchEmployees();
-    fetchloc();
     let timer;
     if (successModal) {
       timer = setTimeout(() => {
@@ -100,39 +84,28 @@ const CheckInOutTable = ({ data, setData }) => {
         // Combines first name and last name
         Cell: ({ row }) => (
           <span className="bold-fonts">
-            {row.original.emp_fName} {row.original.emp_lName}
+            {row.original.lName} {row.original.fName}
           </span>
         ),
       },
       {
-        Header: "Time In",
-        accessor: "time_in", // Keeps the original field name
-      },
-      {
-        Header: "Time Out",
-        accessor: "time_out", // Keeps the original field name
+        Header: "Time",
+        accessor: "time", // Keeps the original field name
       },
       {
         Header: "Date",
         accessor: "date", // Keeps the original field name
       },
-    //   {
-    //     Header: "Attendance Marked",
-    //     accessor: "attendance_marked",
-    //     Cell: ({ value }) => (value ? "Yes" : "No"),
-    //   },
       {
         Header: "Status",
         accessor: "status",
         Cell: ({ value }) => (
           <span
             className={`status ${
-              value === "Present"
+              value === "checkin"
                 ? "presentStatus"
-                : value === "Late"
+                : value === "checkout"
                 ? "lateStatus"
-                : value === "Absent"
-                ? "absentStatus"
                 : "none"
             }`}
           >
@@ -140,10 +113,10 @@ const CheckInOutTable = ({ data, setData }) => {
           </span>
         ),
       },
-    //   {
-    //     Header: "Location",
-    //     accessor: "locName",
-    //   },
+      //   {
+      //     Header: "Location",
+      //     accessor: "locName",
+      //   },
       {
         Header: "Action",
         accessor: "action",
@@ -199,14 +172,13 @@ const CheckInOutTable = ({ data, setData }) => {
 
   const handleEdit = (row) => {
     setFormData({
-      allAttendanceId: row.allAttendanceId,
+      id: row.id,
       empId: row.empId,
-      time_in: row.time_in,
-      time_out: row.time_out,
+      fName: row.fName,
+      lName: row.lName,
+      time: row.time,
       date: row.date,
-      attendance_marked: row.attendance_marked,
       status: row.status,
-      location: row.location,
     });
     console.log(formData);
 
@@ -223,10 +195,11 @@ const CheckInOutTable = ({ data, setData }) => {
   const confirmUpdate = async () => {
     if (
       !formData.empId ||
-      !formData.time_in ||
-      !formData.time_out ||
+      !formData.time ||
+      !formData.fName ||
+      !formData.lName ||
       !formData.date ||
-      !formData.status
+      !formData.status 
     ) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
@@ -234,20 +207,22 @@ const CheckInOutTable = ({ data, setData }) => {
       return;
     }
     const attPayload = {
-      allAttendanceId: formData.allAttendanceId,
+      id: formData.id,
       empId: formData.empId,
-      time_in: formData.time_in,
-      time_out: formData.time_out,
+      fName: formData.lName,
+      lName: formData.fName,
+      time: formData.time,
       date: formData.date,
-      attendance_marked: formData.attendance_marked,
       status: formData.status,
-      location: formData.location,
     };
     console.log(attPayload);
     try {
-      const res = await axios.post(`${SERVER_URL}all-attendance/`, attPayload);
-      console.log(res)
-      const updatedData = await axios.get(`${SERVER_URL}all-attendance/`);
+      const res = await axios.put(
+        `${SERVER_URL}att-chkinout/${formData.id}`,
+        attPayload
+      );
+      console.log(res);
+      const updatedData = await axios.get(`${SERVER_URL}att-chkinout/`);
       setData(updatedData.data);
       fetchAtt();
       setShowEditForm(false);
@@ -259,90 +234,92 @@ const CheckInOutTable = ({ data, setData }) => {
   };
 
   const handleDelete = async (row) => {
-    console.log(row)
+    console.log(row);
     setModalType("delete");
     setShowModal(true);
-    setFormData({allAttendanceId: row.allAttendanceId});
-    console.log(formData.allAttendanceId);
+    setFormData({ id: row.id });
+    console.log(formData.id);
     console.log(formData);
   };
 
   const confirmDelete = async () => {
     console.log(formData);
-    const response = await axios.post(`${SERVER_URL}del-att/`, {
-      allAttendanceId: formData.allAttendanceId,
-    });
-    const updatedData = await axios.get(`${SERVER_URL}all-attendance/`);
+    const response = await axios.delete(`${SERVER_URL}att-chkinout/${formData.id}/`);
+    const updatedData = await axios.get(`${SERVER_URL}att-chkinout/`);
     setData(updatedData.data);
     fetchAtt();
     setShowModal(false);
     setSuccessModal(true);
   };
 
-//   const handleAdd = () => {
-//     setFormData({
-//       empId: "",
-//       time_in: "",
-//       time_out: "",
-//       date: "",
-//       attendance_marked: 'by Admin',
-//       status: "",
-//       location: "",
-//     });
+  const handleAdd = () => {
+    setFormData({
+      empId: "",
+      fName: "",
+      lName: "",
+      time: "",
+      date: "",
+      status: "",
+      ip: "",
+      
+    });
 
-//     setShowAddForm(true);
-//     setShowEditForm(false);
-//   };
+    setShowAddForm(true);
+    setShowEditForm(false);
+  };
 
-//   const addAtt = async () => {
-//     setModalType("create");
-//     setShowModal(true);
-//   };
-//   const confirmAdd = async () => {
-//     if (
-//       !formData.empId ||
-//       !formData.time_in ||
-//       !formData.time_out ||
-//       !formData.date ||
-//       !formData.status
-//     ) {
-//       setResMsg("Please fill in all required fields.");
-//       setShowModal(false);
-//       setWarningModal(true);
-//       return;
-//     }
-//     const payload = {
-//       empId: formData.empId,
-//       time_in: formData.time_in,
-//       time_out: formData.time_out,
-//       date: formData.date,
-//       attendance_marked: 'by Admin',
-//       status: formData.status,
-//       location: formData.location,
-//     };
-//     console.log(payload)
-//     try {
-//       await axios.post(`${SERVER_URL}manual-att/`, payload);
-//       const updatedData = await axios.get(`${SERVER_URL}all-attendance/`);
-//       setData(updatedData.data);
-//       fetchAtt();
-//       setShowAddForm(false);
-//       setShowModal(false);
-//       setSuccessModal(true);
-//     } catch (error) {
-//       console.log(error);
-//     }
-//   };
+  const addAtt = async () => {
+    setModalType("create");
+    setShowModal(true);
+    // console.log(formData)
+  };
+  const confirmAdd = async () => {
+    console.log(formData)
+    if (
+      !formData.empId ||
+      !formData.time ||
+      !formData.fName ||
+      !formData.lName ||
+      !formData.date ||
+      !formData.status 
+    ) {
+      setResMsg("Please fill in all required fields.");
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    }
+    const payload = {
+      empId: formData.empId,
+      fName: formData.lName,
+      lName: formData.fName,
+      time: formData.time,
+      date: formData.date,
+      status: formData.status,
+      ip: 'byAdmin',
+    };
+    console.log(payload);
+    try {
+      await axios.post(`${SERVER_URL}att-chkinout/`, payload);
+      const updatedData = await axios.get(`${SERVER_URL}att-chkinout/`);
+      setData(updatedData.data);
+      fetchAtt();
+      setShowAddForm(false);
+      setShowModal(false);
+      setSuccessModal(true);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <div className="department-table">
       <ConirmationModal
         isOpen={showModal}
-        message={`Are you sure you want to ${modalType} this Manual Attendance?`}
+        message={`Are you sure you want to ${modalType} this Manual Check In / Out?`}
         onConfirm={() => {
-        //   if (modalType === "create") confirmAdd();
-        //   else if (modalType === "update") confirmUpdate();
-          if (modalType === "update") confirmUpdate();
+          if (modalType === "create") confirmAdd();
+          else if (modalType === "update") confirmUpdate();
+          // if (modalType === "update") confirmUpdate();
           else confirmDelete();
         }}
         onCancel={() => setShowModal(false)}
@@ -356,7 +333,7 @@ const CheckInOutTable = ({ data, setData }) => {
       />
       <ConirmationModal
         isOpen={successModal}
-        message={`Attendance ${modalType}d successfully!`}
+        message={`Check In / Out ${modalType}d successfully!`}
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
@@ -417,53 +394,66 @@ const CheckInOutTable = ({ data, setData }) => {
             </svg>
           </button>
         </form>
-        {/* <button className="add-button" onClick={handleAdd}>
-          <FaPlus className="add-icon" /> Add Manual Attendance
-        </button> */}
+        <button className="add-button" onClick={handleAdd}>
+          <FaPlus className="add-icon" /> Add Manual Check In / Out
+        </button>
       </div>
 
-      {/* {showAddForm && !showEditForm && (
+      {showAddForm && !showEditForm && (
         <div className="add-department-form add-leave-form">
-          <h3>Add Manual Attendance</h3>
+          <h3>Add Manual Check In / Out</h3>
+          <label>Select Employee</label>
           <input
             list="employeesList"
-            value={formData.empId} // display the employee's name
-            onChange={(e) => {setFormData({ ...formData, empId: e.target.value })}}
-            placeholder="Search or select an employee"
+            value={formData.empId} // Display the selected or entered empId
+            onChange={(e) => {
+              const selectedEmpId = e.target.value; // Capture the entered/selected empId
+              const selectedEmployee = employees.find(
+                (emp) => emp.empId === selectedEmpId
+              ); // Find the corresponding employee
+
+              setFormData({
+                ...formData,
+                empId: selectedEmpId, // Update empId in formData
+                fName: selectedEmployee ? selectedEmployee.fName : "", // Auto-fill fName
+                lName: selectedEmployee ? selectedEmployee.lName : "", // Auto-fill lName
+              });
+            }}
+            placeholder="Enter or select Employee ID"
           />
 
           <datalist id="employeesList">
             {employees.map((emp) => (
-              // Display employee's full name as option value
               <option key={emp.empId} value={emp.empId}>
-                {emp.fName} {emp.lName}
+                {emp.empId} {emp.fName} {emp.lName}
               </option>
             ))}
           </datalist>
 
-          <div className="form-time">
-            <div>
-              <label>Time In</label>
-              <input
-                type="time"
-                placeholder="Time In"
-                value={formData.time_in}
-                onChange={(e) =>
-                  setFormData({ ...formData, time_in: e.target.value })
-                }
-              />
-            </div>
-            <div>
-              <label>Time Out</label>
-              <input
-                type="time"
-                placeholder="Time Out"
-                value={formData.time_out}
-                onChange={(e) =>
-                  setFormData({ ...formData, time_out: e.target.value })
-                }
-              />
-            </div>
+          <label>First Name</label>
+          <input
+            type="text"
+            value={formData.fName} // Display the auto-filled first name
+            disabled // Make it read-only to prevent user edits
+          />
+
+          <label>Last Name</label>
+          <input
+            type="text"
+            value={formData.lName} // Display the auto-filled last name
+            disabled // Make it read-only to prevent user edits
+          />
+
+          <div>
+            <label>Time</label>
+            <input
+              type="time"
+              placeholder="Time"
+              value={formData.time}
+              onChange={(e) =>
+                setFormData({ ...formData, time: e.target.value })
+              }
+            />
           </div>
 
           <label>Date</label>
@@ -481,14 +471,23 @@ const CheckInOutTable = ({ data, setData }) => {
             }
           >
             <option>Select Status</option>
-            <option value="present">Present</option>
-            <option value="absent">Absent</option>
-            <option value="late">Late</option>
+            <option value="checkin">Checkin</option>
+            <option value="checkout">Checkout</option>
           </select>
 
-        
+          <label>Marked By</label>
+          <select
+            disabled
+            value={formData.ip}
+            onChange={(e) =>
+              setFormData({ ...formData, ip: e.target.value })
+            }
+          >
+            
+            <option value="byAdmin">By Admin</option>
+          </select>
           <button className="submit-button" onClick={addAtt}>
-            Add Attendance
+            Add Manual Check In / Out
           </button>
           <button
             className="cancel-button"
@@ -500,49 +499,62 @@ const CheckInOutTable = ({ data, setData }) => {
             Cancel
           </button>
         </div>
-      )} */}
+      )}
       {!showAddForm && showEditForm && (
         <div className="add-department-form add-leave-form">
-          <h3>Edit Manual Attendance</h3>
+          <h3>Edit Manual Check In / Out</h3>
+          <label>Selected Employee</label>
           <input
             list="employeesList"
-            value={formData.empId} // display the employee's name
-            onChange={(e) => {setFormData({ ...formData, empId: e.target.value })}}
-            placeholder="Search or select an employee"
+            value={formData.empId} // Display the selected or entered empId
+            onChange={(e) => {
+              const selectedEmpId = e.target.value; // Capture the entered/selected empId
+              const selectedEmployee = employees.find(
+                (emp) => emp.empId === selectedEmpId
+              ); // Find the corresponding employee
+
+              setFormData({
+                ...formData,
+                empId: selectedEmpId, // Update empId in formData
+                fName: selectedEmployee ? selectedEmployee.fName : "", // Auto-fill fName
+                lName: selectedEmployee ? selectedEmployee.lName : "", // Auto-fill lName
+              });
+            }}
+            placeholder="Enter or select Employee ID"
           />
 
           <datalist id="employeesList">
             {employees.map((emp) => (
-              // Display employee's full name as option value
               <option key={emp.empId} value={emp.empId}>
-                {emp.fName} {emp.lName}
+                {emp.empId} {emp.fName} {emp.lName}
               </option>
             ))}
           </datalist>
 
-          <div className="form-time">
-            <div>
-              <label>Time In</label>
-              <input
-                type="time"
-                placeholder="Time In"
-                value={formData.time_in}
-                onChange={(e) =>
-                  setFormData({ ...formData, time_in: e.target.value })
-                }
-              />
-            </div>
-            <div>
-              <label>Time Out</label>
-              <input
-                type="time"
-                placeholder="Time Out"
-                value={formData.time_out}
-                onChange={(e) =>
-                  setFormData({ ...formData, time_out: e.target.value })
-                }
-              />
-            </div>
+          <label>First Name</label>
+          <input
+            type="text"
+            value={formData.fName} // Display the auto-filled first name
+            disabled // Make it read-only to prevent user edits
+          />
+
+          <label>Last Name</label>
+          <input
+            type="text"
+            value={formData.lName} // Display the auto-filled last name
+            disabled // Make it read-only to prevent user edits
+          />
+
+          <div>
+            <label>Time</label>
+            <input
+              type="time"
+              placeholder="Time"
+              value={formData.time}
+              onChange={(e) =>
+                setFormData({ ...formData, time: e.target.value })
+              }
+            />
           </div>
 
           <label>Date</label>
@@ -551,16 +563,6 @@ const CheckInOutTable = ({ data, setData }) => {
             value={formData.date}
             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
           />
-          <label>Mark Attandance</label>
-          {/* <select
-            disabled
-            value={formData.attendance_marked}
-            onChange={(e) =>
-              setFormData({ ...formData, attendance_marked: e.target.value })
-            }
-          >
-            <option value="by Admin" >{formData.attendance_marked}</option>
-          </select> */}
 
           <label>Select Status</label>
           <select
@@ -570,31 +572,14 @@ const CheckInOutTable = ({ data, setData }) => {
             }
           >
             <option>Select Status</option>
-            <option value="present">Present</option>
-            <option value="absent">Absent</option>
-            <option value="late">Late</option>
+            <option value="checkin">Checkin</option>
+            <option value="checkout">Checkout</option>
           </select>
-
-          {/* <label>Select Location</label>
-          <select
-            value={formData.location}
-            onChange={(e) =>
-              setFormData({ ...formData, location: e.target.value })
-            }
-          >
-            <option value="">Select Location</option>
-            {locations.map((loc) => (
-              <option key={loc.locId} value={loc.locId}>
-                {loc.name}
-              </option>
-            ))}
-          </select> */}
-          
           <button
             className="submit-button"
             onClick={() => handleUpdate(formData)}
           >
-            Update Attendance
+            Update Manual Check In / Out
           </button>
           <button
             className="cancel-button"

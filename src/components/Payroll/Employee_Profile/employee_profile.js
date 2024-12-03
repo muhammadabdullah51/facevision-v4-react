@@ -558,9 +558,9 @@ const EmplyeeProfile = () => {
                                 <td>{item.salaryType}</td>
                                 <td>{item.totalWorkingDays}</td>
                                 <td>{item.totalWorkingHours}</td>
-                                <td>{item.attemptWorkingHours}</td>
+                                <td>{item.attempt_working_hours}</td>
                                 <td>{item.dailySalary}</td>
-                                <td>{item.calcPay}</td>
+                                <td>{item.calculate_pay}</td>
                                 <td>
                                   <button
                                     onClick={() => handleOpenSalarySlip(item)}

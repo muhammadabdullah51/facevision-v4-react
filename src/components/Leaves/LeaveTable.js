@@ -43,7 +43,7 @@ const LeaveTable = ({ data, setData }) => {
     try {
       const response = await axios.get(`${SERVER_URL}att-lv-cr/`);
       setData(response.data);
-      console.log(response.data)
+      console.log(response.data);
     } catch (error) {
       console.error("Error fetching leave data:", error);
     }
@@ -111,7 +111,7 @@ const LeaveTable = ({ data, setData }) => {
         Cell: ({ value }) => (
           <span
             className={`status ${
-              value === "Approved" ? "approvedStatus" : "pendingStatus"
+              value === "Approved" || value === "Cancelled" ? "approvedStatus" : value === "Pending" ? "lateStatus" : "absentStatus"
             }`}
           >
             {value}
@@ -121,6 +121,18 @@ const LeaveTable = ({ data, setData }) => {
       {
         Header: "Created At",
         accessor: "created_at",
+        Cell: ({ value }) => {
+          const date = new Date(value); // Convert the ISO string to a Date object
+          const day = String(date.getDate()).padStart(2, "0"); // Get day and pad with leading zero if needed
+          const month = String(date.getMonth() + 1).padStart(2, "0"); // Get month (0-indexed, so add 1)
+          const year = date.getFullYear(); // Get year
+          const hours = String(date.getHours()).padStart(2, "0"); // Get hours and pad with leading zero if needed
+          const minutes = String(date.getMinutes()).padStart(2, "0"); // Get minutes and pad
+          const seconds = String(date.getSeconds()).padStart(2, "0"); // Get seconds and pad
+
+          // Return formatted date and time as "dd-mm-yyyy hh:mm:ss"
+          return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+        },
       },
       {
         Header: "Action",
@@ -176,14 +188,14 @@ const LeaveTable = ({ data, setData }) => {
   const handleEdit = (row) => {
     setFormData({
       id: row.id,
-      empName:row.empName,
+      empName: row.empName,
       leave_type: row.leave_type,
       start_date: row.start_date,
       end_date: row.end_date,
       reason: row.reason,
       status: row.status,
     });
-    console.log(formData)
+    console.log(formData);
 
     setShowAddForm(false);
     setShowEditForm(true);
@@ -196,7 +208,7 @@ const LeaveTable = ({ data, setData }) => {
   };
 
   const confirmUpdate = async () => {
-    if(
+    if (
       formData.employee === "" ||
       formData.leave_type === "" ||
       formData.start_date === "" ||
@@ -204,11 +216,11 @@ const LeaveTable = ({ data, setData }) => {
       formData.reason === "" ||
       formData.status === "" ||
       formData.created_at === ""
-      ) {
-        setResMsg("Please fill in all required fields.")
-        setShowModal(false);
-        setWarningModal(true);
-        return;
+    ) {
+      setResMsg("Please fill in all required fields.");
+      setShowModal(false);
+      setWarningModal(true);
+      return;
     }
     const leavePayload = {
       id: formData.id,
@@ -232,17 +244,18 @@ const LeaveTable = ({ data, setData }) => {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (row) => {
     setModalType("delete");
     setShowModal(true);
-    setFormData({ id: formData.id });
-    console.log(formData.id)
-
+    setFormData({ id: row.id });
+    console.log(row.id);
   };
 
   const confirmDelete = async () => {
-    console.log(formData)
-    const response = await axios.post(`${SERVER_URL}att-lv-del/`, { id: formData.id.id });
+    console.log(formData);
+    const response = await axios.post(`${SERVER_URL}att-lv-del/`, {
+      id: formData.id,
+    });
     const updatedData = await axios.get(`${SERVER_URL}att-lv-cr/`);
     setData(updatedData.data);
     fetchLeave();
@@ -270,7 +283,7 @@ const LeaveTable = ({ data, setData }) => {
     setShowModal(true);
   };
   const confirmAdd = async () => {
-    if(
+    if (
       formData.employee === "" ||
       formData.leave_type === "" ||
       formData.start_date === "" ||
@@ -278,11 +291,11 @@ const LeaveTable = ({ data, setData }) => {
       formData.reason === "" ||
       formData.status === "" ||
       formData.created_at === ""
-      ) {
-        setResMsg("Please fill in all required fields.")
-        setShowModal(false);
-        setWarningModal(true);
-        return;
+    ) {
+      setResMsg("Please fill in all required fields.");
+      setShowModal(false);
+      setWarningModal(true);
+      return;
     }
     const leavePayload = {
       employee: formData.employee,
@@ -293,6 +306,7 @@ const LeaveTable = ({ data, setData }) => {
       status: formData.status,
       created_at: formData.created_at,
     };
+    console.log(leavePayload);
     try {
       await axios.post(`${SERVER_URL}att-lv-cr/`, leavePayload);
       const updatedData = await axios.get(`${SERVER_URL}att-lv-cr/`);
@@ -386,37 +400,52 @@ const LeaveTable = ({ data, setData }) => {
       </div>
 
       {/* Add Leave Form */}
-      {(showAddForm && !showEditForm) && (
+      {showAddForm && !showEditForm && (
         <div className="add-department-form add-leave-form">
           <h3>Add New Leave</h3>
           <input
             list="employeesList"
-            value={formData.employee} // display the employee's name
+            value={
+              employees.find((emp) => emp.empId === formData.employee)
+                ? `${
+                    employees.find((emp) => emp.empId === formData.employee)
+                      .empId
+                  } ${
+                    employees.find((emp) => emp.empId === formData.employee)
+                      .fName
+                  } ${
+                    employees.find((emp) => emp.empId === formData.employee)
+                      .lName
+                  }`
+                : formData.employee || "" // Display empId, fName, and lName if employee is found or allow typing
+            }
             onChange={(e) => {
-              // Find the employee based on the name entered in the input
+              const value = e.target.value;
+
+              // If the input is a valid match for employee full name, find the employee
               const selectedEmployee = employees.find(
-                (emp) => `${emp.fName} ${emp.lName}` === e.target.value
+                (emp) => `${emp.empId} ${emp.fName} ${emp.lName}` === value
               );
 
+              // Set the form data
               setFormData({
                 ...formData,
-                // Set employee name to display in the input
-                employee: e.target.value,
-                // Store the empId (or null if no match is found)
-                id: selectedEmployee ? selectedEmployee.empId : null,
+                // If a valid employee is selected, store empId, otherwise keep the current input (for free typing)
+                employee: selectedEmployee ? selectedEmployee.empId : value,
               });
             }}
             placeholder="Search or select an employee"
           />
-          
 
           <datalist id="employeesList">
             {employees.map((emp) => (
-              // Display employee's full name as option value
-              <option key={emp.empId} value={emp.empId}>{emp.fName} {emp.lName}</option>
+              // Display employee's full name in datalist options
+              <option
+                key={emp.empId}
+                value={`${emp.empId} ${emp.fName} ${emp.lName}`}
+              />
             ))}
           </datalist>
-
 
           <select
             value={formData.leave_type}
@@ -467,10 +496,7 @@ const LeaveTable = ({ data, setData }) => {
               </option>
             ))}
           </select>
-          <button
-            className="submit-button"
-            onClick={addLeave}
-          >
+          <button className="submit-button" onClick={addLeave}>
             Add Leave
           </button>
           <button
@@ -484,13 +510,13 @@ const LeaveTable = ({ data, setData }) => {
           </button>
         </div>
       )}
-      {(!showAddForm && showEditForm) && (
+      {!showAddForm && showEditForm && (
         <div className="add-department-form add-leave-form">
           <h3>Edit Leave</h3>
           <input
             type="text"
             value={formData.empName}
-            readOnly
+            disabled
             onChange={(e) =>
               setFormData({ ...formData, empName: e.target.value })
             }

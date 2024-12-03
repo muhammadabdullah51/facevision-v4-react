@@ -36,7 +36,7 @@ const ResignTable = ({ data, setData }) => {
       const response = await axios.get(`${SERVER_URL}pr-emp-rsgn/`);
       const resign = await response.data;
       setData(resign);
-     } catch (error) {
+    } catch (error) {
       console.error("Error fetching resigns data:", error);
     }
   }, [setData]);
@@ -130,14 +130,15 @@ const ResignTable = ({ data, setData }) => {
     useRowSelect
   );
 
-
-  const handleDelete = async(resignId) => {
+  const handleDelete = async (resignId) => {
     setModalType("delete");
     setShowModal(true);
     setFormData({ resignId });
   };
   const confirmDelete = async () => {
-    await axios.post(`${SERVER_URL}pr-emp-rsgn-del/`, { resignId: formData.resignId });
+    await axios.post(`${SERVER_URL}pr-emp-rsgn-del/`, {
+      resignId: formData.resignId,
+    });
     const updatedData = await axios.get(`${SERVER_URL}pr-emp-rsgn/`);
     setData(updatedData.data);
     fetchResign();
@@ -156,18 +157,13 @@ const ResignTable = ({ data, setData }) => {
     fetchResign();
   };
 
- 
   const addResign = () => {
     setModalType("create");
     setShowModal(true);
   };
   const confirmAdd = async () => {
-    if (
-     !formData.employee ||
-     !formData.date ||
-     !formData.reason
-    ) {
-      setResMsg("Please fill in all required fields.")
+    if (!formData.employee || !formData.date || !formData.reason) {
+      setResMsg("Please fill in all required fields.");
       setShowModal(false);
       setWarningModal(true);
       return;
@@ -289,16 +285,35 @@ const ResignTable = ({ data, setData }) => {
           <h3>Add Employee</h3>
           <input
             list="employeesList"
-            value={formData.employee} // display the employee's name
+            value={
+              employees.find((emp) => emp.empId === formData.employee)
+                ? `${
+                    employees.find((emp) => emp.empId === formData.employee)
+                      .empId
+                  } ${
+                    employees.find((emp) => emp.empId === formData.employee)
+                      .fName
+                  } ${
+                    employees.find((emp) => emp.empId === formData.employee)
+                      .lName
+                  }`
+                : formData.employee // Display the selected or typed value
+            }
             onChange={(e) => {
-              // Find the employee based on the name entered in the input
+              const value = e.target.value;
+
+              // Match the input value with employees' `empId`, `fName`, or `lName`
               const selectedEmployee = employees.find(
-                (emp) => `${emp.fName} ${emp.lName}` === e.target.value
+                (emp) =>
+                  `${emp.empId} ${emp.fName} ${emp.lName}` === value ||
+                  emp.empId === value ||
+                  emp.fName === value ||
+                  emp.lName === value
               );
 
               setFormData({
-                ...formData, employee: e.target.value,
-                id: selectedEmployee ? selectedEmployee.empId : null,
+                ...formData,
+                employee: selectedEmployee ? selectedEmployee.empId : value, // Update with empId if matched
               });
             }}
             placeholder="Search or select an employee"
@@ -306,10 +321,13 @@ const ResignTable = ({ data, setData }) => {
 
           <datalist id="employeesList">
             {employees.map((emp) => (
-              // Display employee's full name as option value
-              <option key={emp.empId} value={emp.empId}>{emp.fName} {emp.lName}</option>
+              <option
+                key={emp.empId}
+                value={`${emp.empId} ${emp.fName} ${emp.lName}`} // Options in the format "empId fName lName"
+              />
             ))}
           </datalist>
+
           <input
             type="date"
             placeholder="Date"

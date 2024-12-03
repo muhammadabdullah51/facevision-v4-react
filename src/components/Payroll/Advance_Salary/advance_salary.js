@@ -129,6 +129,7 @@ const AdvanceSalary = () => {
       reason: formData.reason,
       date: formData.date,
     };
+    console.log(advSalary);
     try {
       await axios.post(`${SERVER_URL}pyr-adv/`, advSalary);
       const updatedData = await axios.get(`${SERVER_URL}pyr-adv/`);
@@ -158,12 +159,13 @@ const AdvanceSalary = () => {
       formData.empId === "" ||
       formData.amount === "" ||
       formData.reason === "" ||
-      formData.date === ""){
-        setResMsg("Please fill in all required fields.");
-        setShowModal(false);
-        setWarningModal(true);
-        return;
-      }
+      formData.date === ""
+    ) {
+      setResMsg("Please fill in all required fields.");
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    }
     const updateAdvSalary = {
       advSalaryId: formData.advSalaryId,
       empId: formData.empId,
@@ -288,6 +290,50 @@ const AdvanceSalary = () => {
       {showAddForm && !showEditForm && (
         <div className="add-leave-form">
           <h3>Add New Advance Salary</h3>
+          <label>Select Employee</label>
+          <input
+            list="employeesList"
+            value={
+              employees.find((emp) => emp.empId === formData.empId)
+                ? `${
+                    employees.find((emp) => emp.empId === formData.empId).empId
+                  } ${
+                    employees.find((emp) => emp.empId === formData.empId).fName
+                  } ${
+                    employees.find((emp) => emp.empId === formData.empId).lName
+                  }`
+                : formData.empId || ""
+            } // Display empId, fName, and lName of the selected employee or inputted empId
+            onChange={(e) => {
+              const value = e.target.value;
+              const selectedEmployee = employees.find(
+                (emp) =>
+                  `${emp.empId} ${emp.fName} ${emp.lName}` === value ||
+                  emp.empId === value
+              );
+
+              setFormData({
+                ...formData,
+                empId: selectedEmployee ? selectedEmployee.empId : value, // Store empId or raw input
+                empName: selectedEmployee
+                  ? `${selectedEmployee.fName} ${selectedEmployee.lName}`
+                  : "", // Set empName based on the selected employee
+              });
+            }}
+            placeholder="Enter or select Employee ID"
+          />
+
+          <datalist id="employeesList">
+            {employees.map((emp) => (
+              <option
+                key={emp.empId}
+                value={`${emp.empId} ${emp.fName} ${emp.lName}`}
+              >
+                {emp.empId} {emp.fName} {emp.lName}
+              </option>
+            ))}
+          </datalist>
+          <label>Advance Salary Amount</label>
           <input
             type="Number"
             placeholder="Amount"
@@ -296,6 +342,7 @@ const AdvanceSalary = () => {
               setFormData({ ...formData, amount: e.target.value })
             }
           />
+          <label>Reason</label>
           <input
             type="text"
             placeholder="Reason"
@@ -304,60 +351,15 @@ const AdvanceSalary = () => {
               setFormData({ ...formData, reason: e.target.value })
             }
           />
+          <label>Date</label>
           <input
             type="Date"
             placeholder="Date"
             value={formData.date}
             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
           />
+
          
-
-          <input
-            list="employeesList"
-            value={formData.empId} // This will store and display the empId
-            onChange={(e) => {
-              // Find the employee based on empId entered in the input
-              const selectedEmployee = employees.find(
-                (emp) => emp.empId === e.target.value
-              );
-
-              setFormData({
-                ...formData,
-                // Set empId to the selected empId from the datalist
-                empId: e.target.value,
-                // Set empName based on the selected empId, or empty if no match
-                empName: selectedEmployee
-                  ? `${selectedEmployee.fName} ${selectedEmployee.lName}`
-                  : "",
-              });
-            }}
-            placeholder="Enter or select Employee ID"
-          />
-          <datalist id="employeesList">
-            {employees.map((emp) => (
-              <option key={emp.empId} value={emp.empId}>
-                {emp.fName} {emp.lName}
-              </option>
-            ))}
-          </datalist>
-          <select
-            value={formData.empName}
-            onChange={(e) => {
-              // Find the employee based on selected name
-              const selectedEmployee = employees.find(
-                (emp) => `${emp.fName} ${emp.lName}` === e.target.value
-              );
-
-              setFormData({
-                ...formData,
-                empName: e.target.value,
-                empId: selectedEmployee ? selectedEmployee.empId : null,
-              });
-            }}
-            disabled
-          >
-            <option value="">{formData.empName || "Select Employee"}</option>
-          </select>
 
           <button className="submit-button" onClick={addAdvSalary}>
             Add Advance Salary
@@ -370,6 +372,51 @@ const AdvanceSalary = () => {
       {showEditForm && (
         <div className="add-leave-form">
           <h3>Edit Advance Salary</h3>
+          <label>Selected Employee</label>
+          <input
+            disabled
+            list="employeesList"
+            value={
+              employees.find((emp) => emp.empId === formData.empId)
+                ? `${
+                    employees.find((emp) => emp.empId === formData.empId).empId
+                  } ${
+                    employees.find((emp) => emp.empId === formData.empId).fName
+                  } ${
+                    employees.find((emp) => emp.empId === formData.empId).lName
+                  }`
+                : formData.empId || ""
+            } // Display empId, fName, and lName of the selected employee or inputted empId
+            onChange={(e) => {
+              const value = e.target.value;
+              const selectedEmployee = employees.find(
+                (emp) =>
+                  `${emp.empId} ${emp.fName} ${emp.lName}` === value ||
+                  emp.empId === value
+              );
+
+              setFormData({
+                ...formData,
+                empId: selectedEmployee ? selectedEmployee.empId : value, // Store empId or raw input
+                empName: selectedEmployee
+                  ? `${selectedEmployee.fName} ${selectedEmployee.lName}`
+                  : "", // Set empName based on the selected employee
+              });
+            }}
+            placeholder="Enter or select Employee ID"
+          />
+
+          <datalist id="employeesList">
+            {employees.map((emp) => (
+              <option
+                key={emp.empId}
+                value={`${emp.empId} ${emp.fName} ${emp.lName}`}
+              >
+                {emp.empId} {emp.fName} {emp.lName}
+              </option>
+            ))}
+          </datalist>
+          <label>Advance Salary Amount</label>
           <input
             type="Number"
             placeholder="Amount"
@@ -378,7 +425,7 @@ const AdvanceSalary = () => {
               setFormData({ ...formData, amount: e.target.value })
             }
           />
-
+          <label>Reason</label>
           <input
             type="text"
             placeholder="Reason"
@@ -387,43 +434,15 @@ const AdvanceSalary = () => {
               setFormData({ ...formData, reason: e.target.value })
             }
           />
+          <label>Date</label>
           <input
             type="Date"
             placeholder="Date"
             value={formData.date}
             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
           />
+
           
-          <input
-            list="employeesList"
-            value={formData.empId} // This will store and display the empId
-            disabled
-            onChange={(e) => {
-              // Find the employee based on empId entered in the input
-              const selectedEmployee = employees.find(
-                (emp) => emp.empId === e.target.value
-              );
-
-              setFormData({
-                ...formData,
-                // Set empId to the selected empId from the datalist
-                empId: e.target.value,
-                // Set empName based on the selected empId, or empty if no match
-                empName: selectedEmployee
-                  ? `${selectedEmployee.fName} ${selectedEmployee.lName}`
-                  : "",
-              });
-            }}
-            placeholder="Enter or select Employee ID"
-          />
-
-          <datalist id="employeesList">
-            {employees.map((emp) => (
-              <option key={emp.empId} value={emp.empId}>
-                {emp.fName} {emp.lName}
-              </option>
-            ))}
-          </datalist>
 
           <button
             className="submit-button"

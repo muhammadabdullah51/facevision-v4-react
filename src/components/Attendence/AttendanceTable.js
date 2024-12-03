@@ -63,15 +63,14 @@ const AttendanceTable = ({ data, setData }) => {
       // console.log(response.data.context);
       const location = response.data.context;
       setLocations(location);
-      console.log(location)
+      console.log(location);
     } catch (error) {
       console.error("Error fetching location:", error);
     }
   };
 
-  
   useEffect(() => {
-    fetchAtt()
+    fetchAtt();
     fetchEmployees();
     fetchloc();
     let timer;
@@ -93,7 +92,7 @@ const AttendanceTable = ({ data, setData }) => {
       },
       {
         Header: "Employee ID",
-        accessor: "empId", // Keeps the original field name
+        accessor: "employeeId", // Keeps the original field name
       },
       {
         Header: "Employee Name",
@@ -207,6 +206,9 @@ const AttendanceTable = ({ data, setData }) => {
       attendance_marked: row.attendance_marked,
       status: row.status,
       location: row.location,
+      emp_fName: row.emp_fName,
+      emp_lName: row.emp_lName,
+      employeeId: row.employeeId
     });
     console.log(formData);
 
@@ -221,13 +223,14 @@ const AttendanceTable = ({ data, setData }) => {
   };
 
   const confirmUpdate = async () => {
-    if (
-      !formData.empId ||
+    if (!formData.empId || 
+      !formData.date || 
       !formData.time_in ||
       !formData.time_out ||
       !formData.date ||
-      !formData.status
-    ) {
+      !formData.attendance_marked ||
+      !formData.location ||
+      !formData.status) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
       setWarningModal(true);
@@ -236,7 +239,7 @@ const AttendanceTable = ({ data, setData }) => {
     const attPayload = {
       allAttendanceId: formData.allAttendanceId,
       empId: formData.empId,
-      time_in: formData.time_in,
+      time_in: formData.time_in || "",
       time_out: formData.time_out,
       date: formData.date,
       attendance_marked: formData.attendance_marked,
@@ -246,7 +249,7 @@ const AttendanceTable = ({ data, setData }) => {
     console.log(attPayload);
     try {
       const res = await axios.post(`${SERVER_URL}all-attendance/`, attPayload);
-      console.log(res)
+      console.log(res);
       const updatedData = await axios.get(`${SERVER_URL}all-attendance/`);
       setData(updatedData.data);
       fetchAtt();
@@ -259,10 +262,10 @@ const AttendanceTable = ({ data, setData }) => {
   };
 
   const handleDelete = async (row) => {
-    console.log(row)
+    console.log(row);
     setModalType("delete");
     setShowModal(true);
-    setFormData({allAttendanceId: row.allAttendanceId});
+    setFormData({ allAttendanceId: row.allAttendanceId });
     console.log(formData.allAttendanceId);
     console.log(formData);
   };
@@ -285,7 +288,7 @@ const AttendanceTable = ({ data, setData }) => {
       time_in: "",
       time_out: "",
       date: "",
-      attendance_marked: 'by Admin',
+      attendance_marked: "by Admin",
       status: "",
       location: "",
     });
@@ -297,6 +300,7 @@ const AttendanceTable = ({ data, setData }) => {
   const addAtt = async () => {
     setModalType("create");
     setShowModal(true);
+    console.log(formData);
   };
   const confirmAdd = async () => {
     if (
@@ -316,11 +320,11 @@ const AttendanceTable = ({ data, setData }) => {
       time_in: formData.time_in,
       time_out: formData.time_out,
       date: formData.date,
-      attendance_marked: 'by Admin',
+      attendance_marked: "by Admin",
       status: formData.status,
       location: formData.location,
     };
-    console.log(payload)
+    console.log(payload);
     try {
       await axios.post(`${SERVER_URL}manual-att/`, payload);
       const updatedData = await axios.get(`${SERVER_URL}all-attendance/`);
@@ -424,19 +428,42 @@ const AttendanceTable = ({ data, setData }) => {
       {showAddForm && !showEditForm && (
         <div className="add-department-form add-leave-form">
           <h3>Add Manual Attendance</h3>
+          <label>Select Employee</label>
           <input
-            list="employeesList"
-            value={formData.empId} // display the employee's name
-            onChange={(e) => {setFormData({ ...formData, empId: e.target.value })}}
+            type="text"
+            list="employeesList" // Link to the datalist by id
             placeholder="Search or select an employee"
+            value={
+              employees.find((emp) => emp.empId === formData.empId)
+                ? `${formData.empId} ${
+                    employees.find((emp) => emp.empId === formData.empId).fName
+                  } ${
+                    employees.find((emp) => emp.empId === formData.empId).lName
+                  }`
+                : formData.empId || "" // Display empId, fName, and lName of the selected employee or user input
+            }
+            onChange={(e) => {
+              const value = e.target.value;
+
+              // Split the value to extract empId if input contains more than empId
+              const selectedEmpId = value.split(" ")[0]; // Take the first part as empId
+              const selectedEmployee = employees.find(
+                (emp) => emp.empId === selectedEmpId
+              );
+
+              setFormData({
+                ...formData,
+                empId: selectedEmployee ? selectedEmployee.empId : value, // Update empId if matched, otherwise store raw input
+              });
+            }}
           />
 
           <datalist id="employeesList">
             {employees.map((emp) => (
-              // Display employee's full name as option value
-              <option key={emp.empId} value={emp.empId}>
-                {emp.fName} {emp.lName}
-              </option>
+              <option
+                key={emp.empId}
+                value={`${emp.empId} ${emp.fName} ${emp.lName}`} // Format: empId fName lName
+              />
             ))}
           </datalist>
 
@@ -480,9 +507,9 @@ const AttendanceTable = ({ data, setData }) => {
             }
           >
             <option>Select Status</option>
-            <option value="present">Present</option>
-            <option value="absent">Absent</option>
-            <option value="late">Late</option>
+            <option value="Present">Present</option>
+            <option value="Absent">Absent</option>
+            <option value="Late">Late</option>
           </select>
 
           <label>Select Location</label>
@@ -516,21 +543,35 @@ const AttendanceTable = ({ data, setData }) => {
       {!showAddForm && showEditForm && (
         <div className="add-department-form add-leave-form">
           <h3>Edit Manual Attendance</h3>
-          <input
-            list="employeesList"
-            value={formData.empId} // display the employee's name
-            onChange={(e) => {setFormData({ ...formData, empId: e.target.value })}}
-            placeholder="Search or select an employee"
-          />
+          <label>Selected Employee</label>
+         
 
           <datalist id="employeesList">
             {employees.map((emp) => (
-              // Display employee's full name as option value
-              <option key={emp.empId} value={emp.empId}>
-                {emp.fName} {emp.lName}
-              </option>
+              <option
+                key={emp.empId}
+                value={`${emp.empId} ${emp.fName} ${emp.lName}`} // Format: empId fName lName
+              />
             ))}
           </datalist>
+
+          <input 
+          type="text"
+          disabled
+          value={formData.employeeId}
+          />
+          <input 
+          type="text"
+          disabled
+          value={formData.emp_fName}
+          />
+          <input 
+          type="text"
+          disabled
+          value={formData.emp_lName}
+          />
+
+          
 
           <div className="form-time">
             <div>
@@ -571,7 +612,7 @@ const AttendanceTable = ({ data, setData }) => {
               setFormData({ ...formData, attendance_marked: e.target.value })
             }
           >
-            <option value="by Admin" >{formData.attendance_marked}</option>
+            <option value="by Admin">{formData.attendance_marked}</option>
           </select>
 
           <label>Select Status</label>
@@ -582,9 +623,9 @@ const AttendanceTable = ({ data, setData }) => {
             }
           >
             <option>Select Status</option>
-            <option value="present">Present</option>
-            <option value="absent">Absent</option>
-            <option value="late">Late</option>
+            <option value="Present">Present</option>
+            <option value="Absent">Absent</option>
+            <option value="Late">Late</option>
           </select>
 
           <label>Select Location</label>
@@ -601,7 +642,7 @@ const AttendanceTable = ({ data, setData }) => {
               </option>
             ))}
           </select>
-          
+
           <button
             className="submit-button"
             onClick={() => handleUpdate(formData)}

@@ -9,12 +9,16 @@ import deleteAnimation from "../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../assets/Lottie/warningAnim.json";
 import { SERVER_URL } from "../../config";
+import BreakManagementTable from "./BreakManagementTable";
 
 const ShiftManagementTable = () => {
   const [data, setData] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [selectedItems, setSelectedItems] = useState([]);
+  const [selectedBreaks, setSelectedBreaks] = useState([]);
+  const [brk, setBrk] = useState("");
+
   const days = [
     "monday",
     "tuesday",
@@ -36,6 +40,7 @@ const ShiftManagementTable = () => {
     exit_start_time: "",
     exit_end_time: "",
     holidays: [],
+    bkId: "",
   });
 
   const [showModal, setShowModal] = useState(false);
@@ -61,8 +66,18 @@ const ShiftManagementTable = () => {
     }
   }, [setData]);
 
+  const fetchBreak = async () => {
+    try {
+      const response = await axios.get(`${SERVER_URL}brk-sch/`);
+      setBrk(response.data);
+    } catch (error) {
+      console.error("Error fetching break:", error);
+    }
+  };
+
   useEffect(() => {
     fetchShift();
+    fetchBreak();
     let timer;
     if (successModal) {
       timer = setTimeout(() => {
@@ -99,9 +114,7 @@ const ShiftManagementTable = () => {
       exit_start_time: "",
       exit_end_time: "",
       holidays: [],
-      // totalWorkingDays: "",
-      // totalWorkingHours: "",
-      // totalWorkingMinutes: "",
+      bkId: "",
     });
     setSelectedItems([]);
     setShowAddForm(true);
@@ -117,7 +130,8 @@ const ShiftManagementTable = () => {
       formData.start_time === "" ||
       formData.end_time === "" ||
       formData.exit_status === "" ||
-      formData.entry_status === ""
+      formData.entry_status === "" ||
+      formData.bkId === ""
     ) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
@@ -135,7 +149,9 @@ const ShiftManagementTable = () => {
       exit_start_time: formData.exit_start_time,
       exit_end_time: formData.exit_end_time,
       holidays: selectedItems,
+      bkId: formData.bkId,
     };
+    console.log(newItem);
     try {
       const response = await axios.post(`${SERVER_URL}shft/`, newItem);
       console.log(response);
@@ -156,22 +172,6 @@ const ShiftManagementTable = () => {
       setShowModal(false);
       setWarningModal(true);
     }
-    setFormData({
-      shiftId: "",
-      name: "",
-      entry_status: "",
-      exit_status: "",
-      start_time: "",
-      end_time: "",
-      entry_start_time: "",
-      entry_end_time: "",
-      exit_start_time: "",
-      exit_end_time: "",
-      totalWorkingDays: "",
-      totalWorkingHours: "",
-      totalWorkingMinutes: "",
-      holidays: [],
-    });
   };
 
   const handleEdit = (row) => {
@@ -191,6 +191,7 @@ const ShiftManagementTable = () => {
       totalWorkingDays: row.totalWorkingDays,
       totalWorkingHours: row.totalWorkingHours,
       totalWorkingMinutes: row.totalWorkingMinutes,
+      bkId: row.bkId,
     });
     setSelectedItems(row.holidays || []);
     console.log("handleEdit", formData);
@@ -215,6 +216,7 @@ const ShiftManagementTable = () => {
       totalWorkingDays: row.totalWorkingDays,
       totalWorkingHours: row.totalWorkingHours,
       totalWorkingMinutes: row.totalWorkingMinutes,
+      bkId: row.bkId,
     });
     setSelectedItems(row.holidays || []);
     setShowModal(true);
@@ -233,7 +235,8 @@ const ShiftManagementTable = () => {
       !formData.end_time ||
       !formData.entry_start_time ||
       !formData.exit_status ||
-      !formData.entry_status
+      !formData.entry_status ||
+      formData.bkId === ""
     ) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
@@ -253,6 +256,7 @@ const ShiftManagementTable = () => {
       entry_end_time: formatTime(formData.entry_end_time),
       exit_start_time: formatTime(formData.exit_start_time),
       exit_end_time: formatTime(formData.exit_end_time),
+      bkId: formData.bkId,
       holidays: selectedItems,
     };
     console.log("confirmEdit", formData);
@@ -284,7 +288,9 @@ const ShiftManagementTable = () => {
       item.end_time.toLowerCase().includes(searchQuery) ||
       item.exit_status.toLowerCase().includes(searchQuery) ||
       item.entry_status.toLowerCase().includes(searchQuery) ||
-      item.holidays.map((holiday) => holiday.toLowerCase()).includes(searchQuery)
+      item.holidays
+        .map((holiday) => holiday.toLowerCase())
+        .includes(searchQuery)
   );
 
   return (
@@ -487,6 +493,24 @@ const ShiftManagementTable = () => {
               </select>
             </div>
           </div>
+          <h5>Break</h5>
+          <select
+            value={formData.bkId} // Bind to the selected bkId
+            onChange={(e) => {
+              setFormData({
+                ...formData,
+                bkId: e.target.value, // Update bkId in formData
+              });
+            }}
+          >
+            <option value="">Select Break</option> {/* Placeholder option */}
+            {brk.map((emp) => (
+              <option key={emp.bkId} value={emp.bkId}>
+                {emp.name} {/* Display the name */}
+              </option>
+            ))}
+          </select>
+
           <h4>Select Holidays:</h4>
           <div className="item-list-Selected">
             {days.map((item) => (
@@ -633,6 +657,23 @@ const ShiftManagementTable = () => {
               </select>
             </div>
           </div>
+          <h5>Break</h5>
+          <select
+            value={formData.bkId} // Bind to the selected bkId
+            onChange={(e) => {
+              setFormData({
+                ...formData,
+                bkId: e.target.value, // Update bkId in formData
+              });
+            }}
+          >
+            <option value="">Select Break</option> {/* Placeholder option */}
+            {brk.map((emp) => (
+              <option key={emp.bkId} value={emp.bkId}>
+                {emp.name} {/* Display the name */}
+              </option>
+            ))}
+          </select>
           <h4>Select Holidays:</h4>
           <div className="item-list-Selected">
             {days.map((item) => (
@@ -688,6 +729,7 @@ const ShiftManagementTable = () => {
               <th>On Entry Late</th>
               <th>Exit Time</th>
               <th>On Exit Late</th>
+              <th>Break</th>
               <th>Holidays</th>
               <th>Actions</th>
             </tr>
@@ -717,6 +759,7 @@ const ShiftManagementTable = () => {
                     {item.exit_status}
                   </span>
                 </td>
+                <td>{item.bkId}</td>
                 <td className="accessible-items">
                   {Array.isArray(item.holidays) && item.holidays.length > 0
                     ? item.holidays.map((holiday, index) => (
@@ -744,6 +787,9 @@ const ShiftManagementTable = () => {
             ))}
           </tbody>
         </table>
+      </div>
+      <div className="break-table">
+        <BreakManagementTable />
       </div>
     </div>
   );

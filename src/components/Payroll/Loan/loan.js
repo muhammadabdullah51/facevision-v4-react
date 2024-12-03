@@ -80,7 +80,7 @@ const Loan = () => {
     setModalType("delete");
     setShowModal(true);
     setFormData({ ...formData, id: id });
-    console.log(formData)
+    console.log(formData);
   };
   const confirmDelete = async () => {
     try {
@@ -188,7 +188,7 @@ const Loan = () => {
       !formData.givenLoan ||
       !formData.returnInMonths ||
       !formData.reason ||
-      !formData.date 
+      !formData.date
     ) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
@@ -237,7 +237,7 @@ const Loan = () => {
     <div className="department-table">
       <ConirmationModal
         isOpen={showModal}
-        message={ `Are you sure you want to ${modalType} this Loan?`}
+        message={`Are you sure you want to ${modalType} this Loan?`}
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
           else if (modalType === "update") confirmUpdate();
@@ -327,21 +327,44 @@ const Loan = () => {
           <label>Select Employee</label>
           <input
             list="employeesList"
-            value={formData.empId} // display the employee's name
+            value={
+              employees.find((emp) => emp.empId === formData.empId)
+                ? `${
+                    employees.find((emp) => emp.empId === formData.empId).empId
+                  } ${
+                    employees.find((emp) => emp.empId === formData.empId).fName
+                  } ${
+                    employees.find((emp) => emp.empId === formData.empId).lName
+                  }`
+                : formData.empId || "" // Display empId, fName, and lName of selected employee or inputted empId
+            }
             onChange={(e) => {
-              setFormData({ ...formData, empId: e.target.value });
+              const value = e.target.value;
+              const selectedEmployee = employees.find(
+                (emp) =>
+                  `${emp.empId} ${emp.fName} ${emp.lName}` === value ||
+                  emp.empId === value
+              );
+
+              setFormData({
+                ...formData,
+                empId: selectedEmployee ? selectedEmployee.empId : value, // Store empId or raw input
+              });
             }}
             placeholder="Search or select an employee"
           />
 
           <datalist id="employeesList">
             {employees.map((emp) => (
-              // Display employee's full name as option value
-              <option key={emp.empId} value={emp.empId}>
-                {emp.fName} {emp.lName}
+              <option
+                key={emp.empId}
+                value={`${emp.empId} ${emp.fName} ${emp.lName}`}
+              >
+                {emp.empId} {emp.fName} {emp.lName}
               </option>
             ))}
           </datalist>
+
           <label>Given Loan</label>
           <input
             type="number"
@@ -383,8 +406,8 @@ const Loan = () => {
           />
           <select
             value={formData.status}
-            onChange={(e) => 
-              setFormData({...formData, status: e.target.value})
+            onChange={(e) =>
+              setFormData({ ...formData, status: e.target.value })
             }
           >
             <option value="">Select Status</option>
@@ -406,23 +429,46 @@ const Loan = () => {
           <h3>Update Loan</h3>
           <label>Selected Employee</label>
           <input
-            readOnly
+          disabled
             list="employeesList"
-            value={formData.empId} // display the employee's name
+            value={
+              employees.find((emp) => emp.empId === formData.empId)
+                ? `${
+                    employees.find((emp) => emp.empId === formData.empId).empId
+                  } ${
+                    employees.find((emp) => emp.empId === formData.empId).fName
+                  } ${
+                    employees.find((emp) => emp.empId === formData.empId).lName
+                  }`
+                : formData.empId || "" // Display empId, fName, and lName of selected employee or inputted empId
+            }
             onChange={(e) => {
-              setFormData({ ...formData, empId: e.target.value });
+              const value = e.target.value;
+              const selectedEmployee = employees.find(
+                (emp) =>
+                  `${emp.empId} ${emp.fName} ${emp.lName}` === value ||
+                  emp.empId === value
+              );
+
+              setFormData({
+                ...formData,
+                empId: selectedEmployee ? selectedEmployee.empId : value, // Store empId or raw input
+              });
             }}
             placeholder="Search or select an employee"
           />
 
           <datalist id="employeesList">
             {employees.map((emp) => (
-              // Display employee's full name as option value
-              <option key={emp.empId} value={emp.empId}>
-                {emp.fName} {emp.lName}
+              <option
+                key={emp.empId}
+                value={`${emp.empId} ${emp.fName} ${emp.lName}`}
+              >
+                {emp.empId} {emp.fName} {emp.lName}
               </option>
             ))}
           </datalist>
+
           <label>Given Loan</label>
           <input
             type="number"
@@ -433,17 +479,16 @@ const Loan = () => {
             }
           />
 
-         
-              <label>Return In Months</label>
-              <input
-                type="number"
-                placeholder="Return In Months"
-                value={formData.returnInMonths}
-                onChange={(e) =>
-                  setFormData({ ...formData, returnInMonths: e.target.value })
-                }
-              />
-        
+          <label>Return In Months</label>
+          <input
+            type="number"
+            placeholder="Return In Months"
+            value={formData.returnInMonths}
+            onChange={(e) =>
+              setFormData({ ...formData, returnInMonths: e.target.value })
+            }
+          />
+
           <label>Paid Amount</label>
           <input
             type="number"
@@ -473,8 +518,8 @@ const Loan = () => {
           <label>Selected Status</label>
           <select
             value={formData.status}
-            onChange={(e) => 
-              setFormData({...formData, status: e.target.value})
+            onChange={(e) =>
+              setFormData({ ...formData, status: e.target.value })
             }
           >
             <option value="">Select Status</option>
@@ -540,12 +585,12 @@ const Loan = () => {
                   </span>
                 </td>
                 <td>
-                    <button
-                      onClick={() => handleEdit(adv)}
-                      style={{ background: "none", border: "none" }}
-                    >
-                      <FaEdit className="table-edit" />
-                    </button>
+                  <button
+                    onClick={() => handleEdit(adv)}
+                    style={{ background: "none", border: "none" }}
+                  >
+                    <FaEdit className="table-edit" />
+                  </button>
 
                   <button
                     onClick={() => handleDelete(adv.id)}

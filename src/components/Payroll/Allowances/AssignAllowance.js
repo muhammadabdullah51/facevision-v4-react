@@ -253,23 +253,36 @@ const AssignAllowance = () => {
             value={
               employees.find((emp) => emp.id === formData.empId)
                 ? `${
+                    employees.find((emp) => emp.id === formData.empId).empId
+                  } ${
                     employees.find((emp) => emp.id === formData.empId).fName
                   } ${employees.find((emp) => emp.id === formData.empId).lName}`
-                : "" // Display the full name based on the selected ID
+                : formData.empId || "" // Display empId, fName, and lName of the selected employee or user input
             }
             onChange={(e) => {
-              const selectedId = employees.find(
-                (emp) => `${emp.fName} ${emp.lName}` === e.target.value
-              )?.id;
-              setFormData({ ...formData, empId: selectedId });
+              const value = e.target.value;
+
+              // Find the employee based on empId, fName, or lName
+              const selectedEmployee = employees.find(
+                (emp) =>
+                  `${emp.empId} ${emp.fName} ${emp.lName}` === value ||
+                  emp.empId === value ||
+                  emp.fName === value ||
+                  emp.lName === value
+              );
+
+              setFormData({
+                ...formData,
+                empId: selectedEmployee ? selectedEmployee.id : value, // Update empId if matched, otherwise store raw input
+              });
             }}
           />
-
           <datalist id="employeesList">
             {employees.map((emp) => (
-              <option key={emp.id} value={`${emp.fName} ${emp.lName}`}>
-                {emp.fName} {emp.lName}
-              </option>
+              <option
+                key={emp.id}
+                value={`${emp.empId} ${emp.fName} ${emp.lName}`} // Format: empId fName lName
+              />
             ))}
           </datalist>
 
@@ -304,30 +317,44 @@ const AssignAllowance = () => {
           <h3>Update Assigned Allowance</h3>
 
           <input
-            type="text"
             disabled
+            type="text"
             list="employeesList" // Link to the datalist by id
             placeholder="Search or select an employee"
             value={
               employees.find((emp) => emp.id === formData.empId)
                 ? `${
+                    employees.find((emp) => emp.id === formData.empId).empId
+                  } ${
                     employees.find((emp) => emp.id === formData.empId).fName
                   } ${employees.find((emp) => emp.id === formData.empId).lName}`
-                : "" // Display the full name based on the selected ID
+                : formData.empId || "" // Display empId, fName, and lName of the selected employee or user input
             }
             onChange={(e) => {
-              const selectedId = employees.find(
-                (emp) => `${emp.fName} ${emp.lName}` === e.target.value
-              )?.id;
-              setFormData({ ...formData, empId: selectedId });
+              const value = e.target.value;
+
+              // Find the employee based on empId, fName, or lName
+              const selectedEmployee = employees.find(
+                (emp) =>
+                  `${emp.empId} ${emp.fName} ${emp.lName}` === value ||
+                  emp.empId === value ||
+                  emp.fName === value ||
+                  emp.lName === value
+              );
+
+              setFormData({
+                ...formData,
+                empId: selectedEmployee ? selectedEmployee.id : value, // Update empId if matched, otherwise store raw input
+              });
             }}
           />
 
           <datalist id="employeesList">
             {employees.map((emp) => (
-              <option key={emp.id} value={`${emp.fName} ${emp.lName}`}>
-                {emp.fName} {emp.lName}
-              </option>
+              <option
+                key={emp.id}
+                value={`${emp.empId} ${emp.fName} ${emp.lName}`} // Format: empId fName lName
+              />
             ))}
           </datalist>
 

@@ -249,25 +249,47 @@ const AssignBonus = () => {
       {showAddForm && !showEditForm && (
         <div className="add-leave-form">
           <h3>Assign Bonus to Employee</h3>
-
+          <label>Select Employee</label>
           <input
             list="employeesList"
-            value={formData.empId} // display the employee's name
+            value={
+              employees.find((emp) => emp.empId === formData.empId)
+                ? `${
+                    employees.find((emp) => emp.empId === formData.empId).empId
+                  } ${
+                    employees.find((emp) => emp.empId === formData.empId).fName
+                  } ${
+                    employees.find((emp) => emp.empId === formData.empId).lName
+                  }`
+                : formData.empId || "" // Display empId, fName, and lName of selected employee or inputted empId
+            }
             onChange={(e) => {
-              setFormData({ ...formData, empId: e.target.value });
+              const value = e.target.value;
+              const selectedEmployee = employees.find(
+                (emp) =>
+                  `${emp.empId} ${emp.fName} ${emp.lName}` === value ||
+                  emp.empId === value
+              );
+
+              setFormData({
+                ...formData,
+                empId: selectedEmployee ? selectedEmployee.empId : value, // Store empId or raw input
+              });
             }}
             placeholder="Search or select an employee"
           />
 
           <datalist id="employeesList">
             {employees.map((emp) => (
-              // Display employee's full name as option value
-              <option key={emp.empId} value={emp.empId}>
-                {emp.fName} {emp.lName}
+              <option
+                key={emp.empId}
+                value={`${emp.empId} ${emp.fName} ${emp.lName}`}
+              >
+                {emp.empId} {emp.fName} {emp.lName}
               </option>
             ))}
           </datalist>
-
+          <label>Select Bonus</label>
           <select
             value={formData.bonusId}
             onChange={(e) =>
@@ -281,6 +303,7 @@ const AssignBonus = () => {
               </option>
             ))}
           </select>
+          <label>Date</label>
           <input
             type="date"
             value={formData.bonusAssignDate}
@@ -299,22 +322,44 @@ const AssignBonus = () => {
       {showEditForm && (
         <div className="add-leave-form">
           <h3>Update Assigned Bonus</h3>
-
+          <label>Selected Employee</label>
           <input
-            disabled
             list="employeesList"
-            value={formData.empId} // display the employee's name
+            disabled
+            value={
+              employees.find((emp) => emp.empId === formData.empId)
+                ? `${
+                    employees.find((emp) => emp.empId === formData.empId).empId
+                  } ${
+                    employees.find((emp) => emp.empId === formData.empId).fName
+                  } ${
+                    employees.find((emp) => emp.empId === formData.empId).lName
+                  }`
+                : formData.empId || "" // Display empId, fName, and lName of selected employee or inputted empId
+            }
             onChange={(e) => {
-              setFormData({ ...formData, empId: e.target.value });
+              const value = e.target.value;
+              const selectedEmployee = employees.find(
+                (emp) =>
+                  `${emp.empId} ${emp.fName} ${emp.lName}` === value ||
+                  emp.empId === value
+              );
+
+              setFormData({
+                ...formData,
+                empId: selectedEmployee ? selectedEmployee.empId : value, // Store empId or raw input
+              });
             }}
             placeholder="Search or select an employee"
           />
 
           <datalist id="employeesList">
             {employees.map((emp) => (
-              // Display employee's full name as option value
-              <option key={emp.empId} value={emp.empId}>
-                {emp.fName} {emp.lName}
+              <option
+                key={emp.empId}
+                value={`${emp.empId} ${emp.fName} ${emp.lName}`}
+              >
+                {emp.empId} {emp.fName} {emp.lName}
               </option>
             ))}
           </datalist>

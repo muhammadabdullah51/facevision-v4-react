@@ -88,6 +88,9 @@
   }
 }
 
+.break-table {
+  margin: 10vh 0;
+}
 
 .icons-box{
   display: flex;
