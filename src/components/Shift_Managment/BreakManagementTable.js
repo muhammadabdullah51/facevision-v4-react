@@ -10,7 +10,7 @@ import deleteAnimation from "../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../assets/Lottie/warningAnim.json";
 
-const BreakManagementTable = () => {
+const BreakManagementTable = ({onDataUpdate}) => {
     const [data, setData] = useState([]);
     const [searchQuery, setSearchQuery] = useState(""); // State for search query
   
@@ -31,12 +31,13 @@ const BreakManagementTable = () => {
     const [warningModal, setWarningModal] = useState(false);
     const [resMsg, setResMsg] = useState("");
   
-    const fetchLvs = useCallback(async () => {
+    const fetchBreaks = useCallback(async () => {
       setLoading(true);
       try {
         const response = await axios.get(`${SERVER_URL}brk-sch/`);
         console.log(response.data);
         setData(response.data);
+        onDataUpdate(response.data); 
       } catch (error) {
         console.error("Error fetching shift data:", error);
       } finally {
@@ -45,7 +46,8 @@ const BreakManagementTable = () => {
     }, [setData]);
   
     useEffect(() => {
-      fetchLvs();
+      fetchBreaks();
+      
       let timer;
       if (successModal) {
         timer = setTimeout(() => {
@@ -53,7 +55,7 @@ const BreakManagementTable = () => {
         }, 2000);
       }
       return () => clearTimeout(timer);
-    }, [fetchLvs, successModal]);
+    }, [fetchBreaks, successModal]);
   
     
   
@@ -100,6 +102,7 @@ const BreakManagementTable = () => {
         setResMsg(res.data.msg)
         const updatedData = await axios.get(`${SERVER_URL}brk-sch/`);
         setData(updatedData.data);
+        onDataUpdate(updatedData.data)
       } catch (error) {
         console.error("Error updating Leave:", error);
         setShowModal(false);
@@ -143,6 +146,8 @@ const BreakManagementTable = () => {
         setSuccessModal(true)
         const updatedData = await axios.get(`${SERVER_URL}brk-sch/`);
         setData(updatedData.data);
+        onDataUpdate(updatedData.data)
+
         // setShowAddForm(false)
       } catch (error) {
         console.log(error);
@@ -164,7 +169,9 @@ const BreakManagementTable = () => {
       await axios.delete(`${SERVER_URL}brk-sch/${formData.id}/`);
       const updatedData = await axios.get(`${SERVER_URL}brk-sch/`);
       setData(updatedData.data);
-      fetchLvs();
+      onDataUpdate(updatedData.data)
+
+      fetchBreaks();
       setShowModal(false);
       setSuccessModal(true);
     }

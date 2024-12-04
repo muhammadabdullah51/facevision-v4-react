@@ -2,32 +2,34 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { SERVER_URL } from "../../../config";
 import error from "../../../assets/error.png";
-const Daily_Absent_Report = ({ searchQuery, sendDataToParent }) => {
+
+const BonusReport = ({ searchQuery, sendDataToParent }) => {
   const [data, setData] = useState([]);
   const [employees, setEmployees] = useState([]);
 
-  const fetchData = useCallback(async () => {
+  const fetchBonus = useCallback(async () => {
     try {
-      const response = await axios.get(`${SERVER_URL}rp-att-all-absent/`);
+      const response = await axios.get(`${SERVER_URL}pyr-asg-bns/`);
       console.log(response.data);
       setData(response.data);
     } catch (error) {
-      console.error("Error fetching assign-allowances data:", error);
+      console.error("Error fetching Bonus data:", error);
     }
   }, [setData]);
 
   const filteredData = data.filter(
     (item) =>
+      item.bonusName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.empId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.fName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.lName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.date.toLowerCase().includes(searchQuery.toLowerCase())
+      item.empName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.bonusAssignDate.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.bonusAmount.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   useEffect(() => {
-    fetchData();
+    fetchBonus();
     sendDataToParent(filteredData);
-  }, [fetchData]);
+  }, [fetchBonus]);
 
   return (
     <>
@@ -35,33 +37,32 @@ const Daily_Absent_Report = ({ searchQuery, sendDataToParent }) => {
         <>
           <div className="baandar">
             <img src={error} alt="No Data Found" />
-            <h4>No Absent Employee For Today.</h4>
+            <h4>No Bonus Record Found.</h4>
           </div>
         </>
       ) : (
         <div className="departments-table">
-          <h3>Daily Absent Report</h3>
+          <h3>Bonus Report</h3>
           <table className="table">
             <thead>
               <tr>
+                <th>Bonus ID</th>
                 <th>Employee ID</th>
                 <th>Employee Name</th>
-                <th>Status</th>
-                <th>Date</th>
+                <th>Bonus Name</th>
+                <th>Amount</th>
+                <th>Awarded Date</th>
               </tr>
             </thead>
             <tbody>
               {filteredData.map((bonus) => (
                 <tr key={bonus.id}>
+                  <td>{bonus.id}</td>
                   <td>{bonus.empId}</td>
-                  <td className="bold-fonts">
-                     {bonus.lName} {bonus.fName}
-                  </td>
-                  <td>
-                    {" "}
-                    <span className="status absentStatus">Absent</span>
-                  </td>
-                  <td>{bonus.date}</td>
+                  <td className="bold-fonts">{bonus.empName}</td>
+                  <td>{bonus.bonusName}</td>
+                  <td className="bold-fonts">{bonus.bonusAmount}</td>
+                  <td>{bonus.bonusAssignDate}</td>
                 </tr>
               ))}
             </tbody>
@@ -72,4 +73,4 @@ const Daily_Absent_Report = ({ searchQuery, sendDataToParent }) => {
   );
 };
 
-export default Daily_Absent_Report;
+export default BonusReport;

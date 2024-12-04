@@ -3,13 +3,13 @@ import axios from "axios";
 import { SERVER_URL } from "../../../config";
 import error from "../../../assets/error.png";
 
-const Absent_Summary_Report = ({ searchQuery, sendDataToParent }) => {
+const TaxReport = ({ searchQuery, sendDataToParent }) => {
   const [data, setData] = useState([]);
   const [employees, setEmployees] = useState([]);
 
-  const fetchData = useCallback(async () => {
+  const fetchTax = useCallback(async () => {
     try {
-      const response = await axios.get(`${SERVER_URL}rp-att-all-absent/`);
+      const response = await axios.get(`${SERVER_URL}assign-taxes/`);
       console.log(response.data);
       setData(response.data);
     } catch (error) {
@@ -19,16 +19,17 @@ const Absent_Summary_Report = ({ searchQuery, sendDataToParent }) => {
 
   const filteredData = data.filter(
     (item) =>
-      item.empId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.fName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.lName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.date.toLowerCase().includes(searchQuery.toLowerCase()) 
+      item.employeeId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.empName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.date.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.empTaxAmount.toString().toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.taxName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   useEffect(() => {
-    fetchData();
+    fetchTax();
     sendDataToParent(filteredData);
-  }, [fetchData]);
+  }, [fetchTax]);
 
   return (
     <>
@@ -36,27 +37,31 @@ const Absent_Summary_Report = ({ searchQuery, sendDataToParent }) => {
         <>
           <div className="baandar">
             <img src={error} alt="No Data Found" />
-            <h4>No Absent Record Found.</h4>
+            <h4>No Tax Record Found.</h4>
           </div>
         </>
       ) : (
     <div className="departments-table">
-      <h3>Absent Summary Report</h3>
+      <h3>Tax Report</h3>
       <table className="table">
         <thead>
           <tr>
+            <th>Bonus ID</th>
             <th>Employee ID</th>
             <th>Employee Name</th>
-            <th>Status</th>  
+            <th>Tax Name</th>
+            <th>Amount</th>
             <th>Date</th>
           </tr>
         </thead>
         <tbody>
           {filteredData.map((bonus) => (
-              <tr key={bonus.id}>
-              <td>{bonus.empId}</td>
-              <td className="bold-fonts">{bonus.fName} {bonus.lName}</td>
-              <td> <span className='status absentStatus'>Absent</span></td>
+            <tr key={bonus.id}>
+              <td>{bonus.id}</td>
+              <td>{bonus.employeeId}</td>
+              <td className="bold-fonts">{bonus.empName}</td>
+              <td className="bold-fonts">{bonus.taxName}</td>
+              <td className="bold-fonts">{bonus.empTaxAmount}</td>
               <td>{bonus.date}</td>
             </tr>
           ))}
@@ -68,4 +73,4 @@ const Absent_Summary_Report = ({ searchQuery, sendDataToParent }) => {
   );
 };
 
-export default Absent_Summary_Report;
+export default TaxReport;

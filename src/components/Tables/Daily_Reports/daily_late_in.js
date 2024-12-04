@@ -1,100 +1,95 @@
-import React, { useEffect } from "react";
-import "../Dashboard_Table/dashboard_table.css";
+import React, { useState, useEffect, useCallback } from "react";
+import axios from "axios";
+import { SERVER_URL } from "../../../config";
+import error from "../../../assets/error.png";
 
 const Daily_Late_In_Report = ({ searchQuery, sendDataToParent }) => {
-  const data = [
-    {
-      empId: "E001",
-      employeeName: "Aleem Dar",
-      timeIn: "09:15 AM",
-      date: "2024-09-01",
-      status: "Late",
-    },
-    {
-      empId: "E002",
-      employeeName: "Dania Khalid",
-      timeIn: "09:10 AM",
-      date: "2024-09-01",
-      status: "On Time",
-    },
-    {
-      empId: "E003",
-      employeeName: "Farrukh Saleem",
-      timeIn: "09:25 AM",
-      date: "2024-09-01",
-      status: "Late",
-    },
-    {
-      empId: "E004",
-      employeeName: "Ayesha Sanum",
-      timeIn: "09:05 AM",
-      date: "2024-09-01",
-      status: "On Time",
-    },
-    {
-      empId: "E005",
-      employeeName: "Waleed Faheem",
-      timeIn: "09:30 AM",
-      date: "2024-09-01",
-      status: "Late",
-    },
-    // Add more rows as needed
-  ];
+  const [data, setData] = useState([]);
+
+  const fetchFtm = useCallback(async () => {
+    try {
+      const response = await axios.get(`${SERVER_URL}rp-att-late-in/`);
+      console.log(response.data);
+      setData(response.data);
+    } catch (error) {
+      console.error("Error fetching Daily full time data:", error);
+    }
+  }, [setData]);
 
   const filteredData = data.filter(
-    (row) =>
-      row.empId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      row.employeeName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      row.date.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      row.timeIn.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      row.status.toLowerCase().includes(searchQuery.toLowerCase())
+    (item) =>
+      item.employeeId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.emp_fName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.emp_lName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.time_in.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.time_out.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.locName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.date.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Send filtered data to parent
   useEffect(() => {
+    fetchFtm();
     sendDataToParent(filteredData);
-  }, [filteredData, sendDataToParent]);
+  }, [fetchFtm]);
 
   return (
-    <div className="departments-table">
-      <h3>Daily Late In Report</h3>
-      <table className="table">
-        <thead>
-          <tr>
-            <th>Serial No</th>
-            <th>Employee ID</th>
-            <th>Employee Name</th>
-            <th>Date</th>
-            <th>Time</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredData.map((row, index) => (
-            <tr key={index}>
-              <td>{index + 1}</td>
-              <td>{row.empId}</td>
-              <td className="bold-fonts">{row.employeeName}</td>
-              <td>{row.date}</td>
-              <td>{row.timeIn}</td>
-              <td>
-                <span
-                  className={`${row.status.toLowerCase()} status ${
-                    row.status === "On Time"
-                      ? "presentStatus"
-                      : row.status === "Late"
-                      ? "lateStatus"
-                      : "none"
-                  }`}
-                >
-                  {row.status}
-                </span>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <>
+      {data.length < 1 ? (
+        <>
+          <div className="baandar">
+            <img src={error} alt="No Data Found" />
+            <h4>No Fulltime Record For Today.</h4>
+          </div>
+        </>
+      ) : (
+        <div className="departments-table">
+          <h3>Daily Fulltime Report</h3>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Employee ID</th>
+                <th>Employee Name</th>
+                <th>Time In</th>
+                <th>Time Out</th>
+                <th>Location</th>
+                <th>Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredData.map((bonus) => (
+                <tr key={bonus.id}>
+                  <td>{bonus.employeeId}</td>
+                  <td className="bold-fonts">
+                    {bonus.emp_fName} {bonus.emp_lName}
+                  </td>
+                  <td className="bold-fonts">{bonus.time_in}</td>
+                  <td className="bold-fonts">{bonus.time_out}</td>
+                  <td>{bonus.locName}</td>
+                  <td>{bonus.date}</td>
+                  <td>
+                    <span
+                      className={`status ${
+                        bonus.status === "Present"
+                          ? "presentStatus"
+                          : bonus.status === "Late"
+                          ? "lateStatus"
+                          : bonus.status === "Absent"
+                          ? "absentStatus"
+                          : "none"
+                      }`}
+                    >
+                      {bonus.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </>
   );
 };
 

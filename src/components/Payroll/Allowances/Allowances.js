@@ -436,7 +436,10 @@ const Allowance = () => {
           </tbody>
         </table>
       </div>
+      <div className="break-table">
+
       <AssignAllowance />
+      </div>
     </div>
   );
 };

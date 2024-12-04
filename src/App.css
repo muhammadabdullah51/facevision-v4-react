@@ -1,28 +1,27 @@
 :root {
   --primary-color: #5f8053;
   --secondary-color: #d5e9be;
-  --sidebar-color:#FFFFFF;
-  --app-color:  #F7F8FA;
+  --sidebar-color: #FFFFFF;
+  --app-color: #F7F8FA;
   --hover-color: #EDF5FC;
   --hoverText-color: #7341DA;
   --theam-color: #7341DA;
   --after-border-radius: #7341DA;
-  --button-color:white;
+  --button-color: white;
   --success-button-color: #67b8b1;
-  --fail-button-color:#ffffff;
+  --fail-button-color: #ffffff;
   --button-hover-color: #7670eb;
   --table-header-color: #e5e5e5;
   --shadow-color: rgba(0, 0, 0, 0.541);
   --text-color: #4e4e4e;
-  --background-color: #f0f0f0; 
-  --border-color: #d4d2d2; 
-  --input-border-color: #e0e0e0; 
-  --box-shadow:0 4px 8px rgba(0, 0, 0, 0.1);
-  --font-size:0.9vw;
-  --headerFont-size:0.8vw;
-  --inner-border-color:  #7341DA;
-  --pagination-hover-color:black
-  --timing: 0.3s;
+  --background-color: #f0f0f0;
+  --border-color: #d4d2d2;
+  --input-border-color: #e0e0e0;
+  --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  --font-size: 0.9vw;
+  --headerFont-size: 0.8vw;
+  --inner-border-color: #7341DA;
+  --pagination-hover-color: black --timing: 0.3s;
   --width-of-input: 300px;
   --height-of-input: 40px;
   --border-height: 2px;
@@ -40,79 +39,92 @@
   --delete-svg-color: #ff4c74;
   --edit-svg-color: #7670eb;
 }
-@media only screen and (max-width:1300px){
+
+@media only screen and (max-width:1300px) {
   :root {
     --width-of-input: 200px;
     --height-of-input: 30px;
     --icon-size: 1.5vw;
   }
-  .add-button{
+
+  .add-button {
     font-size: x-small;
   }
 }
 
-@media only screen and (min-width:700px) and (max-width:800px){
-  :root{
+@media only screen and (min-width:700px) and (max-width:800px) {
+  :root {
     --table-text-font: 1.6vw;
   }
 
 }
-@media only screen and (min-width:801px) and (max-width:900px){
-  :root{
+
+@media only screen and (min-width:801px) and (max-width:900px) {
+  :root {
     --table-text-font: 1.4vw;
   }
 }
-@media only screen and (min-width:901px) and (max-width:1000px){
-  :root{
+
+@media only screen and (min-width:901px) and (max-width:1000px) {
+  :root {
     --table-text-font: 1.2vw;
   }
 }
-@media only screen and (min-width:1001px) and (max-width:1300px){
-  :root{
+
+@media only screen and (min-width:1001px) and (max-width:1300px) {
+  :root {
     --table-text-font: 1vw;
   }
 }
-@media only screen and (min-width:1301px) and (max-width:1500px){
-  :root{
+
+@media only screen and (min-width:1301px) and (max-width:1500px) {
+  :root {
     --table-text-font: 0.9vw;
   }
 }
-@media only screen and (min-width:700px) and (max-width:1000px){
-  :root{
-        --sidebar-font: 1.3vw
+
+@media only screen and (min-width:700px) and (max-width:1000px) {
+  :root {
+    --sidebar-font: 1.3vw
   }
 }
-@media only screen and (min-width:1001px) and (max-width:1300px){
-  :root{
-        --sidebar-font: 1.3vw
+
+@media only screen and (min-width:1001px) and (max-width:1300px) {
+  :root {
+    --sidebar-font: 1.3vw
   }
 }
 
 .break-table {
-  margin: 10vh 0;
+  margin: 6vh 0;
 }
 
-.icons-box{
+.icons-box {
   display: flex;
 }
-.bold-fonts{
+
+.bold-fonts {
   font-weight: var(--bold-font);
 }
-.captured-image-container img{
+
+.captured-image-container img {
   width: 35%;
   height: auto;
 }
-.presentStatus{
+
+.presentStatus {
   background-color: #d4edda;
   color: #17a136;
 }
-.absentStatus{
+
+.absentStatus {
   background-color: #ffa8bd;
   color: #cf0013;
 }
-.lateStatus{
-  background-color: #e1b0f8;
-  color: #c300ff;
+
+.lateStatus {
+  background-color: #fdbaca;
+  color: #bf0450;
 }
 
 .status {
@@ -121,7 +133,7 @@
   border-radius: 3px;
 }
 
-table thead th{
+table thead th {
   position: sticky;
   top: 0;
   background-color: var(--table-header-color) !important;
@@ -135,6 +147,7 @@ table thead th{
 body {
   font-family: 'Roboto Condensed', sans-serif;
 }
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;
@@ -165,7 +178,19 @@ body {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
+}
+
+.baandar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+}
+.baandar img{
+  width: 7%;
 }

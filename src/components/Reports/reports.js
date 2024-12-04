@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./reports.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFileAlt, faSitemap, faCog } from "@fortawesome/free-solid-svg-icons";
+import { faFileAlt, faSitemap, faCog, faFileCsv, faFilePdf } from "@fortawesome/free-solid-svg-icons";
 import Advance_Salary_Reports from "../Tables/Advance_Salary_Reports/advance_salary_report";
 import All_Employees_Salary_Report from "../Tables/All_Employee_Salary_Report/all_employee_salary_report";
 import Daily_Absent_Report from "../Tables/Daily_Reports/daily_absent";
@@ -23,6 +23,12 @@ import Weekly_Fulltime_Report from "../Tables/Weekly_Reports/weekly_fulltime";
 import Weekly_Overtime_Report from "../Tables/Weekly_Reports/weekly_overtime";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import Appraisals_Report from "../Tables/Payroll_Components_report/appraisals_report";
+import LoanReport from "../Tables/Payroll_Components_report/LoanReport";
+import ExtraFundsReport from "../Tables/Payroll_Components_report/ExtraFundsReport";
+import BonusReport from "../Tables/Payroll_Components_report/BonusReport";
+import AllowanceReports from "../Tables/Payroll_Components_report/AllowanceReports";
+import TaxReport from "../Tables/Payroll_Components_report/TaxReport";
 
 const Reports = () => {
   const [reportType, setReportType] = useState("");
@@ -53,8 +59,16 @@ const Reports = () => {
       "Overtime Summary",
       "Absent Summary",
     ],
-    "advance-salary": [],
-    "all-employee-salary": [],
+    payroll: [
+      "All Employee Salary Report",
+      "Advance Salary Report",
+      "Appraisals Report",
+      "Loan Report",
+      "Extra Funds Report",
+      "Bonus Report",
+      "Allowance Report",
+      "Tax Report",
+    ],
   };
 
   const handleDataFromChild = (filteredData) => {
@@ -103,18 +117,6 @@ const Reports = () => {
 
     doc.save(`${activeTab}.pdf`);
   };
-
-  //   const handleReportTypeChange = (event) => {
-  //     setReportType(event.target.value);
-  //     setReportSubtype("");
-  //     setActiveTab(event.target.value);
-  //   };
-
-  //   const handleReportSubtypeChange = (event) => {
-  //     const selectedSubtype = event.target.value;
-  //     setReportSubtype(selectedSubtype);
-  //     setActiveTab(`${reportType}-${selectedSubtype}`);
-  //   };
 
   const handleReportTypeChange = (event) => {
     setReportType(event.target.value);
@@ -273,27 +275,76 @@ const Reports = () => {
           default:
             return <div>Please select a valid summary report subtype</div>;
         }
-
-      case "advance-salary":
-        return (
-          <Advance_Salary_Reports
-            sendDataToParent={handleDataFromChild}
-            searchQuery={searchQuery}
-          />
-        );
-
-      case "all-employee-salary":
-        return (
-          <All_Employees_Salary_Report
-            sendDataToParent={handleDataFromChild}
-            searchQuery={searchQuery}
-          />
-        );
+      case "payroll":
+        switch (reportSubtype) {
+          case "all-employee-salary-report":
+            return (
+              <>
+                <All_Employees_Salary_Report
+                sendDataToParent={handleDataFromChild}
+                searchQuery={searchQuery}
+                />
+                </>
+            );
+          case "advance-salary-report":
+            return (
+              <Advance_Salary_Reports
+                sendDataToParent={handleDataFromChild}
+                searchQuery={searchQuery}
+              />
+            );
+          case "appraisals-report":
+            return (
+              <Appraisals_Report
+                sendDataToParent={handleDataFromChild}
+                searchQuery={searchQuery}
+              />
+            );
+          case "loan-report":
+            return (
+              <LoanReport
+                sendDataToParent={handleDataFromChild}
+                searchQuery={searchQuery}
+              />
+            );
+          case "extra-funds-report":
+            return (
+              <ExtraFundsReport
+                sendDataToParent={handleDataFromChild}
+                searchQuery={searchQuery}
+              />
+            );
+          case "bonus-report":
+            return (
+              <BonusReport
+                sendDataToParent={handleDataFromChild}
+                searchQuery={searchQuery}
+              />
+            );
+          case "allowance-report":
+            return (
+              <AllowanceReports
+                sendDataToParent={handleDataFromChild}
+                searchQuery={searchQuery}
+              />
+            );
+          case "tax-report":
+            return (
+              <TaxReport
+                sendDataToParent={handleDataFromChild}
+                searchQuery={searchQuery}
+              />
+            );
+          default:
+            return <div>Please select a valid payroll report subtype</div>;
+        }
 
       default:
-        return <div>Please select a report type</div>;
+        return <div>Please select a valid report type</div>;
     }
   };
+
+ 
 
   return (
     <div className="department-table">
@@ -311,10 +362,7 @@ const Reports = () => {
               <option value="weekly">Weekly Report</option>
               <option value="monthly">Monthly Report</option>
               <option value="summary">Summary Report</option>
-              <option value="advance-salary">Advance Salary Report</option>
-              <option value="all-employee-salary">
-                All Employee Salary Report
-              </option>
+              <option value="payroll">Payroll Report</option>
             </select>
           </div>
 
@@ -342,16 +390,23 @@ const Reports = () => {
           )}
 
           <div className="dropdown">
-            <button className="button export-csv">
-              <FontAwesomeIcon icon={faCog} className="button-icon" />
-              Generate Report
+            <button className="button export-csv"
+            onClick={downloadCSV}
+            >
+              <FontAwesomeIcon icon={faFileCsv} className="button-icon" />
+              Export as CSV
             </button>
-            <ul className="dropdown-menu">
+            <button className="button export-csv"
+            onClick={downloadPDF}
+            >
+              <FontAwesomeIcon icon={faFilePdf} className="button-icon" />
+              Export as PDF
+            </button>
+            {/* <ul className="dropdown-menu">
               <li onClick={downloadCSV}>Export as CSV</li>
               <li onClick={downloadPDF}>Export as PDF</li>
-            </ul>
+            </ul> */}
           </div>
-          
         </div>
         <div>
           <form className="form" onSubmit={(e) => e.preventDefault()}>
@@ -402,7 +457,7 @@ const Reports = () => {
           </form>
         </div>
       </div>
-      <div className="report-content">{renderContent()}</div>
+      <div>{renderContent()}</div>
     </div>
   );
 };

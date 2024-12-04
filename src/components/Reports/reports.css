@@ -20,6 +20,7 @@
     height: 4vh;
     padding: 0.1% 0.6%;
     border-radius: 5px;
+    background-color: #fff;
     /* width: 12vw; */
 }
 
@@ -83,6 +84,9 @@
     width: 70%;
     gap: 2vw;
 }
+.report-header p{
+    width: 15%;
+}
 
 .dropdown {
     /* height: 15vh; */
@@ -90,6 +94,7 @@
     position: relative;
     align-items: center;
     justify-content: center;
+    width: 30vw;
 }
 
 

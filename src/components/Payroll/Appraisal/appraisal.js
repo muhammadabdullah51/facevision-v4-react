@@ -543,7 +543,7 @@ const Appraisal = () => {
           </thead>
           <tbody>
             {filteredData.map((adv) => (
-              <tr key={adv._id}>
+              <tr key={adv.id}>
                 <td>{adv.id}</td>
                 <td>{adv.empId}</td>
                 <td className="bold-fonts">{adv.empName}</td>

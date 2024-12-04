@@ -18,6 +18,17 @@ const ShiftManagementTable = () => {
   const [selectedItems, setSelectedItems] = useState([]);
   const [selectedBreaks, setSelectedBreaks] = useState([]);
   const [brk, setBrk] = useState("");
+  const [childBrk, setChildBrk] = useState("");
+
+  const handleBreaks = async(updatedbreak) => {
+    try {
+      setChildBrk(updatedbreak);
+      const response = await axios.get(`${SERVER_URL}brk-sch/`);
+      setChildBrk(response.data);
+    } catch (error) {
+      console.error("Error fetching break:", error);
+    }
+  }
 
   const days = [
     "monday",
@@ -66,18 +77,23 @@ const ShiftManagementTable = () => {
     }
   }, [setData]);
 
-  const fetchBreak = async () => {
-    try {
-      const response = await axios.get(`${SERVER_URL}brk-sch/`);
-      setBrk(response.data);
-    } catch (error) {
-      console.error("Error fetching break:", error);
-    }
-  };
+  const fetchBreak = useCallback(
+
+    async () => {
+      try {
+        const response = await axios.get(`${SERVER_URL}brk-sch/`);
+        setBrk(response.data);
+      } catch (error) {
+        console.error("Error fetching break:", error);
+      }
+    }, [setBrk]
+  )
 
   useEffect(() => {
     fetchShift();
     fetchBreak();
+    
+
     let timer;
     if (successModal) {
       timer = setTimeout(() => {
@@ -383,7 +399,7 @@ const ShiftManagementTable = () => {
       </div>
 
       {showAddForm && !showEditForm && (
-        <div className="add-department-form">
+        <div className="add-department-form add-leave-form">
           <h3>Add New Shift</h3>
           <input
             type="text"
@@ -493,7 +509,7 @@ const ShiftManagementTable = () => {
               </select>
             </div>
           </div>
-          <h5>Break</h5>
+          <h4>Break</h4>
           <select
             value={formData.bkId} // Bind to the selected bkId
             onChange={(e) => {
@@ -504,9 +520,9 @@ const ShiftManagementTable = () => {
             }}
           >
             <option value="">Select Break</option> {/* Placeholder option */}
-            {brk.map((emp) => (
-              <option key={emp.bkId} value={emp.bkId}>
-                {emp.name} {/* Display the name */}
+            {childBrk.map((emp) => (
+              <option key={emp.id} value={emp.id}>
+                {emp.name} 
               </option>
             ))}
           </select>
@@ -547,7 +563,7 @@ const ShiftManagementTable = () => {
         </div>
       )}
       {!showAddForm && showEditForm && (
-        <div className="add-department-form">
+        <div className="add-department-form add-leave-form">
           <h3>Update Shift</h3>
           <input
             type="text"
@@ -657,7 +673,7 @@ const ShiftManagementTable = () => {
               </select>
             </div>
           </div>
-          <h5>Break</h5>
+          <h4>Break</h4>
           <select
             value={formData.bkId} // Bind to the selected bkId
             onChange={(e) => {
@@ -669,7 +685,7 @@ const ShiftManagementTable = () => {
           >
             <option value="">Select Break</option> {/* Placeholder option */}
             {brk.map((emp) => (
-              <option key={emp.bkId} value={emp.bkId}>
+              <option key={emp.id} value={emp.id}>
                 {emp.name} {/* Display the name */}
               </option>
             ))}
@@ -759,7 +775,7 @@ const ShiftManagementTable = () => {
                     {item.exit_status}
                   </span>
                 </td>
-                <td>{item.bkId}</td>
+                <td>{item.breakname}</td>
                 <td className="accessible-items">
                   {Array.isArray(item.holidays) && item.holidays.length > 0
                     ? item.holidays.map((holiday, index) => (
@@ -789,7 +805,7 @@ const ShiftManagementTable = () => {
         </table>
       </div>
       <div className="break-table">
-        <BreakManagementTable />
+        <BreakManagementTable onDataUpdate={handleBreaks} />
       </div>
     </div>
   );

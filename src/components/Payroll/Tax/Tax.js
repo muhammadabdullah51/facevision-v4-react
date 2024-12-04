@@ -530,7 +530,9 @@ const Tax = () => {
           </tbody>
         </table>
       </div>
+      <div className="break-table">
       <AssignTax />
+      </div>
     </div>
   );
 };

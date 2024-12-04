@@ -430,7 +430,10 @@ const Bonuses = () => {
           </tbody>
         </table>
       </div>
+      <div className="break-table">
+
       <AssignBonus />
+      </div>
     </div>
   );
 };

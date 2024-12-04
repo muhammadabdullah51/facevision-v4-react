@@ -113,10 +113,7 @@ const CheckInOutTable = ({ data, setData }) => {
           </span>
         ),
       },
-      //   {
-      //     Header: "Location",
-      //     accessor: "locName",
-      //   },
+     
       {
         Header: "Action",
         accessor: "action",

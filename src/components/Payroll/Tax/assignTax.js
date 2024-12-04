@@ -210,7 +210,11 @@ const AssignTax = () => {
   const handleSearchChange = (e) => setSearchQuery(e.target.value);
 
   const filteredData = data.filter((item) =>
-    item.taxName.toLowerCase().includes(searchQuery.toLowerCase())
+    item.employeeId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.empName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.date.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.empTaxAmount.toString().toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.taxName.toLowerCase().includes(searchQuery.toLowerCase()) 
   );
   const handleCancel = () => {
     setShowAddForm(false);
@@ -258,11 +262,55 @@ const AssignTax = () => {
         animationData={warningAnimation}
         warningModal={warningModal}
       />
-      <div className="table-header" style={{ justifyContent: "end" }}>
+      <div className="table-header" >
+      <form className="form">
+            <button>
+              <svg
+                width="17"
+                height="16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                role="img"
+                aria-labelledby="search"
+              >
+                <path
+                  d="M7.667 12.667A5.333 5.333 0 107.667 2a5.333 5.333 0 000 10.667zM14.334 14l-2.9-2.9"
+                  stroke="currentColor"
+                  strokeWidth="1.333"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                ></path>
+              </svg>
+            </button>
+            <input
+              value={searchQuery}
+              onChange={handleSearchChange}
+              placeholder="Search..."
+              className="input"
+              required
+              type="text"
+            />
+            <button className="reset" type="reset"
+            onClick={() => setSearchQuery("")}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                ></path>
+              </svg>
+            </button>
+          </form>
         <button
           className="add-button"
           onClick={handleAddNew}
-          style={{ margin: "5vh 0 2vh 0", justifyContent: "end" }}
         >
           <FaPlus /> Assign New Tax
         </button>
@@ -462,7 +510,9 @@ const AssignTax = () => {
             <option value="">Select Tax</option>
             {bonuses.map((bonus) => (
               <option key={bonus.id} value={bonus.id}>
-                {bonus.taxName}
+                {bonus.taxName}{" "}
+                {bonus.amount == 0 ? bonus.percent : bonus.amount}{" "}
+                {bonus.percent != 0 ? "%" : "Rs"}
               </option>
             ))}
           </select>
@@ -490,6 +540,7 @@ const AssignTax = () => {
               <th>Employee ID</th>
               <th>Employee Name</th>
               <th>Tax Name</th>
+              <th>Amount</th>
               <th>Date</th>
               <th>Action</th>
             </tr>
@@ -501,6 +552,7 @@ const AssignTax = () => {
                 <td>{bonus.employeeId}</td>
                 <td className="bold-fonts">{bonus.empName}</td>
                 <td className="bold-fonts">{bonus.taxName}</td>
+                <td className="bold-fonts">{bonus.empTaxAmount}</td>
                 <td>{bonus.date}</td>
                 <td>
                   <button
