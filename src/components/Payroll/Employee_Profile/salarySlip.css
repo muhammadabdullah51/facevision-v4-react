@@ -278,6 +278,6 @@ th.th-component, td.th-component{
 /* For medium screens (tablets) */
 @media (max-width: 1500px) {
   .button {
-      font-size: 1vw; /* Slightly larger font size for tablets */
+      font-size: 0.7vw; /* Slightly larger font size for tablets */
   }
 }

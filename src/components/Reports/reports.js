@@ -47,7 +47,7 @@ const Reports = () => {
     ],
     weekly: ["Weekly Full time", "Weekly Overtime", "Weekly Absent"],
     monthly: [
-      "Monthly",
+      // "Monthly",
       "Monthly Entry Time",
       "Monthly Overtime",
       "Monthly Full time",
@@ -72,12 +72,8 @@ const Reports = () => {
   };
 
   const handleDataFromChild = (filteredData) => {
-    console.log("ajkshdkjaa");
     console.log(filteredData);
     setData(filteredData);
-    console.log("ajkshdkjaa");
-    
-    
   };
   
   const downloadCSV = () => {
@@ -208,13 +204,13 @@ const Reports = () => {
 
       case "monthly":
         switch (reportSubtype) {
-          case "monthly":
-            return (
-              <Monthly_Report
-                sendDataToParent={handleDataFromChild}
-                searchQuery={searchQuery}
-              />
-            );
+          // case "monthly":
+          //   return (
+          //     <Monthly_Report
+          //       sendDataToParent={handleDataFromChild}
+          //       searchQuery={searchQuery}
+          //     />
+          //   );
           case "monthly-entry-time":
             return (
               <Monthly_Entry_Time_Report

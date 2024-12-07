@@ -5,44 +5,61 @@ import error from "../../../assets/error.png";
 
 const Daily_Overtime_Report = ({ searchQuery, sendDataToParent }) => {
   const [data, setData] = useState([]);
-const [filteredData, setFilteredData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
 
-const fetch_d_ot = useCallback(async () => {
-  try {
-    const response = await axios.get(`${SERVER_URL}rp-att-all-ot/`);
-    console.log(response.data);
-    setData(response.data);
-  } catch (error) {
-    console.error("Error fetching Daily full time data:", error);
-  }
-}, [setData]);
+  // Fetch data from the server
+  const fetch_d_ot = useCallback(async () => {
+    try {
+      const response = await axios.get(`${SERVER_URL}rp-att-all-ot/`);
+      console.log(response.data);
+      setData(response.data);
+    } catch (error) {
+      console.error("Error fetching Daily Overtime data:", error);
+    }
+  }, []);
 
-useEffect(() => {
-  const newFilteredData = data.filter(
-    (item) =>
-      item.empId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.emp_fName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.emp_lName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.date.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.time_in.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.time_out.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.shift_start.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.shift_end.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.worked_hours.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.extra_hours.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-  setFilteredData(newFilteredData);
-}, [searchQuery, data]);
+  // Filter data based on search query and date range
+  useEffect(() => {
+    const newFilteredData = data.filter((item) => {
+      const itemDate = new Date(item.date);
+      const startDate = fromDate ? new Date(fromDate) : null;
+      const endDate = toDate ? new Date(toDate) : null;
 
-useEffect(() => {
-  if (filteredData && filteredData.length > 0) {
-    sendDataToParent(filteredData);
-  }
-}, [filteredData, sendDataToParent]);
+      const matchesSearchQuery =
+        item.empId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.emp_fName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.emp_lName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.date.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.time_in.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.time_out.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.shift_start.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.shift_end.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.worked_hours.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.extra_hours.toLowerCase().includes(searchQuery.toLowerCase());
 
-useEffect(() => {
-  fetch_d_ot();
-}, [fetch_d_ot]);
+      const matchesDateRange =
+        (!fromDate || itemDate >= startDate) &&
+        (!toDate || itemDate <= endDate);
+
+      return matchesSearchQuery && matchesDateRange;
+    });
+
+    setFilteredData(newFilteredData);
+  }, [searchQuery, data, fromDate, toDate]);
+
+  // Notify parent component of filtered data
+  useEffect(() => {
+    if (filteredData && filteredData.length > 0) {
+      sendDataToParent(filteredData);
+    }
+  }, [filteredData, sendDataToParent]);
+
+  // Fetch data on component mount
+  useEffect(() => {
+    fetch_d_ot();
+  }, [fetch_d_ot]);
 
   return (
     <>
@@ -55,7 +72,29 @@ useEffect(() => {
         </>
       ) : (
         <div className="departments-table">
-          <h3>Daily Overtime Report</h3>
+          <div className="report-head">
+            <h3>Daily Overtime Report</h3>
+
+            <div className="date-search">
+              <label>
+                From:
+                <input
+                  type="date"
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
+                />
+              </label>
+
+              <label>
+                To:
+                <input
+                  type="date"
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                />
+              </label>
+            </div>
+          </div>
           <table className="table">
             <thead>
               <tr>
@@ -74,15 +113,16 @@ useEffect(() => {
               {filteredData.map((bonus) => (
                 <tr key={bonus.id}>
                   <td>{bonus.empId}</td>
-                  <td className="bold-fonts">{bonus.emp_fName} {bonus.emp_lName}</td>
-                  <td >{bonus.date}</td>
+                  <td className="bold-fonts">
+                    {bonus.emp_fName} {bonus.emp_lName}
+                  </td>
+                  <td>{bonus.date}</td>
                   <td className="bold-fonts">{bonus.time_in}</td>
                   <td className="bold-fonts">{bonus.time_out}</td>
-                  <td >{bonus.shift_start}</td>
-                  <td >{bonus.shift_end}</td>
-                  <td >{bonus.worked_hours}</td>
+                  <td>{bonus.shift_start}</td>
+                  <td>{bonus.shift_end}</td>
+                  <td>{bonus.worked_hours}</td>
                   <td className="bold-fonts">{bonus.extra_hours}</td>
-                 
                 </tr>
               ))}
             </tbody>

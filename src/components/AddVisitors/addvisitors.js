@@ -9,6 +9,7 @@ import updateAnimation from "../../assets/Lottie/updateAnim.json";
 import deleteAnimation from "../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../assets/Lottie/warningAnim.json";
+import { SERVER_URL } from "../../config";
 const AddVisitor = ({
   setData,
   setActiveTab,
@@ -31,10 +32,9 @@ const AddVisitor = ({
   useEffect(() => {
     const fetchOptions = async () => {
       try {
-        const departmentResponse = await axios.get(
-          "http://localhost:5000/api/fetchDepartment"
-        );
-        setDepartments(departmentResponse.data);
+        const response = await axios.get(`${SERVER_URL}emp-fun/`);
+
+        setDepartments(response.data.dpt_data);
         if (isEditMode && editData) {
           setNewVisitor({
             ...editData,
@@ -146,8 +146,10 @@ const AddVisitor = ({
       visitingReason: newVisitor.visitingReason,
       carryingGoods: newVisitor.carryingGoods,
     };
+    console.log(visitorData);
+    
     try {
-      await axios.post(`http://localhost:5000/api/addVisitor`, visitorData)
+      await axios.post(`${SERVER_URL}visitors/`, visitorData)
       setShowModal(false);
       setSuccessModal(true)
     } catch (error) {
@@ -189,7 +191,6 @@ const AddVisitor = ({
     }
     setLoading(true);
     const updateVisitorData = {
-      _id: newVisitor._id,
       visitorsId: newVisitor.visitorsId,
       fName: newVisitor.fName,
       lName: newVisitor.lName,
@@ -205,7 +206,7 @@ const AddVisitor = ({
       carryingGoods: newVisitor.carryingGoods,
     };
     try {
-      await axios.put(`http://localhost:5000/api/updateVisitor`, updateVisitorData)
+      await axios.put(`${SERVER_URL}visitors/${newVisitor.id}/`, updateVisitorData)
       setShowModal(false);
       setSuccessModal(true)
     } catch (error) {
@@ -217,83 +218,11 @@ const AddVisitor = ({
   }
 
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-  const visitorData = {
-      visitorsId: newVisitor.visitorsId,
-      fName: newVisitor.fName,
-      lName: newVisitor.lName,
-      certificationNo: newVisitor.certificationNo,
-      createTime: new Date().toISOString(),
-      exitTime: new Date().toISOString(),
-      email: newVisitor.email,
-      contactNo: newVisitor.contactNo,
-      visitingDept: newVisitor.visitingDept,
-      host: newVisitor.host,
-      cardNumber: newVisitor.cardNumber,
-      visitingReason: newVisitor.visitingReason,
-      carryingGoods: newVisitor.carryingGoods,
-    };
-    const updateVisitorData = {
-      _id: newVisitor._id,
-      visitorsId: newVisitor.visitorsId,
-      fName: newVisitor.fName,
-      lName: newVisitor.lName,
-      certificationNo: newVisitor.certificationNo,
-      createTime: newVisitor.createTime,
-      exitTime: newVisitor.exitTime,      
-      email: newVisitor.email,
-      contactNo: newVisitor.contactNo,
-      visitingDept: newVisitor.visitingDept,
-      host: newVisitor.host,
-      cardNumber: newVisitor.cardNumber,
-      visitingReason: newVisitor.visitingReason,
-      carryingGoods: newVisitor.carryingGoods,
-    };
-  
-    try {
-      const response = isEditMode
-        ? await axios.post(`http://localhost:5000/api/updateVisitor`, updateVisitorData)
-        : await axios.post("http://localhost:5000/api/addVisitor", visitorData);
-  
-      if (response.status === (isEditMode ? 200 : 201)) {
-        setData(response.data)
-  
-        setNewVisitor({
-          visitorsId: "",
-          fName: "",
-          lName: "",
-          certificationNo: "",
-          createTime: "",
-          exitTime: "",
-          email: "",
-          contactNo: "",
-          visitingDept: "",
-          host: "",
-          cardNumber: "",
-          visitingReason: "",
-          carryingGoods: "",
-        });
-      }
-    } catch (error) {
-      console.error("Error adding/updating visitor:", error);
-    }
-  
-    setIsEditMode(false);
-    setActiveTab("Visitors");
-  };
-  
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setNewVisitor((prevData) => ({ ...prevData, [name]: value }));
-  };
-
   return (
     <div className="add-visitor-main">
       <ConirmationModal
         isOpen={showModal}
-        message={`Are you sure you want to ${modalType} this employee?`}
+        message={`Are you sure you want to ${modalType} this Visitor?`}
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
           else confirmUpdate();
@@ -309,7 +238,7 @@ const AddVisitor = ({
       />
       <ConirmationModal
         isOpen={successModal}
-        message={`Employee ${modalType}d successfully!`}
+        message={`Visitor ${modalType}d successfully!`}
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
@@ -342,6 +271,7 @@ const AddVisitor = ({
                   name="visitorsId"
                   placeholder="Enter Visitor ID"
                   value={newVisitor.visitorsId}
+                  disabled={isEditMode}
                   onChange={(e) =>
                     setNewVisitor({ ...newVisitor, visitorsId: e.target.value })
                   }

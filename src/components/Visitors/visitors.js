@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import VisitorTable from "./VisitorTable";
 import AddVisitor from "../AddVisitors/addvisitors";
 import axios from "axios";
+import { SERVER_URL } from "../../config";
 const Visitors = () => {
   const [activeTab, setActiveTab] = useState("Visitors");
   const [data, setData] = useState([]);
@@ -13,9 +14,7 @@ const Visitors = () => {
 
   const fetchVisitors = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:5000/api/fetchVisitor"
-      );
+      const response = await axios.get(`${SERVER_URL}visitors/`);
       console.log(response.data);
       setData(response.data);
     } catch (error) {

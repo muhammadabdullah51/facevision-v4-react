@@ -8,7 +8,6 @@ import Google from '../../assets/google.png';
 import Facebook from '../../assets/facebook.png';
 import X from '../../assets/x.png';
 import axios from 'axios';
-
 import { SERVER_URL } from '../../config';
 
 

@@ -5,44 +5,57 @@ import error from "../../../assets/error.png";
 
 const Daily_Working_calcHours_Report = ({ searchQuery, sendDataToParent }) => {
   const [data, setData] = useState([]);
-const [filteredData, setFilteredData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
 
-// Fetch the data for the child component
-const fetchWh = useCallback(async () => {
-  try {
-    const response = await axios.get(`${SERVER_URL}rp-att-all-working-hours/`);
-    console.log(response.data);
-    setData(response.data);
-  } catch (error) {
-    console.error("Error fetching Daily full time data:", error);
-  }
-}, [setData]);
+  // Fetch data from the server
+  const fetchWh = useCallback(async () => {
+    try {
+      const response = await axios.get(
+        `${SERVER_URL}rp-att-all-working-hours/`
+      );
+      console.log(response.data);
+      setData(response.data);
+    } catch (error) {
+      console.error("Error fetching working hours data:", error);
+    }
+  }, []);
 
-// Filter the data based on the searchQuery
-useEffect(() => {
-  const newFilteredData = data.filter(
-    (item) =>
-      item.empId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.first_checkin.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.last_checkout.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.calcHours.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.date.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-  setFilteredData(newFilteredData);
-}, [searchQuery, data]); // Re-run whenever searchQuery or data changes
+  // Filter data based on search query and date range
+  useEffect(() => {
+    const newFilteredData = data.filter((item) => {
+      const itemDate = new Date(item.date);
+      const startDate = fromDate ? new Date(fromDate) : null;
+      const endDate = toDate ? new Date(toDate) : null;
 
-// Send filtered data to parent component
-useEffect(() => {
-  if (filteredData && filteredData.length > 0) {
+      const matchesSearchQuery =
+        item.empId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.first_checkin.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.last_checkout.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.calcHours.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.date.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesDateRange =
+        (!fromDate || itemDate >= startDate) &&
+        (!toDate || itemDate <= endDate);
+
+      return matchesSearchQuery && matchesDateRange;
+    });
+
+    setFilteredData(newFilteredData);
+  }, [searchQuery, data, fromDate, toDate]);
+
+  // Notify parent component of filtered data
+  useEffect(() => {
     sendDataToParent(filteredData);
-  }
-}, [filteredData, sendDataToParent]); // Send data to parent when filteredData changes
+  }, [filteredData, sendDataToParent]);
 
-// Fetch the data when the component mounts
-useEffect(() => {
-  fetchWh();
-}, [fetchWh]); // Only call fetchWh when the component mounts
+  // Fetch data on component mount
+  useEffect(() => {
+    fetchWh();
+  }, [fetchWh]);
 
   return (
     <>
@@ -55,7 +68,29 @@ useEffect(() => {
         </>
       ) : (
         <div className="departments-table">
-          <h3>Daily Working Hours Report</h3>
+          <div className="report-head">
+            <h3>Daily Working Hours Report</h3>
+
+            <div className="date-search">
+              <label>
+                From:
+                <input
+                  type="date"
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
+                />
+              </label>
+
+              <label>
+                To:
+                <input
+                  type="date"
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                />
+              </label>
+            </div>
+          </div>
           <table className="table">
             <thead>
               <tr>
@@ -76,7 +111,6 @@ useEffect(() => {
                   <td className="bold-fonts">{bonus.last_checkout}</td>
                   <td>{bonus.calcHours}</td>
                   <td>{bonus.date}</td>
-                 
                 </tr>
               ))}
             </tbody>

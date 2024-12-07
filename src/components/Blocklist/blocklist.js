@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import axios from "axios";
 import BlockListTable from "./blocklistTable.js";
+import { SERVER_URL } from "../../config.js";
 
 
 const BlockEmployeeTable = () => {
@@ -13,7 +14,7 @@ const BlockEmployeeTable = () => {
 
   const fetchBlock = async () => {
     try {
-        const response = await axios.get('http://localhost:5000/api/fetchBlock');
+        const response = await axios.get(`${SERVER_URL}blocklist/`);
         setData(response.data);
     } catch (error) {
         console.error('Error fetching Block data:', error);

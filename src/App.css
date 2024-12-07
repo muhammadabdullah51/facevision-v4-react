@@ -194,3 +194,20 @@ body {
 .baandar img{
   width: 7%;
 }
+
+.report-head{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+
+.date-search input{
+  width: 30%;
+    background-color: #fff;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    margin: 0 0.5vw 0 0.3vw;
+}

@@ -6,20 +6,28 @@ import error from "../../../assets/error.png";
 const Daily_Late_In_Report = ({ searchQuery, sendDataToParent }) => {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-  
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+
+  // Fetch data from the server
   const fetchFtm = useCallback(async () => {
     try {
       const response = await axios.get(`${SERVER_URL}rp-att-late-in/`);
       console.log(response.data);
       setData(response.data);
     } catch (error) {
-      console.error("Error fetching Daily full time data:", error);
+      console.error("Error fetching Daily Late-In data:", error);
     }
-  }, [setData]);
-  
+  }, []);
+
+  // Filter data based on search query and date range
   useEffect(() => {
-    const newFilteredData = data.filter(
-      (item) =>
+    const newFilteredData = data.filter((item) => {
+      const itemDate = new Date(item.date);
+      const startDate = fromDate ? new Date(fromDate) : null;
+      const endDate = toDate ? new Date(toDate) : null;
+
+      const matchesSearchQuery =
         item.employeeId.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.emp_fName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.emp_lName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -27,21 +35,29 @@ const Daily_Late_In_Report = ({ searchQuery, sendDataToParent }) => {
         item.time_out.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.locName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.date.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+        item.date.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesDateRange =
+        (!fromDate || itemDate >= startDate) &&
+        (!toDate || itemDate <= endDate);
+
+      return matchesSearchQuery && matchesDateRange;
+    });
+
     setFilteredData(newFilteredData);
-  }, [searchQuery, data]);
-  
+  }, [searchQuery, data, fromDate, toDate]);
+
+  // Notify parent component of filtered data
   useEffect(() => {
     if (filteredData && filteredData.length > 0) {
       sendDataToParent(filteredData);
     }
   }, [filteredData, sendDataToParent]);
-  
+
+  // Fetch data on component mount
   useEffect(() => {
     fetchFtm();
   }, [fetchFtm]);
-  
 
   return (
     <>
@@ -54,7 +70,29 @@ const Daily_Late_In_Report = ({ searchQuery, sendDataToParent }) => {
         </>
       ) : (
         <div className="departments-table">
+          <div className="report-head">
           <h3>Daily Fulltime Report</h3>
+
+            <div className="date-search">
+              <label>
+                From:
+                <input
+                  type="date"
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
+                />
+              </label>
+
+              <label>
+                To:
+                <input
+                  type="date"
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                />
+              </label>
+            </div>
+          </div>
           <table className="table">
             <thead>
               <tr>

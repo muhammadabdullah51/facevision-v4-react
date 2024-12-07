@@ -347,6 +347,14 @@ const LeaveTable = ({ data, setData }) => {
         animationData={successAnimation}
         successModal={successModal}
       />
+      <ConirmationModal
+        isOpen={warningModal}
+        message={resMsg}
+        onConfirm={() => setWarningModal(false)}
+        onCancel={() => setWarningModal(false)}
+        animationData={warningAnimation}
+        warningModal={warningModal}
+      />
       <div className="table-header">
         <form className="form" onSubmit={(e) => e.preventDefault()}>
           <button type="submit">

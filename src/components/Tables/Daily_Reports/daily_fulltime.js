@@ -6,21 +6,26 @@ import error from "../../../assets/error.png";
 const Daily_Fulltime_Report = ({ searchQuery, sendDataToParent }) => {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
+  const [fromDate, setFromDate] = useState(""); 
+  const [toDate, setToDate] = useState(""); 
 
-  // Fetch the data for the child component
-  const fetchFtm = async () => {
+  const fetchFtm = useCallback(async () => {
     try {
       const response = await axios.get(`${SERVER_URL}rp-att-all-full-time/`);
       console.log(response.data);
-      setData(response.data); 
+      setData(response.data);
     } catch (error) {
-      console.error("Error fetching Daily full time data:", error);
+      console.error("Error fetching Daily full-time data:", error);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    const newFilteredData = data.filter(
-      (item) =>
+    const newFilteredData = data.filter((item) => {
+      const itemDate = new Date(item.date);
+      const startDate = new Date(fromDate);
+      const endDate = new Date(toDate);
+
+      const matchesSearchQuery =
         item.employeeId.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.emp_fName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.emp_lName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -28,20 +33,27 @@ const Daily_Fulltime_Report = ({ searchQuery, sendDataToParent }) => {
         item.time_out.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.locName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.date.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    setFilteredData(newFilteredData); 
-  }, [searchQuery, data]); 
+        item.date.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesDateRange =
+        (!fromDate || itemDate >= startDate) &&
+        (!toDate || itemDate <= endDate);
+
+      return matchesSearchQuery && matchesDateRange;
+    });
+
+    setFilteredData(newFilteredData);
+  }, [searchQuery, data, fromDate, toDate]);
 
   useEffect(() => {
     if (filteredData && filteredData.length > 0) {
-      sendDataToParent(filteredData); 
+      sendDataToParent(filteredData);
     }
-  }, [filteredData, sendDataToParent]); 
+  }, [filteredData, sendDataToParent]);
 
   useEffect(() => {
-    fetchFtm(); 
-  }, []); 
+    fetchFtm();
+  }, [fetchFtm]);
 
   return (
     <>
@@ -52,7 +64,30 @@ const Daily_Fulltime_Report = ({ searchQuery, sendDataToParent }) => {
         </div>
       ) : (
         <div className="departments-table">
-          <h3>Daily Fulltime Report</h3>
+          <div className="report-head">
+            <h3>Daily Fulltime Report</h3>
+
+            <div className="date-search">
+              <label>
+                From:
+                <input
+                  type="date"
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
+                />
+              </label>
+
+              <label>
+                To:
+                <input
+                  type="date"
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                />
+              </label>
+            </div>
+          </div>
+
           <table className="table">
             <thead>
               <tr>
@@ -66,29 +101,29 @@ const Daily_Fulltime_Report = ({ searchQuery, sendDataToParent }) => {
               </tr>
             </thead>
             <tbody>
-              {filteredData.map((bonus) => (
-                <tr key={bonus.id}>
-                  <td>{bonus.employeeId}</td>
+              {filteredData.map((item) => (
+                <tr key={item.id}>
+                  <td>{item.employeeId}</td>
                   <td className="bold-fonts">
-                    {bonus.emp_fName} {bonus.emp_lName}
+                    {item.emp_fName} {item.emp_lName}
                   </td>
-                  <td className="bold-fonts">{bonus.time_in}</td>
-                  <td className="bold-fonts">{bonus.time_out}</td>
-                  <td>{bonus.locName}</td>
-                  <td>{bonus.date}</td>
+                  <td className="bold-fonts">{item.time_in}</td>
+                  <td className="bold-fonts">{item.time_out}</td>
+                  <td>{item.locName}</td>
+                  <td>{item.date}</td>
                   <td>
                     <span
                       className={`status ${
-                        bonus.status === "Present"
+                        item.status === "Present"
                           ? "presentStatus"
-                          : bonus.status === "Late"
+                          : item.status === "Late"
                           ? "lateStatus"
-                          : bonus.status === "Absent"
+                          : item.status === "Absent"
                           ? "absentStatus"
                           : "none"
                       }`}
                     >
-                      {bonus.status}
+                      {item.status}
                     </span>
                   </td>
                 </tr>
@@ -102,107 +137,3 @@ const Daily_Fulltime_Report = ({ searchQuery, sendDataToParent }) => {
 };
 
 export default Daily_Fulltime_Report;
-
-// const Daily_Fulltime_Report = ({ searchQuery, sendDataToParent }) => {
-//   const [data, setData] = useState([]);
-//   const [dataToParent, setDataToParent] = useState([]);
-
-//   const fetchFtm = async () => {
-//     try {
-//       const response = await axios.get(`${SERVER_URL}rp-att-all-full-time/`);
-//       console.log(response.data);
-//       setData(response.data);
-//     } catch (error) {
-//       console.error("Error fetching Daily full time data:", error);
-//     }
-//   };
-
-//   const filteredData = data.filter(
-//     (item) =>
-//       item.employeeId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-//       item.emp_fName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-//       item.emp_lName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-//       item.time_in.toLowerCase().includes(searchQuery.toLowerCase()) ||
-//       item.time_out.toLowerCase().includes(searchQuery.toLowerCase()) ||
-//       item.locName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-//       item.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
-//       item.date.toLowerCase().includes(searchQuery.toLowerCase())
-//   );
-
-//   useEffect(() => {
-//     fetchFtm();
-//   }, []);  // This will only run once when the component mounts
-
-//   const sendData = useCallback(() => {
-//     // Send filtered data to parent only if it has changed
-//     if (filteredData && filteredData.length > 0) {
-//       sendDataToParent(filteredData); // Send filtered data to parent
-//     }
-//   }, [filteredData, sendDataToParent]); // This only runs when filteredData changes
-
-//   // Only call sendData when filteredData is updated
-//   useEffect(() => {
-//     sendData();
-//   }, [filteredData, sendData]); // Dependency on filteredData to send to parent
-
-//   return (
-//     <>
-//       {data.length < 1 ? (
-//         <>
-//           <div className="baandar">
-//             <img src={error} alt="No Data Found" />
-//             <h4>No Fulltime Record For Today.</h4>
-//           </div>
-//         </>
-//       ) : (
-//         <div className="departments-table">
-//           <h3>Daily Fulltime Report</h3>
-//           <table className="table">
-//             <thead>
-//               <tr>
-//                 <th>Employee ID</th>
-//                 <th>Employee Name</th>
-//                 <th>Time In</th>
-//                 <th>Time Out</th>
-//                 <th>Location</th>
-//                 <th>Date</th>
-//                 <th>Status</th>
-//               </tr>
-//             </thead>
-//             <tbody>
-//               {filteredData.map((bonus) => (
-//                 <tr key={bonus.id}>
-//                   <td>{bonus.employeeId}</td>
-//                   <td className="bold-fonts">
-//                     {bonus.emp_fName} {bonus.emp_lName}
-//                   </td>
-//                   <td className="bold-fonts">{bonus.time_in}</td>
-//                   <td className="bold-fonts">{bonus.time_out}</td>
-//                   <td>{bonus.locName}</td>
-//                   <td>{bonus.date}</td>
-//                   <td>
-//                     <span
-//                       className={`status ${
-//                         bonus.status === "Present"
-//                           ? "presentStatus"
-//                           : bonus.status === "Late"
-//                           ? "lateStatus"
-//                           : bonus.status === "Absent"
-//                           ? "absentStatus"
-//                           : "none"
-//                       }`}
-//                     >
-//                       {bonus.status}
-//                     </span>
-//                   </td>
-//                 </tr>
-//               ))}
-//             </tbody>
-//           </table>
-//         </div>
-//       )}
-//     </>
-//   );
-// };
-
-// export default Daily_Fulltime_Report;

@@ -7,6 +7,9 @@ import addAnimation from "../../assets/Lottie/addAnim.json";
 import updateAnimation from "../../assets/Lottie/updateAnim.json";
 import deleteAnimation from "../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../assets/Lottie/successAnim.json";
+import warningAnimation from "../../assets/Lottie/warningAnim.json";
+import { SERVER_URL } from "../../config";
+import { Label } from "recharts";
 
 const BlockListTable = ({ data, setData }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -14,9 +17,8 @@ const BlockListTable = ({ data, setData }) => {
   const [showEditForm, setShowEditForm] = useState(false);
   const [employees, setEmployees] = useState([]);
   const [formData, setFormData] = useState({
-    _id: "",
+    blockId: "",
     empId: "",
-    employeeName: "",
     blockDate: "",
     blockReason: "",
     allowAttendance: false,
@@ -28,11 +30,14 @@ const BlockListTable = ({ data, setData }) => {
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [warningModal, setWarningModal] = useState(false);
+  const [resMsg, setResMsg] = useState("");
 
   const fetchBlock = useCallback(async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/fetchBlock");
+      const response = await axios.get(`${SERVER_URL}blocklist/`);
       setData(response.data);
+      console.log(data);
     } catch (error) {
       console.error("Error fetching resign data:", error);
     }
@@ -40,9 +45,7 @@ const BlockListTable = ({ data, setData }) => {
 
   const fetchEmployees = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:5000/api/fetchEmployees"
-      );
+      const response = await axios.get(`${SERVER_URL}pr-emp/`);
       setEmployees(response.data);
     } catch (error) {
       console.error("Error fetching employees:", error);
@@ -64,15 +67,24 @@ const BlockListTable = ({ data, setData }) => {
   const columns = useMemo(
     () => [
       { Header: "S.No", accessor: "serial", Cell: ({ row }) => row.index + 1 },
-      { Header: "Employee ID", accessor: "empId" },
+      { Header: "Employee ID", accessor: "employeeId" },
       {
         Header: "Employee Name",
-        accessor: "employeeName",
-        Cell: ({ value }) => <span className="bold-fonts">{value}</span>,
+        accessor: "fullName",
+        Cell: ({ row }) => (
+          <span className="bold-fonts">
+            {row.original.fName} {row.original.lName}
+          </span>
+        ),
       },
       { Header: "Block Date", accessor: "blockDate" },
       { Header: "Block Reason", accessor: "blockReason" },
-      { Header: "Allow Attendance", accessor: "allowAttendance" },
+      {
+        Header: "Allow Attendance",
+        accessor: "allowAttendance", // Accessor for the data field
+        Cell: ({ value }) => (value ? "Yes" : "No"), // Conditional rendering
+      },
+
       { Header: "Allow Reason", accessor: "allowReason" },
       {
         Header: "Status",
@@ -142,9 +154,8 @@ const BlockListTable = ({ data, setData }) => {
     setModalType("update");
 
     setFormData({
-      _id: formData._id,
+      blockId: formData.blockId,
       empId: formData.empId,
-      employeeName: formData.employeeName,
       blockDate: formData.blockDate,
       blockReason: formData.blockReason,
       allowAttendance: formData.allowAttendance,
@@ -156,10 +167,19 @@ const BlockListTable = ({ data, setData }) => {
   };
 
   const confirmUpdate = async () => {
+    if (
+      formData.empId === "" ||
+      formData.blockDate === "" ||
+      formData.blockReason === "" 
+    ) {
+      setResMsg("Please fill in all required fields.");
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    }
     const updateBlock = {
-      _id: formData._id,
+      blockId: formData.blockId,
       empId: formData.empId,
-      employeeName: formData.employeeName,
       blockDate: formData.blockDate,
       blockReason: formData.blockReason,
       allowAttendance: formData.allowAttendance,
@@ -168,8 +188,8 @@ const BlockListTable = ({ data, setData }) => {
     };
 
     try {
-      const response = await axios.post(
-        `http://localhost:5000/api/updateBlock`,
+      const response = await axios.put(
+        `${SERVER_URL}blocklist/${formData.blockId}/`,
         updateBlock
       );
       console.log(response.data); // Log the response
@@ -185,13 +205,13 @@ const BlockListTable = ({ data, setData }) => {
   const handleDelete = async (blockId) => {
     setModalType("delete");
     setShowModal(true);
-    setFormData({ ...formData, _id: blockId });
+    setFormData(blockId);
   };
 
   const confirmDelete = async () => {
     try {
       const blockId = formData._id;
-      await axios.post("http://localhost:5000/api/deleteBlock", { blockId });
+      await axios.delete(`${SERVER_URL}blocklist/${formData.blockId}/`);
       fetchBlock();
       setShowModal(false);
       setSuccessModal(true);
@@ -203,7 +223,6 @@ const BlockListTable = ({ data, setData }) => {
   const handleAdd = () => {
     setFormData({
       empId: "",
-      employeeName: "",
       blockDate: "",
       blockReason: "",
       allowAttendance: false,
@@ -219,12 +238,20 @@ const BlockListTable = ({ data, setData }) => {
     setShowModal(true);
   };
   const confirmAdd = async () => {
+    if (
+      formData.empId === "" ||
+      formData.blockDate === "" ||
+      formData.blockReason === "" 
+    ) {
+      setResMsg("Please fill in all required fields.");
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    }
+
     try {
-      // console.log(formData.blockDate);
-      await axios.post("http://localhost:5000/api/addBlock", formData);
-      const updatedData = await axios.get(
-        "http://localhost:5000/api/fetchBlock"
-      );
+      await axios.post(`${SERVER_URL}blocklist/`, formData);
+      const updatedData = await axios.get(`${SERVER_URL}blocklist/`);
       setData(updatedData.data);
       setShowAddForm(false);
       setShowModal(false);
@@ -261,6 +288,14 @@ const BlockListTable = ({ data, setData }) => {
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
         successModal={successModal}
+      />
+      <ConirmationModal
+        isOpen={warningModal}
+        message={resMsg}
+        onConfirm={() => setWarningModal(false)}
+        onCancel={() => setWarningModal(false)}
+        animationData={warningAnimation}
+        warningModal={warningModal}
       />
       <div className="table-header">
         <form className="form" onSubmit={(e) => e.preventDefault()}>
@@ -318,26 +353,48 @@ const BlockListTable = ({ data, setData }) => {
           <h3>
             {showAddForm ? "Add Blocked Employee" : "Edit Blocked Employee"}
           </h3>
-          <select
-            value={formData.employeeName}
+          <label>{showAddForm ? "Select Employee" : `Selected Employee`}</label>
+          <input
+            list="employeesList"
+            disabled={showEditForm}
+            value={
+              employees.find((emp) => emp.id === formData.empId)
+                ? `${
+                    employees.find((emp) => emp.id === formData.empId).empId
+                  } ${
+                    employees.find((emp) => emp.id === formData.empId).fName
+                  } ${employees.find((emp) => emp.id === formData.empId).lName}`
+                : formData.empId || "" // Display empId, fName, and lName if employee is found or allow typing
+            }
             onChange={(e) => {
+              const value = e.target.value;
+
+              // If the input is a valid match for employee full name, find the employee
               const selectedEmployee = employees.find(
-                (emp) => `${emp.fName} ${emp.lName}` === e.target.value
+                (emp) => `${emp.empId} ${emp.fName} ${emp.lName}` === value
               );
+
+              // Set the form data
               setFormData({
                 ...formData,
-                employeeName: e.target.value,
-                empId: selectedEmployee ? selectedEmployee.empId : "",
+                // If a valid employee is selected, store id, otherwise keep the current input (for free typing)
+                empId: selectedEmployee ? selectedEmployee.id : value,
               });
             }}
-          >
-            <option value="">Select Employee</option>
+            placeholder="Search or select an employee"
+          />
+
+          <datalist id="employeesList">
             {employees.map((emp) => (
-              <option key={emp.empId} value={`${emp.fName} ${emp.lName}`}>
-                {emp.fName} {emp.lName}
-              </option>
+              // Display employee's full name in datalist options
+              <option
+                key={emp.id}
+                value={`${emp.empId} ${emp.fName} ${emp.lName}`}
+              />
             ))}
-          </select>
+          </datalist>
+          <label>Date</label>
+
           <input
             type="date"
             placeholder="Block Date"
@@ -346,6 +403,8 @@ const BlockListTable = ({ data, setData }) => {
               setFormData({ ...formData, blockDate: e.target.value })
             }
           />
+          <label>Block Reason</label>
+
           <input
             type="text"
             placeholder="Block Reason"
@@ -354,6 +413,7 @@ const BlockListTable = ({ data, setData }) => {
               setFormData({ ...formData, blockReason: e.target.value })
             }
           />
+          <label>Allow Attendance</label>
           <select
             value={formData.allowAttendance}
             onChange={(e) =>
@@ -361,17 +421,25 @@ const BlockListTable = ({ data, setData }) => {
             }
           >
             <option value="">Allow Attendance?</option>
-            <option value="Yes">Yes</option>
-            <option value="No">No</option>
+            <option value={true}>Yes</option>
+            <option value={false}>No</option>
           </select>
-          <input
-            type="text"
-            placeholder="Allow Reason"
-            value={formData.allowReason}
-            onChange={(e) =>
-              setFormData({ ...formData, allowReason: e.target.value })
-            }
-          />
+
+          {formData.allowAttendance && (
+            <>
+              <label htmlFor="allowReason">Allow Reason</label>
+              <input
+                type="text"
+                id="allowReason"
+                placeholder="Allow Reason"
+                value={formData.allowReason}
+                onChange={(e) =>
+                  setFormData({ ...formData, allowReason: e.target.value })
+                }
+              />
+            </>
+          )}
+          <label>Status</label>
           <select
             value={formData.status}
             onChange={(e) =>
@@ -390,40 +458,41 @@ const BlockListTable = ({ data, setData }) => {
           <button
             className="cancel-button"
             onClick={() => {
-
-              setShowEditForm(false)
-              setShowAddForm(false)
-            }
-            } 
+              setShowEditForm(false);
+              setShowAddForm(false);
+            }}
           >
             Cancel
           </button>
         </div>
       )}
-
-      <table {...getTableProps()} className="table">
-        <thead>
-          {headerGroups.map((headerGroup) => (
-            <tr {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map((column) => (
-                <th {...column.getHeaderProps()}>{column.render("Header")}</th>
-              ))}
-            </tr>
-          ))}
-        </thead>
-        <tbody {...getTableBodyProps()}>
-          {page.map((row) => {
-            prepareRow(row);
-            return (
-              <tr {...row.getRowProps()}>
-                {row.cells.map((cell) => (
-                  <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
+      <div className="departments-table">
+        <table {...getTableProps()} className="table">
+          <thead>
+            {headerGroups.map((headerGroup) => (
+              <tr {...headerGroup.getHeaderGroupProps()}>
+                {headerGroup.headers.map((column) => (
+                  <th {...column.getHeaderProps()}>
+                    {column.render("Header")}
+                  </th>
                 ))}
               </tr>
-            );
-          })}
-        </tbody>
-      </table>
+            ))}
+          </thead>
+          <tbody {...getTableBodyProps()}>
+            {page.map((row) => {
+              prepareRow(row);
+              return (
+                <tr {...row.getRowProps()}>
+                  {row.cells.map((cell) => (
+                    <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
+                  ))}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

@@ -219,7 +219,7 @@ const PayrollLogs = () => {
         (!endDate || itemDate <= end)
       );
     })
-    .slice(0, 10); // Limit to 10 entries
+    .slice(0, 10); 
 
   const exportToPDF = () => {
     const doc = new jsPDF('l', 'mm', 'legal'); // Set to 'landscape' and 'legal' size (216 x 356 mm)

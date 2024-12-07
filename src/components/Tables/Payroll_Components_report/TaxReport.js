@@ -6,6 +6,8 @@ import error from "../../../assets/error.png";
 const TaxReport = ({ searchQuery, sendDataToParent }) => {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
+  const [fromDate, setFromDate] = useState(""); // Start date for the filter
+  const [toDate, setToDate] = useState(""); // End date for the filter
 
   const fetchTax = useCallback(async () => {
     try {
@@ -13,27 +15,41 @@ const TaxReport = ({ searchQuery, sendDataToParent }) => {
       console.log(response.data);
       setData(response.data);
     } catch (error) {
-      console.error("Error fetching assign-allowances data:", error);
+      console.error("Error fetching assign-taxes data:", error);
     }
   }, [setData]);
 
   useEffect(() => {
-    const newFilteredData = data.filter(
-      (item) =>
-        item.employeeId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.empName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.date.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const newFilteredData = data.filter((item) => {
+      const itemDate = new Date(item.date); // Assuming item.date is a valid date string
+      const startDate = new Date(fromDate);
+      const endDate = new Date(toDate);
+
+      // Check if item matches the search query
+      const matchesSearchQuery =
+        item.employeeId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.empName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.date?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.empTaxAmount
-          .toString()
+          ?.toString()
           .toLowerCase()
           .includes(searchQuery.toLowerCase()) ||
-        item.taxName.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+        item.taxName?.toLowerCase().includes(searchQuery.toLowerCase());
+
+      // Check if item matches the date range
+      const matchesDateRange =
+        (!fromDate || itemDate >= startDate) &&
+        (!toDate || itemDate <= endDate);
+
+      // Return items that match both the search query and the date range
+      return matchesSearchQuery && matchesDateRange;
+    });
+
     setFilteredData(newFilteredData);
-  }, [searchQuery, data]);
+  }, [searchQuery, data, fromDate, toDate]); // Dependencies include data, searchQuery, fromDate, and toDate
 
   useEffect(() => {
-    if (filteredData.length > 0) {
+    if (filteredData && filteredData.length > 0) {
       sendDataToParent(filteredData);
     }
   }, [filteredData, sendDataToParent]);
@@ -53,7 +69,28 @@ const TaxReport = ({ searchQuery, sendDataToParent }) => {
         </>
       ) : (
         <div className="departments-table">
-          <h3>Tax Report</h3>
+          <div className="report-head">
+            <h3>Tax Report</h3>
+            <div className="date-search">
+              <label>
+                From:
+                <input
+                  type="date"
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
+                />
+              </label>
+
+              <label>
+                To:
+                <input
+                  type="date"
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                />
+              </label>
+            </div>
+          </div>
           <table className="table">
             <thead>
               <tr>

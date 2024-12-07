@@ -10,6 +10,7 @@ import updateAnimation from "../../assets/Lottie/updateAnim.json";
 import deleteAnimation from "../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../assets/Lottie/warningAnim.json";
+import { SERVER_URL } from "../../config";
 
 const VisitorTable = ({
   // data,
@@ -30,7 +31,7 @@ const VisitorTable = ({
   const [resMsg, setResMsg] = useState("");
 
   const [formData, setFormData] = useState({
-    _id: "",
+    id: "",
     visitorsId: null,
     fName: "",
     lName: "",
@@ -142,7 +143,7 @@ const VisitorTable = ({
               <FaEdit className="table-edit" />
             </button>
             <button
-              onClick={() => handleDelete(row.original._id)}
+              onClick={() => handleDelete(row.original)}
               style={{ background: "none", border: "none" }}
             >
               <FaTrash className="table-delete" />
@@ -186,9 +187,7 @@ const VisitorTable = ({
   
   const fetchVisitors = useCallback( async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:5000/api/fetchVisitor"
-      );
+      const response = await axios.get(`${SERVER_URL}visitors/`);
       console.log(response.data);
       setData(response.data);
     } catch (error) {
@@ -213,27 +212,20 @@ const VisitorTable = ({
    onEdit(row)
   };
 
-  // working Handle Delete
-  // const handleDelete = async (row) => {
-  //   const visitorsId = row._id;
-  //   axios.post("http://localhost:5000/api/deleteVisitor", { visitorsId });
-  //   const updatedData = await axios.get(
-  //     "http://localhost:5000/api/fetchVisitor"
-  //   );
-  //   setData(updatedData.data);
-  //   fetchVisitors();
-  // };
+
   const handleDelete = async (row) => {
     setModalType("delete");
     setShowModal(true);
-    setFormData({...formData });
+    setFormData(row.id );
+    console.log(formData);
+    
   };
 
 
   const confirmDelete = async() => {
     try {
-      await axios.post("http://localhost:5000/api/deleteVisitor", { visitorsId: formData._id });
-      const updatedData = await axios.get("http://localhost:5000/api/fetchVisitor");
+      await axios.delete(`${SERVER_URL}visitors/${formData}/`);
+      const updatedData = await axios.get(`${SERVER_URL}visitors/`);
       setData(updatedData.data);
       fetchVisitors();
       setShowModal(false);
@@ -254,7 +246,7 @@ const VisitorTable = ({
     <div className="visitor-table">
       <ConirmationModal
         isOpen={showModal}
-        message={`Are you sure you want to ${modalType} this employee?`}
+        message={`Are you sure you want to ${modalType} this Visitor?`}
         onConfirm={() =>  confirmDelete()}
         onCancel={() => setShowModal(false)}
         animationData={
@@ -267,7 +259,7 @@ const VisitorTable = ({
       />
        <ConirmationModal
         isOpen={successModal}
-        message={`Employee ${modalType}d successfully!`}
+        message={`Visitor ${modalType}d successfully!`}
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}

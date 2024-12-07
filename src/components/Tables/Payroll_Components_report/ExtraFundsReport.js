@@ -6,6 +6,8 @@ import error from "../../../assets/error.png";
 const ExtraFundsReport = ({ searchQuery, sendDataToParent }) => {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
 
   const fetchExtraFunds = useCallback(async () => {
     try {
@@ -18,8 +20,13 @@ const ExtraFundsReport = ({ searchQuery, sendDataToParent }) => {
   }, [setData]);
 
   useEffect(() => {
-    const newFilteredData = data.filter(
-      (item) =>
+    const newFilteredData = data.filter((item) => {
+      const itemDate = new Date(item.date); // Assuming the `date` field is a string representing a valid date
+      const startDate = new Date(fromDate);
+      const endDate = new Date(toDate);
+
+      // Check if item matches the search query
+      const matchesSearchQuery =
         item.empId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.empName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.type?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -28,10 +35,19 @@ const ExtraFundsReport = ({ searchQuery, sendDataToParent }) => {
         item.pendingAmount?.toLowerCase().includes(searchQuery) ||
         item.nextPayable?.toLowerCase().includes(searchQuery) ||
         item.date?.toLowerCase().includes(searchQuery) ||
-        item.extraFundAmount?.toLowerCase().includes(searchQuery)
-    );
+        item.extraFundAmount?.toLowerCase().includes(searchQuery);
+
+      // Check if item matches the date range
+      const matchesDateRange =
+        (!fromDate || itemDate >= startDate) &&
+        (!toDate || itemDate <= endDate);
+
+      // Return items that match both the search query and the date range
+      return matchesSearchQuery && matchesDateRange;
+    });
+
     setFilteredData(newFilteredData);
-  }, [searchQuery, data]);
+  }, [searchQuery, data, fromDate, toDate]); // Dependencies include data, searchQuery, fromDate, toDate
 
   useEffect(() => {
     if (filteredData && filteredData.length > 0) {
@@ -54,7 +70,28 @@ const ExtraFundsReport = ({ searchQuery, sendDataToParent }) => {
         </>
       ) : (
         <div className="departments-table">
-          <h3>Extra Funds Report</h3>
+          <div className="report-head">
+            <h3>Extra Funds Report</h3>
+            <div className="date-search">
+              <label>
+                From:
+                <input
+                  type="date"
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
+                />
+              </label>
+
+              <label>
+                To:
+                <input
+                  type="date"
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                />
+              </label>
+            </div>
+          </div>
           <table className="table">
             <thead>
               <tr>
