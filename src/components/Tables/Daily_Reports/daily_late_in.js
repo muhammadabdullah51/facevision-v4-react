@@ -5,7 +5,8 @@ import error from "../../../assets/error.png";
 
 const Daily_Late_In_Report = ({ searchQuery, sendDataToParent }) => {
   const [data, setData] = useState([]);
-
+  const [filteredData, setFilteredData] = useState([]);
+  
   const fetchFtm = useCallback(async () => {
     try {
       const response = await axios.get(`${SERVER_URL}rp-att-late-in/`);
@@ -15,23 +16,32 @@ const Daily_Late_In_Report = ({ searchQuery, sendDataToParent }) => {
       console.error("Error fetching Daily full time data:", error);
     }
   }, [setData]);
-
-  const filteredData = data.filter(
-    (item) =>
-      item.employeeId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.emp_fName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.emp_lName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.time_in.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.time_out.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.locName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.date.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
+  
+  useEffect(() => {
+    const newFilteredData = data.filter(
+      (item) =>
+        item.employeeId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.emp_fName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.emp_lName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.time_in.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.time_out.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.locName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.date.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredData(newFilteredData);
+  }, [searchQuery, data]);
+  
+  useEffect(() => {
+    if (filteredData && filteredData.length > 0) {
+      sendDataToParent(filteredData);
+    }
+  }, [filteredData, sendDataToParent]);
+  
   useEffect(() => {
     fetchFtm();
-    sendDataToParent(filteredData);
   }, [fetchFtm]);
+  
 
   return (
     <>

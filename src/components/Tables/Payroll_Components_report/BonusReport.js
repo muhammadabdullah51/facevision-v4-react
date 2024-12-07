@@ -5,7 +5,7 @@ import error from "../../../assets/error.png";
 
 const BonusReport = ({ searchQuery, sendDataToParent }) => {
   const [data, setData] = useState([]);
-  const [employees, setEmployees] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
 
   const fetchBonus = useCallback(async () => {
     try {
@@ -17,18 +17,28 @@ const BonusReport = ({ searchQuery, sendDataToParent }) => {
     }
   }, [setData]);
 
-  const filteredData = data.filter(
-    (item) =>
-      item.bonusName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.empId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.empName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.bonusAssignDate.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.bonusAmount.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  useEffect(() => {
+    const newFilteredData = data.filter(
+      (item) =>
+        item.bonusName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.empId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.empName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.bonusAssignDate
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
+        item.bonusAmount.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredData(newFilteredData);
+  }, [searchQuery, data]);
+
+  useEffect(() => {
+    if (filteredData && filteredData.length > 0) {
+      sendDataToParent(filteredData);
+    }
+  }, [filteredData, sendDataToParent]);
 
   useEffect(() => {
     fetchBonus();
-    sendDataToParent(filteredData);
   }, [fetchBonus]);
 
   return (

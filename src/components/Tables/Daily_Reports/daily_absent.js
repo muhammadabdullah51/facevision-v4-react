@@ -3,31 +3,41 @@ import axios from "axios";
 import { SERVER_URL } from "../../../config";
 import error from "../../../assets/error.png";
 const Daily_Absent_Report = ({ searchQuery, sendDataToParent }) => {
-  const [data, setData] = useState([]);
-  const [employees, setEmployees] = useState([]);
+  
 
-  const fetchData = useCallback(async () => {
-    try {
-      const response = await axios.get(`${SERVER_URL}rp-att-all-absent/`);
-      console.log(response.data);
-      setData(response.data);
-    } catch (error) {
-      console.error("Error fetching assign-allowances data:", error);
-    }
-  }, [setData]);
+const [data, setData] = useState([]);
+const [filteredData, setFilteredData] = useState([]);
 
-  const filteredData = data.filter(
+const fetchData = useCallback(async () => {
+  try {
+    const response = await axios.get(`${SERVER_URL}rp-att-all-absent/`);
+    console.log(response.data);
+    setData(response.data);
+  } catch (error) {
+    console.error("Error fetching assign-allowances data:", error);
+  }
+}, [setData]);
+
+useEffect(() => {
+  const newFilteredData = data.filter(
     (item) =>
       item.empId.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.fName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.lName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.date.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  setFilteredData(newFilteredData);
+}, [searchQuery, data]);
 
-  useEffect(() => {
-    fetchData();
+useEffect(() => {
+  if (filteredData && filteredData.length > 0) {
     sendDataToParent(filteredData);
-  }, [fetchData]);
+  }
+}, [filteredData, sendDataToParent]);
+
+useEffect(() => {
+  fetchData();
+}, [fetchData]);
 
   return (
     <>

@@ -5,30 +5,40 @@ import error from "../../../assets/error.png";
 
 const Advance_Salary_Reports = ({ searchQuery, sendDataToParent }) => {
   const [data, setData] = useState([]);
+const [filteredData, setFilteredData] = useState([]);
 
-  const fetchAdvSal = useCallback(async () => {
-    try {
-      const response = await axios.get(`${SERVER_URL}pyr-adv/`);
-      console.log(response.data);
-      setData(response.data);
-    } catch (error) {
-      console.error("Error fetching pyr-adv data:", error);
-    }
-  }, [setData]);
+const fetchAdvSal = useCallback(async () => {
+  try {
+    const response = await axios.get(`${SERVER_URL}pyr-adv/`);
+    console.log(response.data);
+    setData(response.data);
+  } catch (error) {
+    console.error("Error fetching pyr-adv data:", error);
+  }
+}, [setData]);
 
-  const filteredData = data.filter(
+useEffect(() => {
+  const newFilteredData = data.filter(
     (item) =>
-        item.empName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.empId?.toString().includes(searchQuery) ||
-    item.date?.toLowerCase().includes(searchQuery) ||
-    item.month?.toLowerCase().includes(searchQuery) ||
-    item.reason?.toLowerCase().includes(searchQuery)
+      item.empName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.empId?.toString().includes(searchQuery) ||
+      item.date?.toLowerCase().includes(searchQuery) ||
+      item.month?.toLowerCase().includes(searchQuery) ||
+      item.reason?.toLowerCase().includes(searchQuery)
   );
+  setFilteredData(newFilteredData);
+}, [searchQuery, data]);
 
-  useEffect(() => {
-    fetchAdvSal();
+useEffect(() => {
+  if (filteredData && filteredData.length > 0) {
     sendDataToParent(filteredData);
-  }, [fetchAdvSal]);
+  }
+}, [filteredData, sendDataToParent]);
+
+useEffect(() => {
+  fetchAdvSal();
+}, [fetchAdvSal]);
+
 
   return (
     <>

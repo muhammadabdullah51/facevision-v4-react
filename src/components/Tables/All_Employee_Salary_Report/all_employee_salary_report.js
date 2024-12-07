@@ -5,19 +5,20 @@ import error from "../../../assets/error.png";
 
 const All_Employees_Salary_Report = ({ searchQuery, sendDataToParent }) => {
   const [data, setData] = useState([]);
-  const [employees, setEmployees] = useState([]);
+const [filteredData, setFilteredData] = useState([]);
 
-  const fetchTax = useCallback(async () => {
-    try {
-      const response = await axios.get(`${SERVER_URL}pyr-emp-profile/`);
-      console.log(response.data);
-      setData(response.data);
-    } catch (error) {
-      console.error("Error fetching assign-allowances data:", error);
-    }
-  }, [setData]);
+const fetchAllEmpSal = useCallback(async () => {
+  try {
+    const response = await axios.get(`${SERVER_URL}pyr-emp-profile/`);
+    console.log(response.data);
+    setData(response.data);
+  } catch (error) {
+    console.error("Error fetching assign-allowances data:", error);
+  }
+}, [setData]);
 
-  const filteredData = data.filter(
+useEffect(() => {
+  const newFilteredData = data.filter(
     (item) =>
       item.empId.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.empName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -42,11 +43,19 @@ const All_Employees_Salary_Report = ({ searchQuery, sendDataToParent }) => {
         .includes(searchQuery.toLowerCase()) ||
       item.dailySalary.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  setFilteredData(newFilteredData);
+}, [searchQuery, data]);
 
-  useEffect(() => {
-    fetchTax();
+useEffect(() => {
+  if (filteredData && filteredData.length > 0) {
     sendDataToParent(filteredData);
-  }, [fetchTax]);
+  }
+}, [filteredData, sendDataToParent]);
+
+useEffect(() => {
+  fetchAllEmpSal();
+}, [fetchAllEmpSal]);
+
 
   return (
     <>

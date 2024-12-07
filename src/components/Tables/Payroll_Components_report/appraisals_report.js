@@ -5,6 +5,8 @@ import error from "../../../assets/error.png";
 
 const Appraisals_Report = ({ searchQuery, sendDataToParent }) => {
   const [data, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+
   const fetchAppraisals = useCallback(async () => {
     try {
       const response = await axios.get(`${SERVER_URL}pyr-appr/`);
@@ -15,20 +17,28 @@ const Appraisals_Report = ({ searchQuery, sendDataToParent }) => {
     }
   }, [setData]);
 
-  const filteredData = data.filter(
-    (item) =>
-      item.empName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.status?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.empId?.toString().includes(searchQuery) ||
-      item.date?.toLowerCase().includes(searchQuery) ||
-      item.reason?.toLowerCase().includes(searchQuery) ||
-      item.desc?.toLowerCase().includes(searchQuery) ||
-      item.appraisal?.toLowerCase().includes(searchQuery)
-  );
+  useEffect(() => {
+    const newFilteredData = data.filter(
+      (item) =>
+        item.empName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.status?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.empId?.toString().includes(searchQuery) ||
+        item.date?.toLowerCase().includes(searchQuery) ||
+        item.reason?.toLowerCase().includes(searchQuery) ||
+        item.desc?.toLowerCase().includes(searchQuery) ||
+        item.appraisal?.toLowerCase().includes(searchQuery)
+    );
+    setFilteredData(newFilteredData);
+  }, [searchQuery, data]);
+
+  useEffect(() => {
+    if (filteredData && filteredData.length > 0) {
+      sendDataToParent(filteredData);
+    }
+  }, [filteredData, sendDataToParent]);
 
   useEffect(() => {
     fetchAppraisals();
-    sendDataToParent(filteredData);
   }, [fetchAppraisals]);
 
   return (

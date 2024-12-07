@@ -5,18 +5,22 @@ import error from "../../../assets/error.png";
 
 const Daily_Working_calcHours_Report = ({ searchQuery, sendDataToParent }) => {
   const [data, setData] = useState([]);
+const [filteredData, setFilteredData] = useState([]);
 
-  const fetchWh = useCallback(async () => {
-    try {
-      const response = await axios.get(`${SERVER_URL}rp-att-all-working-hours/`);
-      console.log(response.data);
-      setData(response.data);
-    } catch (error) {
-      console.error("Error fetching Daily full time data:", error);
-    }
-  }, [setData]);
+// Fetch the data for the child component
+const fetchWh = useCallback(async () => {
+  try {
+    const response = await axios.get(`${SERVER_URL}rp-att-all-working-hours/`);
+    console.log(response.data);
+    setData(response.data);
+  } catch (error) {
+    console.error("Error fetching Daily full time data:", error);
+  }
+}, [setData]);
 
-  const filteredData = data.filter(
+// Filter the data based on the searchQuery
+useEffect(() => {
+  const newFilteredData = data.filter(
     (item) =>
       item.empId.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -25,11 +29,20 @@ const Daily_Working_calcHours_Report = ({ searchQuery, sendDataToParent }) => {
       item.calcHours.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.date.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  setFilteredData(newFilteredData);
+}, [searchQuery, data]); // Re-run whenever searchQuery or data changes
 
-  useEffect(() => {
-    fetchWh();
+// Send filtered data to parent component
+useEffect(() => {
+  if (filteredData && filteredData.length > 0) {
     sendDataToParent(filteredData);
-  }, [fetchWh]);
+  }
+}, [filteredData, sendDataToParent]); // Send data to parent when filteredData changes
+
+// Fetch the data when the component mounts
+useEffect(() => {
+  fetchWh();
+}, [fetchWh]); // Only call fetchWh when the component mounts
 
   return (
     <>

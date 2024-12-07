@@ -72,9 +72,14 @@ const Reports = () => {
   };
 
   const handleDataFromChild = (filteredData) => {
+    console.log("ajkshdkjaa");
+    console.log(filteredData);
     setData(filteredData);
+    console.log("ajkshdkjaa");
+    
+    
   };
-
+  
   const downloadCSV = () => {
     if (data.length === 0) {
       alert("No data available to download!");

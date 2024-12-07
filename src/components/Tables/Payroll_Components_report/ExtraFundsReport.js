@@ -5,6 +5,8 @@ import error from "../../../assets/error.png";
 
 const ExtraFundsReport = ({ searchQuery, sendDataToParent }) => {
   const [data, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+
   const fetchExtraFunds = useCallback(async () => {
     try {
       const response = await axios.get(`${SERVER_URL}pyr-ext/`);
@@ -15,27 +17,35 @@ const ExtraFundsReport = ({ searchQuery, sendDataToParent }) => {
     }
   }, [setData]);
 
-  const filteredData = data.filter(
-    (item) =>
-      item.empId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.empName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.type?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.empId?.toString().includes(searchQuery) ||
-      item.paid?.toLowerCase().includes(searchQuery) ||
-      item.pendingAmount?.toLowerCase().includes(searchQuery) ||
-      item.nextPayable?.toLowerCase().includes(searchQuery) ||
-      item.date?.toLowerCase().includes(searchQuery) ||
-      item.extraFundAmount?.toLowerCase().includes(searchQuery)
-  );
+  useEffect(() => {
+    const newFilteredData = data.filter(
+      (item) =>
+        item.empId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.empName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.type?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.empId?.toString().includes(searchQuery) ||
+        item.paid?.toLowerCase().includes(searchQuery) ||
+        item.pendingAmount?.toLowerCase().includes(searchQuery) ||
+        item.nextPayable?.toLowerCase().includes(searchQuery) ||
+        item.date?.toLowerCase().includes(searchQuery) ||
+        item.extraFundAmount?.toLowerCase().includes(searchQuery)
+    );
+    setFilteredData(newFilteredData);
+  }, [searchQuery, data]);
+
+  useEffect(() => {
+    if (filteredData && filteredData.length > 0) {
+      sendDataToParent(filteredData);
+    }
+  }, [filteredData, sendDataToParent]);
 
   useEffect(() => {
     fetchExtraFunds();
-    sendDataToParent(filteredData);
   }, [fetchExtraFunds]);
 
   return (
     <>
-    {data.length < 1 ? (
+      {data.length < 1 ? (
         <>
           <div className="baandar">
             <img src={error} alt="No Data Found" />
@@ -43,57 +53,57 @@ const ExtraFundsReport = ({ searchQuery, sendDataToParent }) => {
           </div>
         </>
       ) : (
-    <div className="departments-table">
-      <h3>Extra Funds Report</h3>
-      <table className="table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Employee ID</th>
-              <th>Employee Name</th>
-              <th>Extra Funds Amount</th>
-              <th>Paid Amount</th>
-              <th>Pending Amount</th>
-              <th>Return In Months</th>
-              <th>Next Month Payable</th>
-              <th>Date</th>
-              <th>Reason</th>
-              <th>Type</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredData.map((adv) => (
-              <tr key={adv.id}>
-                <td>{adv.id}</td>
-                <td>{adv.empId}</td>
-                <td className="bold-fonts">{adv.empName}</td>
-                <td>{adv.extraFundAmount}</td>
-                <td>{adv.paidAmount}</td>
-                <td>{adv.pendingAmount}</td>
-                <td>{adv.returnInMonths}</td>
-                <td>{adv.nextPayable}</td>
-                <td>{adv.date}</td>
-                <td>{adv.reason}</td>
-                <td>
-                  <span
-                    className={`status ${
-                        adv.type === "payable"
-                        ? "absentStatus"
-                        : adv.type === "Rejected"
-                        ? "absentStatus"
-                        : "presentStatus"
-                    }`}
-                    >
-                    {adv.type}
-                  </span>
-                </td>
+        <div className="departments-table">
+          <h3>Extra Funds Report</h3>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Employee ID</th>
+                <th>Employee Name</th>
+                <th>Extra Funds Amount</th>
+                <th>Paid Amount</th>
+                <th>Pending Amount</th>
+                <th>Return In Months</th>
+                <th>Next Month Payable</th>
+                <th>Date</th>
+                <th>Reason</th>
+                <th>Type</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-    </div>
-    )}
-            </>
+            </thead>
+            <tbody>
+              {filteredData.map((adv) => (
+                <tr key={adv.id}>
+                  <td>{adv.id}</td>
+                  <td>{adv.empId}</td>
+                  <td className="bold-fonts">{adv.empName}</td>
+                  <td>{adv.extraFundAmount}</td>
+                  <td>{adv.paidAmount}</td>
+                  <td>{adv.pendingAmount}</td>
+                  <td>{adv.returnInMonths}</td>
+                  <td>{adv.nextPayable}</td>
+                  <td>{adv.date}</td>
+                  <td>{adv.reason}</td>
+                  <td>
+                    <span
+                      className={`status ${
+                        adv.type === "payable"
+                          ? "absentStatus"
+                          : adv.type === "Rejected"
+                          ? "absentStatus"
+                          : "presentStatus"
+                      }`}
+                    >
+                      {adv.type}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </>
   );
 };
 

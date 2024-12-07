@@ -5,18 +5,20 @@ import error from "../../../assets/error.png";
 
 const Daily_Overtime_Report = ({ searchQuery, sendDataToParent }) => {
   const [data, setData] = useState([]);
+const [filteredData, setFilteredData] = useState([]);
 
-  const fetch_d_ot = useCallback(async () => {
-    try {
-      const response = await axios.get(`${SERVER_URL}rp-att-all-ot/`);
-      console.log(response.data);
-      setData(response.data);
-    } catch (error) {
-      console.error("Error fetching Daily full time data:", error);
-    }
-  }, [setData]);
+const fetch_d_ot = useCallback(async () => {
+  try {
+    const response = await axios.get(`${SERVER_URL}rp-att-all-ot/`);
+    console.log(response.data);
+    setData(response.data);
+  } catch (error) {
+    console.error("Error fetching Daily full time data:", error);
+  }
+}, [setData]);
 
-  const filteredData = data.filter(
+useEffect(() => {
+  const newFilteredData = data.filter(
     (item) =>
       item.empId.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.emp_fName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -27,13 +29,20 @@ const Daily_Overtime_Report = ({ searchQuery, sendDataToParent }) => {
       item.shift_start.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.shift_end.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.worked_hours.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.extra_hours.toLowerCase().includes(searchQuery.toLowerCase()) 
+      item.extra_hours.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  setFilteredData(newFilteredData);
+}, [searchQuery, data]);
 
-  useEffect(() => {
-    fetch_d_ot();
+useEffect(() => {
+  if (filteredData && filteredData.length > 0) {
     sendDataToParent(filteredData);
-  }, [fetch_d_ot]);
+  }
+}, [filteredData, sendDataToParent]);
+
+useEffect(() => {
+  fetch_d_ot();
+}, [fetch_d_ot]);
 
   return (
     <>
