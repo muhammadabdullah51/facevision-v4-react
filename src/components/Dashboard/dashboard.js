@@ -38,6 +38,9 @@ const Dashboard = () => {
             try {
                 const response = await axios.get(`${SERVER_URL}dashboard/`);
                 setDashData(response.data);
+                const res = await axios.get(`${SERVER_URL}chart-data/`);
+                setData(res.data);
+                console.log(res.data);
             } catch (error) {
                 console.error(error);
             }
@@ -154,7 +157,7 @@ const Dashboard = () => {
                         </div>
                         <div className="dashboard-graphs">
                             <div className="prefomance-graph">
-                                <PrefomanceGraph />
+                                <PrefomanceGraph data={data}/>
                             </div>
                             <div className="geography-graph">
                                 <ProjectGraph />

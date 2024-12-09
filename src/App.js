@@ -15,6 +15,7 @@ import AuthToken from './components/Login/AuthToken';
 // import UserProvider from './UserContext';
 function App() {
   const [companyInfoCompleted, setCompanyInfoCompleted] = useState(false);
+  const [authTrue, setAuthTrue] = useState(false);
 
   useEffect(() => {
     // Make API call to check company info status
@@ -24,6 +25,13 @@ function App() {
       })
       .catch(error => {
         console.error("There was an error checking company info status", error);
+      })
+    axios.get(`${SERVER_URL}auth-cmp-reg/`)
+      .then(response => {
+        setAuthTrue(response.data.completed);
+      })
+      .catch(error => {
+        console.error("There was an error checking auth token status", error);
       })
   }, []);
 
@@ -40,10 +48,10 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} /> */}
 
 
-          
-          {/* <Route path="/" element={<Dashboard />} /> */}
+
           <Route path="/" element={<Login />} />
-          <Route path="/access" element={<AuthToken />} />
+          {/* <Route path="/" element={ !authTrue ? <AuthToken/> :  <Login />} /> */}
+          {/* <Route path="/access" element={<AuthToken />} /> */}
           <Route path="/Signup" element={<Register />} />
           <Route path="/companyInformation" element={!companyInfoCompleted ?  <Information /> : <Navigate to="/" /> }/>
           <Route path="/dashboard" element={<Dashboard />} />

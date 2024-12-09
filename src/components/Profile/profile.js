@@ -14,7 +14,7 @@ function ProfileSettings() {
     <>
     <div className="profiles">
       <UserProfile/>
-      <CompanyProfile/>
+      {/* <CompanyProfile/> */}
       
     </div>
 

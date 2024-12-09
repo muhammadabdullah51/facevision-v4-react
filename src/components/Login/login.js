@@ -117,9 +117,7 @@ const Login = () => {
                 <div className="signup-link">
                     Don't have an account? <a href="/Signup">Create account</a>
                 </div>
-                <div className="signup-link">
-                  Didn't enter the auth token? <a href="/access">Access Token</a>
-              </div>
+               
             </div>
         </div>
     );
