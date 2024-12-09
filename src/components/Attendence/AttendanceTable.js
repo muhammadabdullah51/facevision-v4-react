@@ -225,8 +225,8 @@ const AttendanceTable = ({ data, setData }) => {
   const confirmUpdate = async () => {
     if (!formData.empId || 
       !formData.date || 
-      !formData.time_in ||
-      !formData.time_out ||
+      // !formData.time_in ||
+      // !formData.time_out ||
       !formData.date ||
       !formData.attendance_marked ||
       !formData.location ||
@@ -305,8 +305,8 @@ const AttendanceTable = ({ data, setData }) => {
   const confirmAdd = async () => {
     if (
       !formData.empId ||
-      !formData.time_in ||
-      !formData.time_out ||
+      // !formData.time_in ||
+      // !formData.time_out ||
       !formData.date ||
       !formData.status
     ) {

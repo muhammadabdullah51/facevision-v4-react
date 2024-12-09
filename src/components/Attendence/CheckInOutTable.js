@@ -12,7 +12,9 @@ import deleteAnimation from "../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../assets/Lottie/warningAnim.json";
 
-const CheckInOutTable = ({ data, setData }) => {
+const CheckInOutTable = ({ dash }) => {
+  const [data, setData] = useState([])
+
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
@@ -101,19 +103,18 @@ const CheckInOutTable = ({ data, setData }) => {
         accessor: "status",
         Cell: ({ value }) => (
           <span
-            className={`status ${
-              value === "checkin"
+            className={`status ${value === "checkin"
                 ? "presentStatus"
                 : value === "checkout"
-                ? "lateStatus"
-                : "none"
-            }`}
+                  ? "lateStatus"
+                  : "none"
+              }`}
           >
             {value}
           </span>
         ),
       },
-     
+
       {
         Header: "Action",
         accessor: "action",
@@ -196,7 +197,7 @@ const CheckInOutTable = ({ data, setData }) => {
       !formData.fName ||
       !formData.lName ||
       !formData.date ||
-      !formData.status 
+      !formData.status
     ) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
@@ -258,7 +259,7 @@ const CheckInOutTable = ({ data, setData }) => {
       date: "",
       status: "",
       ip: "",
-      
+
     });
 
     setShowAddForm(true);
@@ -278,7 +279,7 @@ const CheckInOutTable = ({ data, setData }) => {
       !formData.fName ||
       !formData.lName ||
       !formData.date ||
-      !formData.status 
+      !formData.status
     ) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
@@ -310,92 +311,96 @@ const CheckInOutTable = ({ data, setData }) => {
 
   return (
     <div className="department-table">
-      <ConirmationModal
-        isOpen={showModal}
-        message={`Are you sure you want to ${modalType} this Manual Check In / Out?`}
-        onConfirm={() => {
-          if (modalType === "create") confirmAdd();
-          else if (modalType === "update") confirmUpdate();
-          // if (modalType === "update") confirmUpdate();
-          else confirmDelete();
-        }}
-        onCancel={() => setShowModal(false)}
-        animationData={
-          modalType === "create"
-            ? addAnimation
-            : modalType === "update"
-            ? updateAnimation
-            : deleteAnimation
-        }
-      />
-      <ConirmationModal
-        isOpen={successModal}
-        message={`Check In / Out ${modalType}d successfully!`}
-        onConfirm={() => setSuccessModal(false)}
-        onCancel={() => setSuccessModal(false)}
-        animationData={successAnimation}
-        successModal={successModal}
-      />
-      <ConirmationModal
-        isOpen={warningModal}
-        message={resMsg}
-        onConfirm={() => setWarningModal(false)}
-        onCancel={() => setWarningModal(false)}
-        animationData={warningAnimation}
-        warningModal={warningModal}
-      />
-      <div className="table-header">
-        <form className="form" onSubmit={(e) => e.preventDefault()}>
-          <button type="submit">
-            <svg
-              width="17"
-              height="16"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              aria-labelledby="search"
-            >
-              <path
-                d="M7.667 12.667A5.333 5.333 0 107.667 2a5.333 5.333 0 000 10.667zM14.334 14l-2.9-2.9"
-                stroke="currentColor"
-                strokeWidth="1.333"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              ></path>
-            </svg>
-          </button>
-          <input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search..."
-            className="input"
-            type="text"
-          />
-          <button
-            className="reset"
-            type="button" // Change to type="button" to prevent form reset
-            onClick={() => setSearchQuery("")} // Clear the input on click
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </form>
-        <button className="add-button" onClick={handleAdd}>
-          <FaPlus className="add-icon" /> Add Manual Check In / Out
-        </button>
-      </div>
+      {!dash && (
+        <>
 
+          <ConirmationModal
+            isOpen={showModal}
+            message={`Are you sure you want to ${modalType} this Manual Check In / Out?`}
+            onConfirm={() => {
+              if (modalType === "create") confirmAdd();
+              else if (modalType === "update") confirmUpdate();
+              // if (modalType === "update") confirmUpdate();
+              else confirmDelete();
+            }}
+            onCancel={() => setShowModal(false)}
+            animationData={
+              modalType === "create"
+                ? addAnimation
+                : modalType === "update"
+                  ? updateAnimation
+                  : deleteAnimation
+            }
+          />
+          <ConirmationModal
+            isOpen={successModal}
+            message={`Check In / Out ${modalType}d successfully!`}
+            onConfirm={() => setSuccessModal(false)}
+            onCancel={() => setSuccessModal(false)}
+            animationData={successAnimation}
+            successModal={successModal}
+          />
+          <ConirmationModal
+            isOpen={warningModal}
+            message={resMsg}
+            onConfirm={() => setWarningModal(false)}
+            onCancel={() => setWarningModal(false)}
+            animationData={warningAnimation}
+            warningModal={warningModal}
+          />
+          <div className="table-header">
+            <form className="form" onSubmit={(e) => e.preventDefault()}>
+              <button type="submit">
+                <svg
+                  width="17"
+                  height="16"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-labelledby="search"
+                >
+                  <path
+                    d="M7.667 12.667A5.333 5.333 0 107.667 2a5.333 5.333 0 000 10.667zM14.334 14l-2.9-2.9"
+                    stroke="currentColor"
+                    strokeWidth="1.333"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  ></path>
+                </svg>
+              </button>
+              <input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search..."
+                className="input"
+                type="text"
+              />
+              <button
+                className="reset"
+                type="button" // Change to type="button" to prevent form reset
+                onClick={() => setSearchQuery("")} // Clear the input on click
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </form>
+            <button className="add-button" onClick={handleAdd}>
+              <FaPlus className="add-icon" /> Add Manual Check In / Out
+            </button>
+          </div>
+        </>
+      )}
       {showAddForm && !showEditForm && (
         <div className="add-department-form add-leave-form">
           <h3>Add Manual Check In / Out</h3>
@@ -480,7 +485,7 @@ const CheckInOutTable = ({ data, setData }) => {
               setFormData({ ...formData, ip: e.target.value })
             }
           >
-            
+
             <option value="byAdmin">By Admin</option>
           </select>
           <button className="submit-button" onClick={addAtt}>
@@ -618,7 +623,9 @@ const CheckInOutTable = ({ data, setData }) => {
         </table>
       </div>
 
-      <div className="pagination">
+{!dash &&(
+
+  <div className="pagination">
         <ReactPaginate
           previousLabel={"Previous"}
           nextLabel={"Next"}
@@ -629,8 +636,9 @@ const CheckInOutTable = ({ data, setData }) => {
           onPageChange={({ selected }) => gotoPage(selected)}
           containerClassName={"pagination"}
           activeClassName={"active"}
-        />
+          />
       </div>
+        )}
     </div>
   );
 };

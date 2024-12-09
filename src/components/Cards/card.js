@@ -2,7 +2,7 @@ import React from 'react';
 import './card.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-const CardComponent = ({ title, amount, percentage, time, icon, viewMoreText }) => {
+const CardComponent = ({ title, amount, percentage, time, icon, viewMoreText, onClick, late }) => {
     return (
         <div className="card">
             <div className="card-header">
@@ -14,10 +14,11 @@ const CardComponent = ({ title, amount, percentage, time, icon, viewMoreText }) 
             </div>
             <div className="card-footer">
                 <span className={`card-percentage ${percentage >= 0 ? 'positive' : 'negative'}`}>
-                    {percentage >= 0 ? `↑ ${percentage}%` : `↓ ${Math.abs(percentage)}%`}
+                    {percentage >= 0 ? `↑ ${percentage}`  : `↓ ${Math.abs(percentage)}`}
                 </span>
+                
                 <span className="card-time">{time}</span>
-                <span className="card-view-more">{viewMoreText}</span>
+                <span className="card-view-more" onClick={onClick}>{viewMoreText}</span>
             </div>
         </div>
     );

@@ -1,33 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 
 const data = [
     {
-        name: 'Jun', Pending: 10, Paid: 5, Rejected: 2,
+        day: 'Jun', Present: 10, Absent: 5, Late: 2,
     },
     {
-        name: 'Jul', Pending: 15, Paid: 8, Rejected: 4,
+        day: 'Jul', Present: 15, Absent: 8, Late: 4,
     },
     {
-        name: 'Aug', Pending: 18, Paid: 12, Rejected: 2,
+        day: 'Aug', Present: 18, Absent: 12, Late: 2,
     },
     {
-        name: 'Sep', Pending: 25, Paid: 10, Rejected: 5,
+        day: 'Sep', Present: 25, Absent: 10, Late: 5,
     },
     {
-        name: 'Oct', Pending: 15, Paid: 9, Rejected: 3,
+        day: 'Oct', Present: 15, Absent: 9, Late: 3,
     },
     {
-        name: 'Nov', Pending: 20, Paid: 11, Rejected: 4,
+        day: 'Nov', Present: 20, Absent: 11, Late: 4,
     },
     {
-        name: 'Dec', Pending: 22, Paid: 13, Rejected: 6,
+        day: 'Dec', Present: 22, Absent: 13, Late: 6,
     },
 ];
 
 const PerformanceChart = () => {
+
+    // const [data, setData] = useState([])
+
     return (
         <ResponsiveContainer width="100%" height={400}>
             <BarChart
@@ -39,13 +42,16 @@ const PerformanceChart = () => {
                 }}
             >
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
+                <XAxis dataKey="day" />
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="Pending" stackId="a" fill="#116BE9" />
-                <Bar dataKey="Paid" stackId="a" fill="#599EFF" />
-                <Bar dataKey="Rejected" stackId="a" fill="#34BDEB" />
+                {/* <Bar dataKey="Present" stackId="a" fill="#116BE9" />
+                <Bar dataKey="Absent" stackId="a" fill="#599EFF" />
+                <Bar dataKey="Late" stackId="a" fill="#34BDEB" /> */}
+                <Bar dataKey="Present" stackId="a" fill="#5833A7" />
+                <Bar dataKey="Absent" stackId="a" fill="#7341DA" />
+                <Bar dataKey="Late" stackId="a" fill="#7670eb" />
             </BarChart>
         </ResponsiveContainer>
     );

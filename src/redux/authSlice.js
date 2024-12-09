@@ -26,8 +26,19 @@ const authSlice = createSlice({
             state.token = null; // Clear token
             localStorage.removeItem('token');  // Optionally clear token from storage
         },
+        setAuthToken: (state, action) => {
+            // Update or set the authToken
+            state.authToken = {
+                company_id: action.payload.company_id,
+                accessToken: action.payload.accessToken,
+            };
+        },
+        clearAuthToken: (state) => {
+            // Clear the authToken
+            state.authToken = null;
+        },
     },
 });
 
-export const { login, logout } = authSlice.actions;
+export const { login, logout, setAuthToken } = authSlice.actions;
 export default authSlice.reducer;

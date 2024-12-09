@@ -51,6 +51,9 @@
 .negative {
     color: #ef4444; /* TailwindCSS red */
 }
+.neutral {
+    color: #ffa500; /* TailwindCSS red */
+}
 
 .card-time {
     color: #6b7280; /* Grey color */
@@ -58,6 +61,10 @@
 
 .card-view-more {
     color: #3b82f6; /* TailwindCSS blue */
+    cursor: pointer;
+}
+.card-view-more1 {
+    color: #10b981; /* TailwindCSS blue */
     cursor: pointer;
 }
 

@@ -5,21 +5,17 @@ import { logout } from "../../redux/authSlice";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSignOutAlt, faUser } from "@fortawesome/free-solid-svg-icons"; // Removed other icons
+import { faSignOutAlt, faUser } from "@fortawesome/free-solid-svg-icons";
 import { SERVER_URL } from "../../config";
-import Settings from "../Settings/settings";
-import { color } from "d3";
 
 const menuItems = [
-  { label: 'Logout', icon: faSignOutAlt, key: 'logout' },  // Only keeping logout
+  { label: "Logout", icon: faSignOutAlt, key: "logout" },
 ];
 
 const Navbar = ({ onMenuChange, selectedMenu, setSelectedMenu }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [companyLogo, setCompanyLogo] = useState(null);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  // const [selectedMenu, setSelectedMenu] = useState('dashboard'); // Default menu state
 
   const userInfo = useSelector((state) => state.auth.userInfo);
 
@@ -38,31 +34,17 @@ const Navbar = ({ onMenuChange, selectedMenu, setSelectedMenu }) => {
     fetchCompanyLogo();
   }, []);
 
-  const toggleDropdown = () => {
-    setDropdownOpen((prevState) => !prevState);
-  };
-
   const handleNavigation = (key) => {
     if (key === "logout") {
-      handleLogout(); // Logout logic
+      handleLogout();
     }
-    setSelectedMenu(key); // Update the selected menu state
-    onMenuChange(key); // Pass it to the parent component if needed
-    setDropdownOpen(false); // Close the dropdown menu after selection
+    setSelectedMenu(key);
+    onMenuChange(key);
   };
 
   const handleLogout = () => {
     dispatch(logout());
-    navigate("/"); // Navigate to the home page or login page
-  };
-
-  const renderSettings = () => {
-    switch (selectedMenu) {
-      case "logout":
-        return handleLogout(); // Logout and clear the screen
-      default:
-        return null; // Nothing is rendered for other cases
-    }
+    navigate("/");
   };
 
   return (
@@ -80,41 +62,42 @@ const Navbar = ({ onMenuChange, selectedMenu, setSelectedMenu }) => {
         </div>
 
         <div className="navbar-links">
-          <button
-            className="setting-toggle"
-            onClick={toggleDropdown}
-            aria-expanded={dropdownOpen}
-          >
-            {userInfo?.profilePicture ? (
-              <img
-                src={`${SERVER_URL}${userInfo.profilePicture}`}
-                alt="Profile"
-                className="user-profile-picture"
-              />
-            ) : (
-              <div className="default-avatar">U</div>
-            )}
-          </button>
-
-          {dropdownOpen && (
-            <ul className="setting-menu" onClick={(e) => e.stopPropagation()}>
+          <div className="dropdown">
+            <button className="setting-toggle">
+              {userInfo?.profilePicture ? (
+                <img
+                  src={`${SERVER_URL}${userInfo.profilePicture}`}
+                  alt="Profile"
+                  className="user-profile-picture"
+                />
+              ) : (
+                <div className="default-avatar">U</div>
+              )}
+            </button>
+            <ul className="setting-menu">
               <li>
-                <span><FontAwesomeIcon icon={faUser} /></span>
+                <span>
+                  <FontAwesomeIcon icon={faUser} />
+                </span>
                 <span>{userInfo?.username}</span>
               </li>
               <hr />
-              {menuItems.map(item => (
-                <li key={item.key} onClick={() => handleNavigation(item.key)} style={{color: '#ef4444'}}>
-                  <span><FontAwesomeIcon icon={item.icon} /></span>
+              {menuItems.map((item) => (
+                <li
+                  key={item.key}
+                  onClick={() => handleNavigation(item.key)}
+                  style={{ color: "#ef4444" }}
+                >
+                  <span>
+                    <FontAwesomeIcon icon={item.icon} />
+                  </span>
                   <span>{item.label}</span>
                 </li>
               ))}
             </ul>
-          )}
+          </div>
         </div>
       </div>
-
-      
     </div>
   );
 };

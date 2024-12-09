@@ -11,6 +11,7 @@ import Information from './components/Company_Input/companyPage';
 import Dashboard from './components/Dashboard/home';
 import Register from './components/Register/register';
 import { SERVER_URL } from './config';
+import AuthToken from './components/Login/AuthToken';
 // import UserProvider from './UserContext';
 function App() {
   const [companyInfoCompleted, setCompanyInfoCompleted] = useState(false);
@@ -37,8 +38,12 @@ function App() {
           <Route path="/Signup" element={<Register />} />
           <Route path="/companyInformation" element={<Information />} />
           <Route path="/dashboard" element={<Dashboard />} /> */}
-          <Route path="/" element={<Login />} />
+
+
+          
           {/* <Route path="/" element={<Dashboard />} /> */}
+          <Route path="/" element={<Login />} />
+          <Route path="/access" element={<AuthToken />} />
           <Route path="/Signup" element={<Register />} />
           <Route path="/companyInformation" element={!companyInfoCompleted ?  <Information /> : <Navigate to="/" /> }/>
           <Route path="/dashboard" element={<Dashboard />} />
