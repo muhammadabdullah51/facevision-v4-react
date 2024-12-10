@@ -15,7 +15,7 @@ const PayrollLogs = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get(`${SERVER_URL}chart-data/`);
+        const res = await axios.get(`${SERVER_URL}pyr-logs/`);
         setData(res.data);
         console.log(res.data);
       } catch (error) {

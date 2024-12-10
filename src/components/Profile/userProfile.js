@@ -3,17 +3,18 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"; // Import Font
 import { faCamera, faTrash } from "@fortawesome/free-solid-svg-icons"; // Import specific icons
 import "./profile.css";
 import Default_picture from "../../assets/profile.jpg";
+import { useSelector } from "react-redux";
+import { SERVER_URL } from "../../config";
 
 const UserProfile = () => {
 
      // State for profile data
-  const [profileData, setProfileData] = useState({
-    profileName: "Danish",
-    username: "Bashir",
-    status: "On duty",
-    about: "Discuss only on work hours, unless you wanna discuss about tech 🎵",
-    profilePicture: Default_picture, // Set imported default profile picture
-  });
+  const [profileData, setProfileData] = useState([]);
+  const userInfo = useSelector((state) => state.auth.userInfo);
+  console.log(userInfo);
+
+
+  
 
 
      // Handle input change
@@ -45,7 +46,7 @@ const UserProfile = () => {
         <form onSubmit={handleUserSubmit}>
           <div className="profile-picture-container">
             <img
-              src={profileData.profilePicture}
+              src={`${SERVER_URL}${userInfo.profilePicture}`}
               alt="Profile"
               className="profile-picture"
             />
@@ -55,7 +56,7 @@ const UserProfile = () => {
               onChange={handleProfilePictureChange}
               style={{ display: "none" }}
             />
-            <div className="profile-buttons">
+            {/* <div className="profile-buttons">
               <button
                 type="button"
                 onClick={() => document.getElementById("file-input").click()}
@@ -73,51 +74,39 @@ const UserProfile = () => {
               >
                 <FontAwesomeIcon icon={faTrash} /> Delete picture
               </button>
-            </div>
-          </div>
-
-          <div>
-            <label>Profile Name:</label>
-            <input
-              type="text"
-              name="profileName"
-              value={profileData.profileName}
-              onChange={handleUserChange}
-            />
+            </div> */}
           </div>
 
           <div>
             <label>Username:</label>
             <input
               type="text"
-              name="username"
-              value={profileData.username}
+              name="profileName"
+              value={userInfo.username}
+              readOnly
               onChange={handleUserChange}
             />
           </div>
 
           <div>
-            <label>Status Recently:</label>
+            <label>Email:</label>
             <input
               type="text"
-              name="status"
-              value={profileData.status}
+              name="username"
+              value={userInfo.email}
               onChange={handleUserChange}
             />
           </div>
 
           <div>
-            <label>About Me:</label>
-            <textarea
-              name="about"
-              value={profileData.about}
+            <label>Phone No:</label>
+            <input
+              type="text"
+              name="username"
+              value={userInfo.phoneNumber}
               onChange={handleUserChange}
             />
           </div>
-
-          <button className="profile-submit" type="submit">
-            Save changes
-          </button>
         </form>
       </div>
   )

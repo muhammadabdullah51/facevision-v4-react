@@ -21,19 +21,31 @@ function App() {
     // Make API call to check company info status
     axios.get(`${SERVER_URL}auth-cmp-reg/`)
       .then(response => {
-        setCompanyInfoCompleted(response.data.completed);
+        setCompanyInfoCompleted(response.data.status);
+        console.log("companyInfoCompleted" , response.data.status);
       })
       .catch(error => {
         console.error("There was an error checking company info status", error);
       })
-    axios.get(`${SERVER_URL}auth-cmp-reg/`)
+    axios.get(`${SERVER_URL}auth-vrf/`)
       .then(response => {
-        setAuthTrue(response.data.completed);
+        setAuthTrue(response.data.status);
+        console.log("authTrue" , response.data.status);
       })
       .catch(error => {
         console.error("There was an error checking auth token status", error);
       })
   }, []);
+
+  const renderHome = () => {
+    if (authTrue) {
+      return <AuthToken />;
+    } else if (!companyInfoCompleted) {
+      return <Information />;
+    } else {
+      return <Login />;
+    }
+  };
 
   
   return (
@@ -46,14 +58,15 @@ function App() {
           <Route path="/Signup" element={<Register />} />
           <Route path="/companyInformation" element={<Information />} />
           <Route path="/dashboard" element={<Dashboard />} /> */}
-
-
-
-          <Route path="/" element={<Login />} />
-          {/* <Route path="/" element={ !authTrue ? <AuthToken/> :  <Login />} /> */}
           {/* <Route path="/access" element={<AuthToken />} /> */}
+
+
+
+          {/* <Route path="/companyInformation" element={!companyInfoCompleted ?  <Information /> : <Navigate to="/" /> }/> */}
+          {/* <Route path="/" element={<Login />} /> */}
+          {/* <Route path="/" element={ !authTrue ? <AuthToken/> :  <Login />} /> */}
+          <Route path="/" element={ renderHome()} />
           <Route path="/Signup" element={<Register />} />
-          <Route path="/companyInformation" element={!companyInfoCompleted ?  <Information /> : <Navigate to="/" /> }/>
           <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
       </Router>

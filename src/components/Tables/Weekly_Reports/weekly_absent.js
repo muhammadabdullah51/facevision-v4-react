@@ -63,7 +63,7 @@ const Absent_Summary_Report = ({ searchQuery, sendDataToParent }) => {
         <>
           <div className="baandar">
             <img src={error} alt="No Data Found" />
-            <h4>No Absent Record Found.</h4>
+            <h4>No Weekly Absent Record.</h4>
           </div>
         </>
       ) : (

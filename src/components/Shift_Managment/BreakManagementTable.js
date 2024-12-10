@@ -290,7 +290,7 @@ const BreakManagementTable = ({onDataUpdate}) => {
                 setFormData({ ...formData, name: e.target.value })
             }
             />
-            <label>Break Start Time</label>
+            <label style={{margin:'0 10px'}}>Break Start Time</label>
             <input
               type="time"
               placeholder="Break Start Time"
@@ -299,7 +299,7 @@ const BreakManagementTable = ({onDataUpdate}) => {
                 setFormData({ ...formData, start_time: e.target.value })
             }
             />
-            <label>Break End Time</label>
+            <label style={{margin:'0 10px'}}>Break End Time</label>
             <input
               type="time"
               placeholder="Break End Time"
@@ -308,6 +308,7 @@ const BreakManagementTable = ({onDataUpdate}) => {
                 setFormData({ ...formData, end_time: e.target.value })
               }
             />
+            <br />
          
             <button className="submit-button" onClick={addOTF}>
               Add Break Schedule
@@ -329,16 +330,16 @@ const BreakManagementTable = ({onDataUpdate}) => {
                 setFormData({ ...formData, name: e.target.value })
               }
             />
-            <label>Break Start Time</label>
+            <label style={{margin:'0 10px'}}>Break Start Time</label>
             <input
               type="time"
               placeholder="Break Start Time"
               value={formData.start_time}
               onChange={(e) =>
                 setFormData({ ...formData, start_time: e.target.value })
-              }
+            }
             />
-            <label>Break End Time</label>
+            <label style={{margin:'0 10px'}}>Break End Time</label>
             <input
               type="time"
               placeholder="Break End Time"
@@ -347,6 +348,7 @@ const BreakManagementTable = ({onDataUpdate}) => {
                 setFormData({ ...formData, end_time: e.target.value })
               }
             />
+            <br />
            
             <button className="submit-button" onClick={() => updateOTF(formData)}>
               Update Break Schedule

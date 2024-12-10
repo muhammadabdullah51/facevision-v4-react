@@ -60,7 +60,7 @@ const Monthly_Absent_Report = ({ searchQuery, sendDataToParent }) => {
         <>
           <div className="baandar">
             <img src={error} alt="No Data Found" />
-            <h4>No Absent Employee For Today.</h4>
+            <h4>No Monthly Absent Employee Record.</h4>
           </div>
         </>
       ) : (

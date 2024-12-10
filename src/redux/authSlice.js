@@ -29,7 +29,7 @@ const authSlice = createSlice({
         setAuthToken: (state, action) => {
             // Update or set the authToken
             state.authToken = {
-                company_id: action.payload.company_id,
+                cmpId: action.payload.cmpId,
                 accessToken: action.payload.accessToken,
             };
         },

@@ -1,22 +1,22 @@
-import React, { useState } from "react";
-import AttendanceTable from "./AttendanceTable";
-import CheckInOut from "./checkinout";
-import CheckInOutTable from "./CheckInOutTable";
-import BreackInOutTable from "./BreackInOutTable";
+import React, { useState } from 'react'
+import CheckInOutTable from './CheckInOutTable';
+import AttendanceTable from './AttendanceTable';
+import Attendance from './attendence';
+import BreackInOutTable from './BreackInOutTable';
 
-const Attendance = () => {
+const Breakinout = () => {
     const [data, setData] = useState([])
-    const [changeTab, setChangeTab] = useState("Details");
+    const [changeTab, setChangeTab] = useState("Break In / Out");
     const renderTabContent = () => {
       switch (changeTab) {
+        case "Details":
+          return <AttendanceTable data = {data} setData = {setData}/>;
         case "Check In / Out":
-          return <CheckInOutTable data = {data} setData = {setData}/>;;
-        case "Break In / Out":
-          return <BreackInOutTable data = {data} setData = {setData}/>;;
+          return <CheckInOutTable data = {data} setData = {setData}/>;
         default:
           return (
             <div>
-              <AttendanceTable data = {data} setData = {setData} />
+              <BreackInOutTable data = {data} setData = {setData} />
             </div>
           );
       }
@@ -48,9 +48,8 @@ const Attendance = () => {
         </div>
         <div className="tab-content">{renderTabContent()}</div>
       </div>
-        
-      </>
+        </>
     );
-};
+}
 
-export default Attendance;
+export default Breakinout

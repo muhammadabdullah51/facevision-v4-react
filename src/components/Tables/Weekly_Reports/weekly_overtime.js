@@ -67,7 +67,7 @@ const Weekly_Overtime_Report = ({ searchQuery, sendDataToParent }) => {
         <>
           <div className="baandar">
             <img src={error} alt="No Data Found" />
-            <h4>No Daily Overtime Record Found.</h4>
+            <h4>No Weekly Overtime Record.</h4>
           </div>
         </>
       ) : (

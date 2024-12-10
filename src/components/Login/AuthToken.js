@@ -19,24 +19,29 @@ const AuthToken = () => {
         e.preventDefault();
         if (companyId && accessToken) {
             setLoading(true); // Start loading
+            const payLoad = {
+                cmpId: companyId,
+                accessToken: accessToken,
+            }
+            console.log(payLoad);
             try {
-                const response = await axios.post(`${SERVER_URL}auth-token/`, { companyId, accessToken });
-                if (response.data.success) {
-                    // Dispatch the setAuthToken action with company_id and accessToken
+                const response = await axios.post(`${SERVER_URL}auth-vrf/`, payLoad);
+                if (response.data.status==200) {
                     dispatch(
                         setAuthToken({
-                            company_id: companyId,
+                            cmpId: companyId,
                             accessToken: accessToken,
                         })
+                    // Dispatch the setAuthToken action with company_id and accessToken
                     );
 
                     // Optionally store the authToken locally
-                    localStorage.setItem('authToken', JSON.stringify({ companyId, accessToken }));
+                    localStorage.setItem('authToken', JSON.stringify( payLoad ));
 
-                    // Navigate to the next page
-                    navigate('/dashboard');
+                    // // Navigate to the next page
+                    // navigate('/dashboard');
                 } else {
-                    alert(response.data.message || 'Failed to authenticate. Please try again.');
+                    alert(response.data.msg || 'Failed to authenticate. Please try again.');
                 }
             } catch (error) {
                 console.error('Authentication error:', error.response?.data?.message || error.message);
@@ -74,7 +79,7 @@ const AuthToken = () => {
                         <label htmlFor="access_token">Access Token</label>
                         <input
                             id="access_token"
-                            type="password"
+                            type="text"
                             placeholder="Enter The Access Token"
                             value={accessToken}
                             onChange={(e) => setAccessToken(e.target.value)}
@@ -85,9 +90,9 @@ const AuthToken = () => {
                         {loading ? 'Submitting...' : 'Submit'}
                     </button>
                 </form>
-                <div className="signup-link">
+                {/* <div className="signup-link">
                   Already entered the access token? <a href="/">Login</a>
-              </div>
+              </div> */}
             </div>
         </div>
     );

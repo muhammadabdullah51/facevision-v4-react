@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import CheckInOutTable from './CheckInOutTable';
 import AttendanceTable from './AttendanceTable';
 import Attendance from './attendence';
+import BreackInOutTable from './BreackInOutTable';
 
 const CheckInOut = () => {
     const [data, setData] = useState([])
@@ -10,6 +11,8 @@ const CheckInOut = () => {
       switch (changeTab) {
         case "Details":
           return <AttendanceTable data = {data} setData = {setData}/>;
+        case "Break In / Out":
+          return <BreackInOutTable data = {data} setData = {setData}/>;
         default:
           return (
             <div>
@@ -23,7 +26,7 @@ const CheckInOut = () => {
       <>
       <div className="settings-page">
         <div className="tabs">
-          <button
+        <button
             className={`${changeTab === "Details" ? "active" : ""}`}
             onClick={() => setChangeTab("Details")}
           >
@@ -34,6 +37,12 @@ const CheckInOut = () => {
             onClick={() => setChangeTab("Check In / Out")}
           >
             Check In / Out
+          </button>
+          <button
+            className={`${changeTab === "Break In / Out" ? "active" : ""}`}
+            onClick={() => setChangeTab("Break In / Out")}
+          >
+            Break In / Out
           </button>
           
         </div>

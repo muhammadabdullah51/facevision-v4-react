@@ -66,7 +66,7 @@ const Leave_Summary_Report = ({ searchQuery, sendDataToParent }) => {
       {data.length < 1 ? (
         <div className="baandar">
           <img src={error} alt="No Data Found" />
-          <h4>No Daily Overtime Record Found.</h4>
+          <h4>No Leave Summary Record.</h4>
         </div>
       ) : (
         <div className="departments-table">

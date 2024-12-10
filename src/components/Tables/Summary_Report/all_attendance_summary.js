@@ -60,7 +60,7 @@ const All_Attendance_Summary_Report = ({ searchQuery, sendDataToParent }) => {
       {data.length < 1 ? (
         <div className="baandar">
           <img src={error} alt="No Data Found" />
-          <h4>No Fulltime Record For Today.</h4>
+          <h4>No Attendance Summary Record.</h4>
         </div>
       ) : (
         <div className="departments-table">

@@ -160,6 +160,7 @@
     .submenu-item{
         gap: 0.4vw;
         padding: unset;
+        width: 80%;
     }
     .sidebar-menu{
         gap: 2.2vh;

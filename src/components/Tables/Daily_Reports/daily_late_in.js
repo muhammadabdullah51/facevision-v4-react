@@ -65,13 +65,13 @@ const Daily_Late_In_Report = ({ searchQuery, sendDataToParent }) => {
         <>
           <div className="baandar">
             <img src={error} alt="No Data Found" />
-            <h4>No Fulltime Record For Today.</h4>
+            <h4>No Late In Record For Today.</h4>
           </div>
         </>
       ) : (
         <div className="departments-table">
           <div className="report-head">
-          <h3>Daily Fulltime Report</h3>
+          <h3>Daily Late In Report</h3>
 
             <div className="date-search">
               <label>

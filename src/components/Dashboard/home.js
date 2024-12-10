@@ -30,6 +30,7 @@ import ExtraFunds from '../Enrollment/ExtraFund/ExtraFunds';
 import CheckInOut from '../Attendence/checkinout';
 import Allowance from '../Payroll/Allowances/Allowances';
 import Tax from '../Payroll/Tax/Tax';
+import Breakinout from '../Attendence/breakinout';
 
 const Home = () => {
 
@@ -70,6 +71,8 @@ const Home = () => {
                 return <Attendance />;
             case 'Check In/Out':
                 return <CheckInOut />;
+            case 'Break In/Out':
+                return <Breakinout />;
             case 'Leaves':
                 return <Leaves />;
             case 'Shift Management':

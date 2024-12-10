@@ -8,7 +8,7 @@ import {
     faUsers, faBan, faCog, faUser, faBuilding, faTag,
     faMapMarkerAlt, faIdBadge, faPersonWalkingDashedLineArrowRight, faChevronDown,
     faChevronUp, faHandHoldingUsd, faClipboardCheck, faAward, faFileInvoiceDollar,
-    faTabletAlt, faDollarSign, faInfoCircle, faCheckCircle, faFileInvoice, faMoneyBillWave, faBed
+    faTabletAlt, faDollarSign, faInfoCircle, faCheckCircle, faFileInvoice, faMoneyBillWave, faBed, faCoffee 
 } from '@fortawesome/free-solid-svg-icons';
 
 
@@ -27,7 +27,8 @@ const menuItems = [
     {
         label: 'Attendance', icon: faCalendarCheck, submenu: [
             { label: 'Details', icon: faInfoCircle },
-            { label: 'Check In/Out', icon: faCheckCircle }
+            { label: 'Check In/Out', icon: faCheckCircle },
+            { label: 'Break In/Out', icon: faCoffee  }
         ]
     },
     { label: 'Leaves', icon: faBed },
