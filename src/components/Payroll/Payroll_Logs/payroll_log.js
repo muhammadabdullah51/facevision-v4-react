@@ -17,7 +17,6 @@ const PayrollLogs = () => {
       try {
         const res = await axios.get(`${SERVER_URL}pyr-logs/`);
         setData(res.data);
-        console.log(res.data);
       } catch (error) {
         console.error(error);
       }

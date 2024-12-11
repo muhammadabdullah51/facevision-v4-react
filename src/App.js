@@ -22,7 +22,6 @@ function App() {
     axios.get(`${SERVER_URL}auth-cmp-reg/`)
       .then(response => {
         setCompanyInfoCompleted(response.data.status);
-        console.log("companyInfoCompleted" , response.data.status);
       })
       .catch(error => {
         console.error("There was an error checking company info status", error);
@@ -30,7 +29,6 @@ function App() {
     axios.get(`${SERVER_URL}auth-vrf/`)
       .then(response => {
         setAuthTrue(response.data.status);
-        console.log("authTrue" , response.data.status);
       })
       .catch(error => {
         console.error("There was an error checking auth token status", error);

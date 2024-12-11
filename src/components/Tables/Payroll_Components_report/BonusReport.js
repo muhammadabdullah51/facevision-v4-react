@@ -12,7 +12,6 @@ const [toDate, setToDate] = useState("");
 const fetchBonus = useCallback(async () => {
   try {
     const response = await axios.get(`${SERVER_URL}pyr-asg-bns/`);
-    console.log(response.data);
     setData(response.data);
   } catch (error) {
     console.error("Error fetching Bonus data:", error);

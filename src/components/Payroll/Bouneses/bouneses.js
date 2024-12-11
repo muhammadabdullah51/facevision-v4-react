@@ -41,10 +41,8 @@ const Bonuses = () => {
   const fetchBouneses = useCallback(async () => {
     try {
       const response = await axios.get(`${SERVER_URL}pyr-bns/`);
-      console.log(response.data);
       setData(response.data);
     } catch (error) {
-      console.error("Error fetching bonus data:", error);
     }
   }, [setData]);
 
@@ -129,7 +127,6 @@ const Bonuses = () => {
       setShowAddForm(false)
       fetchBouneses();
     } catch (error) {
-      console.log(error);
     }
   };
 
@@ -180,7 +177,6 @@ const Bonuses = () => {
       bonusDate: formData.bonusDate,
       
     };
-    console.log(updateBounses);
     try {
       await axios.post(`${SERVER_URL}pyr-bns-up/`, updateBounses);
       const updatedData = await axios.get(`${SERVER_URL}pyr-bns/`);
@@ -190,7 +186,6 @@ const Bonuses = () => {
       setShowEditForm(false);
       fetchBouneses();
     } catch (error) {
-      console.log(error);
     }
   }
 

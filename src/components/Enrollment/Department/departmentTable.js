@@ -45,7 +45,6 @@ const TableComponent = ({ data, setData }) => {
       const response = await axios.get(`${SERVER_URL}pr-dpt/`);
       setData(response.data.context);
     } catch (error) {
-      console.error("Error fetching department data:", error);
     } finally {
       setLoading(false);
     }
@@ -85,7 +84,6 @@ const TableComponent = ({ data, setData }) => {
       await axios.post(`${SERVER_URL}pr-dpt-del/`, {
         dptId: formData.dptId,
       });
-      console.log(`Department deleted ID: ${formData.dptId}`);
       const updatedData = await axios.get(`${SERVER_URL}pr-dpt/`
       );
       setData(updatedData.data.context);
@@ -93,7 +91,6 @@ const TableComponent = ({ data, setData }) => {
       setShowModal(false);
       setSuccessModal(true);
     } catch (error) {
-      console.error("Error deleting department:", error);
     }
   };
 
@@ -130,8 +127,6 @@ const TableComponent = ({ data, setData }) => {
 
     try {
       const response = await axios.post(`${SERVER_URL}pr-dpt/`, newDepartment);
-      console.log(newDepartment);
-      console.log("Department added successfully:");
       setShowAddForm(false);
       setResMsg(response.data.msg)
       if (response.data.status) {
@@ -141,14 +136,12 @@ const TableComponent = ({ data, setData }) => {
       }else {
         setShowModal(false);
         setWarningModal(true);
-        // console.log(updatedData.data.msg)
       }
       const updatedData = await axios.get(`${SERVER_URL}pr-dpt/`
       );
       setData(updatedData.data.context);
      
     } catch (error) {
-      console.error("Error adding department:", error);
       setWarningModal(true);
     }
 
@@ -173,7 +166,6 @@ const TableComponent = ({ data, setData }) => {
   );
 
   const updateDepartment = async (row) => {
-    console.log(row);
     setModalType("update");
     setFormData({
       // _id: row._id,
@@ -204,7 +196,6 @@ const TableComponent = ({ data, setData }) => {
         `${SERVER_URL}pr-dpt-up/`,
         updatedDepartment
       );
-      console.log("Department updated successfully");
       fetchDepartments();
       setShowEditForm(false);
       const updatedData = await axios.get(`${SERVER_URL}pr-dpt/`);
@@ -212,7 +203,6 @@ const TableComponent = ({ data, setData }) => {
       setShowModal(false);
       setSuccessModal(true);
     } catch (error) {
-      console.error("Error updating department:", error);
     }
   };
   return (

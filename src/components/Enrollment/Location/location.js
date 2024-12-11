@@ -15,9 +15,7 @@ const Location = () => {
     try {
       const response = await axios.get(`${SERVER_URL}pr-loc/`);
       setData(response.data.context);
-      // console.log(response.data);
     } catch (error) {
-      console.error('Error fetching location data:', error);
     }
   };
   return <div>

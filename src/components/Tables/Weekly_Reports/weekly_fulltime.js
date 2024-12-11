@@ -12,7 +12,6 @@ const Weekly_Fulltime_Report = ({ searchQuery, sendDataToParent }) => {
   const fetchFtm = useCallback(async () => {
     try {
       const response = await axios.get(`${SERVER_URL}rp-att-all-full-time/`);
-      console.log(response.data);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching Daily full-time data:", error);

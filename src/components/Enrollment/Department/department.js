@@ -18,11 +18,9 @@ const Department = () => {
         `${SERVER_URL}pr-dpt/`
       );
       setData(response.data.context);
-      // console.log(response.data.context);
 
       
     } catch (error) {
-      console.error("Error fetching department data:", error);
     }
   };
 

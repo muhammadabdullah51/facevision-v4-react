@@ -12,7 +12,6 @@ const LoanReport = ({ searchQuery, sendDataToParent }) => {
   const fetchLoan = useCallback(async () => {
     try {
       const response = await axios.get(`${SERVER_URL}pyr-loan/`);
-      console.log(response.data);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching loan data:", error);

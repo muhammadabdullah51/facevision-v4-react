@@ -19,14 +19,8 @@ const Information = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Ensure all fields are filled
         if (companyName && employees && description && industry && logo) {
-            // const formData = new FormData();
-            // formData.append('companyName', companyName);
-            // formData.append('employees', employees);
-            // formData.append('logo', logo); // Optional file upload
-            // formData.append('industry', industry);
-            // formData.append('description', description);
+            
             const formData = {
                 'companyName': companyName,
                 'employees': employees,
@@ -42,12 +36,9 @@ const Information = () => {
                     },
                 });
 
-                console.log(response.data.msg);
                 // Navigate to dashboard or another page after successful form submission
                 navigate('/Signup');
             } catch (error) {
-                console.error('Error submitting company data', error);
-                // console.log(error.msg);
             }
         } else {
             alert('Please fill in all fields.');

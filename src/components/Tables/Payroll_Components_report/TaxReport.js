@@ -12,7 +12,6 @@ const TaxReport = ({ searchQuery, sendDataToParent }) => {
   const fetchTax = useCallback(async () => {
     try {
       const response = await axios.get(`${SERVER_URL}assign-taxes/`);
-      console.log(response.data);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching assign-taxes data:", error);

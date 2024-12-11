@@ -15,7 +15,6 @@ const Daily_Working_calcHours_Report = ({ searchQuery, sendDataToParent }) => {
       const response = await axios.get(
         `${SERVER_URL}rp-att-all-working-hours/`
       );
-      console.log(response.data);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching working hours data:", error);

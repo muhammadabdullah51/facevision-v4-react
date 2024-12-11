@@ -63,10 +63,7 @@ const EmplyeeProfile = () => {
       const fetchedData = response.data; // Assuming only one object is returned
       setData(fetchedData); // Directly update the settings state
       setEmployees(fetchedData);
-      console.log("employees", employees);
-      console.log(fetchedData);
     } catch (error) {
-      console.error("Error fetching payroll profiles:", error);
     }
   }, []);
   useEffect(() => {

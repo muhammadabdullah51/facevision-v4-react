@@ -40,7 +40,6 @@ const Loan = () => {
   const fetchLoan = useCallback(async () => {
     try {
       const response = await axios.get(`${SERVER_URL}pyr-loan/`);
-      console.log(response.data);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching Loan data:", error);
@@ -80,7 +79,6 @@ const Loan = () => {
     setModalType("delete");
     setShowModal(true);
     setFormData({ ...formData, id: id });
-    console.log(formData);
   };
   const confirmDelete = async () => {
     try {
@@ -141,7 +139,6 @@ const Loan = () => {
       reason: formData.reason,
       status: formData.status,
     };
-    console.log(newLoan);
     try {
       await axios.post(`${SERVER_URL}pyr-loan/`, newLoan);
       setShowModal(false);
@@ -212,7 +209,6 @@ const Loan = () => {
         date: formData.date,
         status: formData.status,
       };
-      console.log(updateLoan);
       await axios.post(`${SERVER_URL}pyr-loan-up/`, updateLoan);
       setShowModal(false);
       setSuccessModal(true);

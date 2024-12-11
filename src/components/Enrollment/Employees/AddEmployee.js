@@ -93,7 +93,6 @@ const AddEmployee = ({
         }
         // setOvertime(overtimeResponse.data);
       } catch (error) {
-        console.error("Error fetching options:", error);
       }
     };
 
@@ -211,14 +210,9 @@ const AddEmployee = ({
 
     try {
       const response = await axios.post(`${SERVER_URL}pr-emp/`, formData);
-      console.log("Added Employee:", response.data);
       setShowModal(false);
       setSuccessModal(true)
     } catch (error) {
-      console.error(
-        "Error adding employee:",
-        error.response ? error.response.data : error.message
-      );
     }
 
     setTimeout(() => {
@@ -250,15 +244,10 @@ const AddEmployee = ({
 
     try {
       const response = await axios.post(`${SERVER_URL}pr-emp-up/`, formData);
-      console.log("Updated Employee:", response.data);
       setShowModal(false);
       setSuccessModal(true)
 
     } catch (error) {
-      console.error(
-        "Error updating employee:",
-        error.response ? error.response.data : error.message
-      );
     }
     
 

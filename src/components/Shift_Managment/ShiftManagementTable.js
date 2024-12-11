@@ -68,7 +68,6 @@ const ShiftManagementTable = () => {
     setLoading(true);
     try {
       const response = await axios.get(`${SERVER_URL}shft/`);
-      console.log(response.data);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching shift data:", error);
@@ -167,11 +166,8 @@ const ShiftManagementTable = () => {
       holidays: selectedItems,
       bkId: formData.bkId,
     };
-    console.log(newItem);
     try {
       const response = await axios.post(`${SERVER_URL}shft/`, newItem);
-      console.log(response);
-      console.log("Shift Added Successfully");
       setShowAddForm(false);
       setResMsg(response.data.msg);
       setShowModal(false);
@@ -180,18 +176,15 @@ const ShiftManagementTable = () => {
       // setSelectedItems(null);
 
       const updatedData = await axios.get(`${SERVER_URL}shft/`);
-      console.log(updatedData.data);
       setData(updatedData.data);
       // setShowAddForm(false)
     } catch (error) {
-      console.log(error);
       setShowModal(false);
       setWarningModal(true);
     }
   };
 
   const handleEdit = (row) => {
-    console.log("row", row);
     setFormData({
       shiftId: row.shiftId,
       name: row.name,
@@ -210,7 +203,6 @@ const ShiftManagementTable = () => {
       bkId: row.bkId,
     });
     setSelectedItems(row.holidays || []);
-    console.log("handleEdit", formData);
     setShowAddForm(false);
     setShowEditForm(true);
   };
@@ -236,7 +228,6 @@ const ShiftManagementTable = () => {
     });
     setSelectedItems(row.holidays || []);
     setShowModal(true);
-    console.log("updateShift", formData);
   };
 
   const formatTime = (time) => {
@@ -259,7 +250,6 @@ const ShiftManagementTable = () => {
       setWarningModal(true);
       return;
     }
-    //  console.log(formData);
 
     const updatedShift = {
       shiftId: formData.shiftId,
@@ -275,10 +265,8 @@ const ShiftManagementTable = () => {
       bkId: formData.bkId,
       holidays: selectedItems,
     };
-    console.log("confirmEdit", formData);
     try {
       const res = await axios.post(`${SERVER_URL}shft-up/`, updatedShift);
-      console.log("Shift updated successfully");
       setShowEditForm(false);
       setShowModal(false);
       setSuccessModal(true);

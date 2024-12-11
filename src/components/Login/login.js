@@ -46,15 +46,11 @@ const Login = () => {
                     // Navigate to the dashboard or any protected route
                     navigate('/dashboard');
                 }
-                console.log(response.data.context);
-                console.log(response.data.msg);
-                console.log(response.data.context.user);
 
                 // const { data } = response;
 
 
             } catch (error) {
-                console.error('Login error:', error.response?.data?.message || error.message);
                 alert(error.response?.data?.message || 'Login failed. Please try again.');
             } finally {
                 setLoading(false); // End loading

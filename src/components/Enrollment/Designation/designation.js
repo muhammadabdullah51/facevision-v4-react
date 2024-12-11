@@ -17,7 +17,6 @@ const Designation = () => {
             const response = await axios.get(`${SERVER_URL}pr-dsg/`);
             setData(response.data.context);
         } catch (error) {
-            console.error('Error fetching designation data:', error);
         }
     };
     return (

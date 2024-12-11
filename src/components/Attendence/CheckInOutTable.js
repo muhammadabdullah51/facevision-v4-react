@@ -42,9 +42,7 @@ const CheckInOutTable = ({ dash }) => {
     try {
       const response = await axios.get(`${SERVER_URL}att-chkinout/`);
       setData(response.data);
-      console.log(response.data);
     } catch (error) {
-      console.error("Error fetching leave data:", error);
     }
   }, [setData]);
 
@@ -53,7 +51,6 @@ const CheckInOutTable = ({ dash }) => {
       const response = await axios.get(`${SERVER_URL}pr-emp/`);
       setEmployees(response.data);
     } catch (error) {
-      console.error("Error fetching employees:", error);
     }
   };
 
@@ -178,7 +175,6 @@ const CheckInOutTable = ({ dash }) => {
       date: row.date,
       status: row.status,
     });
-    console.log(formData);
 
     setShowAddForm(false);
     setShowEditForm(true);
@@ -213,13 +209,11 @@ const CheckInOutTable = ({ dash }) => {
       date: formData.date,
       status: formData.status,
     };
-    console.log(attPayload);
     try {
       const res = await axios.put(
         `${SERVER_URL}att-chkinout/${formData.id}`,
         attPayload
       );
-      console.log(res);
       const updatedData = await axios.get(`${SERVER_URL}att-chkinout/`);
       setData(updatedData.data);
       fetchAtt();
@@ -227,21 +221,16 @@ const CheckInOutTable = ({ dash }) => {
       setShowModal(false);
       setSuccessModal(true);
     } catch (error) {
-      console.log(error);
     }
   };
 
   const handleDelete = async (row) => {
-    console.log(row);
     setModalType("delete");
     setShowModal(true);
     setFormData({ id: row.id });
-    console.log(formData.id);
-    console.log(formData);
   };
 
   const confirmDelete = async () => {
-    console.log(formData);
     const response = await axios.delete(`${SERVER_URL}att-chkinout/${formData.id}/`);
     const updatedData = await axios.get(`${SERVER_URL}att-chkinout/`);
     setData(updatedData.data);
@@ -269,10 +258,8 @@ const CheckInOutTable = ({ dash }) => {
   const addAtt = async () => {
     setModalType("create");
     setShowModal(true);
-    // console.log(formData)
   };
   const confirmAdd = async () => {
-    console.log(formData)
     if (
       !formData.empId ||
       !formData.time ||
@@ -295,7 +282,6 @@ const CheckInOutTable = ({ dash }) => {
       status: formData.status,
       ip: 'byAdmin',
     };
-    console.log(payload);
     try {
       await axios.post(`${SERVER_URL}att-chkinout/`, payload);
       const updatedData = await axios.get(`${SERVER_URL}att-chkinout/`);
@@ -305,7 +291,6 @@ const CheckInOutTable = ({ dash }) => {
       setShowModal(false);
       setSuccessModal(true);
     } catch (error) {
-      console.log(error);
     }
   };
 

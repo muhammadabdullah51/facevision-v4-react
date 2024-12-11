@@ -43,9 +43,7 @@ const AssignAllowance = () => {
     try {
       const response = await axios.get(`${SERVER_URL}assign-allowances/`);
       setData(response.data);
-      console.log(response.data);
     } catch (error) {
-      console.error("Error fetching employee bonuses:", error);
     }
   }, [setData]);
   const fetchEmployees = async () => {
@@ -53,17 +51,14 @@ const AssignAllowance = () => {
       const response = await axios.get(`${SERVER_URL}pr-emp/`);
       setEmployees(response.data);
     } catch (error) {
-      console.error("Error fetching employees:", error);
     }
   };
 
   const fetchAllowances = async () => {
     try {
       const response = await axios.get(`${SERVER_URL}allowances/`);
-      console.log("Fetched bonuses:", response.data);
       setAllowances(response.data);
     } catch (error) {
-      console.error("Error fetching bonuses:", error);
     }
   };
 
@@ -92,7 +87,6 @@ const AssignAllowance = () => {
       setShowModal(false);
       setSuccessModal(true);
     } catch (error) {
-      console.error("Error deleting allowance assignment:", error);
     }
   };
 
@@ -117,7 +111,6 @@ const AssignAllowance = () => {
       setWarningModal(true);
       return;
     }
-    console.log(formData);
     await axios.post(`${SERVER_URL}assign-allowances/`, formData);
     setShowModal(false);
     setSuccessModal(true);
@@ -164,7 +157,6 @@ const AssignAllowance = () => {
       setShowEditForm(false);
       fetchAssignAllowances(); // Refresh data after updating
     } catch (error) {
-      console.error("Error updating allowance assignment:", error);
       setShowModal(false);
       setWarningModal(true);
     }

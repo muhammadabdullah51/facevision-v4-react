@@ -11,7 +11,6 @@ const UserProfile = () => {
      // State for profile data
   const [profileData, setProfileData] = useState([]);
   const userInfo = useSelector((state) => state.auth.userInfo);
-  console.log(userInfo);
 
 
   
@@ -38,7 +37,6 @@ const UserProfile = () => {
  // Handle form submission
   const handleUserSubmit = (e) => {
     e.preventDefault();
-    console.log("Profile data saved:", profileData);
   };
   return (
       <div className="profile-settings">

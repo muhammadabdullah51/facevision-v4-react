@@ -23,15 +23,6 @@ const Dashboard = () => {
     const [dashData, setDashData] = useState([])
 
 
-    // const fetchData = async () => {
-    //     try {
-    //         const response = await axios.get(`${SERVER_URL}dashboard/`);
-    //         setDashData(response.data);
-    //         console.log(dashData);
-    //     } catch (error) {
-    //         console.error(error);
-    //     }
-    // }
 
     useEffect(() => {
         const fetchData = async () => {
@@ -40,9 +31,7 @@ const Dashboard = () => {
                 setDashData(response.data);
                 const res = await axios.get(`${SERVER_URL}chart-data/`);
                 setData(res.data);
-                console.log(res.data);
             } catch (error) {
-                console.error(error);
             }
         };
 

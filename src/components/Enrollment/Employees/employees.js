@@ -22,7 +22,6 @@ const Employees = () => {
       const response = await axios.get(`${SERVER_URL}pr-emp/`);
       setData(response.data);
     } catch (error) {
-      console.error("Error fetching employee data:", error);
     }
   };
   useEffect(() => {
@@ -32,7 +31,6 @@ const Employees = () => {
 
   const handleEdit = (row) => {
     setEditData(row);
-    console.log(row)
     setIsEditMode(true);
     setActiveTab("Add Employee");
   };

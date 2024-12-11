@@ -35,7 +35,6 @@ const CompanyProfile = () => {
      
       const handleCompanySubmit = (e) => {
         e.preventDefault();
-        console.log("Profile data saved:", companyData);
       };
   return (
         <div className="profile-settings">

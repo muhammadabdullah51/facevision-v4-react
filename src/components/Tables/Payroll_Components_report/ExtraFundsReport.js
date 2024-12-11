@@ -12,7 +12,6 @@ const ExtraFundsReport = ({ searchQuery, sendDataToParent }) => {
   const fetchExtraFunds = useCallback(async () => {
     try {
       const response = await axios.get(`${SERVER_URL}pyr-ext/`);
-      console.log(response.data);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching ExtraFundsReport data:", error);

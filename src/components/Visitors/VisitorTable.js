@@ -188,7 +188,6 @@ const VisitorTable = ({
   const fetchVisitors = useCallback( async () => {
     try {
       const response = await axios.get(`${SERVER_URL}visitors/`);
-      console.log(response.data);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching resignation data:", error);
@@ -217,7 +216,6 @@ const VisitorTable = ({
     setModalType("delete");
     setShowModal(true);
     setFormData(row.id );
-    console.log(formData);
     
   };
 
@@ -232,7 +230,6 @@ const VisitorTable = ({
       setSuccessModal(true);
       
     } catch (error) {
-      console.log(error);
     }
   } 
 

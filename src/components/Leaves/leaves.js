@@ -15,7 +15,6 @@ const Leaves = () => {
             const response = await axios.get(`${SERVER_URL}att-lv-cr/`);
             setData(response.data);
         } catch (error) {
-            console.error('Error fetching resignation data:', error);
         }
     };
 

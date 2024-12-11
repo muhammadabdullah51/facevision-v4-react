@@ -42,30 +42,23 @@ const AttendanceTable = ({ data, setData }) => {
     try {
       const response = await axios.get(`${SERVER_URL}all-attendance/`);
       setData(response.data);
-      console.log(response.data);
     } catch (error) {
-      console.error("Error fetching leave data:", error);
     }
   }, [setData]);
 
   const fetchEmployees = async () => {
     try {
       const response = await axios.get(`${SERVER_URL}pr-emp/`);
-      console.log(response.data);
       setEmployees(response.data);
     } catch (error) {
-      console.error("Error fetching employees:", error);
     }
   };
   const fetchloc = async () => {
     try {
       const response = await axios.get(`${SERVER_URL}pr-loc/`);
-      // console.log(response.data.context);
       const location = response.data.context;
       setLocations(location);
-      console.log(location);
     } catch (error) {
-      console.error("Error fetching location:", error);
     }
   };
 
@@ -210,7 +203,6 @@ const AttendanceTable = ({ data, setData }) => {
       emp_lName: row.emp_lName,
       employeeId: row.employeeId
     });
-    console.log(formData);
 
     setShowAddForm(false);
     setShowEditForm(true);
@@ -246,10 +238,8 @@ const AttendanceTable = ({ data, setData }) => {
       status: formData.status,
       location: formData.location,
     };
-    console.log(attPayload);
     try {
       const res = await axios.post(`${SERVER_URL}all-attendance/`, attPayload);
-      console.log(res);
       const updatedData = await axios.get(`${SERVER_URL}all-attendance/`);
       setData(updatedData.data);
       fetchAtt();
@@ -257,21 +247,16 @@ const AttendanceTable = ({ data, setData }) => {
       setShowModal(false);
       setSuccessModal(true);
     } catch (error) {
-      console.log(error);
     }
   };
 
   const handleDelete = async (row) => {
-    console.log(row);
     setModalType("delete");
     setShowModal(true);
     setFormData({ allAttendanceId: row.allAttendanceId });
-    console.log(formData.allAttendanceId);
-    console.log(formData);
   };
 
   const confirmDelete = async () => {
-    console.log(formData);
     const response = await axios.post(`${SERVER_URL}del-att/`, {
       allAttendanceId: formData.allAttendanceId,
     });
@@ -300,7 +285,6 @@ const AttendanceTable = ({ data, setData }) => {
   const addAtt = async () => {
     setModalType("create");
     setShowModal(true);
-    console.log(formData);
   };
   const confirmAdd = async () => {
     if (
@@ -324,7 +308,6 @@ const AttendanceTable = ({ data, setData }) => {
       status: formData.status,
       location: formData.location,
     };
-    console.log(payload);
     try {
       await axios.post(`${SERVER_URL}manual-att/`, payload);
       const updatedData = await axios.get(`${SERVER_URL}all-attendance/`);
@@ -334,7 +317,6 @@ const AttendanceTable = ({ data, setData }) => {
       setShowModal(false);
       setSuccessModal(true);
     } catch (error) {
-      console.log(error);
     }
   };
 

@@ -12,7 +12,6 @@ const Monthly_Entry_Time_Report = ({ searchQuery, sendDataToParent }) => {
   const fetchFtm = useCallback(async () => {
     try {
       const response = await axios.get(`${SERVER_URL}rp-att-entry-time/`);
-      console.log(response.data);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching Daily full-time data:", error);

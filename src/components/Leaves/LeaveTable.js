@@ -43,9 +43,7 @@ const LeaveTable = ({ data, setData }) => {
     try {
       const response = await axios.get(`${SERVER_URL}att-lv-cr/`);
       setData(response.data);
-      console.log(response.data);
     } catch (error) {
-      console.error("Error fetching leave data:", error);
     }
   }, [setData]);
 
@@ -54,7 +52,6 @@ const LeaveTable = ({ data, setData }) => {
       const response = await axios.get(`${SERVER_URL}pr-emp/`);
       setEmployees(response.data);
     } catch (error) {
-      console.error("Error fetching employees:", error);
     }
   };
 
@@ -195,7 +192,6 @@ const LeaveTable = ({ data, setData }) => {
       reason: row.reason,
       status: row.status,
     });
-    console.log(formData);
 
     setShowAddForm(false);
     setShowEditForm(true);
@@ -230,7 +226,6 @@ const LeaveTable = ({ data, setData }) => {
       reason: formData.reason,
       status: formData.status,
     };
-    console.log(leavePayload);
     try {
       await axios.post(`${SERVER_URL}att-lv-up/`, leavePayload);
       const updatedData = await axios.get(`${SERVER_URL}att-lv-cr/`);
@@ -240,7 +235,6 @@ const LeaveTable = ({ data, setData }) => {
       setShowModal(false);
       setSuccessModal(true);
     } catch (error) {
-      console.log(error);
     }
   };
 
@@ -248,11 +242,9 @@ const LeaveTable = ({ data, setData }) => {
     setModalType("delete");
     setShowModal(true);
     setFormData({ id: row.id });
-    console.log(row.id);
   };
 
   const confirmDelete = async () => {
-    console.log(formData);
     const response = await axios.post(`${SERVER_URL}att-lv-del/`, {
       id: formData.id,
     });
@@ -306,7 +298,6 @@ const LeaveTable = ({ data, setData }) => {
       status: formData.status,
       created_at: formData.created_at,
     };
-    console.log(leavePayload);
     try {
       await axios.post(`${SERVER_URL}att-lv-cr/`, leavePayload);
       const updatedData = await axios.get(`${SERVER_URL}att-lv-cr/`);
@@ -316,7 +307,6 @@ const LeaveTable = ({ data, setData }) => {
       setShowModal(false);
       setSuccessModal(true);
     } catch (error) {
-      console.log(error);
     }
   };
 

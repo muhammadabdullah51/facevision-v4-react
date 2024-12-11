@@ -13,7 +13,6 @@ const Daily_Late_In_Report = ({ searchQuery, sendDataToParent }) => {
   const fetchFtm = useCallback(async () => {
     try {
       const response = await axios.get(`${SERVER_URL}rp-att-late-in/`);
-      console.log(response.data);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching Daily Late-In data:", error);

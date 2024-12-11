@@ -75,7 +75,6 @@ const EmployeeTable = ({
     setIsModalOpen(true);
   };
   const handleEdit = (row) => {
-    // console.log("selected row for edit",row)
     // setEditData(row)
     // setIsEditMode(true);
     // setIsActiveTab("Add Employee");
@@ -92,10 +91,8 @@ const EmployeeTable = ({
     async () => {
       try {
         const response = await axios.get(`${SERVER_URL}pr-emp/`);
-        console.log(response.data)
         setData(response.data);
         } catch (error) {
-        console.error("Error fetching employees data:", error);
       }
     },[setData]
   ) 
@@ -123,14 +120,12 @@ const EmployeeTable = ({
     
     try {
       await axios.post(`${SERVER_URL}pr-emp-del/`, { id: formData.id });
-      console.log(`Employee deleted `);
       const updatedData = await axios.get(`${SERVER_URL}pr-emp/`);
       setData(updatedData.data);
       fetchEmployees();
       setShowModal(false);
       setSuccessModal(true);
     } catch (error) {
-      console.error("Error deleting department:", error);
     }
   }
 

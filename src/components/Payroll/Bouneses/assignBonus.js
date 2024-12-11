@@ -43,9 +43,7 @@ const AssignBonus = () => {
     try {
       const response = await axios.get(`${SERVER_URL}pyr-asg-bns/`);
       setData(response.data);
-      console.log(response.data);
     } catch (error) {
-      console.error("Error fetching employee bonuses:", error);
     }
   }, [setData]);
   const fetchEmployees = async () => {
@@ -53,17 +51,14 @@ const AssignBonus = () => {
       const response = await axios.get(`${SERVER_URL}pr-emp/`);
       setEmployees(response.data);
     } catch (error) {
-      console.error("Error fetching employees:", error);
     }
   };
 
   const fetchBonuses = async () => {
     try {
       const response = await axios.get(`${SERVER_URL}pyr-bns/`);
-      console.log("Fetched bonuses:", response.data);
       setBonuses(response.data);
     } catch (error) {
-      console.error("Error fetching bonuses:", error);
     }
   };
 
@@ -94,7 +89,6 @@ const AssignBonus = () => {
       setShowModal(false);
       setSuccessModal(true);
     } catch (error) {
-      console.error("Error deleting bonus:", error);
     }
   };
 
@@ -119,7 +113,6 @@ const AssignBonus = () => {
       setWarningModal(true);
       return;
     }
-    console.log(formData);
     await axios.post(`${SERVER_URL}pyr-asg-bns/`, formData);
     setShowModal(false);
     setSuccessModal(true);
@@ -170,7 +163,6 @@ const AssignBonus = () => {
       await fetchEmployeesBonus(); // Refresh data after add/update
       resetForm();
     } catch (error) {
-      console.error("Error saving bonus:", error);
     }
   };
 

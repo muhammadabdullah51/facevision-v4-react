@@ -39,10 +39,8 @@ const Appraisal = () => {
   const fetchAppraisals = useCallback(async () => {
     try {
       const response = await axios.get(`${SERVER_URL}pyr-appr/`);
-      console.log(response.data);
       setData(response.data);
     } catch (error) {
-      console.error("Error fetching appraisals data:", error);
     }
   }, [setData]);
   const fetchEmployees = async () => {
@@ -50,7 +48,6 @@ const Appraisal = () => {
       const response = await axios.get(`${SERVER_URL}pr-emp/`);
       setEmployees(response.data);
     } catch (error) {
-      console.error("Error fetching employees:", error);
     }
   };
 
@@ -96,7 +93,6 @@ const Appraisal = () => {
     setFormData({ ...formData, _id: id });
   };
   const confirmDelete = async () => {
-    console.log(formData.id);
     try {
       await axios.post(`${SERVER_URL}pyr-appr-del/`, { id: formData.id });
 
@@ -104,7 +100,6 @@ const Appraisal = () => {
       setShowModal(false);
       setSuccessModal(true);
     } catch (error) {
-      console.log(error);
     }
   };
 
@@ -150,7 +145,6 @@ const Appraisal = () => {
       status: formData.status,
       desc: formData.desc,
     };
-    console.log(newAppraisal);
     try {
       await axios.post(`${SERVER_URL}pyr-appr/`, newAppraisal);
       const updatedData = await axios.get(`${SERVER_URL}pyr-appr/`);
@@ -160,7 +154,6 @@ const Appraisal = () => {
       setSuccessModal(true);
       fetchAppraisals();
     } catch (error) {
-      console.log(error);
     }
   };
   const updateAppraisal = (row) => {
@@ -208,7 +201,6 @@ const Appraisal = () => {
         desc: formData.desc,
       };
 
-      console.log(updateAppraisal);
       await axios.post(`${SERVER_URL}pyr-appr-up/`, updateAppraisal);
       const updatedData = await axios.get(`${SERVER_URL}pyr-appr/`);
       setData(updatedData.data);
@@ -217,7 +209,6 @@ const Appraisal = () => {
       setShowEditForm(false);
       fetchAppraisals();
     } catch (error) {
-      console.log(error);
     }
   };
 

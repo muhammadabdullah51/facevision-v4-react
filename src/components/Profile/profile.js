@@ -14,7 +14,6 @@ function ProfileSettings() {
     <>
     <div className="profiles">
       <UserProfile/>
-      {/* <CompanyProfile/> */}
       
     </div>
 

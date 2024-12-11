@@ -12,7 +12,6 @@ const [toDate, setToDate] = useState("");
 const fetchAllowances = useCallback(async () => {
   try {
     const response = await axios.get(`${SERVER_URL}assign-allowances/`);
-    console.log(response.data);
     setData(response.data);
   } catch (error) {
     console.error("Error fetching assign-allowances data:", error);

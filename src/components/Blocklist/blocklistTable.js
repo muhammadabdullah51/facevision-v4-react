@@ -37,9 +37,7 @@ const BlockListTable = ({ data, setData }) => {
     try {
       const response = await axios.get(`${SERVER_URL}blocklist/`);
       setData(response.data);
-      console.log(data);
     } catch (error) {
-      console.error("Error fetching resign data:", error);
     }
   }, [setData]);
 
@@ -48,7 +46,6 @@ const BlockListTable = ({ data, setData }) => {
       const response = await axios.get(`${SERVER_URL}pr-emp/`);
       setEmployees(response.data);
     } catch (error) {
-      console.error("Error fetching employees:", error);
     }
   };
 
@@ -162,7 +159,6 @@ const BlockListTable = ({ data, setData }) => {
       allowReason: formData.allowReason,
       status: formData.status,
     });
-    console.log(formData);
     setShowModal(true);
   };
 
@@ -192,13 +188,11 @@ const BlockListTable = ({ data, setData }) => {
         `${SERVER_URL}blocklist/${formData.blockId}/`,
         updateBlock
       );
-      console.log(response.data); // Log the response
       fetchBlock(); // Fetch the updated locations
       setShowEditForm(false); // Close the edit form
       setShowModal(false); // Close the confirmation modal
       setSuccessModal(true); // Show the success modal
     } catch (error) {
-      console.error("Error updating Block:", error);
     }
   };
 
@@ -216,7 +210,6 @@ const BlockListTable = ({ data, setData }) => {
       setShowModal(false);
       setSuccessModal(true);
     } catch (error) {
-      console.error("Error deleting block:", error);
     }
   };
 
@@ -258,7 +251,6 @@ const BlockListTable = ({ data, setData }) => {
       setSuccessModal(true);
       fetchBlock();
     } catch (error) {
-      console.error("Error adding block:", error);
     }
   };
 

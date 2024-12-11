@@ -12,7 +12,6 @@ const Appraisals_Report = ({ searchQuery, sendDataToParent }) => {
   const fetchAppraisals = useCallback(async () => {
     try {
       const response = await axios.get(`${SERVER_URL}pyr-appr/`);
-      console.log(response.data);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching appraisals data:", error);

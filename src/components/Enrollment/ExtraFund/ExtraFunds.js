@@ -40,10 +40,8 @@ const ExtraFunds = () => {
   const fetchLoan = useCallback(async () => {
     try {
       const response = await axios.get(`${SERVER_URL}pyr-ext/`);
-      console.log(response.data);
       setData(response.data);
     } catch (error) {
-      console.error("Error fetching Loan data:", error);
     }
   }, [setData]);
   const fetchEmployees = async () => {
@@ -51,7 +49,6 @@ const ExtraFunds = () => {
       const response = await axios.get(`${SERVER_URL}pr-emp/`);
       setEmployees(response.data);
     } catch (error) {
-      console.error("Error fetching employees:", error);
     }
   };
 
@@ -80,7 +77,6 @@ const ExtraFunds = () => {
     setModalType("delete");
     setShowModal(true);
     setFormData({ ...formData, id: id });
-    console.log(formData);
   };
   const confirmDelete = async () => {
     try {
@@ -91,7 +87,6 @@ const ExtraFunds = () => {
       setShowModal(false);
       setSuccessModal(true);
     } catch (error) {
-      console.log(error);
     }
   };
 
@@ -141,7 +136,6 @@ const ExtraFunds = () => {
       reason: formData.reason,
       type: formData.type,
     };
-    console.log(newLoan);
     try {
       await axios.post(`${SERVER_URL}pyr-ext/`, newLoan);
       setShowModal(false);
@@ -149,7 +143,6 @@ const ExtraFunds = () => {
       setShowAddForm(false);
       fetchLoan();
     } catch (error) {
-      console.log(error);
     }
   };
   // Handle form data changes
@@ -210,14 +203,12 @@ const ExtraFunds = () => {
         reason: formData.reason,
         date: formData.date,
       };
-      console.log(updateLoan);
       await axios.post(`${SERVER_URL}pyr-ext-up/`, updateLoan);
       setShowModal(false);
       setSuccessModal(true);
       setShowEditForm(false);
       fetchLoan();
     } catch (error) {
-      console.log(error);
     }
   };
 

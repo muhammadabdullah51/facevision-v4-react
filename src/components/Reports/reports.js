@@ -72,7 +72,6 @@ const Reports = () => {
   };
 
   const handleDataFromChild = (filteredData) => {
-    console.log(filteredData);
     setData(filteredData);
   };
   

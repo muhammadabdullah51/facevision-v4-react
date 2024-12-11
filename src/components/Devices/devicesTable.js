@@ -35,9 +35,7 @@ const DeviceTable = ({ data, setData }) => {
       const response = await axios.get(`${SERVER_URL}device/`);
       const devices = await response.data.context;
       setData(devices);
-      console.log(devices);
     } catch (error) {
-      console.error("Error fetching devices data:", error);
     } finally {
       setLoading(false);
     }
@@ -62,70 +60,18 @@ const DeviceTable = ({ data, setData }) => {
     }));
   }, []);
 
-  // const handleDownload = async (rowData) => {
-  //   const cameraIP = rowData.cameraIP; // Get the camera IP from the row data
-  //   const port = rowData.port; // Get the port from the row data
-    
-  //   // Construct the URL for the HTTP request
-  //   const url = `http://${cameraIP}:${port}/download`;  // Modify the endpoint as required
-    
-  //   // Prepare the data to send in the POST request (adjust as needed)
-  //   const requestData = {
-  //     // Include any data you need in the body of the POST request
-  //     cameraId: rowData.cameraId,
-  //     action: "download", // You can customize this action or data as required
-  //   };
   
-  //   try {
-  //     // Send the POST request
-  //     const response = await fetch(url, {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify(requestData),
-  //     });
-  
-  //     // Handle the response from the server
-  //     if (response.ok) {
-  //       const data = await response.json();
-  //       console.log("Download initiated:", data);
-  //       // Optionally, show a success message or handle the response data
-  //     } else {
-  //       console.error("Error initiating download:", response.statusText);
-  //       // Optionally, show an error message to the user
-  //     }
-  //   } catch (error) {
-  //     console.error("Network error:", error);
-  //     // Optionally, handle network errors or display an alert
-  //   }
-  // };
-
   const handleDownload = async (rowData) => {
-    // Prepare the data to send in the POST request
     const requestData = {
-      cameraIp: rowData.cameraIp, // Include the camera IP in the payload
-      port: rowData.port,        // Include the port in the payload
-      // cameraId: rowData.cameraId, // Other necessary data
-      // action: "download",         // Custom action or command
+      cameraIp: rowData.cameraIp, 
+      port: rowData.port, 
     };
-    console.log(requestData)
   
     try {
       // Send the POST request
       const response = await axios.post(`${SERVER_URL}fetch-data/`, requestData);
-  
-      // Handle the response from the server
-      console.log("Download initiated:", response.data);
-      // if (response.status === 200) {
-      //   // Optionally, show a success message or handle the response data
-      // } else {
-      //   console.error("Error initiating download:", response.statusText);
-      //   // Optionally, show an error message to the user
       // }
     } catch (error) {
-      console.error("Network error:", error);
-      // Optionally, handle network errors or display an alert
     }
   };
   const columns = useMemo(
@@ -253,7 +199,6 @@ const DeviceTable = ({ data, setData }) => {
       setShowModal(false);
       setSuccessModal(true);
     } catch (error) {
-      console.error("Error deleting Device:", error);
     }
   };
 
@@ -301,7 +246,6 @@ const DeviceTable = ({ data, setData }) => {
       } else {
         setShowModal(false);
         setWarningModal(true);
-        console.log(updatedData.data.msg);
       }
       const updatedData = await axios.get(`${SERVER_URL}device/`);
       setData(updatedData.data.context);
@@ -311,7 +255,6 @@ const DeviceTable = ({ data, setData }) => {
       setSuccessModal(true);
       fetchDevices();
     } catch (error) {
-      // console.log(error);
       setWarningModal(true);
     }
 
@@ -337,7 +280,6 @@ const DeviceTable = ({ data, setData }) => {
       port: formData.port,
       status: formData.status,
     });
-    console.log(formData);
     setShowModal(true);
   };
   const confirmUpdate = async () => {
@@ -372,16 +314,12 @@ const DeviceTable = ({ data, setData }) => {
       } else {
         setShowModal(false);
         setWarningModal(true);
-        console.log(res.data.msg);
       }
       setSuccessModal(true);
 
       const updatedData = await axios.get(`${SERVER_URL}device/`);
       setData(updatedData.data.context);
-      console.log("done Updated device data:", updatedDevice);
-      console.log("device updated successfully");
     } catch (error) {
-      console.error("Error updating devices:", error);
       setWarningModal(true);
     }
   };

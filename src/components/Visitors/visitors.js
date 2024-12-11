@@ -15,7 +15,6 @@ const Visitors = () => {
   const fetchVisitors = async () => {
     try {
       const response = await axios.get(`${SERVER_URL}visitors/`);
-      console.log(response.data);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching resignation data:", error);
@@ -25,7 +24,6 @@ const Visitors = () => {
   const handleEdit = (row) => {
     setIsEditMode(true);
     setEditData(row);
-    console.log(row)
     setActiveTab("Add Visitors");
   };
   const handleAdd = () => {

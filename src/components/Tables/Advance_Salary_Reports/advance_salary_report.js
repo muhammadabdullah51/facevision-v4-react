@@ -12,7 +12,6 @@ const Advance_Salary_Reports = ({ searchQuery, sendDataToParent }) => {
   const fetchAdvSal = useCallback(async () => {
     try {
       const response = await axios.get(`${SERVER_URL}pyr-adv/`);
-      console.log(response.data);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching pyr-adv data:", error);

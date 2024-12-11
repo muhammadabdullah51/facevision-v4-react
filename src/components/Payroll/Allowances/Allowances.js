@@ -43,19 +43,15 @@ const Allowance = () => {
     try {
       const response = await axios.get(`${SERVER_URL}allowance-types/`);
       setAllSettings(response.data);
-      console.log(allSettings);
     } catch (error) {
-      console.error("Error fetching allowance names:", error);
     }
   };
 
   const fetchAllowances = useCallback(async () => {
     try {
       const response = await axios.get(`${SERVER_URL}allowances/`);
-      console.log(response.data);
       setData(response.data);
     } catch (error) {
-      console.error("Error fetching bonus data:", error);
     }
   }, [setData]);
 
@@ -92,7 +88,6 @@ const Allowance = () => {
       setSuccessModal(true);
       fetchAllowances();
     } catch (error) {
-      console.error("Error deleting allowance:", error);
       setShowModal(false);
       setWarningModal(true);
     }
@@ -129,7 +124,6 @@ const Allowance = () => {
       amount: formData.amount,
       date: formData.date,
     };
-    console.log(bouneses)
     try {
       axios.post(`${SERVER_URL}allowances/`, bouneses);
       const updatedData = await axios.get(`${SERVER_URL}allowances/`);
@@ -139,7 +133,6 @@ const Allowance = () => {
       setShowAddForm(false);
       fetchAllowances();
     } catch (error) {
-      console.log(error);
     }
   };
 
@@ -186,7 +179,6 @@ const Allowance = () => {
       setShowEditForm(false);
       fetchAllowances();
     } catch (error) {
-      console.error("Error updating allowance:", error);
       setShowModal(false);
       setWarningModal(true);
     }

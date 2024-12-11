@@ -35,7 +35,6 @@ const BreakManagementTable = ({onDataUpdate}) => {
       setLoading(true);
       try {
         const response = await axios.get(`${SERVER_URL}brk-sch/`);
-        console.log(response.data);
         setData(response.data);
         onDataUpdate(response.data); 
       } catch (error) {
@@ -95,7 +94,6 @@ const BreakManagementTable = ({onDataUpdate}) => {
       };
       try {
         const res = await axios.put(`${SERVER_URL}brk-sch/${formData.id}/`, updatedOTF);
-        console.log("Leave updated successfullykjljkljkl");
         setShowEditForm(false);
         setShowModal(false);
         setSuccessModal(true);
@@ -139,7 +137,6 @@ const BreakManagementTable = ({onDataUpdate}) => {
   
       try {
         const response = await axios.post(`${SERVER_URL}brk-sch/`, newOTF);
-        console.log("Leave Added Successfully")
         setShowAddForm(false);
         setResMsg(response.data.msg)
         setShowModal(false);

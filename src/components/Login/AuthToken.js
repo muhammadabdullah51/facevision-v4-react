@@ -23,7 +23,6 @@ const AuthToken = () => {
                 cmpId: companyId,
                 accessToken: accessToken,
             }
-            console.log(payLoad);
             try {
                 const response = await axios.post(`${SERVER_URL}auth-vrf/`, payLoad);
                 if (response.data.status==200) {
@@ -44,7 +43,6 @@ const AuthToken = () => {
                     alert(response.data.msg || 'Failed to authenticate. Please try again.');
                 }
             } catch (error) {
-                console.error('Authentication error:', error.response?.data?.message || error.message);
                 alert(error.response?.data?.message || 'Authentication failed. Please try again.');
             } finally {
                 setLoading(false); // End loading

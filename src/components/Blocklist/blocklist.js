@@ -17,7 +17,6 @@ const BlockEmployeeTable = () => {
         const response = await axios.get(`${SERVER_URL}blocklist/`);
         setData(response.data);
     } catch (error) {
-        console.error('Error fetching Block data:', error);
     }
 };
   return (

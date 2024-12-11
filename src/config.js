@@ -1,1 +1,1 @@
-export const SERVER_URL = "http://192.168.0.108:8000/";
+export const SERVER_URL = window.CONFIG_SERVER_URL || "http://default-url.com/";

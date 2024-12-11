@@ -48,7 +48,6 @@ const AssignTax = () => {
     try {
       const response = await axios.get(`${SERVER_URL}assign-taxes/`);
       setData(response.data);
-      console.log(response.data);
     } catch (error) {
       console.error("Error fetching employee bonuses:", error);
     }
@@ -65,7 +64,6 @@ const AssignTax = () => {
   const fetchTax = async () => {
     try {
       const response = await axios.get(`${SERVER_URL}taxes/`);
-      console.log("Fetched bonuses:", response.data);
       setBonuses(response.data);
     } catch (error) {
       console.error("Error fetching bonuses:", error);
@@ -135,7 +133,6 @@ const AssignTax = () => {
       setWarningModal(true);
       return;
     }
-    console.log(formData);
     await axios.post(`${SERVER_URL}assign-taxes/`, formData);
     setShowModal(false);
     setSuccessModal(true);

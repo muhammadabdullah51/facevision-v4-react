@@ -10,7 +10,6 @@ const [filteredData, setFilteredData] = useState([]);
 const fetchAllEmpSal = useCallback(async () => {
   try {
     const response = await axios.get(`${SERVER_URL}pyr-emp-profile/`);
-    console.log(response.data);
     setData(response.data);
   } catch (error) {
     console.error("Error fetching assign-allowances data:", error);

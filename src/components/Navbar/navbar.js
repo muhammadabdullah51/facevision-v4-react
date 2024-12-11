@@ -28,7 +28,6 @@ const Navbar = ({ onMenuChange, selectedMenu, setSelectedMenu }) => {
           setCompanyLogo(logoPath);
         }
       } catch (error) {
-        console.error("Error fetching company logo:", error);
       }
     };
     fetchCompanyLogo();

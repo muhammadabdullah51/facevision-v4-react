@@ -35,10 +35,8 @@ const AdvanceSalary = () => {
   const fetchAdvSalary = useCallback(async () => {
     try {
       const response = await axios.get(`${SERVER_URL}pyr-adv/`);
-      console.log(response.data);
       setData(response.data);
     } catch (error) {
-      console.error("Error fetching AdvSalary data:", error);
     }
   }, [setData]);
   const fetchEmployees = async () => {
@@ -46,7 +44,6 @@ const AdvanceSalary = () => {
       const response = await axios.get(`${SERVER_URL}pr-emp/`);
       setEmployees(response.data);
     } catch (error) {
-      console.error("Error fetching employees:", error);
     }
   };
 
@@ -66,7 +63,6 @@ const AdvanceSalary = () => {
 
   const handleEdit = (data) => {
     setFormData({ ...data });
-    console.log(formData);
     setShowAddForm(false);
     setShowEditForm(true);
   };
@@ -91,7 +87,6 @@ const AdvanceSalary = () => {
       setShowModal(false);
       setSuccessModal(true);
     } catch (error) {
-      console.error("Error deleting advance salary: ", error);
     }
   };
 
@@ -129,7 +124,6 @@ const AdvanceSalary = () => {
       reason: formData.reason,
       date: formData.date,
     };
-    console.log(advSalary);
     try {
       await axios.post(`${SERVER_URL}pyr-adv/`, advSalary);
       const updatedData = await axios.get(`${SERVER_URL}pyr-adv/`);
@@ -139,7 +133,6 @@ const AdvanceSalary = () => {
       setSuccessModal(true);
       fetchAdvSalary();
     } catch (error) {
-      console.error(error);
     }
   };
 
@@ -151,7 +144,6 @@ const AdvanceSalary = () => {
       reason: row.reason,
       date: row.date,
     });
-    console.log(formData);
     setShowModal(true);
   };
   const confirmUpdate = async () => {
@@ -183,7 +175,6 @@ const AdvanceSalary = () => {
 
       fetchAdvSalary();
     } catch (error) {
-      console.log(error);
     }
   };
 

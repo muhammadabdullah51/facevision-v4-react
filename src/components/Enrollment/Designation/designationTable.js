@@ -41,7 +41,6 @@ const DesignationTable = ({ data, setData }) => {
       const designation = await response.data.context;
       setData(designation);
     } catch (error) {
-      console.error("Error fetching designation data:", error);
     } finally {
       setLoading(false);
     }
@@ -79,14 +78,12 @@ const DesignationTable = ({ data, setData }) => {
   const confirmDelete = async () => {
     try {
       await axios.post(`${SERVER_URL}pr-dsg-del/`, {dsgId: formData.dsgId,});
-      console.log(`Designation deleted ID: ${formData.dsgId}`);
       const updatedData = await axios.get(`${SERVER_URL}pr-dsg/`);
       setData(updatedData.data.context);
       fetchDesignation();
       setShowModal(false);
       setSuccessModal(true);
     } catch (error) {
-      console.log(error);
     }
   };
 
@@ -121,8 +118,6 @@ const DesignationTable = ({ data, setData }) => {
     };
     try {
       const response = await axios.post(`${SERVER_URL}pr-dsg/`, designation);
-      console.log(response.data.msg);
-      console.log("Designation Added Succesfully");
       setShowAddForm(false);
       setResMsg(response.data.msg)
       if (response.data.status) {
@@ -132,7 +127,6 @@ const DesignationTable = ({ data, setData }) => {
       }else {
         setShowModal(false);
         setWarningModal(true);
-        // console.log(updatedData.data.msg)
       }
 
       const updatedData = await axios.get(`${SERVER_URL}pr-dsg/`);
@@ -153,8 +147,6 @@ const DesignationTable = ({ data, setData }) => {
     setShowEditForm(true);
   };
   const handleUpdate = async (row) => {
-    
-    console.log(row);
     setModalType("update");
     setFormData({
       dsgId: row.dsgId,
@@ -179,7 +171,6 @@ const DesignationTable = ({ data, setData }) => {
 
     try {
       const res = await axios.post(`${SERVER_URL}pr-dsg-up/`, updatedDepartment);
-      console.log("Designation updated successfully");
       fetchDesignation();
       setShowEditForm(false);
       setShowModal(false);
@@ -190,13 +181,11 @@ const DesignationTable = ({ data, setData }) => {
       }else {
         setShowModal(false);
         setWarningModal(true);
-        console.log(res.data.msg)
       }
       setSuccessModal(true);
       const updatedData = await axios.get(`${SERVER_URL}pr-dsg/`);
       setData(updatedData.data.context);
     } catch (error) {
-      console.error("Error updating Designation:", error);
       setWarningModal(true);
     }
   };

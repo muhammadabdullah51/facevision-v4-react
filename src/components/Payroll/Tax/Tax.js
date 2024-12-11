@@ -44,7 +44,6 @@ const Tax = () => {
     try {
       const response = await axios.get(`${SERVER_URL}tax-types/`);
       setTaxSettings(response.data);
-      console.log(taxSettings);
     } catch (error) {
       console.error("Error fetching tax names:", error);
     }
@@ -53,7 +52,6 @@ const Tax = () => {
   const fetchTax = useCallback(async () => {
     try {
       const response = await axios.get(`${SERVER_URL}taxes/`);
-      console.log(response.data);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching tax data:", error);
@@ -141,7 +139,6 @@ const Tax = () => {
       amount: formData.nature == 'percentage' ? 0 : formData.amount,
       date: formData.date,
     };
-    console.log(bouneses)
     try {
       axios.post(`${SERVER_URL}taxes/`, bouneses);
       const updatedData = await axios.get(`${SERVER_URL}taxes/`);
@@ -210,7 +207,6 @@ const Tax = () => {
       amount: formData.nature == 'percentage' ? 0 : formData.amount,
       date: formData.date,
     };
-    console.log(updateBounses);
     try {
       await axios.put(`${SERVER_URL}taxes/${formData.id}/`, updateBounses);
       const updatedData = await axios.get(`${SERVER_URL}taxes/`);

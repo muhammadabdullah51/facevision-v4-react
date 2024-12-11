@@ -146,7 +146,6 @@ const AddVisitor = ({
       visitingReason: newVisitor.visitingReason,
       carryingGoods: newVisitor.carryingGoods,
     };
-    console.log(visitorData);
     
     try {
       await axios.post(`${SERVER_URL}visitors/`, visitorData)

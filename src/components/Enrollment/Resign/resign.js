@@ -16,7 +16,6 @@ const Resign = () => {
         const response = await axios.get(`${SERVER_URL}pr-emp-rsgn/`);
         setData(response.data);
     } catch (error) {
-        console.error('Error fetching resignation data:', error);
     }
 };
   return (

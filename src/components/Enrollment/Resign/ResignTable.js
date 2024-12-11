@@ -37,7 +37,6 @@ const ResignTable = ({ data, setData }) => {
       const resign = await response.data;
       setData(resign);
     } catch (error) {
-      console.error("Error fetching resigns data:", error);
     }
   }, [setData]);
   // Fetch employee data
@@ -46,7 +45,6 @@ const ResignTable = ({ data, setData }) => {
       const response = await axios.get(`${SERVER_URL}pr-emp/`); /// Update this URL accordingly
       setEmployees(response.data);
     } catch (error) {
-      console.error("Error fetching employees:", error);
     }
   };
 
@@ -170,7 +168,6 @@ const ResignTable = ({ data, setData }) => {
     }
     setShowAddForm(false);
     setShowEditForm(true);
-    console.log(formData);
     setFormData({
       employee: "",
       date: "",
@@ -191,7 +188,6 @@ const ResignTable = ({ data, setData }) => {
       setShowModal(false);
       setSuccessModal(true);
     } catch (error) {
-      console.log(error);
     }
   };
 

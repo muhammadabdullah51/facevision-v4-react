@@ -12,9 +12,7 @@ const DashboardCard = () => {
             try {
                 const res = await axios.get(`${SERVER_URL}checkin-chart/`);
                 setData(res.data);
-                console.log(res.data);
             } catch (error) {
-                console.error(error);
             }
         };
 

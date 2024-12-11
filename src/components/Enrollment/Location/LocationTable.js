@@ -46,7 +46,6 @@ const LocationTable = ({ data, setData }) => {
       setData(location);
       
     } catch (error) {
-      console.error("Error fetching location data:", error);
     } finally {
       setLoading(false);
     }
@@ -74,7 +73,6 @@ const LocationTable = ({ data, setData }) => {
       empQty: row.empQty,
       resignQty: row.resignQty,
     });
-    console.log(formData);
     setShowModal(true);
   };
 
@@ -101,8 +99,6 @@ const LocationTable = ({ data, setData }) => {
 
     try {
       const response = await axios.post(`${SERVER_URL}pr-loc-up/`, updateLocation);
-
-      console.log(response.data); // Log the response
       fetchLocation(); // Fetch the updated locations
       setShowEditForm(false); // Close the edit form
       setShowModal(false); // Close the confirmation modal
@@ -113,11 +109,9 @@ const LocationTable = ({ data, setData }) => {
       }else {
         setShowModal(false);
         setWarningModal(true);
-        console.log(response.data.msg)
       }
       setSuccessModal(true); // Show the success modal
     } catch (error) {
-      console.error("Error updating location:", error);
       setWarningModal(true);
     }
   };
@@ -237,7 +231,6 @@ const LocationTable = ({ data, setData }) => {
       setShowModal(false);
       setSuccessModal(true);
     } catch (error) {
-      console.log(error);
     }
   };
 
@@ -282,8 +275,6 @@ const LocationTable = ({ data, setData }) => {
     };
     try {
      const res =  await axios.post(`${SERVER_URL}pr-loc/`, location);
-      console.log(res.data.msg)
-      console.log("Location Added Successfully")
       setShowAddForm(false);
       setResMsg(res.data.msg)
       if (res.data.status) {
@@ -293,7 +284,6 @@ const LocationTable = ({ data, setData }) => {
       }else {
         setShowModal(false);
         setWarningModal(true);
-        console.log(updatedData.data.msg)
       }
 
 
@@ -305,7 +295,6 @@ const LocationTable = ({ data, setData }) => {
       setSuccessModal(true);
       fetchLocation();
     } catch (error) {
-      // console.log(error);
       setWarningModal(true);
     }
   };

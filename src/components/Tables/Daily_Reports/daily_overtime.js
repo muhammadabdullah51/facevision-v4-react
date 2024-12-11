@@ -13,7 +13,6 @@ const Daily_Overtime_Report = ({ searchQuery, sendDataToParent }) => {
   const fetch_d_ot = useCallback(async () => {
     try {
       const response = await axios.get(`${SERVER_URL}rp-att-all-ot/`);
-      console.log(response.data);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching Daily Overtime data:", error);

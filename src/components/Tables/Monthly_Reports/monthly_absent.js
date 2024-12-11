@@ -14,7 +14,6 @@ const Monthly_Absent_Report = ({ searchQuery, sendDataToParent }) => {
     const fetchData = useCallback(async () => {
       try {
         const response = await axios.get(`${SERVER_URL}rp-att-all-absent/`);
-        console.log(response.data);
         setData(response.data);
       } catch (error) {
         console.error("Error fetching absent data:", error);

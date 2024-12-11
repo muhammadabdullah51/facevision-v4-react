@@ -17,7 +17,6 @@ const BreackInOutTable = () => {
       const response = await axios.get(`${SERVER_URL}rp-break-time-records/`);
       setData(response.data);
     } catch (error) {
-      console.error("Error fetching data:", error);
     }
   }, []);
 
