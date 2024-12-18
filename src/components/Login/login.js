@@ -17,6 +17,7 @@ const Login = () => {
     const [loading, setLoading] = useState(false); // Loading state for UX
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    console.log(SERVER_URL);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -68,11 +69,7 @@ const Login = () => {
                     <h2>Welcome to 360 FaceVision</h2>
                     <p>Please enter your details to Sign In</p>
                 </div>
-                <div className="social-buttons">
-                    <button className="social-button google"><img src={Google} alt='Google' /></button>
-                    <button className="social-button apple"><img src={Facebook} alt='Facebook' /></button>
-                    <button className="social-button facebook"><img src={X} alt='X' /></button>
-                </div>
+                
                 <div className="divider">
                     <span>or</span>
                 </div>
@@ -99,13 +96,13 @@ const Login = () => {
                             required
                         />
                     </div>
-                    <div className="remember-forgot">
+                    {/* <div className="remember-forgot">
                         <label>
                             <input type="checkbox" />
                             Remember for 30 days
                         </label>
                         <a href="/" className="forgot-password">Forgot password?</a>
-                    </div>
+                    </div> */}
                     <button type="submit" className="login-button" disabled={loading}>
                         {loading ? 'Signing in...' : 'Sign in'}
                     </button>

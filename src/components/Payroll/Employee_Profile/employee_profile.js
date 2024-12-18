@@ -252,7 +252,6 @@ const EmplyeeProfile = () => {
   };
 
   const generateSalarySlipPDF = (salaryDetails) => {
-    console.log('salaryDetails', salaryDetails)
     return new Promise(async (resolve, reject) => {
       const tempContainer = document.createElement("div");
       try {

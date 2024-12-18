@@ -14,6 +14,7 @@ import { SERVER_URL } from './config';
 import AuthToken from './components/Login/AuthToken';
 // import UserProvider from './UserContext';
 function App() {
+  console.log(SERVER_URL);
   const [companyInfoCompleted, setCompanyInfoCompleted] = useState(false);
   const [authTrue, setAuthTrue] = useState(false);
 

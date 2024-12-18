@@ -71,12 +71,12 @@ const Register = () => {
                 });
 
                 dispatch(login({ email }));
-                // navigate('/companyInformation');
-                if (!companyExists) {
-                    navigate('/companyInformation');
-                } else {
-                    navigate('/dashboard');
-                }
+                navigate('/');
+                // if (!companyExists) {
+                //     navigate('/companyInformation');
+                // } else {
+                //     navigate('/dashboard');
+                // }
             } catch (error) {
                 console.error('Error in registration:', error.response?.data?.message || error.message);
                 alert('Registration failed.');

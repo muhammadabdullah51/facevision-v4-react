@@ -205,13 +205,14 @@ const CheckInOutTable = ({ dash }) => {
       empId: formData.empId,
       fName: formData.lName,
       lName: formData.fName,
-      time: formData.time,
+      time: formatTime(formData.time),
       date: formData.date,
       status: formData.status,
     };
+    console.log(attPayload);
     try {
       const res = await axios.put(
-        `${SERVER_URL}att-chkinout/${formData.id}`,
+        `${SERVER_URL}att-chkinout/${formData.id}/`,
         attPayload
       );
       const updatedData = await axios.get(`${SERVER_URL}att-chkinout/`);
@@ -277,7 +278,7 @@ const CheckInOutTable = ({ dash }) => {
       empId: formData.empId,
       fName: formData.lName,
       lName: formData.fName,
-      time: formData.time,
+      time: formatTime(formData.time),
       date: formData.date,
       status: formData.status,
       ip: 'byAdmin',
@@ -292,6 +293,13 @@ const CheckInOutTable = ({ dash }) => {
       setSuccessModal(true);
     } catch (error) {
     }
+  };
+  const formatTime = (time) => {
+    // If time already includes seconds, return as is.
+    if (time.split(':').length === 3) return time;
+  
+    // Otherwise, append ":00" for seconds.
+    return `${time}:00`;
   };
 
   return (
@@ -492,6 +500,7 @@ const CheckInOutTable = ({ dash }) => {
           <h3>Edit Manual Check In / Out</h3>
           <label>Selected Employee</label>
           <input
+          disabled
             list="employeesList"
             value={formData.empId} // Display the selected or entered empId
             onChange={(e) => {

@@ -1,1 +1,3 @@
-window.CONFIG_SERVER_URL = "http://192.168.0.108:8000/";
+window.config = {
+    SERVER_URL: "http://192.168.1.14:8000/",
+};

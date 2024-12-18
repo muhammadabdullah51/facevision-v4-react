@@ -231,8 +231,8 @@ const AttendanceTable = ({ data, setData }) => {
     const attPayload = {
       allAttendanceId: formData.allAttendanceId,
       empId: formData.empId,
-      time_in: formData.time_in || "",
-      time_out: formData.time_out,
+      time_in: formatTime(formData.time_in) || "",
+      time_out: formatTime(formData.time_out),
       date: formData.date,
       attendance_marked: formData.attendance_marked,
       status: formData.status,
@@ -301,8 +301,8 @@ const AttendanceTable = ({ data, setData }) => {
     }
     const payload = {
       empId: formData.empId,
-      time_in: formData.time_in,
-      time_out: formData.time_out,
+      time_in: formatTime(formData.time_in),
+      time_out: formatTime(formData.time_out),
       date: formData.date,
       attendance_marked: "by Admin",
       status: formData.status,
@@ -320,6 +320,13 @@ const AttendanceTable = ({ data, setData }) => {
     }
   };
 
+  const formatTime = (time) => {
+    // If time already includes seconds, return as is.
+    if (time.split(':').length === 3) return time;
+  
+    // Otherwise, append ":00" for seconds.
+    return `${time}:00`;
+  };
   return (
     <div className="department-table">
       <ConirmationModal
