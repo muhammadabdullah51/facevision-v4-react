@@ -54,15 +54,6 @@ const Register = () => {
                     'phoneNumber': phoneNumber,
                     'profilePicture': profilePicture,
                 }
-                // const formData = new FormData();
-                // formData.append('firstName', firstName);
-                // formData.append('lastName', lastName);
-                // formData.append('username', username);
-                // formData.append('email', email);
-                // formData.append('password', password);
-                // formData.append('phoneNumber', phoneNumber);
-                // formData.append('profilePicture', profilePicture);
-
                 // Send a POST request to the register endpoint with form data
                 await axios.post(`${SERVER_URL}auth-rg/`, formData, {
                     headers: {
@@ -72,11 +63,6 @@ const Register = () => {
 
                 dispatch(login({ email }));
                 navigate('/');
-                // if (!companyExists) {
-                //     navigate('/companyInformation');
-                // } else {
-                //     navigate('/dashboard');
-                // }
             } catch (error) {
                 console.error('Error in registration:', error.response?.data?.message || error.message);
                 alert('Registration failed.');

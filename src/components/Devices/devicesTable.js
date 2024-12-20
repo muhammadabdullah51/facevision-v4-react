@@ -35,6 +35,7 @@ const DeviceTable = ({ data, setData }) => {
       const response = await axios.get(`${SERVER_URL}device/`);
       const devices = await response.data.context;
       setData(devices);
+      console.log(devices);
     } catch (error) {
     } finally {
       setLoading(false);
@@ -91,8 +92,11 @@ const DeviceTable = ({ data, setData }) => {
         accessor: "cameraIp",
         Cell: ({ row, value }) => (
           <span className="bold-fonts">
-            {row.original.status === "Active" && (
+            {row.original.status === "Connected" && (
               <span className="green-dot"></span>
+            )}
+            {row.original.status != "Connected" && (
+              <span className="red-dot"></span>
             )}
             {value}
           </span>

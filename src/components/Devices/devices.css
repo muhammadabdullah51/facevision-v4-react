@@ -32,6 +32,14 @@
     background-color: #05cb05;
     margin-right: 5px;
   }
+.red-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #cb0540;
+    margin-right: 5px;
+  }
   
 
 .add-device-form {

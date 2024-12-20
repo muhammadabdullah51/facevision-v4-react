@@ -53,24 +53,12 @@ function App() {
       <PersistGate loading={null} persistor={persistor}>
       <Router>
         <Routes>
-          {/* <Route path="/" element={<Login />} />
-          <Route path="/Signup" element={<Register />} />
-          <Route path="/companyInformation" element={<Information />} />
-          <Route path="/dashboard" element={<Dashboard />} /> */}
-          {/* <Route path="/access" element={<AuthToken />} /> */}
-
-
-
-          {/* <Route path="/companyInformation" element={!companyInfoCompleted ?  <Information /> : <Navigate to="/" /> }/> */}
-          {/* <Route path="/" element={<Login />} /> */}
-          {/* <Route path="/" element={ !authTrue ? <AuthToken/> :  <Login />} /> */}
           <Route path="/" element={ renderHome()} />
           <Route path="/Signup" element={<Register />} />
           <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
       </Router>
       </PersistGate>
-      
     </Provider>
   );
 }

@@ -10,17 +10,17 @@ import successAnimation from "../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../assets/Lottie/warningAnim.json";
 import { SERVER_URL } from "../../config";
 import BreakManagementTable from "./BreakManagementTable";
+import { useDispatch, useSelector } from "react-redux";
+import { resetFormState, saveFormState, saveSelectedItems } from "../../redux/ShiftSlice";
 
 const ShiftManagementTable = () => {
   const [data, setData] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
-  const [selectedItems, setSelectedItems] = useState([]);
-  const [selectedBreaks, setSelectedBreaks] = useState([]);
   const [brk, setBrk] = useState("");
   const [childBrk, setChildBrk] = useState("");
 
-  const handleBreaks = async(updatedbreak) => {
+  const handleBreaks = async (updatedbreak) => {
     try {
       setChildBrk(updatedbreak);
       const response = await axios.get(`${SERVER_URL}brk-sch/`);
@@ -39,20 +39,63 @@ const ShiftManagementTable = () => {
     "saturday",
     "sunday",
   ];
-  const [formData, setFormData] = useState({
-    shiftId: "",
-    name: "",
-    entry_status: "",
-    exit_status: "",
-    start_time: "",
-    end_time: "",
-    entry_start_time: "",
-    entry_end_time: "",
-    exit_start_time: "",
-    exit_end_time: "",
-    holidays: [],
-    bkId: "",
-  });
+  const savedFormState = useSelector((state) => state.forms.formStates.shifts || {});
+  const savedSelectedItems = useSelector((state) => state.forms.selectedItems.shifts || []);
+  
+  const dispatch = useDispatch();
+
+  const [selectedItems, setSelectedItems] = useState(savedSelectedItems);
+
+  const [formData, setFormData] = useState(
+    savedFormState || {
+      shiftId: "",
+      name: "",
+      entry_status: "",
+      exit_status: "",
+      start_time: "",
+      end_time: "",
+      entry_start_time: "",
+      entry_end_time: "",
+      exit_start_time: "",
+      exit_end_time: "",
+      holidays: [],
+      bkId: "",
+    });
+  const [editFormData, setEditFormData] = useState(
+    {
+      shiftId: "",
+      name: "",
+      entry_status: "",
+      exit_status: "",
+      start_time: "",
+      end_time: "",
+      entry_start_time: "",
+      entry_end_time: "",
+      exit_start_time: "",
+      exit_end_time: "",
+      holidays: [],
+      bkId: "",
+    });
+
+  // Saving form state
+  useEffect(() => {
+      dispatch(saveFormState({ formName: "shifts", data: formData }));
+  }, [formData, dispatch]);
+
+  useEffect(() => {
+    if (selectedItems.length > 0) {
+      dispatch(saveSelectedItems({ formName: "shifts", items: selectedItems }));
+    }
+  }, [selectedItems, dispatch]);
+  
+  // Example of updating selectedItems
+  const handleItemChange = (item) => {
+    setSelectedItems((prevItems) => [...prevItems, item]);
+  };
+  // Resetting form state and selected items
+  const handleReset = () => {
+    dispatch(resetFormState({ formName: "shifts" }));
+  };
 
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
@@ -91,8 +134,6 @@ const ShiftManagementTable = () => {
   useEffect(() => {
     fetchShift();
     fetchBreak();
-    
-
     let timer;
     if (successModal) {
       timer = setTimeout(() => {
@@ -117,20 +158,21 @@ const ShiftManagementTable = () => {
   };
 
   const handleAdd = () => {
-    setFormData({
-      shiftId: "",
-      name: "",
-      entry_status: "",
-      exit_status: "",
-      start_time: "",
-      end_time: "",
-      entry_start_time: "",
-      entry_end_time: "",
-      exit_start_time: "",
-      exit_end_time: "",
-      holidays: [],
-      bkId: "",
-    });
+    setFormData(
+      savedFormState || {
+        shiftId: "",
+        name: "",
+        entry_status: "",
+        exit_status: "",
+        start_time: "",
+        end_time: "",
+        entry_start_time: "",
+        entry_end_time: "",
+        exit_start_time: "",
+        exit_end_time: "",
+        holidays: [],
+        bkId: "",
+      });
     setSelectedItems([]);
     setShowAddForm(true);
   };
@@ -175,6 +217,23 @@ const ShiftManagementTable = () => {
       fetchShift();
       // setSelectedItems(null);
 
+      // Reset formData and selectedItems
+      setFormData({
+        shiftId: "",
+        name: "",
+        entry_status: "",
+        exit_status: "",
+        start_time: "",
+        end_time: "",
+        entry_start_time: "",
+        entry_end_time: "",
+        exit_start_time: "",
+        exit_end_time: "",
+        holidays: [],
+        bkId: "",
+      });
+      setSelectedItems([]);
+
       const updatedData = await axios.get(`${SERVER_URL}shft/`);
       setData(updatedData.data);
       // setShowAddForm(false)
@@ -185,7 +244,7 @@ const ShiftManagementTable = () => {
   };
 
   const handleEdit = (row) => {
-    setFormData({
+    setEditFormData({
       shiftId: row.shiftId,
       name: row.name,
       entry_status: row.entry_status,
@@ -209,7 +268,7 @@ const ShiftManagementTable = () => {
 
   const updateShift = async (row) => {
     setModalType("update");
-    setFormData({
+    setEditFormData({
       shiftId: row.shiftId,
       name: row.name,
       entry_status: row.entry_status,
@@ -237,13 +296,13 @@ const ShiftManagementTable = () => {
 
   const confirmUpdate = async () => {
     if (
-      !formData.name ||
-      !formData.start_time ||
-      !formData.end_time ||
-      !formData.entry_start_time ||
-      !formData.exit_status ||
-      !formData.entry_status ||
-      formData.bkId === ""
+      !editFormData.name ||
+      !editFormData.start_time ||
+      !editFormData.end_time ||
+      !editFormData.entry_start_time ||
+      !editFormData.exit_status ||
+      !editFormData.entry_status ||
+      editFormData.bkId === ""
     ) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
@@ -252,17 +311,17 @@ const ShiftManagementTable = () => {
     }
 
     const updatedShift = {
-      shiftId: formData.shiftId,
-      name: formData.name,
-      entry_status: formData.entry_status,
-      exit_status: formData.exit_status,
-      start_time: formatTime(formData.start_time),
-      end_time: formatTime(formData.end_time),
-      entry_start_time: formatTime(formData.entry_start_time),
-      entry_end_time: formatTime(formData.entry_end_time),
-      exit_start_time: formatTime(formData.exit_start_time),
-      exit_end_time: formatTime(formData.exit_end_time),
-      bkId: formData.bkId,
+      shiftId: editFormData.shiftId,
+      name: editFormData.name,
+      entry_status: editFormData.entry_status,
+      exit_status: editFormData.exit_status,
+      start_time: formatTime(editFormData.start_time),
+      end_time: formatTime(editFormData.end_time),
+      entry_start_time: formatTime(editFormData.entry_start_time),
+      entry_end_time: formatTime(editFormData.entry_end_time),
+      exit_start_time: formatTime(editFormData.exit_start_time),
+      exit_end_time: formatTime(editFormData.exit_end_time),
+      bkId: editFormData.bkId,
       holidays: selectedItems,
     };
     try {
@@ -270,6 +329,21 @@ const ShiftManagementTable = () => {
       setShowEditForm(false);
       setShowModal(false);
       setSuccessModal(true);
+      // Reset formData and selectedItems
+      setFormData({
+        shiftId: "",
+        name: "",
+        entry_status: "",
+        exit_status: "",
+        start_time: "",
+        end_time: "",
+        entry_start_time: "",
+        entry_end_time: "",
+        exit_start_time: "",
+        exit_end_time: "",
+        holidays: [],
+        bkId: "",
+      });
       setSelectedItems([]);
       const updatedData = await axios.get(`${SERVER_URL}shft/`);
       setData(updatedData.data);
@@ -312,8 +386,8 @@ const ShiftManagementTable = () => {
           modalType === "create"
             ? addAnimation
             : modalType === "update"
-            ? updateAnimation
-            : deleteAnimation
+              ? updateAnimation
+              : deleteAnimation
         }
       />
       <ConirmationModal
@@ -510,7 +584,7 @@ const ShiftManagementTable = () => {
             <option value="">Select Break</option> {/* Placeholder option */}
             {childBrk.map((emp) => (
               <option key={emp.id} value={emp.id}>
-                {emp.name} 
+                {emp.name}
               </option>
             ))}
           </select>
@@ -544,7 +618,23 @@ const ShiftManagementTable = () => {
           </button>
           <button
             className="cancel-button"
-            onClick={() => setShowAddForm(false)}
+            onClick={() => {
+              setShowAddForm(false)
+              setFormData({
+                shiftId: "",
+                name: "",
+                entry_status: "",
+                exit_status: "",
+                start_time: "",
+                end_time: "",
+                entry_start_time: "",
+                entry_end_time: "",
+                exit_start_time: "",
+                exit_end_time: "",
+                holidays: [],
+                bkId: "",
+              });
+            }}
           >
             Cancel
           </button>
@@ -556,8 +646,8 @@ const ShiftManagementTable = () => {
           <input
             type="text"
             placeholder="Shift Name"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            value={editFormData.name}
+            onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
           />
           <h5>Entry Time Configuration</h5>
           <div className="form-time">
@@ -566,9 +656,9 @@ const ShiftManagementTable = () => {
               <input
                 type="time"
                 placeholder="Start Time"
-                value={formData.start_time}
+                value={editFormData.start_time}
                 onChange={(e) =>
-                  setFormData({ ...formData, start_time: e.target.value })
+                  setEditFormData({ ...editFormData, start_time: e.target.value })
                 }
               />
             </div>
@@ -577,9 +667,9 @@ const ShiftManagementTable = () => {
               <input
                 type="time"
                 placeholder="Entry Start Time"
-                value={formData.entry_start_time}
+                value={editFormData.entry_start_time}
                 onChange={(e) =>
-                  setFormData({ ...formData, entry_start_time: e.target.value })
+                  setEditFormData({ ...editFormData, entry_start_time: e.target.value })
                 }
               />
             </div>
@@ -588,9 +678,9 @@ const ShiftManagementTable = () => {
               <input
                 type="time"
                 placeholder="Entry End Time"
-                value={formData.entry_end_time}
+                value={editFormData.entry_end_time}
                 onChange={(e) =>
-                  setFormData({ ...formData, entry_end_time: e.target.value })
+                  setEditFormData({ ...editFormData, entry_end_time: e.target.value })
                 }
               />
             </div>
@@ -599,9 +689,9 @@ const ShiftManagementTable = () => {
               <select
                 className="selectbox"
                 name="entry_status"
-                value={formData.entry_status}
+                value={editFormData.entry_status}
                 onChange={(e) =>
-                  setFormData({ ...formData, entry_status: e.target.value })
+                  setEditFormData({ ...editFormData, entry_status: e.target.value })
                 }
               >
                 <option value="">Select Option</option>
@@ -617,9 +707,9 @@ const ShiftManagementTable = () => {
               <input
                 type="time"
                 placeholder="End Time"
-                value={formData.end_time}
+                value={editFormData.end_time}
                 onChange={(e) =>
-                  setFormData({ ...formData, end_time: e.target.value })
+                  setEditFormData({ ...editFormData, end_time: e.target.value })
                 }
               />
             </div>
@@ -628,9 +718,9 @@ const ShiftManagementTable = () => {
               <input
                 type="time"
                 placeholder="Exit Start Time"
-                value={formData.exit_start_time}
+                value={editFormData.exit_start_time}
                 onChange={(e) =>
-                  setFormData({ ...formData, exit_start_time: e.target.value })
+                  setEditFormData({ ...editFormData, exit_start_time: e.target.value })
                 }
               />
             </div>
@@ -639,9 +729,9 @@ const ShiftManagementTable = () => {
               <input
                 type="time"
                 placeholder="Exit End Time"
-                value={formData.exit_end_time}
+                value={editFormData.exit_end_time}
                 onChange={(e) =>
-                  setFormData({ ...formData, exit_end_time: e.target.value })
+                  setEditFormData({ ...editFormData, exit_end_time: e.target.value })
                 }
               />
             </div>
@@ -650,9 +740,9 @@ const ShiftManagementTable = () => {
               <select
                 className="selectbox"
                 name="exit_status"
-                value={formData.exit_status}
+                value={editFormData.exit_status}
                 onChange={(e) =>
-                  setFormData({ ...formData, exit_status: e.target.value })
+                  setEditFormData({ ...editFormData, exit_status: e.target.value })
                 }
               >
                 <option value="">Select Option</option>
@@ -663,10 +753,10 @@ const ShiftManagementTable = () => {
           </div>
           <h4>Break</h4>
           <select
-            value={formData.bkId} // Bind to the selected bkId
+            value={editFormData.bkId} // Bind to the selected bkId
             onChange={(e) => {
-              setFormData({
-                ...formData,
+              setEditFormData({
+                ...editFormData,
                 bkId: e.target.value, // Update bkId in formData
               });
             }}
@@ -694,7 +784,7 @@ const ShiftManagementTable = () => {
                           ? [...prevItems, value]
                           : prevItems.filter((i) => i !== value)
                       );
-                      setFormData((prevFormData) => ({
+                      setEditFormData((prevFormData) => ({
                         ...prevFormData,
                         holidays: checked
                           ? [...prevFormData.holidays, value]
@@ -710,13 +800,29 @@ const ShiftManagementTable = () => {
           </div>
           <button
             className="submit-button"
-            onClick={() => updateShift(formData)}
+            onClick={() => updateShift(editFormData)}
           >
             Update Shift
           </button>
           <button
             className="cancel-button"
-            onClick={() => setShowEditForm(false)}
+            onClick={() => {
+              setShowEditForm(false)
+              setEditFormData({
+                shiftId: "",
+                name: "",
+                entry_status: "",
+                exit_status: "",
+                start_time: "",
+                end_time: "",
+                entry_start_time: "",
+                entry_end_time: "",
+                exit_start_time: "",
+                exit_end_time: "",
+                holidays: [],
+                bkId: "",
+              });
+            }}
           >
             Cancel
           </button>
@@ -746,9 +852,8 @@ const ShiftManagementTable = () => {
                 <td>{item.start_time}</td>
                 <td>
                   <span
-                    className={` ${
-                      item.entry_status === "Late" ? "late" : "disconnected"
-                    }`}
+                    className={` ${item.entry_status === "Late" ? "late" : "not-late"
+                      }`}
                   >
                     {item.entry_status}
                   </span>
@@ -756,9 +861,8 @@ const ShiftManagementTable = () => {
                 <td>{item.end_time}</td>
                 <td>
                   <span
-                    className={` ${
-                      item.exit_status === "Late" ? "late" : "not-late"
-                    }`}
+                    className={` ${item.exit_status === "Late" ? "late" : "not-late"
+                      }`}
                   >
                     {item.exit_status}
                   </span>
@@ -767,10 +871,10 @@ const ShiftManagementTable = () => {
                 <td className="accessible-items">
                   {Array.isArray(item.holidays) && item.holidays.length > 0
                     ? item.holidays.map((holiday, index) => (
-                        <span key={index} style={{ marginRight: "5px" }}>
-                          {holiday}
-                        </span>
-                      ))
+                      <span key={index} style={{ marginRight: "5px" }}>
+                        {holiday}
+                      </span>
+                    ))
                     : "No Holidays"}
                 </td>
                 <td>

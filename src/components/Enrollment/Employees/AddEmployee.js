@@ -20,6 +20,8 @@ import updateAnimation from "../../../assets/Lottie/updateAnim.json";
 import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../../assets/Lottie/warningAnim.json";
+import { useDispatch, useSelector } from "react-redux";
+import { resetEmployeeData, setEmployeeData } from "../../../redux/employeeSlice";
 
 const AddEmployee = ({
   // setData,
@@ -44,7 +46,9 @@ const AddEmployee = ({
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
 
-  const [newEmployee, setNewEmployee] = useState({
+  const employeeData = useSelector((state) => state.employee);
+
+  const [newEmployee, setNewEmployee] = useState(employeeData || {
     empId: "",
     fName: "",
     lName: "",
@@ -76,6 +80,10 @@ const AddEmployee = ({
   const [enrollSites, setEnrollSites] = useState([]);
   const [overtime, setOvertime] = useState([]);
   const [lvf, setLvf] = useState([]);
+
+
+  const dispatch = useDispatch();
+  // const newEmployee = useSelector((state) => state.employee.newEmployee);
 
   useEffect(() => {
     const fetchOptions = async () => {
@@ -114,19 +122,22 @@ const AddEmployee = ({
       }
 
       let timer;
-    if (successModal) {
-      timer = setTimeout(() => {
-        setSuccessModal(false);
-      }, 2000);
-    }
-    return () => clearTimeout(timer);
+      if (successModal) {
+        timer = setTimeout(() => {
+          setSuccessModal(false);
+        }, 2000);
+      }
+      return () => clearTimeout(timer);
     };
   }, [newEmployee.image1, successModal]);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewEmployee((prev) => ({ ...prev, [name]: value }));
-  };
+  // useEffect(() => {
+  //   // This ensures newEmployee is updated whenever employeeData in the Redux store changes
+  //   if (employeeData) {
+  //     setNewEmployee(employeeData);
+  //   }
+  // }, [employeeData]);
+
 
   const handleDepartmentChange = (event) => {
     const { value } = event.target;
@@ -214,10 +225,12 @@ const AddEmployee = ({
       setSuccessModal(true)
     } catch (error) {
     }
+    dispatch(resetEmployeeData());
+
 
     setTimeout(() => {
       setActiveTab("Employees");
-    }, 2000); 
+    }, 2000);
   };
 
   const updateEmployee = (employeeData) => {
@@ -249,42 +262,103 @@ const AddEmployee = ({
 
     } catch (error) {
     }
-    
+
 
     setIsEditMode(false);
     setTimeout(() => {
       setActiveTab("Employees");
-    }, 2000); 
+    }, 2000);
   };
 
+  // const handleChange = (e) => {
+  //   const { name, value } = e.target;
+  //   setNewEmployee((prevData) => ({ ...prevData, [name]: value }));
+  // };
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNewEmployee((prevData) => ({ ...prevData, [name]: value }));
+    setNewEmployee((prevData) => {
+      const updatedData = { ...prevData, [name]: value };
+      dispatch(setEmployeeData(updatedData));  // Dispatch updated data to Redux
+      return updatedData;
+    });
   };
 
+  // const handlePictureChange = async (event) => {
+  //   const file = event.target.files[0];
+  //   if (file) {
+  //     setNewEmployee((prevState) => ({ ...prevState, image1: file })); // Store the file object
+  //   }
+  // };
+
+  // Handle image file change
   const handlePictureChange = async (event) => {
     const file = event.target.files[0];
     if (file) {
-      setNewEmployee((prevState) => ({ ...prevState, image1: file })); // Store the file object
+      setNewEmployee((prevState) => {
+        const updatedState = { ...prevState, image1: file };
+        dispatch(setEmployeeData(updatedState));  // Dispatch updated data to Redux
+        return updatedState;
+      });
     }
   };
 
-  const handleWebcamCapture = (imageSrc) => {
-    // Update the state with the captured image
-    // setNewEmployee((prevState) => ({
-    //   ...prevState,
-    //   image1: imageSrc, // Store the imageSrc in the 'picture' field
-    // }));
+  // const handlePictureChange = async (event) => {
+  //   const file = event.target.files[0];
+  //   if (file) {
+  //     // Create a URL for the image file
+  //     const imageUrl = URL.createObjectURL(file);
+  //     // For now, let's use the object URL:
+  //     setNewEmployee((prevState) => {
+  //       const updatedState = { ...prevState, image1: imageUrl };
+  //       dispatch(setEmployeeData(updatedState));  // Dispatch updated data to Redux
+  //       return updatedState;
+  //     });
+  //   }
+  // };
 
+  // const handleWebcamCapture = (imageSrc) => {
+
+
+  //   fetch(imageSrc)
+  //     .then((res) => res.blob())
+  //     .then((blob) => {
+  //       const file = new File([blob], "webcam-image.jpg", {
+  //         type: "image/jpeg",
+  //       });
+  //       setNewEmployee((prevState) => ({ ...prevState, image1: file }));
+  //     });
+  // };
+
+  // Handle webcam capture
+  const handleWebcamCapture = (imageSrc) => {
     fetch(imageSrc)
       .then((res) => res.blob())
       .then((blob) => {
-        const file = new File([blob], "webcam-image.jpg", {
-          type: "image/jpeg",
+        const file = new File([blob], "webcam-image.jpg", { type: "image/jpeg" });
+        setNewEmployee((prevState) => {
+          const updatedState = { ...prevState, image1: file };
+          dispatch(setEmployeeData(updatedState));  // Dispatch updated data to Redux
+          return updatedState;
         });
-        setNewEmployee((prevState) => ({ ...prevState, image1: file }));
       });
   };
+
+  const cancelHandler = () => {
+    // Dispatch the action to reset the Redux state
+    dispatch(resetEmployeeData());
+  
+    // Reset other local states if necessary
+    setIsEditMode(false);
+    setActiveTab("Employees");
+  
+    // Optionally log the reset state to confirm it's been reset
+    console.log("Employee state has been reset in Redux.");
+  };
+  
+  // Log newEmployee state after it updates
+  useEffect(() => {
+    console.log("Updated newEmployee state after reset:", newEmployee); // Logs the updated newEmployee state after setNewEmployee has run
+  }, [newEmployee]); // Dependency array ensures this runs after newEmployee updates
 
   return (
     <div className="add-employee-main">
@@ -300,8 +374,8 @@ const AddEmployee = ({
           modalType === "create"
             ? addAnimation
             : modalType === "update"
-            ? updateAnimation
-            : deleteAnimation
+              ? updateAnimation
+              : deleteAnimation
         }
       />
       <ConirmationModal
@@ -423,8 +497,8 @@ const AddEmployee = ({
                             newEmployee.image1 instanceof File
                               ? URL.createObjectURL(newEmployee.image1) // For new file preview
                               : typeof newEmployee.image1 === "string"
-                              ? `${SERVER_URL}${newEmployee.image1}` // For existing image URL
-                              : ""
+                                ? `${SERVER_URL}${newEmployee.image1}` // For existing image URL
+                                : ""
                           }
                           alt={`${newEmployee.fName} ${newEmployee.lName}`}
                           className="employee-image"
@@ -437,8 +511,8 @@ const AddEmployee = ({
                         typeof newEmployee.image1 === "string"
                           ? newEmployee.image1
                           : newEmployee.image1 instanceof File
-                          ? URL.createObjectURL(newEmployee.image1)
-                          : ""
+                            ? URL.createObjectURL(newEmployee.image1)
+                            : ""
                       }
                       alt="Captured"
                       className="captured-image"
@@ -528,7 +602,7 @@ const AddEmployee = ({
                   <label>Overtime Assigned</label>
                   <select
                     name="overtimeAssigned"
-                    value={ newEmployee.otId}
+                    value={newEmployee.otId}
                     onChange={handleOvertimeChange}
                   >
                     {isEditMode && (
@@ -536,7 +610,7 @@ const AddEmployee = ({
                     )}
                     <option value="">Select Overtime</option>
                     {overtime.map((ot) => (
-                      <option key={isEditMode? ot.otId : ot.OTFormulaId} value={ot.OTFormulaId}>
+                      <option key={isEditMode ? ot.otId : ot.OTFormulaId} value={ot.OTFormulaId}>
                         {ot.OTCode}
                       </option>
                     ))}
@@ -722,10 +796,38 @@ const AddEmployee = ({
                 <button
                   className="cancel-button"
                   type="button"
-                  onClick={() => {
-                    setIsEditMode(false);
-                    setActiveTab("Employees");
-                  }}
+                  onClick={cancelHandler}
+
+                  // onClick={() => {
+                  //   setIsEditMode(false);
+                  //   setNewEmployee({
+                  //     empId: "",
+                  //     fName: "",
+                  //     lName: "",
+                  //     email: "",
+                  //     contactNo: "",
+                  //     picture: null,
+                  //     enrollSite: "",
+                  //     gender: "",
+                  //     joiningDate: "",
+                  //     bankName: "",
+                  //     shift: "",
+                  //     overtimeAssigned: "",
+                  //     leaveFormulaAssigned: "",
+                  //     department: "",
+                  //     designation: "",
+                  //     basicSalary: "",
+                  //     accountNo: "",
+                  //     salaryPeriod: "",
+                  //     salaryType: "",
+                  //     enableAttendance: "",
+                  //     enableSchedule: "",
+                  //     enableOvertime: "",
+                  //   });
+
+                  //   setActiveTab("Employees");
+                  // }}
+
                 >
                   Cancel
                 </button>

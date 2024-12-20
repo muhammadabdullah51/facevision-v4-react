@@ -10,6 +10,7 @@ import deleteAnimation from "../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../assets/Lottie/warningAnim.json";
 import { SERVER_URL } from "../../config";
+import { useDispatch, useSelector } from "react-redux";
 const AddVisitor = ({
   setData,
   setActiveTab,
@@ -23,11 +24,11 @@ const AddVisitor = ({
   const [departments, setDepartments] = useState([]);
 
   const formattedCreateTime = editData?.createTime
-  ? new Date(editData.createTime).toISOString().slice(0, 16)
-  : '';
+    ? new Date(editData.createTime).toISOString().slice(0, 16)
+    : '';
   const formattedExitTime = editData?.exitTime
-  ? new Date(editData.exitTime).toISOString().slice(0, 16)
-  : '';
+    ? new Date(editData.exitTime).toISOString().slice(0, 16)
+    : '';
 
   useEffect(() => {
     const fetchOptions = async () => {
@@ -50,11 +51,11 @@ const AddVisitor = ({
         console.error("Error fetching options:", error);
       }
     };
-  
+
     fetchOptions();
   }, [isEditMode && editData]);
 
- 
+
 
   const [newVisitor, setNewVisitor] = useState({
     visitorsId: "",
@@ -79,7 +80,7 @@ const AddVisitor = ({
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
 
-  useEffect(()=>{
+  useEffect(() => {
     let timer;
 
     if (successModal) {
@@ -88,7 +89,7 @@ const AddVisitor = ({
       }, 2000);
     }
     return () => clearTimeout(timer);
-  },[successModal])
+  }, [successModal])
 
   const handleBackClick = () => {
     setSelectedPage("Back");
@@ -105,7 +106,24 @@ const AddVisitor = ({
     }
   };
 
-  
+
+
+  const dispatch = useDispatch();
+  const visitorFromRedux = useSelector((state) => state.visitor.newVisitor);
+
+  // Handle input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+
+  // Update Redux state
+  dispatch(setNewVisitor({ ...visitorFromRedux, [name]: value }));
+
+  // Update local state
+  setNewVisitor((prevState) => ({
+    ...prevState,
+    [name]: value,
+  }));
+};
 
   const addVisitor = async () => {
     setModalType("create");
@@ -114,16 +132,16 @@ const AddVisitor = ({
   const confirmAdd = async () => {
     if (
       !newVisitor.visitorsId ||
-     !newVisitor.fName ||
-     !newVisitor.lName ||
-     !newVisitor.certificationNo ||
-     !newVisitor.email ||
-     !newVisitor.contactNo ||
-     !newVisitor.visitingDept ||
-     !newVisitor.host ||
-     !newVisitor.cardNumber ||
-     !newVisitor.visitingReason ||
-     !newVisitor.carryingGoods
+      !newVisitor.fName ||
+      !newVisitor.lName ||
+      !newVisitor.certificationNo ||
+      !newVisitor.email ||
+      !newVisitor.contactNo ||
+      !newVisitor.visitingDept ||
+      !newVisitor.host ||
+      !newVisitor.cardNumber ||
+      !newVisitor.visitingReason ||
+      !newVisitor.carryingGoods
     ) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
@@ -146,7 +164,7 @@ const AddVisitor = ({
       visitingReason: newVisitor.visitingReason,
       carryingGoods: newVisitor.carryingGoods,
     };
-    
+
     try {
       await axios.post(`${SERVER_URL}visitors/`, visitorData)
       setShowModal(false);
@@ -156,7 +174,7 @@ const AddVisitor = ({
     }
     setTimeout(() => {
       setActiveTab("Visitors");
-    }, 2000); 
+    }, 2000);
   }
 
 
@@ -168,20 +186,20 @@ const AddVisitor = ({
     setModalType("update");
     setShowModal(true);
   }
-  
+
   const confirmUpdate = async () => {
     if (
       newVisitor.visitorsId === "" ||
-     !newVisitor.fName ||
-     !newVisitor.lName ||
-     !newVisitor.certificationNo ||
-     !newVisitor.email ||
-     !newVisitor.contactNo ||
-     !newVisitor.visitingDept ||
-     !newVisitor.host ||
-     !newVisitor.cardNumber ||
-     !newVisitor.visitingReason ||
-     !newVisitor.carryingGoods
+      !newVisitor.fName ||
+      !newVisitor.lName ||
+      !newVisitor.certificationNo ||
+      !newVisitor.email ||
+      !newVisitor.contactNo ||
+      !newVisitor.visitingDept ||
+      !newVisitor.host ||
+      !newVisitor.cardNumber ||
+      !newVisitor.visitingReason ||
+      !newVisitor.carryingGoods
     ) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
@@ -195,7 +213,7 @@ const AddVisitor = ({
       lName: newVisitor.lName,
       certificationNo: newVisitor.certificationNo,
       createTime: newVisitor.createTime,
-      exitTime: newVisitor.exitTime,      
+      exitTime: newVisitor.exitTime,
       email: newVisitor.email,
       contactNo: newVisitor.contactNo,
       visitingDept: newVisitor.visitingDept,
@@ -213,7 +231,7 @@ const AddVisitor = ({
     }
     setTimeout(() => {
       setActiveTab("Visitors");
-    }, 2000); 
+    }, 2000);
   }
 
 
@@ -231,8 +249,8 @@ const AddVisitor = ({
           modalType === "create"
             ? addAnimation
             : modalType === "update"
-            ? updateAnimation
-            : deleteAnimation
+              ? updateAnimation
+              : deleteAnimation
         }
       />
       <ConirmationModal
@@ -271,6 +289,7 @@ const AddVisitor = ({
                   placeholder="Enter Visitor ID"
                   value={newVisitor.visitorsId}
                   disabled={isEditMode}
+                  // onChange={handleInputChange}
                   onChange={(e) =>
                     setNewVisitor({ ...newVisitor, visitorsId: e.target.value })
                   }
@@ -283,6 +302,7 @@ const AddVisitor = ({
                   name="fName"
                   placeholder="Enter First Name"
                   value={newVisitor.fName}
+                  // onChange={handleInputChange}
                   onChange={(e) =>
                     setNewVisitor({ ...newVisitor, fName: e.target.value })
                   }
@@ -295,6 +315,7 @@ const AddVisitor = ({
                   name="lName"
                   placeholder="Enter Last Name"
                   value={newVisitor.lName}
+                  // onChange={handleInputChange}
                   onChange={(e) =>
                     setNewVisitor({ ...newVisitor, lName: e.target.value })
                   }
@@ -307,6 +328,7 @@ const AddVisitor = ({
                   name="certificationNo"
                   placeholder="Enter Certification Number"
                   value={newVisitor.certificationNo}
+                  // onChange={handleInputChange}
                   onChange={(e) =>
                     setNewVisitor({ ...newVisitor, certificationNo: e.target.value })
                   }
@@ -404,7 +426,7 @@ const AddVisitor = ({
                     </option>
                     {departments.map((dept, index) => (
                       <option key={index} value={dept.name}>
-                        {dept.name} 
+                        {dept.name}
                       </option>
                     ))}
                     <option value="Add-Department">+ Add New Department</option>
@@ -416,7 +438,6 @@ const AddVisitor = ({
                   <input
                     type="datetime-local"
                     name="exitTime"
-                    // value={formattedExitTime}
                     value={newVisitor.exitTime}
                     onChange={(e) =>
                       setNewVisitor({ ...newVisitor, exitTime: e.target.value })
@@ -437,10 +458,10 @@ const AddVisitor = ({
               </div>
               <div className="visitor-info-lower">
                 <button className="submit-button" type="submit"
-                onClick={isEditMode ? () => updateVisitor(newVisitor) : addVisitor}
+                  onClick={isEditMode ? () => updateVisitor(newVisitor) : addVisitor}
                 >
-                  {isEditMode ? "Update Visitors" : "Add Visitor" }
-                  
+                  {isEditMode ? "Update Visitors" : "Add Visitor"}
+
                 </button>
                 <button
                   className="cancel-button"
