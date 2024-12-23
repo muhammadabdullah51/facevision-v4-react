@@ -131,12 +131,7 @@ const AddEmployee = ({
     };
   }, [newEmployee.image1, successModal]);
 
-  // useEffect(() => {
-  //   // This ensures newEmployee is updated whenever employeeData in the Redux store changes
-  //   if (employeeData) {
-  //     setNewEmployee(employeeData);
-  //   }
-  // }, [employeeData]);
+
 
 
   const handleDepartmentChange = (event) => {
@@ -262,6 +257,7 @@ const AddEmployee = ({
 
     } catch (error) {
     }
+    dispatch(resetEmployeeData());
 
 
     setIsEditMode(false);
@@ -278,7 +274,7 @@ const AddEmployee = ({
     const { name, value } = e.target;
     setNewEmployee((prevData) => {
       const updatedData = { ...prevData, [name]: value };
-      dispatch(setEmployeeData(updatedData));  // Dispatch updated data to Redux
+      dispatch(setEmployeeData(updatedData));  
       return updatedData;
     });
   };
@@ -302,23 +298,10 @@ const AddEmployee = ({
     }
   };
 
-  // const handlePictureChange = async (event) => {
-  //   const file = event.target.files[0];
-  //   if (file) {
-  //     // Create a URL for the image file
-  //     const imageUrl = URL.createObjectURL(file);
-  //     // For now, let's use the object URL:
-  //     setNewEmployee((prevState) => {
-  //       const updatedState = { ...prevState, image1: imageUrl };
-  //       dispatch(setEmployeeData(updatedState));  // Dispatch updated data to Redux
-  //       return updatedState;
-  //     });
-  //   }
-  // };
 
+
+  
   // const handleWebcamCapture = (imageSrc) => {
-
-
   //   fetch(imageSrc)
   //     .then((res) => res.blob())
   //     .then((blob) => {
@@ -329,17 +312,21 @@ const AddEmployee = ({
   //     });
   // };
 
-  // Handle webcam capture
   const handleWebcamCapture = (imageSrc) => {
     fetch(imageSrc)
       .then((res) => res.blob())
       .then((blob) => {
         const file = new File([blob], "webcam-image.jpg", { type: "image/jpeg" });
-        setNewEmployee((prevState) => {
-          const updatedState = { ...prevState, image1: file };
-          dispatch(setEmployeeData(updatedState));  // Dispatch updated data to Redux
-          return updatedState;
-        });
+  
+        // Update the local state first
+        setNewEmployee((prevState) => ({ ...prevState, image1: file }));
+  
+        // Dispatch the updated state separately
+        const updatedState = { image1: file }; // Only the new file
+        dispatch(setEmployeeData(updatedState));
+      })
+      .catch((error) => {
+        console.error("Error capturing webcam image:", error);
       });
   };
 

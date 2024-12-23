@@ -3,7 +3,7 @@ import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import authReducer from './authSlice';
 import formSlice from "./ShiftSlice";
-import visitorSlice from "./visitorSlice"
+import visitorReducer from "./visitorSlice"
 import employeeReducer from './employeeSlice'
 
 const persistConfig = {
@@ -19,8 +19,12 @@ const store = configureStore({
         auth: persistedAuthReducer,
         forms: formSlice,
         employee: employeeReducer,
-        visitor: visitorSlice,
-    }
+        visitor: visitorReducer,
+    },
+    middleware: (getDefaultMiddleware) =>
+        getDefaultMiddleware({
+          serializableCheck: false, 
+        }),
 });
 
 const persistor = persistStore(store);

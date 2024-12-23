@@ -1,16 +1,34 @@
+// src/redux/visitorSlice.js
 import { createSlice } from '@reduxjs/toolkit';
+
+const initialState = {
+  visitorsId: "",
+  fName: "",
+  lName: "",
+  certificationNo: "",
+  createTime: "",
+  exitTime: "",
+  email: "",
+  contactNo: "",
+  visitingDept: "",
+  host: "",
+  cardNumber: "",
+  visitingReason: "",
+  carryingGoods: "",
+};
 
 const visitorSlice = createSlice({
   name: 'visitor',
-  initialState: {
-    newVisitor: {},
-  },
+  initialState,
   reducers: {
-    setNewVisitor: (state, action) => {
-      state.newVisitor = action.payload; // Update state with payload
+    setVisitorData: (state, action) => {
+      return { ...state, ...action.payload };
+    },
+    resetVisitorData: (state) => {
+      return initialState; // Resetting state to initial values
     },
   },
 });
 
-export const { setNewVisitor } = visitorSlice.actions; // Ensure this is exported
+export const { setVisitorData, resetVisitorData } = visitorSlice.actions;
 export default visitorSlice.reducer;

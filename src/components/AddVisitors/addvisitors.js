@@ -11,6 +11,7 @@ import successAnimation from "../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../assets/Lottie/warningAnim.json";
 import { SERVER_URL } from "../../config";
 import { useDispatch, useSelector } from "react-redux";
+import { setVisitorData, resetVisitorData } from "../../redux/visitorSlice";
 const AddVisitor = ({
   setData,
   setActiveTab,
@@ -56,8 +57,11 @@ const AddVisitor = ({
   }, [isEditMode && editData]);
 
 
+  const dispatch = useDispatch();
+  const visitorReduxState  = useSelector((state) => state.visitor);
 
-  const [newVisitor, setNewVisitor] = useState({
+  const [newVisitor, setNewVisitor] = useState(
+    visitorReduxState || {
     visitorsId: "",
     fName: "",
     lName: "",
@@ -72,6 +76,8 @@ const AddVisitor = ({
     visitingReason: "",
     carryingGoods: "",
   });
+
+
 
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
@@ -108,28 +114,54 @@ const AddVisitor = ({
 
 
 
-  const dispatch = useDispatch();
-  const visitorFromRedux = useSelector((state) => state.visitor.newVisitor);
+  
 
   // Handle input changes
+  // const handleInputChange = (e) => {
+  //   const { name, value } = e.target;
+  //   // Update local state
+  //   setNewVisitor((prevState) => ({
+  //     ...prevState,
+  //     [name]: value,
+  //   }));
+  //   console.log(newVisitor);
+  // };
+
+  // const handleInputChange = (e) => {
+  //   const { name, value } = e.target;
+    
+  //   // Update local state
+  //   setNewVisitor((prevState) => {
+  //     const updatedVisitor = { ...prevState, [name]: value };
+  //     dispatch(setVisitorData({ [name]: value }));
+  //     return updatedVisitor;
+  //   });
+  
+  //   console.log(newVisitor);
+  // };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-
-  // Update Redux state
-  dispatch(setNewVisitor({ ...visitorFromRedux, [name]: value }));
-
-  // Update local state
-  setNewVisitor((prevState) => ({
-    ...prevState,
-    [name]: value,
-  }));
-};
+    setNewVisitor((prevState) => {
+      const updatedVisitor = { ...prevState, [name]: value };
+      dispatch(setVisitorData(updatedVisitor));
+      return updatedVisitor;
+    });
+  
+    // Log the state in Redux (optional)
+    console.log("Updated visitor in Redux:", newVisitor); 
+  };
+  const handleReset = () => {
+    dispatch(resetVisitorData()); // Reset Redux state
+    setNewVisitor(visitorReduxState); // Reset local state
+  };
 
   const addVisitor = async () => {
     setModalType("create");
     setShowModal(true);
   };
   const confirmAdd = async () => {
+    console.log(newVisitor);
     if (
       !newVisitor.visitorsId ||
       !newVisitor.fName ||
@@ -164,6 +196,7 @@ const AddVisitor = ({
       visitingReason: newVisitor.visitingReason,
       carryingGoods: newVisitor.carryingGoods,
     };
+    console.log('visitor add', visitorData);
 
     try {
       await axios.post(`${SERVER_URL}visitors/`, visitorData)
@@ -172,6 +205,7 @@ const AddVisitor = ({
     } catch (error) {
       console.error(error)
     }
+    handleReset()
     setTimeout(() => {
       setActiveTab("Visitors");
     }, 2000);
@@ -229,6 +263,7 @@ const AddVisitor = ({
     } catch (error) {
       console.error(error)
     }
+    handleReset()
     setTimeout(() => {
       setActiveTab("Visitors");
     }, 2000);
@@ -289,10 +324,10 @@ const AddVisitor = ({
                   placeholder="Enter Visitor ID"
                   value={newVisitor.visitorsId}
                   disabled={isEditMode}
-                  // onChange={handleInputChange}
-                  onChange={(e) =>
-                    setNewVisitor({ ...newVisitor, visitorsId: e.target.value })
-                  }
+                  onChange={handleInputChange}
+                  // onChange={(e) =>
+                  //   setNewVisitor({ ...newVisitor, visitorsId: e.target.value })
+                  // }
                   required
                 />
 
@@ -302,10 +337,10 @@ const AddVisitor = ({
                   name="fName"
                   placeholder="Enter First Name"
                   value={newVisitor.fName}
-                  // onChange={handleInputChange}
-                  onChange={(e) =>
-                    setNewVisitor({ ...newVisitor, fName: e.target.value })
-                  }
+                  onChange={handleInputChange}
+                  // onChange={(e) =>
+                  //   setNewVisitor({ ...newVisitor, fName: e.target.value })
+                  // }
                   required
                 />
 
@@ -315,10 +350,10 @@ const AddVisitor = ({
                   name="lName"
                   placeholder="Enter Last Name"
                   value={newVisitor.lName}
-                  // onChange={handleInputChange}
-                  onChange={(e) =>
-                    setNewVisitor({ ...newVisitor, lName: e.target.value })
-                  }
+                  onChange={handleInputChange}
+                  // onChange={(e) =>
+                  //   setNewVisitor({ ...newVisitor, lName: e.target.value })
+                  // }
                   required
                 />
 
@@ -328,10 +363,10 @@ const AddVisitor = ({
                   name="certificationNo"
                   placeholder="Enter Certification Number"
                   value={newVisitor.certificationNo}
-                  // onChange={handleInputChange}
-                  onChange={(e) =>
-                    setNewVisitor({ ...newVisitor, certificationNo: e.target.value })
-                  }
+                  onChange={handleInputChange}
+                  // onChange={(e) =>
+                  //   setNewVisitor({ ...newVisitor, certificationNo: e.target.value })
+                  // }
                   required
                 />
 
@@ -341,9 +376,11 @@ const AddVisitor = ({
                   name="email"
                   placeholder="Enter Email"
                   value={newVisitor.email}
-                  onChange={(e) =>
-                    setNewVisitor({ ...newVisitor, email: e.target.value })
-                  }
+                  onChange={handleInputChange}
+
+                  // onChange={(e) =>
+                  //   setNewVisitor({ ...newVisitor, email: e.target.value })
+                  // }
                   required
                 />
               </div>
@@ -354,9 +391,10 @@ const AddVisitor = ({
                   name="contactNo"
                   placeholder="Enter Contact Number"
                   value={newVisitor.contactNo}
-                  onChange={(e) =>
-                    setNewVisitor({ ...newVisitor, contactNo: e.target.value })
-                  }
+                  onChange={handleInputChange}
+                  // onChange={(e) =>
+                  //   setNewVisitor({ ...newVisitor, contactNo: e.target.value })
+                  // }
                   required
                 />
 
@@ -366,9 +404,10 @@ const AddVisitor = ({
                   name="cardNumber"
                   placeholder="Enter Card Number"
                   value={newVisitor.cardNumber}
-                  onChange={(e) =>
-                    setNewVisitor({ ...newVisitor, cardNumber: e.target.value })
-                  }
+                  onChange={handleInputChange}
+                  // onChange={(e) =>
+                  //   setNewVisitor({ ...newVisitor, cardNumber: e.target.value })
+                  // }
                   required
                 />
 
@@ -378,9 +417,10 @@ const AddVisitor = ({
                   name="carryingGoods"
                   placeholder="Enter Carrying Goods"
                   value={newVisitor.carryingGoods}
-                  onChange={(e) =>
-                    setNewVisitor({ ...newVisitor, carryingGoods: e.target.value })
-                  }
+                  onChange={handleInputChange}
+                // onChange={(e) =>
+                //   setNewVisitor({ ...newVisitor, carryingGoods: e.target.value })
+                // }
                 />
 
                 <label>Visiting Reason</label>
@@ -389,9 +429,10 @@ const AddVisitor = ({
                   name="visitingReason"
                   placeholder="Enter Visiting Reason"
                   value={newVisitor.visitingReason}
-                  onChange={(e) =>
-                    setNewVisitor({ ...newVisitor, visitingReason: e.target.value })
-                  }
+                  onChange={handleInputChange}
+                // onChange={(e) =>
+                //   setNewVisitor({ ...newVisitor, visitingReason: e.target.value })
+                // }
                 />
 
               </div>
@@ -407,11 +448,11 @@ const AddVisitor = ({
                   <input
                     type="datetime-local"
                     name="createTime"
-                    // value={formattedCreateTime}
                     value={newVisitor.createTime}
-                    onChange={(e) =>
-                      setNewVisitor({ ...newVisitor, createTime: e.target.value })
-                    }
+                    onChange={handleInputChange}
+                    // onChange={(e) =>
+                    //   setNewVisitor({ ...newVisitor, createTime: e.target.value })
+                    // }
                     required
                   />
 
@@ -439,9 +480,10 @@ const AddVisitor = ({
                     type="datetime-local"
                     name="exitTime"
                     value={newVisitor.exitTime}
-                    onChange={(e) =>
-                      setNewVisitor({ ...newVisitor, exitTime: e.target.value })
-                    }
+                    onChange={handleInputChange}
+                    // onChange={(e) =>
+                    //   setNewVisitor({ ...newVisitor, exitTime: e.target.value })
+                    // }
                     required
                   />
                   <label>Host</label>
@@ -450,9 +492,10 @@ const AddVisitor = ({
                     name="host"
                     placeholder="Enter Host Name"
                     value={newVisitor.host}
-                    onChange={(e) =>
-                      setNewVisitor({ ...newVisitor, host: e.target.value })
-                    }
+                    onChange={handleInputChange}
+                  // onChange={(e) =>
+                  //   setNewVisitor({ ...newVisitor, host: e.target.value })
+                  // }
                   />
                 </div>
               </div>
@@ -466,7 +509,9 @@ const AddVisitor = ({
                 <button
                   className="cancel-button"
                   type="button"
-                  onClick={() => setActiveTab("Visitors")}
+                  onClick={() => {
+                    handleReset()
+                    setActiveTab("Visitors")}}
                 >
                   Cancel
                 </button>
