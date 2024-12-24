@@ -257,6 +257,17 @@ const EmployeeTable = ({
                 {/* <td>{index + 1 + currentPage * rowsPerPage}</td> */}
                 <td>{row.empId}</td>
                 <td className="bold-fonts">
+                  <span className="empImage">
+                    <img
+                      src={
+                        row.image1
+                         ? `${SERVER_URL}${row.image1}`
+                          : Default_picture
+                      }
+                      alt={row.employeeName}
+                      className="employee-image"
+                    />
+                  </span>
                   {row.fName} {row.lName}
                 </td>
                 <td>{row.department}</td>

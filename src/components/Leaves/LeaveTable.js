@@ -401,30 +401,31 @@ const LeaveTable = ({ data, setData }) => {
       {showAddForm && !showEditForm && (
         <div className="add-department-form add-leave-form">
           <h3>Add New Leave</h3>
+          <label>Select Employee</label>
           <input
             list="employeesList"
             value={
               employees.find((emp) => emp.empId === formData.employee)
-                ? `${
-                    employees.find((emp) => emp.empId === formData.employee)
-                      .empId
-                  } ${
-                    employees.find((emp) => emp.empId === formData.employee)
-                      .fName
-                  } ${
-                    employees.find((emp) => emp.empId === formData.employee)
-                      .lName
-                  }`
-                : formData.employee || "" // Display empId, fName, and lName if employee is found or allow typing
+              ? `${
+                employees.find((emp) => emp.empId === formData.employee)
+                .empId
+              } ${
+                employees.find((emp) => emp.empId === formData.employee)
+                .fName
+              } ${
+                employees.find((emp) => emp.empId === formData.employee)
+                .lName
+              }`
+              : formData.employee || "" // Display empId, fName, and lName if employee is found or allow typing
             }
             onChange={(e) => {
               const value = e.target.value;
-
+              
               // If the input is a valid match for employee full name, find the employee
               const selectedEmployee = employees.find(
                 (emp) => `${emp.empId} ${emp.fName} ${emp.lName}` === value
               );
-
+              
               // Set the form data
               setFormData({
                 ...formData,
@@ -433,18 +434,19 @@ const LeaveTable = ({ data, setData }) => {
               });
             }}
             placeholder="Search or select an employee"
-          />
+            />
 
           <datalist id="employeesList">
             {employees.map((emp) => (
               // Display employee's full name in datalist options
               <option
-                key={emp.empId}
-                value={`${emp.empId} ${emp.fName} ${emp.lName}`}
+              key={emp.empId}
+              value={`${emp.empId} ${emp.fName} ${emp.lName}`}
               />
             ))}
           </datalist>
 
+            <label>Leave Type</label>
           <select
             value={formData.leave_type}
             onChange={(e) =>
@@ -474,6 +476,7 @@ const LeaveTable = ({ data, setData }) => {
               setFormData({ ...formData, end_date: e.target.value })
             }
           />
+          <label>Reason</label>
           <input
             type="text"
             placeholder="Reason"
@@ -482,6 +485,7 @@ const LeaveTable = ({ data, setData }) => {
               setFormData({ ...formData, reason: e.target.value })
             }
           />
+          <label>Status</label>
           <select
             value={formData.status}
             onChange={(e) =>
@@ -511,6 +515,7 @@ const LeaveTable = ({ data, setData }) => {
       {!showAddForm && showEditForm && (
         <div className="add-department-form add-leave-form">
           <h3>Edit Leave</h3>
+          <label>Selected Employee</label>
           <input
             type="text"
             value={formData.empName}
@@ -519,6 +524,7 @@ const LeaveTable = ({ data, setData }) => {
               setFormData({ ...formData, empName: e.target.value })
             }
           />
+          <label>Leave Type</label>
           <select
             value={formData.leave_type}
             onChange={(e) =>
@@ -548,6 +554,8 @@ const LeaveTable = ({ data, setData }) => {
               setFormData({ ...formData, end_date: e.target.value })
             }
           />
+          
+          <label>Reason</label>
           <input
             type="text"
             placeholder="Reason"
@@ -556,6 +564,7 @@ const LeaveTable = ({ data, setData }) => {
               setFormData({ ...formData, reason: e.target.value })
             }
           />
+          <label>Status</label>
           <select
             value={formData.status}
             onChange={(e) =>

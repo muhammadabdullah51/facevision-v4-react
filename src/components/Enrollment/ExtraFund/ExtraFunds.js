@@ -397,6 +397,7 @@ const ExtraFunds = () => {
               setFormData({ ...formData, reason: e.target.value })
             }
           />
+          <label>Select Type</label>
           <select
             value={formData.type}
             onChange={(e) => {

@@ -400,6 +400,7 @@ const Loan = () => {
               setFormData({ ...formData, reason: e.target.value })
             }
           />
+          <label>Select Status</label>
           <select
             value={formData.status}
             onChange={(e) =>
@@ -511,7 +512,7 @@ const Loan = () => {
               setFormData({ ...formData, reason: e.target.value })
             }
           />
-          <label>Selected Status</label>
+          <label>Select Status</label>
           <select
             value={formData.status}
             onChange={(e) =>
