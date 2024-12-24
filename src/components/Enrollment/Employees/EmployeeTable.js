@@ -235,7 +235,7 @@ const EmployeeTable = ({
         <table className="table">
           <thead>
             <tr>
-              <th>Serial No</th>
+              {/* <th>Serial No</th> */}
               <th>Employee ID</th>
               <th>Employee Name</th>
               <th>Department</th>
@@ -252,8 +252,9 @@ const EmployeeTable = ({
           </thead>
           <tbody>
             {currentPageData.map((row, index) => (
+              
               <tr key={row.empId}>
-                <td>{index + 1 + currentPage * rowsPerPage}</td>
+                {/* <td>{index + 1 + currentPage * rowsPerPage}</td> */}
                 <td>{row.empId}</td>
                 <td className="bold-fonts">
                   {row.fName} {row.lName}

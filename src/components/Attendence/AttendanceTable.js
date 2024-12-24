@@ -12,23 +12,50 @@ import deleteAnimation from "../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../assets/Lottie/warningAnim.json";
 
+import { useDispatch, useSelector } from "react-redux";
+import { setAttendanceData, resetAttendanceData } from "../../redux/attendanceSlice";
+
 const AttendanceTable = ({ data, setData }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [employees, setEmployees] = useState([]);
   const [locations, setLocations] = useState([]);
-  const [formData, setFormData] = useState({
-    allAttendanceId: null,
-    empId: "",
-    employee: "",
-    time_in: "",
-    time_out: "",
-    date: "",
-    attendance_marked: false,
-    status: "Absent",
-    location: "",
+
+  const dispatch = useDispatch();
+  const savedFormState = useSelector((state) => {
+    // console.log('Redux state:', state.attendance.formStates.attendance);
+    return state.attendance.formStates.attendance || {};
   });
+  // console.log('savedFormState', savedFormState);
+
+  const [formData, setFormData] = useState(
+    savedFormState || {
+      allAttendanceId: null,
+      empId: "",
+      employee: "",
+      time_in: "",
+      time_out: "",
+      date: "",
+      attendance_marked: false,
+      status: "Absent",
+      location: "",
+    });
+  const [editFormData, setEditFormData] = useState({
+      allAttendanceId: null,
+      empId: "",
+      employee: "",
+      time_in: "",
+      time_out: "",
+      date: "",
+      attendance_marked: false,
+      status: "Absent",
+      location: "",
+    });
+
+  useEffect(() => {
+    dispatch(setAttendanceData({ formName: "attendance", data: formData }));
+  }, [formData, dispatch]);
 
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
@@ -118,15 +145,14 @@ const AttendanceTable = ({ data, setData }) => {
         accessor: "status",
         Cell: ({ value }) => (
           <span
-            className={`status ${
-              value === "Present"
-                ? "presentStatus"
-                : value === "Late"
+            className={`status ${value === "Present"
+              ? "presentStatus"
+              : value === "Late"
                 ? "lateStatus"
                 : value === "Absent"
-                ? "absentStatus"
-                : "none"
-            }`}
+                  ? "absentStatus"
+                  : "none"
+              }`}
           >
             {value}
           </span>
@@ -190,7 +216,7 @@ const AttendanceTable = ({ data, setData }) => {
   );
 
   const handleEdit = (row) => {
-    setFormData({
+    setEditFormData({
       allAttendanceId: row.allAttendanceId,
       empId: row.empId,
       time_in: row.time_in,
@@ -210,33 +236,33 @@ const AttendanceTable = ({ data, setData }) => {
 
   const handleUpdate = async () => {
     setModalType("update");
-    setFormData({ ...formData });
+    setFormData({ ...editFormData });
     setShowModal(true);
   };
 
   const confirmUpdate = async () => {
-    if (!formData.empId || 
-      !formData.date || 
-      // !formData.time_in ||
-      // !formData.time_out ||
-      !formData.date ||
-      !formData.attendance_marked ||
-      !formData.location ||
-      !formData.status) {
+    if (!editFormData.empId ||
+      !editFormData.date ||
+      // !editFormData.time_in ||
+      // !editFormData.time_out ||
+      !editFormData.date ||
+      !editFormData.attendance_marked ||
+      !editFormData.location ||
+      !editFormData.status) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
       setWarningModal(true);
       return;
     }
     const attPayload = {
-      allAttendanceId: formData.allAttendanceId,
-      empId: formData.empId,
-      time_in: formatTime(formData.time_in) || "",
-      time_out: formatTime(formData.time_out),
-      date: formData.date,
-      attendance_marked: formData.attendance_marked,
-      status: formData.status,
-      location: formData.location,
+      allAttendanceId: editFormData.allAttendanceId,
+      empId: editFormData.empId,
+      time_in: formatTime(editFormData.time_in) || "",
+      time_out: formatTime(editFormData.time_out),
+      date: editFormData.date,
+      attendance_marked: editFormData.attendance_marked,
+      status: editFormData.status,
+      location: editFormData.location,
     };
     try {
       const res = await axios.post(`${SERVER_URL}all-attendance/`, attPayload);
@@ -248,6 +274,24 @@ const AttendanceTable = ({ data, setData }) => {
       setSuccessModal(true);
     } catch (error) {
     }
+    setFormData({
+      empId: "",
+      time_in: "",
+      time_out: "",
+      date: "",
+      attendance_marked: "by Admin",
+      status: "",
+      location: "",
+    });
+    setEditFormData({
+      empId: "",
+      time_in: "",
+      time_out: "",
+      date: "",
+      attendance_marked: "by Admin",
+      status: "",
+      location: "",
+    });
   };
 
   const handleDelete = async (row) => {
@@ -268,15 +312,15 @@ const AttendanceTable = ({ data, setData }) => {
   };
 
   const handleAdd = () => {
-    setFormData({
-      empId: "",
-      time_in: "",
-      time_out: "",
-      date: "",
-      attendance_marked: "by Admin",
-      status: "",
-      location: "",
-    });
+    // setFormData({
+    //   empId: "",
+    //   time_in: "",
+    //   time_out: "",
+    //   date: "",
+    //   attendance_marked: "by Admin",
+    //   status: "",
+    //   location: "",
+    // });
 
     setShowAddForm(true);
     setShowEditForm(false);
@@ -318,15 +362,34 @@ const AttendanceTable = ({ data, setData }) => {
       setSuccessModal(true);
     } catch (error) {
     }
+    setFormData({
+      empId: "",
+      time_in: "",
+      time_out: "",
+      date: "",
+      attendance_marked: "by Admin",
+      status: "",
+      location: "",
+    });
+    setEditFormData({
+      empId: "",
+      time_in: "",
+      time_out: "",
+      date: "",
+      attendance_marked: "by Admin",
+      status: "",
+      location: "",
+    });
   };
 
   const formatTime = (time) => {
     // If time already includes seconds, return as is.
     if (time.split(':').length === 3) return time;
-  
+
     // Otherwise, append ":00" for seconds.
     return `${time}:00`;
   };
+
   return (
     <div className="department-table">
       <ConirmationModal
@@ -342,8 +405,8 @@ const AttendanceTable = ({ data, setData }) => {
           modalType === "create"
             ? addAnimation
             : modalType === "update"
-            ? updateAnimation
-            : deleteAnimation
+              ? updateAnimation
+              : deleteAnimation
         }
       />
       <ConirmationModal
@@ -414,6 +477,7 @@ const AttendanceTable = ({ data, setData }) => {
         </button>
       </div>
 
+
       {showAddForm && !showEditForm && (
         <div className="add-department-form add-leave-form">
           <h3>Add Manual Attendance</h3>
@@ -424,11 +488,9 @@ const AttendanceTable = ({ data, setData }) => {
             placeholder="Search or select an employee"
             value={
               employees.find((emp) => emp.empId === formData.empId)
-                ? `${formData.empId} ${
-                    employees.find((emp) => emp.empId === formData.empId).fName
-                  } ${
-                    employees.find((emp) => emp.empId === formData.empId).lName
-                  }`
+                ? `${formData.empId} ${employees.find((emp) => emp.empId === formData.empId).fName
+                } ${employees.find((emp) => emp.empId === formData.empId).lName
+                }`
                 : formData.empId || "" // Display empId, fName, and lName of the selected employee or user input
             }
             onChange={(e) => {
@@ -523,6 +585,24 @@ const AttendanceTable = ({ data, setData }) => {
             onClick={() => {
               setShowAddForm(false);
               setShowEditForm(false);
+              setFormData({
+                empId: "",
+                time_in: "",
+                time_out: "",
+                date: "",
+                attendance_marked: "by Admin",
+                status: "",
+                location: "",
+              });
+              setEditFormData({
+                empId: "",
+                time_in: "",
+                time_out: "",
+                date: "",
+                attendance_marked: "by Admin",
+                status: "",
+                location: "",
+              });
             }}
           >
             Cancel
@@ -533,7 +613,7 @@ const AttendanceTable = ({ data, setData }) => {
         <div className="add-department-form add-leave-form">
           <h3>Edit Manual Attendance</h3>
           <label>Selected Employee</label>
-         
+
 
           <datalist id="employeesList">
             {employees.map((emp) => (
@@ -544,23 +624,22 @@ const AttendanceTable = ({ data, setData }) => {
             ))}
           </datalist>
 
-          <input 
-          type="text"
-          disabled
-          value={formData.employeeId}
+          <input
+            type="text"
+            disabled
+            value={editFormData.employeeId}
           />
-          <input 
-          type="text"
-          disabled
-          value={formData.emp_fName}
+          <input
+            type="text"
+            disabled
+            value={editFormData.emp_fName}
           />
-          <input 
-          type="text"
-          disabled
-          value={formData.emp_lName}
+          <input
+            type="text"
+            disabled
+            value={editFormData.emp_lName}
           />
 
-          
 
           <div className="form-time">
             <div>
@@ -568,9 +647,9 @@ const AttendanceTable = ({ data, setData }) => {
               <input
                 type="time"
                 placeholder="Time In"
-                value={formData.time_in}
+                value={editFormData.time_in}
                 onChange={(e) =>
-                  setFormData({ ...formData, time_in: e.target.value })
+                  setEditFormData({ ...editFormData, time_in: e.target.value })
                 }
               />
             </div>
@@ -579,9 +658,9 @@ const AttendanceTable = ({ data, setData }) => {
               <input
                 type="time"
                 placeholder="Time Out"
-                value={formData.time_out}
+                value={editFormData.time_out}
                 onChange={(e) =>
-                  setFormData({ ...formData, time_out: e.target.value })
+                  setEditFormData({ ...editFormData, time_out: e.target.value })
                 }
               />
             </div>
@@ -590,25 +669,25 @@ const AttendanceTable = ({ data, setData }) => {
           <label>Date</label>
           <input
             type="date"
-            value={formData.date}
-            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+            value={editFormData.date}
+            onChange={(e) => setEditFormData({ ...editFormData, date: e.target.value })}
           />
           <label>Mark Attandance</label>
           <select
             disabled
-            value={formData.attendance_marked}
+            value={editFormData.attendance_marked}
             onChange={(e) =>
-              setFormData({ ...formData, attendance_marked: e.target.value })
+              setEditFormData({ ...editFormData, attendance_marked: e.target.value })
             }
           >
-            <option value="by Admin">{formData.attendance_marked}</option>
+            <option value="by Admin">{editFormData.attendance_marked}</option>
           </select>
 
           <label>Select Status</label>
           <select
-            value={formData.status}
+            value={editFormData.status}
             onChange={(e) =>
-              setFormData({ ...formData, status: e.target.value })
+              setEditFormData({ ...editFormData, status: e.target.value })
             }
           >
             <option>Select Status</option>
@@ -619,9 +698,9 @@ const AttendanceTable = ({ data, setData }) => {
 
           <label>Select Location</label>
           <select
-            value={formData.location}
+            value={editFormData.location}
             onChange={(e) =>
-              setFormData({ ...formData, location: e.target.value })
+              setEditFormData({ ...editFormData, location: e.target.value })
             }
           >
             <option value="">Select Location</option>
@@ -634,7 +713,7 @@ const AttendanceTable = ({ data, setData }) => {
 
           <button
             className="submit-button"
-            onClick={() => handleUpdate(formData)}
+            onClick={() => handleUpdate(editFormData)}
           >
             Update Attendance
           </button>
@@ -643,6 +722,25 @@ const AttendanceTable = ({ data, setData }) => {
             onClick={() => {
               setShowAddForm(false);
               setShowEditForm(false);
+              setFormData({
+                empId: "",
+                time_in: "",
+                time_out: "",
+                date: "",
+                attendance_marked: "by Admin",
+                status: "",
+                location: "",
+              });
+              setEditFormData({
+                empId: "",
+                time_in: "",
+                time_out: "",
+                date: "",
+                attendance_marked: "by Admin",
+                status: "",
+                location: "",
+              });
+              
             }}
           >
             Cancel

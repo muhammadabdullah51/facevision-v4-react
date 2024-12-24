@@ -339,12 +339,12 @@ const AddEmployee = ({
     setActiveTab("Employees");
   
     // Optionally log the reset state to confirm it's been reset
-    console.log("Employee state has been reset in Redux.");
+    // console.log("Employee state has been reset in Redux.");
   };
   
   // Log newEmployee state after it updates
   useEffect(() => {
-    console.log("Updated newEmployee state after reset:", newEmployee); // Logs the updated newEmployee state after setNewEmployee has run
+    // console.log("Updated newEmployee state after reset:", newEmployee); // Logs the updated newEmployee state after setNewEmployee has run
   }, [newEmployee]); // Dependency array ensures this runs after newEmployee updates
 
   return (

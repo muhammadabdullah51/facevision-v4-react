@@ -6,7 +6,6 @@ import html2canvas from "html2canvas";
 import "jspdf-autotable";
 import "../../Settings/Setting_Tabs/leave.css";
 import "../../Enrollment/Department/department.css";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileCsv, faFilePdf } from "@fortawesome/free-solid-svg-icons";
 import PayrollLogs from "../Payroll_Logs/payroll_log";
 import AdvanceSalary from "../Advance_Salary/advance_salary";
@@ -14,6 +13,7 @@ import Appraisal from "../Appraisal/appraisal";
 import Loan from "../Loan/loan";
 import ExtraFunds from "../../Enrollment/ExtraFund/ExtraFunds";
 import Bonuses from "../Bouneses/bouneses";
+import Tax from "../Tax/Tax"
 import axios from "axios";
 import { faXmark, faPrint } from "@fortawesome/free-solid-svg-icons";
 
@@ -21,7 +21,18 @@ import SalarySlip from "./SalarySlip";
 import ReactDOMServer from "react-dom/server";
 
 import { SERVER_URL } from "../../../config";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { FaArrowDown, FaDownload, FaFolderOpen } from "react-icons/fa";
+import {
+    faTachometerAlt, faUserPlus, faMobileAlt, faCalendarCheck,
+    faCalendarAlt, faCogs, faMoneyCheckAlt, faChartBar,
+    faUsers, faBan, faCog, faUser, faBuilding, faTag,
+    faMapMarkerAlt, faIdBadge, faPersonWalkingDashedLineArrowRight, faChevronDown,
+    faChevronUp, faHandHoldingUsd, faClipboardCheck, faAward, faFileInvoiceDollar,
+    faTabletAlt, faDollarSign, faInfoCircle, faCheckCircle, faFileInvoice, faMoneyBillWave, faBed, faCoffee 
+} from '@fortawesome/free-solid-svg-icons';
+import Allowance from "../Allowances/Allowances";
+
 
 const EmplyeeProfile = () => {
   const [data, setData] = useState([
@@ -408,6 +419,10 @@ const EmplyeeProfile = () => {
         return <ExtraFunds />;
       case "Bonuses":
         return <Bonuses />;
+      case "Taxes":
+        return < Tax/>;
+      case "Allowances":
+        return < Allowance/>;
       default:
         return (
           <>
@@ -614,7 +629,13 @@ const EmplyeeProfile = () => {
             className={`${changeTab === "Employee Profile" ? "active" : ""}`}
             onClick={() => setChangeTab("Employee Profile")}
           >
-            Employee Profile
+            Profile
+          </button>
+          <button
+            className={`${changeTab === "Payroll Log" ? "active" : ""}`}
+            onClick={() => setChangeTab("Payroll Log")}
+          >
+            Payroll Log
           </button>
           <button
             className={`${changeTab === "Advance Salary" ? "active" : ""}`}
@@ -645,6 +666,18 @@ const EmplyeeProfile = () => {
             onClick={() => setChangeTab("Bonuses")}
           >
             Bonuses
+          </button>
+          <button
+            className={`${changeTab === "Taxes" ? "active" : ""}`}
+            onClick={() => setChangeTab("Taxes")}
+          >
+            Taxes
+          </button>
+          <button
+            className={`${changeTab === "Allowances" ? "active" : ""}`}
+            onClick={() => setChangeTab("Allowances")}
+          >
+            Allowances
           </button>
         </div>
         <div className="tab-content">{renderTabContent()}</div>

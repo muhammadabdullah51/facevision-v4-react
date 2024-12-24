@@ -149,7 +149,7 @@ const AddVisitor = ({
     });
   
     // Log the state in Redux (optional)
-    console.log("Updated visitor in Redux:", newVisitor); 
+    // console.log("Updated visitor in Redux:", newVisitor); 
   };
   const handleReset = () => {
     dispatch(resetVisitorData()); // Reset Redux state
@@ -161,7 +161,7 @@ const AddVisitor = ({
     setShowModal(true);
   };
   const confirmAdd = async () => {
-    console.log(newVisitor);
+    // console.log(newVisitor);
     if (
       !newVisitor.visitorsId ||
       !newVisitor.fName ||
@@ -196,7 +196,7 @@ const AddVisitor = ({
       visitingReason: newVisitor.visitingReason,
       carryingGoods: newVisitor.carryingGoods,
     };
-    console.log('visitor add', visitorData);
+    // console.log('visitor add', visitorData);
 
     try {
       await axios.post(`${SERVER_URL}visitors/`, visitorData)

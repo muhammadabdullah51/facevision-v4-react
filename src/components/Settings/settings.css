@@ -1,6 +1,7 @@
   .tabs {
     width: 100%;
-    display: flex;
+    margin: auto;
+    /* display: flex; */
     flex-direction: row;
     justify-content: center;
     align-items: center;
@@ -11,7 +12,7 @@
     width: 10%;
     padding: 10px;
     border: 1px solid;
-    border-radius: 20px;
+    border-radius: 10px;
     background: white;
     cursor: pointer;
     font-weight: 700;
@@ -19,15 +20,23 @@
     transition: 0.3s ease;
     font-size: 0.7vw;
   }
-  .tabs button:hover{
-    background-color: var(--hover-color);
+  .tabs button:hover, .tabs button:hover svg{
+    background-color: rgb(239 207 255 / 35%);
     color: var(--hoverText-color);
     transition: 0.3s ease;
   }
-  .tabs button.active{
-    background-color: var(--hoverText-color);
-    color: #fff;
+  .tabs button.active, .tabs button.active svg{
+    /* background-color: var(--hoverText-color); */
+    /* background-color: rgb(239 207 255 / 65%); */
+    /* color: #fff; */
+    color: var(--hoverText-color);
   }
+
+  .tabs button svg {
+    margin-right: 0.3vw;
+  }
+
+ 
   .tabs1 {
     width: 100%;
     display: flex;
@@ -105,13 +114,15 @@
 @media only screen and (min-width:700px) and (max-width:1000px){
   .tabs button, .tabs1 button{
     width: 20%;
-    font-size: 1.4vw;
+    font-size: 1vw;
+    margin: 0.5vw;
   }
 }
 @media only screen and (min-width:1001px) and (max-width:1500px){
   .tabs button, .tabs1 button{
     width: 15%;
     font-size: 1vw;
+    margin: 0.5vw;
   }
 }
 @media only screen and (max-width:1300px){

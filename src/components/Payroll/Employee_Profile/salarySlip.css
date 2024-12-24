@@ -187,11 +187,16 @@ th.th-component, td.th-component{
 
 /* Download All Salary Slips Button */
 .button.download-all {
-  background: linear-gradient(45deg, #7341DA, #5A34AC);
+  /* background: linear-gradient(45deg, #7341DA, #5A34AC); */
+  background: linear-gradient(45deg, #d3bfff, #a176fc);
+
 }
 
 .button.download-all:hover {
-  background: linear-gradient(45deg, #5A34AC, #472882);
+  /* background: linear-gradient(45deg, #5A34AC, #472882); */
+  background: linear-gradient(315deg, #c9b5f5, #8e5df8);
+
+
   transform: translateY(-2px);
   box-shadow: 0 8px 12px rgba(90, 52, 172, 0.5);
 }
@@ -203,11 +208,18 @@ th.th-component, td.th-component{
 
 /* Export to CSV Button */
 .button.export-csv {
-  background: linear-gradient(45deg, #5A34AC, #472882);
+  /* background: linear-gradient(45deg, #5A34AC, #472882); */
+  background: linear-gradient(45deg, #d3bfff, #a176fc);
+}
+.button.export-csv a{
+  text-decoration: none;
+
 }
 
 .button.export-csv:hover {
-  background: linear-gradient(45deg, #7341DA, #5A34AC);
+  /* background: linear-gradient(45deg, #7341DA, #5A34AC); */
+  background: linear-gradient(315deg, #c9b5f5, #8e5df8);
+
   transform: translateY(-2px);
   box-shadow: 0 8px 12px rgba(115, 65, 218, 0.5);
 }
@@ -219,11 +231,15 @@ th.th-component, td.th-component{
 
 /* Export to PDF Button */
 .button.export-pdf {
-  background: linear-gradient(45deg, #7341DA, #5A34AC);
+  /* background: linear-gradient(45deg, #7341DA, #5A34AC); */
+  background: linear-gradient(45deg, #d3bfff, #a176fc);
+
+  
 }
 
 .button.export-pdf:hover {
-  background: linear-gradient(45deg, #5A34AC, #472882);
+  background: linear-gradient(315deg, #c9b5f5, #8e5df8);
+
   transform: translateY(-2px);
   box-shadow: 0 8px 12px rgba(90, 52, 172, 0.5);
 }

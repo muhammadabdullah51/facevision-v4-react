@@ -7,6 +7,15 @@ import Designation from "../Designation/designation";
 import Location from "../Location/location";
 import Resign from "../Resign/resign";
 import { SERVER_URL } from "../../../config";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+    faTachometerAlt, faUserPlus, faMobileAlt, faCalendarCheck,
+    faCalendarAlt, faCogs, faMoneyCheckAlt, faChartBar,
+    faUsers, faBan, faCog, faUser, faBuilding, faTag,
+    faMapMarkerAlt, faIdBadge, faPersonWalkingDashedLineArrowRight, faChevronDown,
+    faChevronUp, faHandHoldingUsd, faClipboardCheck, faAward, faFileInvoiceDollar,
+    faTabletAlt, faDollarSign, faInfoCircle, faCheckCircle, faFileInvoice, faMoneyBillWave, faBed, faCoffee 
+} from '@fortawesome/free-solid-svg-icons';
 
 const Employees = () => {
   const [activeTab, setActiveTab] = useState("Employees");
@@ -67,40 +76,40 @@ const Employees = () => {
   return (
     <>
       <div className="settings-page">
-        <div className="tabs">
-          <button
-            className={`${changeTab === "Employees" ? "active" : ""}`}
-            onClick={() => setChangeTab("Employees")}
-          >
-            Employees
-          </button>
-          <button
-            className={`${changeTab === "Department" ? "active" : ""}`}
-            onClick={() => setChangeTab("Department")}
-          >
-            Department
-          </button>
-          <button
-            className={`${changeTab === "Designation" ? "active" : ""}`}
-            onClick={() => setChangeTab("Designation")}
-          >
-            Designation
-          </button>
-          <button
-            className={`${changeTab === "Location" ? "active" : ""}`}
-            onClick={() => setChangeTab("Location")}
-          >
-            Location
-          </button>
-          <button
-            className={`${changeTab === "Resign" ? "active" : ""}`}
-            onClick={() => setChangeTab("Resign")}
-          >
-            Resign
-          </button>
-        </div>
-        <div className="tab-content">{renderTabContent()}</div>
+      <div className="tabs">
+        <button
+          className={`${changeTab === "Employees" ? "active" : ""}`}
+          onClick={() => setChangeTab("Employees")}
+        >
+          <FontAwesomeIcon icon={faUsers} className="icon" /> Employees
+        </button>
+        <button
+          className={`${changeTab === "Department" ? "active" : ""}`}
+          onClick={() => setChangeTab("Department")}
+        >
+          <FontAwesomeIcon icon={faBuilding} className="icon" /> Department
+        </button>
+        <button
+          className={`${changeTab === "Designation" ? "active" : ""}`}
+          onClick={() => setChangeTab("Designation")}
+        >
+          <FontAwesomeIcon icon={faTag} className="icon" /> Designation
+        </button>
+        <button
+          className={`${changeTab === "Location" ? "active" : ""}`}
+          onClick={() => setChangeTab("Location")}
+        >
+          <FontAwesomeIcon icon={faMapMarkerAlt} className="icon" /> Location
+        </button>
+        <button
+          className={`${changeTab === "Resign" ? "active" : ""}`}
+          onClick={() => setChangeTab("Resign")}
+        >
+          <FontAwesomeIcon icon={faPersonWalkingDashedLineArrowRight} className="icon" /> Resign
+        </button>
       </div>
+      <div className="tab-content">{renderTabContent()}</div>
+    </div>
     </>
   );
 };

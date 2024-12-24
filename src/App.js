@@ -14,7 +14,7 @@ import { SERVER_URL } from './config';
 import AuthToken from './components/Login/AuthToken';
 // import UserProvider from './UserContext';
 function App() {
-  console.log(SERVER_URL);
+  // console.log(SERVER_URL);
   const [companyInfoCompleted, setCompanyInfoCompleted] = useState(false);
   const [authTrue, setAuthTrue] = useState(false);
 
@@ -53,6 +53,7 @@ function App() {
       <PersistGate loading={null} persistor={persistor}>
       <Router>
         <Routes>
+          {/* <Route path="/" element={ <Dashboard />} /> */}
           <Route path="/" element={ renderHome()} />
           <Route path="/Signup" element={<Register />} />
           <Route path="/dashboard" element={<Dashboard />} />

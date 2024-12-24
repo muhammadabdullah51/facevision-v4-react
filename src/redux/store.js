@@ -5,6 +5,9 @@ import authReducer from './authSlice';
 import formSlice from "./ShiftSlice";
 import visitorReducer from "./visitorSlice"
 import employeeReducer from './employeeSlice'
+import attendanceFormReducer from './attendanceSlice' 
+
+
 
 const persistConfig = {
     key: 'root',
@@ -20,6 +23,7 @@ const store = configureStore({
         forms: formSlice,
         employee: employeeReducer,
         visitor: visitorReducer,
+        attendance: attendanceFormReducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({

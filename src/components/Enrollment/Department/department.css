@@ -229,7 +229,7 @@ input:not(:placeholder-shown)~.reset {
     border-bottom: 1px solid #e5e7eb;
     text-align: center;
     font-size: var(--table-text-font);
-    border: 1px solid #ddd;
+    /* border: 1px solid #ddd; */
 
 }
 
@@ -237,7 +237,7 @@ input:not(:placeholder-shown)~.reset {
     color: var(--text-color);
     font-size: var(--table-text-font);
     height: 3vh;
-    border: 1px solid #ddd;
+    /* border: 1px solid #ddd; */
     padding: 8px;
 }
 
