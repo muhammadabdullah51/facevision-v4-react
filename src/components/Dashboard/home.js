@@ -31,6 +31,7 @@ import CheckInOut from '../Attendence/checkinout';
 import Allowance from '../Payroll/Allowances/Allowances';
 import Tax from '../Payroll/Tax/Tax';
 import Breakinout from '../Attendence/breakinout';
+import WorkingHours from '../Payroll/Working_Hours/WorkingHours';
 
 const Home = () => {
 
@@ -83,6 +84,8 @@ const Home = () => {
                 return <Reports />;
             case 'Employee Profile':
                 return <EmployeeProfile />;
+            case 'Working Hours':
+                return <WorkingHours />;
             case 'Payroll Log':
                 return <PayRollLog />;
             case 'Advance Salary':

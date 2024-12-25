@@ -101,6 +101,7 @@
 
 .icons-box {
   display: flex;
+  justify-content: center;
 }
 
 .bold-fonts {

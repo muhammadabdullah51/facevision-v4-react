@@ -32,6 +32,7 @@ import {
     faTabletAlt, faDollarSign, faInfoCircle, faCheckCircle, faFileInvoice, faMoneyBillWave, faBed, faCoffee 
 } from '@fortawesome/free-solid-svg-icons';
 import Allowance from "../Allowances/Allowances";
+import WorkingHours from "../Working_Hours/WorkingHours";
 
 
 const EmplyeeProfile = () => {
@@ -407,8 +408,8 @@ const EmplyeeProfile = () => {
 
   const renderTabContent = () => {
     switch (changeTab) {
-      case "Payroll Log":
-        return <PayrollLogs />;
+      case "Working Hours":
+        return <WorkingHours />;
       case "Advance Salary":
         return <AdvanceSalary />;
       case "Appraisal":
@@ -632,10 +633,10 @@ const EmplyeeProfile = () => {
             Profile
           </button>
           <button
-            className={`${changeTab === "Payroll Log" ? "active" : ""}`}
-            onClick={() => setChangeTab("Payroll Log")}
+            className={`${changeTab === "Working Hours" ? "active" : ""}`}
+            onClick={() => setChangeTab("Working Hours")}
           >
-            Payroll Log
+            Working Hours
           </button>
           <button
             className={`${changeTab === "Advance Salary" ? "active" : ""}`}

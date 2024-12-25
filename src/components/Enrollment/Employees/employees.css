@@ -34,7 +34,7 @@
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-   
+
 }
 
 .employee-info-upper {
@@ -60,7 +60,7 @@
 .employee-info-inner input,
 .employee-info-inner select {
     display: block;
-    width: 30vw;
+    /* width: 30vw; */
     height: 4vh;
     border-radius: 5px;
     border: 1px solid var(--input-border-color);
@@ -112,13 +112,14 @@ button.cancel {
 }
 
 .back-button svg {
-    margin-right: 8px; 
+    margin-right: 8px;
 }
 
 h2 {
     text-align: center;
 }
-.employee-main{
+
+.employee-main {
     display: flex;
     flex-direction: column;
     width: 90%;
@@ -127,17 +128,129 @@ h2 {
     border-radius: 10px;
     background-color: white;
 }
-.employee-buttons{
+
+.employee-buttons {
     display: flex;
     gap: 1vw;
     align-items: center;
     justify-content: center;
 }
-.empImage img{
+
+.empImage img {
     width: 2.7vw;
     height: 2.7vw;
     border-radius: 50px;
     object-fit: cover;
     padding: 5px;
     border: 0.7px solid #7341DA;
+}
+
+button.toggle-button {
+    width: 45%;
+}
+
+/* button.toggle-button.active {
+    width: 25%;
+} */
+/* 
+.employee-cards{
+    display: flex;
+    gap: 2vw;
+    justify-content: space-evenly;
+    align-items: baseline;
+    flex-wrap: wrap;
+}
+.card-employee{
+    width: 20% !important;
+    height: 50vh;
+    text-align: center;
+} */
+
+
+
+.employee-add-button {
+    width: 15%;
+}
+
+@media only screen and (min-width: 701px) and (max-width: 1047px) {
+    button.toggle-button {
+        width: 10% !important;
+    }
+
+    .employee-add-button {
+        width: 35% !important;
+    }
+}
+
+.employee-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.card-employee {
+    /* border: 1px solid #ddd; */
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgb(180 33 255 / 10%);
+    /* width: calc(33.333% - 1rem); */
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-image {
+    width: 2.7vw;
+    height: 2.7vw;
+    border-radius: 50px;
+    object-fit: cover;
+    padding: 5px;
+    border: 0.7px solid #7341DA;
+}
+
+/* .card-body {
+    margin-top: 1rem;
+  } */
+
+.card-actions button {
+    margin-right: 0.5rem;
+}
+.card-body h3, .card-body p {
+    margin: 0;
+}
+.card-body{
+    width: 20%;
+}
+.image-name{
+    display: flex;
+    gap: 1vw;
+    width: 40%;
+}
+
+.tooltip{
+    display: none;
+    transition: .3s ease-in-out;
+}
+.card-table-toggle button:hover .tooltip {
+    transition: .3s ease-in-out;
+    display: unset;
+}
+.card-table-toggle button.active .tooltip {
+    transition: .3s ease-in-out;
+    display:unset;
+}
+button.toggle-button {
+    border: none;
+    font-size: 1vw;
+    background: transparent;
+}
+.card-header{
+    background-color: #f4f4f4;
+    color: var(--text-color);
+    font-size: var(--table-text-font);
+    font-weight: 700;
+    padding: 0.5rem;
+    padding-left: 1vw;
 }

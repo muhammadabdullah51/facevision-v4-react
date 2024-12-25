@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { FaEdit, FaTrash, FaPlus, FaFileAlt } from "react-icons/fa";
+import { FaEdit, FaTrash, FaPlus, FaFileAlt, FaTable, FaThLarge } from "react-icons/fa";
 import ReactPaginate from "react-paginate";
-import "./employees.css";
 import EmployeeReportModal from "./EmployeeReportModal";
 import Default_picture from "../../../assets/profile.jpg";
 import axios from "axios";
@@ -17,7 +16,8 @@ import updateAnimation from "../../../assets/Lottie/updateAnim.json";
 import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../../assets/Lottie/warningAnim.json";
-
+import "./employees.css";
+import { Tooltip } from 'react-tooltip'
 const EmployeeTable = ({
   // data,
   // setData,
@@ -92,10 +92,10 @@ const EmployeeTable = ({
       try {
         const response = await axios.get(`${SERVER_URL}pr-emp/`);
         setData(response.data);
-        } catch (error) {
+      } catch (error) {
       }
-    },[setData]
-  ) 
+    }, [setData]
+  )
 
   // Call fetchDepartments when component mounts
   useEffect(() => {
@@ -113,11 +113,11 @@ const EmployeeTable = ({
   const handleDelete = async (id) => {
     setModalType("delete");
     setShowModal(true);
-    setFormData({...formData, id: id });
+    setFormData({ ...formData, id: id });
 
   };
-  const confirmDelete = async() => {
-    
+  const confirmDelete = async () => {
+
     try {
       await axios.post(`${SERVER_URL}pr-emp-del/`, { id: formData.id });
       const updatedData = await axios.get(`${SERVER_URL}pr-emp/`);
@@ -144,19 +144,21 @@ const EmployeeTable = ({
     (currentPage + 1) * rowsPerPage
   );
 
+  const [isTableView, setIsTableView] = useState(true);
+
   return (
     <div className="department-table">
       <ConirmationModal
         isOpen={showModal}
         message={`Are you sure you want to ${modalType} this employee?`}
-        onConfirm={() =>  confirmDelete()}
+        onConfirm={() => confirmDelete()}
         onCancel={() => setShowModal(false)}
         animationData={
           modalType === "create"
             ? addAnimation
             : modalType === "update"
-            ? updateAnimation
-            : deleteAnimation
+              ? updateAnimation
+              : deleteAnimation
         }
       />
       <ConirmationModal
@@ -227,97 +229,186 @@ const EmployeeTable = ({
             </svg>
           </button>
         </form>
-        <button className="add-button" onClick={handleAdd}>
+
+        <div className="tabs card-table-toggle">
+          {/* <button onClick={() => setIsTableView(true)} className={`toggle-button ${isTableView ? "active" : ""}`}>
+            Table View
+          </button>
+          <button onClick={() => setIsTableView(false)} className={`toggle-button ${!isTableView ? "active" : ""}`}>
+            Card View
+          </button> */}
+          <button
+            onClick={() => setIsTableView(true)}
+            className={`table-view-123 toggle-button ${isTableView ? "active" : ""}`}
+            data-tip="Table View"
+            data-for="tableViewTooltip"
+          >
+            <FaTable className="table-view" />
+          </button>
+          <Tooltip anchorSelect=".table-view-123" id="tableViewTooltip" place="bottom"  effect="solid">Table View</Tooltip>
+
+          <button
+            onClick={() => setIsTableView(false)}
+            className={`card-view-123 toggle-button ${!isTableView ? "active" : ""}`}
+            data-tip="Card View"
+            data-for="cardViewTooltip"
+          >
+            <FaThLarge className="table-view" />
+          </button>
+          <Tooltip anchorSelect=".card-view-123" id="cardViewTooltip" place="bottom"  effect="solid">Card View</Tooltip>
+        </div>
+
+        <button className="add-button employee-add-button" onClick={handleAdd}>
           <FaPlus className="add-icon" /> Add New Employee
         </button>
       </div>
+
+
       <div className="departments-table">
-        <table className="table">
-          <thead>
-            <tr>
-              {/* <th>Serial No</th> */}
-              <th>Employee ID</th>
-              <th>Employee Name</th>
-              <th>Department</th>
-              <th>Enroll Site</th>
-              <th>Shift</th>
-              <th>Salary Type</th>
-              <th>Contact No</th>
-              <th>Basic Salary</th>
-              <th>Account No</th>
-              <th>Bank Name</th>
-              <th>Image</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentPageData.map((row, index) => (
-              
-              <tr key={row.empId}>
-                {/* <td>{index + 1 + currentPage * rowsPerPage}</td> */}
-                <td>{row.empId}</td>
-                <td className="bold-fonts">
-                  <span className="empImage">
+        {isTableView ? (
+
+          <table className="table">
+            <thead>
+              <tr>
+                {/* <th>Serial No</th> */}
+                <th>Employee ID</th>
+                <th>Employee Name</th>
+                <th>Department</th>
+                <th>Enroll Site</th>
+                <th>Shift</th>
+                <th>Salary Type</th>
+                <th>Contact No</th>
+                <th>Basic Salary</th>
+                <th>Account No</th>
+                <th>Bank Name</th>
+                <th>Identity</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {currentPageData.map((row, index) => (
+
+                <tr key={row.empId}>
+                  {/* <td>{index + 1 + currentPage * rowsPerPage}</td> */}
+                  <td>{row.empId}</td>
+                  <td className="bold-fonts">
+                    {row.fName} {row.lName}
+                  </td>
+                  <td>{row.department}</td>
+                  <td>{row.enrollSite}</td>
+                  <td>{row.shift}</td>
+                  <td>{row.salaryType}</td>
+                  <td>{row.contactNo}</td>
+                  <td>{row.basicSalary}</td>
+                  <td>{row.accountNo}</td>
+                  <td>{row.bankName}</td>
+                  <td className="empImage">
                     <img
                       src={
                         row.image1
-                         ? `${SERVER_URL}${row.image1}`
+                          ? `${SERVER_URL}${row.image1}`
                           : Default_picture
                       }
                       alt={row.employeeName}
                       className="employee-image"
                     />
-                  </span>
-                  {row.fName} {row.lName}
-                </td>
-                <td>{row.department}</td>
-                <td>{row.enrollSite}</td>
-                <td>{row.shift}</td>
-                <td>{row.salaryType}</td>
-                <td>{row.contactNo}</td>
-                <td>{row.basicSalary}</td>
-                <td>{row.accountNo}</td>
-                <td>{row.bankName}</td>
-                <td className="empImage">
-                  <img
-                    src={
-                      row.image1
-                        ? `${SERVER_URL}${row.image1}`
-                        : Default_picture
-                    }
-                    alt={row.employeeName}
-                    className="employee-image"
-                  />
-                </td>
-                <td>
-                  <div className="icons-box">
-                    <button
-                      onClick={() => handleEdit(row)}
-                      style={{ background: "none", border: "none" }}
-                    >
-                      <FaEdit className="table-edit" />
-                    </button>
-                    {/* {isActiveTab === "Add Employee" &&(
+                  </td>
+                  <td>
+                    <div className="icons-box">
+                      <button
+                        onClick={() => handleEdit(row)}
+                        style={{ background: "none", border: "none" }}
+                      >
+                        <FaEdit className="table-edit" />
+                      </button>
+                      {/* {isActiveTab === "Add Employee" &&(
                       <AddEmployee editData={editData} isEditMode={isEditMode} />
-                    )} */}
-                    <button
-                      onClick={() => handleDelete(row.id)}
-                      style={{ background: "none", border: "none" }}
-                    >
-                      <FaTrash className="table-delete" />
-                    </button>
-                    <button
-                      onClick={() => handleGenerateReport(row)}
-                      style={{ background: "none", border: "none" }}
-                    >
-                      <FaFileAlt className="report-selector-icon" />
-                    </button>
+                      )} */}
+                      <button
+                        onClick={() => handleDelete(row.id)}
+                        style={{ background: "none", border: "none" }}
+                      >
+                        <FaTrash className="table-delete" />
+                      </button>
+                      <button
+                        onClick={() => handleGenerateReport(row)}
+                        style={{ background: "none", border: "none" }}
+                      >
+                        <FaFileAlt className="report-selector-icon" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <div className="employee-cards">
+              <div className="card-employee card-header" >
+                <div className="card-body image-name">
+                    <p>Employee Info</p>
+                </div>
+                <div className="card-body">
+                  <p>Shift</p>
+                </div>
+                <div className="card-body">
+                  <p>Payroll Info</p>
+                </div>
+                <div className="card-body">
+                  <p>Location</p>
+                </div>
+                <div className="card-body">
+                </div>
+              </div>
+            {currentPageData.map((row) => (
+              <>
+              
+              <div className="card-employee" key={row.empId}>
+                <div className="card-body image-name">
+                  <img
+                    src={row.image1 ? `${SERVER_URL}${row.image1}` : Default_picture}
+                    alt={row.employeeName}
+                    className="card-image"
+                  />
+                  <div>
+                    <p>{row.empId}</p>
+                    <h3>{row.fName} {row.lName}</h3>
+                    <p>{row.department} / {row.designation}</p>
                   </div>
-                </td>
-              </tr>
+                </div>
+                <div className="card-body">
+                  <p>{row.shift}</p>
+                </div>
+                <div className="card-body">
+                  <p>{row.salaryType} / {row.salaryPeriod} / Rs. {row.basicSalary}</p>
+                </div>
+                <div className="card-body">
+                  <p>{row.enrollSite}</p>
+                </div>
+                <div className="card-body icons-box">
+                      <button
+                        onClick={() => handleEdit(row)}
+                        style={{ background: "none", border: "none" }}
+                      >
+                        <FaEdit className="table-edit" />
+                      </button>
+                      {/* {isActiveTab === "Add Employee" &&(
+                      <AddEmployee editData={editData} isEditMode={isEditMode} />
+                      )} */}
+                      <button
+                        onClick={() => handleDelete(row.id)}
+                        style={{ background: "none", border: "none" }}
+                      >
+                        <FaTrash className="table-delete" />
+                      </button>
+                      
+                    </div>
+                
+              </div>
+              </>
             ))}
-          </tbody>
-        </table>
+          </div>
+        )}
       </div>
       <div className="pagination">
         <ReactPaginate

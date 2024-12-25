@@ -36,7 +36,8 @@ const menuItems = [
     {
         label: 'Payroll', icon: faMoneyCheckAlt, submenu: [
             { label: 'Employee Profile', icon: faUser },
-            { label: 'Payroll Log', icon: faCalendarAlt },
+            // { label: 'Payroll Log', icon: faCalendarAlt },
+            { label: 'Working Hours', icon: faCalendarAlt },
             { label: 'Advance Salary', icon: faHandHoldingUsd },
             { label: 'Appraisal', icon: faClipboardCheck },
             { label: 'Loan', icon: faFileInvoiceDollar },

@@ -213,6 +213,14 @@ const AddEmployee = ({
     Object.keys(newEmployee).forEach((key) => {
       formData.append(key, newEmployee[key]);
     });
+    if (newEmployee.empId) {
+      if (newEmployee.empId.length > 9) {
+        setResMsg("ID could not be greater than 9 characters");
+        setShowModal(false);
+        setWarningModal(true);
+        return;
+      }
+    }
 
     try {
       const response = await axios.post(`${SERVER_URL}pr-emp/`, formData);
@@ -266,25 +274,82 @@ const AddEmployee = ({
     }, 2000);
   };
 
-  // const handleChange = (e) => {
-  //   const { name, value } = e.target;
-  //   setNewEmployee((prevData) => ({ ...prevData, [name]: value }));
-  // };
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setNewEmployee((prevData) => {
-      const updatedData = { ...prevData, [name]: value };
-      dispatch(setEmployeeData(updatedData));  
-      return updatedData;
-    });
+
+
+  const [error, setError] = useState("");
+  const [exists, setExists] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const [employees, setEmployees] = useState([]);
+
+  const fetchEmployees = async () => {
+    try {
+      const response = await axios.get(`${SERVER_URL}pr-emp/`);
+      setEmployees(response.data);
+      console.log(response.data)
+      console.log(employees)
+    } catch (error) {
+    }
   };
 
-  // const handlePictureChange = async (event) => {
-  //   const file = event.target.files[0];
-  //   if (file) {
-  //     setNewEmployee((prevState) => ({ ...prevState, image1: file })); // Store the file object
-  //   }
+  useEffect(() => {
+    fetchEmployees();
+  }, []);
+
+
+  const filteredData = employees.filter((item) =>
+    item.empId?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+
+
+  // const handleChange = (e) => {
+  //   const { name, value } = e.target;
+  //   setNewEmployee((prevData) => {
+  //     const updatedData = { ...prevData, [name]: value };
+  //     dispatch(setEmployeeData(updatedData));
+  //     return updatedData;
+  //   });
   // };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    // Handle empId input changes for both search and form submission
+    if (name === "empId") {
+      setNewEmployee((prev) => {
+        const updatedData = { ...prev, empId: value };
+        dispatch(setEmployeeData(updatedData)); // Dispatch the updated employee data
+        return updatedData;
+      });
+
+      // Check input length and perform validation
+      if (value.length > 9) {
+        setError("ID cannot exceed 9 characters.");
+        setExists(false); // Reset existence status when ID is invalid
+        return;
+      } else {
+        setError(""); // Clear error if ID is valid
+      }
+
+      // Check if empId exists in filtered data (to show if it already exists)
+      const empExists = filteredData.some(
+        (employee) => employee.empId.toLowerCase() === value.toLowerCase()
+      );
+      setExists(empExists); // Set exists status based on matching ID
+      setSearchQuery(value); // Update the search query (for filtering)
+    } else {
+      // Handle other input fields (e.g., name, email, etc.)
+      setNewEmployee((prev) => {
+        const updatedData = { ...prev, [name]: value };
+        dispatch(setEmployeeData(updatedData)); // Dispatch updated data for other fields
+        return updatedData;
+      });
+    }
+  };
+
+
+
 
   // Handle image file change
   const handlePictureChange = async (event) => {
@@ -300,27 +365,16 @@ const AddEmployee = ({
 
 
 
-  
-  // const handleWebcamCapture = (imageSrc) => {
-  //   fetch(imageSrc)
-  //     .then((res) => res.blob())
-  //     .then((blob) => {
-  //       const file = new File([blob], "webcam-image.jpg", {
-  //         type: "image/jpeg",
-  //       });
-  //       setNewEmployee((prevState) => ({ ...prevState, image1: file }));
-  //     });
-  // };
 
   const handleWebcamCapture = (imageSrc) => {
     fetch(imageSrc)
       .then((res) => res.blob())
       .then((blob) => {
         const file = new File([blob], "webcam-image.jpg", { type: "image/jpeg" });
-  
+
         // Update the local state first
         setNewEmployee((prevState) => ({ ...prevState, image1: file }));
-  
+
         // Dispatch the updated state separately
         const updatedState = { image1: file }; // Only the new file
         dispatch(setEmployeeData(updatedState));
@@ -333,19 +387,26 @@ const AddEmployee = ({
   const cancelHandler = () => {
     // Dispatch the action to reset the Redux state
     dispatch(resetEmployeeData());
-  
+
     // Reset other local states if necessary
     setIsEditMode(false);
     setActiveTab("Employees");
-  
+
     // Optionally log the reset state to confirm it's been reset
     // console.log("Employee state has been reset in Redux.");
   };
-  
+
   // Log newEmployee state after it updates
   useEffect(() => {
-    // console.log("Updated newEmployee state after reset:", newEmployee); // Logs the updated newEmployee state after setNewEmployee has run
-  }, [newEmployee]); // Dependency array ensures this runs after newEmployee updates
+  }, [newEmployee]);
+
+
+
+
+
+
+
+
 
   return (
     <div className="add-employee-main">
@@ -421,6 +482,44 @@ const AddEmployee = ({
                     required
                     disabled={isEditMode} // Disable if editing
                   />
+                  {/* <input
+                    type="text"
+                    name="empId"
+                    placeholder="Enter Employee ID"
+                    value={newEmployee.empId}
+                    onChange={handleChange}
+                    list="empIdList" // Links the input to the datalist
+                    required
+                  />
+                  <datalist id="empIdList">
+                    {employees.map((employee) => (
+                      <option key={employee.id} value={employee.empId}>
+                        {employee.empId}
+                      </option>
+                    ))}
+                  </datalist> */}
+                  {/* {!error && exists && (
+                    <p style={{ color: "orange", fontSize: "0.9em", marginTop: "-30px" }}>
+                      &#9888; This Employee ID already exists.
+                    </p>
+                  )}
+                  {newEmployee.empId.length > 9 && <p style={{ color: "red", fontSize: "0.9em", marginTop: '-30px' }}>&#10006; Id must be less 9 characters</p>}
+                  {newEmployee.empId.length <= 9 && newEmployee.empId.length >= 1 && <p style={{ color: "green", fontSize: "0.9em", marginTop: '-30px' }}>	&#x2714; Perfect</p>} */}
+                  {error && (
+                    <p style={{ color: "red", fontSize: "0.9em", marginTop: "-30px" }}>
+                      &#10006; {error}
+                    </p>
+                  )}
+                  {!error && exists && (
+                    <p style={{ color: "orange", fontSize: "0.9em", marginTop: "-30px" }}>
+                      &#9888; This Employee ID already exists.
+                    </p>
+                  )}
+                  {!error && !exists && searchQuery.length > 0 && (
+                    <p style={{ color: "green", fontSize: "0.9em", marginTop: "-30px" }}>
+                      &#x2714; This Employee ID is available.
+                    </p>
+                  )}
 
                   <label>First Name</label>
                   <input
@@ -774,6 +873,8 @@ const AddEmployee = ({
                 <button
                   className="submit-button"
                   type="submit"
+                  disabled={exists || error || newEmployee.empId.length === 0}
+
                   onClick={
                     isEditMode ? () => updateEmployee(newEmployee) : addEmployee
                   }
@@ -785,35 +886,35 @@ const AddEmployee = ({
                   type="button"
                   onClick={cancelHandler}
 
-                  // onClick={() => {
-                  //   setIsEditMode(false);
-                  //   setNewEmployee({
-                  //     empId: "",
-                  //     fName: "",
-                  //     lName: "",
-                  //     email: "",
-                  //     contactNo: "",
-                  //     picture: null,
-                  //     enrollSite: "",
-                  //     gender: "",
-                  //     joiningDate: "",
-                  //     bankName: "",
-                  //     shift: "",
-                  //     overtimeAssigned: "",
-                  //     leaveFormulaAssigned: "",
-                  //     department: "",
-                  //     designation: "",
-                  //     basicSalary: "",
-                  //     accountNo: "",
-                  //     salaryPeriod: "",
-                  //     salaryType: "",
-                  //     enableAttendance: "",
-                  //     enableSchedule: "",
-                  //     enableOvertime: "",
-                  //   });
+                // onClick={() => {
+                //   setIsEditMode(false);
+                //   setNewEmployee({
+                //     empId: "",
+                //     fName: "",
+                //     lName: "",
+                //     email: "",
+                //     contactNo: "",
+                //     picture: null,
+                //     enrollSite: "",
+                //     gender: "",
+                //     joiningDate: "",
+                //     bankName: "",
+                //     shift: "",
+                //     overtimeAssigned: "",
+                //     leaveFormulaAssigned: "",
+                //     department: "",
+                //     designation: "",
+                //     basicSalary: "",
+                //     accountNo: "",
+                //     salaryPeriod: "",
+                //     salaryType: "",
+                //     enableAttendance: "",
+                //     enableSchedule: "",
+                //     enableOvertime: "",
+                //   });
 
-                  //   setActiveTab("Employees");
-                  // }}
+                //   setActiveTab("Employees");
+                // }}
 
                 >
                   Cancel
