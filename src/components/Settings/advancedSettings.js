@@ -22,7 +22,7 @@ const AdvancesSettings = () => {
 
     return (
         <div className="settings-page">
-            <div className="inner-tabs">
+            <div className="tabs" style={{textAlign:'center'}}>
                 <button className={`${activeTab === 'attendance' ? 'active' : ''}`} onClick={() => setActiveTab('attendance')}>Attendance</button>
                 <button className={`${activeTab === 'payrolls' ? 'active' : ''}`} onClick={() => setActiveTab('payrolls')}>Payrolls</button>
                 {/* <button className={`${activeTab === 'editor-settings' ? 'active' : ''}`} onClick={() => setActiveTab('editor-settings')}>Editor Settings</button> */}

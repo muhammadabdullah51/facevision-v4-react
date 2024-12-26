@@ -55,12 +55,21 @@
     color: green;
 }
 
-@media screen and (max-width:1660px) {
+@media screen and (min-width:1010px) and (max-width:1660px) {
     .geography-graph {
         width: 80%;
     }
     .dashboard-card{
-        width: 100%;
+        width: 94%;
+    }
+
+}
+@media screen and (min-width:700px) and (max-width:1009px) {
+    .geography-graph {
+        width: 80%;
+    }
+    .dashboard-card{
+        width: 90%;
     }
 
 }

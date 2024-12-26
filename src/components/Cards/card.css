@@ -75,8 +75,8 @@
 .low-value {
     background-color: #fee2e2; /* Light red background for low value */
 }
-@media (min-width: 700px) and (max-width:1660px) {
+ @media (min-width: 700px) and (max-width:895px) {
     .card{
-        width: 80%;
+        width: 40%;
     }
-}
+} 

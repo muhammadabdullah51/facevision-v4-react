@@ -67,13 +67,11 @@
         margin-left: 0;
     }
 }
+
 @media (max-width:1300px) {
     .dashboard-content {
         margin-left: 0;
         width: 79%;
-    }
-    .dashboard-cards{
-        flex-direction: column;
     }
     .dashboard-graphs{
         flex-wrap: wrap;

@@ -8,6 +8,7 @@
     border-radius: 1vw; 
     box-shadow: 0 0 1.3vw rgba(0, 0, 0, 0.2);
     margin: 1vh auto;
+    overflow: hidden;
     
 }
 .profile-settings:hover{
@@ -43,6 +44,7 @@
 
 /* Input and textarea styling */
 .profile-settings input[type="text"],
+.profile-settings input[type="password"],
 .profile-settings textarea {
     width: 100%;
     padding: 0.5vw; 
@@ -103,6 +105,7 @@
 
 @media only screen and (max-width:1000px){
     .profile-settings input[type="text"],
+.profile-settings input[type="password"],
     .profile-settings textarea {
         padding: 1vw; 
         font-size: 1.4vw; 
@@ -110,6 +113,7 @@
   }
 @media only screen and (min-width:1001px) and (max-width:1300px){
     .profile-settings input[type="text"],
+    .profile-settings input[type="password"],
     .profile-settings textarea {
         padding: 1vw; 
         font-size: 1.2vw; 

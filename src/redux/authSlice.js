@@ -17,6 +17,7 @@ const authSlice = createSlice({
                 email: action.payload.email,
                 phoneNumber: action.payload.phoneNumber,
                 profilePicture: action.payload.profilePicture,
+                password: action.payload.password, // Store password for security purposes
             };
             state.token = action.payload.token; // Store token
         },
@@ -37,8 +38,13 @@ const authSlice = createSlice({
             // Clear the authToken
             state.authToken = null;
         },
+        updatePassword: (state, action) => {
+            if (state.userInfo) {
+                state.userInfo.password = action.payload; // Update password
+            }
+        },
     },
 });
 
-export const { login, logout, setAuthToken } = authSlice.actions;
+export const { login, logout, setAuthToken, updatePassword  } = authSlice.actions;
 export default authSlice.reducer;

@@ -12,6 +12,7 @@ const PayrollSettings = () => {
     pyOtByDf: "No",
     cutSalWhByDf: "No",
     lvPUnPByDf: "No",
+    closingDate: ""
   });
 
   // Fetch settings from the server
@@ -19,7 +20,11 @@ const PayrollSettings = () => {
     try {
       const response = await axios.get(`${SERVER_URL}sett-adv-pyr/`);
       const fetchedData = response.data[0]; // Assuming only one object is returned
-      setSettings(fetchedData); // Directly update the settings state
+      // setSettings(fetchedData); 
+      setSettings({
+        ...fetchedData,
+        closingDate: fetchedData.closingDate || "", // Populate closingDate if available
+      });
     } catch (error) {
       console.error('Error fetching payroll settings:', error);
     }
@@ -35,6 +40,12 @@ const PayrollSettings = () => {
       [key]: prevState[key] === "Yes" ? "No" : "Yes",
     }));
   };
+  const handleDateChange = (event) => {
+    setSettings((prevState) => ({
+      ...prevState,
+      closingDate: event.target.value, // Update closingDate
+    }));
+  };
 
   const questions = [
     { key: "whForAdvSal", label: "Consider working hours for advance salaries" },
@@ -48,6 +59,7 @@ const PayrollSettings = () => {
   ];
 
   const handleSubmit = async () => {
+    console.log(settings);
     try {
       const response = await axios.post(`${SERVER_URL}sett-adv-pyr/`, settings);
       if (response.status === 200) {
@@ -63,6 +75,18 @@ const PayrollSettings = () => {
 
   return (
     <div className="checkbox-settings">
+      <div className="checkbox-item" style={{padding: '25px 10px'}}>
+        <label htmlFor="closingDate">Closing Date</label>
+
+        <input
+          type="date"
+          id="closingDate"
+          value={settings.closingDate}
+          onChange={handleDateChange}
+          style={{padding: '5px', width:'7vw', background: 'transparent', border:'none'}}
+        />
+      </div>
+      
       <ul className="checkbox-list">
         {questions.map((question) => (
           <li key={question.key} className="checkbox-item">
