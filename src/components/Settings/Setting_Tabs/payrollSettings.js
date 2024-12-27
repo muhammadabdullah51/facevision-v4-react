@@ -12,6 +12,7 @@ const PayrollSettings = () => {
     pyOtByDf: "No",
     cutSalWhByDf: "No",
     lvPUnPByDf: "No",
+    pyrClDt: "No",
     closingDate: ""
   });
 
@@ -20,11 +21,11 @@ const PayrollSettings = () => {
     try {
       const response = await axios.get(`${SERVER_URL}sett-adv-pyr/`);
       const fetchedData = response.data[0]; // Assuming only one object is returned
-      // setSettings(fetchedData); 
-      setSettings({
+      setSettings((prevSettings) => ({
+        ...prevSettings,
         ...fetchedData,
-        closingDate: fetchedData.closingDate || "", // Populate closingDate if available
-      });
+        closingDate: fetchedData.closingDate || "",
+      }));
     } catch (error) {
       console.error('Error fetching payroll settings:', error);
     }
@@ -41,10 +42,17 @@ const PayrollSettings = () => {
     }));
   };
   const handleDateChange = (event) => {
-    setSettings((prevState) => ({
-      ...prevState,
-      closingDate: event.target.value, // Update closingDate
-    }));
+    const value = event.target.value;
+  
+    // Ensure the value is within the valid range
+    if (value >= 1 && value <= 31) {
+      setSettings((prevState) => ({
+        ...prevState,
+        closingDate: value,
+      }));
+    } else {
+      alert("Please enter a valid date between 1 and 31.");
+    }
   };
 
   const questions = [
@@ -56,6 +64,7 @@ const PayrollSettings = () => {
     { key: "pyOtByDf", label: "Pay for Overtime" },
     { key: "cutSalWhByDf", label: "Cut Salary on working hours" },
     { key: "lvPUnPByDf", label: "Leaves are paid or unpaid" },
+    { key: "pyrClDt", label: "Consider last day of the month for payroll closing date" },
   ];
 
   const handleSubmit = async () => {
@@ -75,18 +84,8 @@ const PayrollSettings = () => {
 
   return (
     <div className="checkbox-settings">
-      <div className="checkbox-item" style={{padding: '25px 10px'}}>
-        <label htmlFor="closingDate">Closing Date</label>
 
-        <input
-          type="date"
-          id="closingDate"
-          value={settings.closingDate}
-          onChange={handleDateChange}
-          style={{padding: '5px', width:'7vw', background: 'transparent', border:'none'}}
-        />
-      </div>
-      
+
       <ul className="checkbox-list">
         {questions.map((question) => (
           <li key={question.key} className="checkbox-item">
@@ -103,6 +102,22 @@ const PayrollSettings = () => {
           </li>
         ))}
       </ul>
+
+      {settings.pyrClDt === "No" && (
+        <div className="checkbox-item" style={{ padding: '25px 10px' }}>
+          <label htmlFor="closingDate">
+            If not the last day of the month then choose Closing Date
+          </label>
+          <input
+            type="number"
+            placeholder="Enter Closing Date"
+            id="closingDate"
+            value={settings.closingDate}
+            onChange={handleDateChange}
+            style={{ padding: '5px', width: '7vw' }}
+          />
+        </div>
+      )}
       <button onClick={handleSubmit} className="submit-button">
         Save Settings
       </button>
