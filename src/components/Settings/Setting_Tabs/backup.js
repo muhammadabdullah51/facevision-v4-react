@@ -4,6 +4,8 @@ import SERVER_URL from "../../../config";
 import { FaDownload } from "react-icons/fa";
 import Lottie from "react-lottie";
 import successAnimation from "../../../assets/Lottie/successAnim.json";
+import EditorSettings from "./editorSettings";
+import BackupSchedular from "./BackupSchedular";
 
 const BackupComponent = () => {
   const [file, setFile] = useState(null);
@@ -142,6 +144,7 @@ const BackupComponent = () => {
             </button>
           </div>
         )}
+        <BackupSchedular/>
       </>
     )}
   </div>

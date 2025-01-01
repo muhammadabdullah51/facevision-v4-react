@@ -10,7 +10,7 @@ import updateAnimation from "../../../assets/Lottie/updateAnim.json";
 import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../../assets/Lottie/warningAnim.json";
-const EditorSettings = () => {
+const BackupSchedular = () => {
   const [data, setData] = useState([]);
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
   const [selectedItems, setSelectedItems] = useState([]);
@@ -258,7 +258,6 @@ const EditorSettings = () => {
     item.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.sch.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.status.toLowerCase().includes(searchQuery.toLowerCase())
-
   );
 
   const [selectedIds, setSelectedIds] = useState([]);
@@ -338,7 +337,7 @@ const EditorSettings = () => {
         message={
           modalType === "delete selected"
             ? "Are you sure you want to delete selected items?"
-            : `Are you sure you want to ${modalType} this Email Scheduler?`
+            : `Are you sure you want to ${modalType} this Backup Scheduler?`
         }
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
@@ -360,7 +359,7 @@ const EditorSettings = () => {
         message={
           modalType === "delete selected"
             ? "Selected items deleted successfully!"
-            : `Email Scheduler ${modalType}d successfully!`
+            : `Backup Scheduler ${modalType}d successfully!`
         }
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
@@ -423,7 +422,7 @@ const EditorSettings = () => {
         </form>
         <div className="add-delete-conainer">
           <button className="add-button" onClick={handleAdd}>
-            <FaPlus /> Add New Email Scheduler
+            <FaPlus /> Add New Backup Scheduler
           </button>
 
           <button className="add-button submit-button" onClick={handleBulkDelete}>
@@ -434,7 +433,7 @@ const EditorSettings = () => {
 
       {showAddForm && !showEditForm && (
         <div className="add-leave-form">
-          <h4>Add Email Scheduler</h4>
+          <h4>Add Backup Scheduler</h4>
           <label>Name</label>
           <input
             type="text"
@@ -538,7 +537,7 @@ const EditorSettings = () => {
           </select>
 
           <button className="submit-button" onClick={addOTF}>
-            Add Scheduler
+            Add Backup Scheduler
           </button>
           <button className="cancel-button" onClick={handleCancel}>
             Cancel
@@ -547,7 +546,7 @@ const EditorSettings = () => {
       )}
       {!showAddForm && showEditForm && (
         <div className="add-leave-form">
-          <h4>Add Email Scheduler</h4>
+          <h4>Add Backup Scheduler</h4>
           <label>Name</label>
           <input
             type="text"
@@ -667,7 +666,7 @@ const EditorSettings = () => {
           </select>
 
           <button className="submit-button" onClick={() => updateOTF(formData)}>
-            Update Scheduler
+            Update Backup Scheduler
           </button>
           <button className="cancel-button" onClick={handleCancel}>
             Cancel
@@ -679,7 +678,7 @@ const EditorSettings = () => {
         <table className="table">
           <thead>
             <tr>
-              <th>
+            <th>
                 <input
                   id="delete-checkbox"
                   type="checkbox"
@@ -748,4 +747,4 @@ const EditorSettings = () => {
   );
 };
 
-export default EditorSettings;
+export default BackupSchedular;
