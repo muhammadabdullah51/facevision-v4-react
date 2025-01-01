@@ -7,7 +7,7 @@
     align-items: center;
     gap: 20px;
   }
-  
+
   .tabs button {
     width: 10%;
     padding: 10px;
@@ -20,12 +20,16 @@
     transition: 0.3s ease;
     font-size: 0.7vw;
   }
-  .tabs button:hover, .tabs button:hover svg{
+
+  .tabs button:hover,
+  .tabs button:hover svg {
     background-color: rgb(239 207 255 / 35%);
     color: var(--hoverText-color);
     transition: 0.3s ease;
   }
-  .tabs button.active, .tabs button.active svg{
+
+  .tabs button.active,
+  .tabs button.active svg {
     /* background-color: var(--hoverText-color); */
     /* background-color: rgb(239 207 255 / 65%); */
     /* color: #fff; */
@@ -36,16 +40,16 @@
     margin-right: 0.3vw;
   }
 
- 
+
   .tabs1 {
     width: 100%;
-    display: flex;
+    /* display: flex; */
     flex-direction: row;
     justify-content: start;
     align-items: center;
     gap: 20px;
   }
-  
+
   .tabs1 button {
     width: 10%;
     padding: 10px;
@@ -58,15 +62,18 @@
     transition: 0.3s ease;
     font-size: 0.7vw;
   }
-  .tabs1 button:hover{
+
+  .tabs1 button:hover {
     background-color: var(--hover-color);
     color: var(--hoverText-color);
     transition: 0.3s ease;
   }
-  .tabs1 button.active{
+
+  .tabs1 button.active {
     background-color: var(--hoverText-color);
     color: #fff;
   }
+
   .inner-tabs {
     width: 100%;
     display: flex;
@@ -75,7 +82,7 @@
     align-items: center;
     gap: 20px;
   }
-  
+
   .inner-tabs button {
     width: 10%;
     padding: 10px;
@@ -88,90 +95,186 @@
     transition: 0.3s ease;
     font-size: 0.7vw;
   }
-  .inner-tabs button:hover{
+
+  .inner-tabs button:hover {
     background-color: var(--hover-color);
     color: var(--hoverText-color);
     transition: 0.3s ease;
   }
-  .inner-tabs button.active{
+
+  .inner-tabs button.active {
     background-color: white;
     color: var(--hoverText-color);
   }
 
 
-  
+
   .tab-content {
     padding: 20px;
   }
-  
-  .business-Hours-main{
+
+  .settings-page {
+    position: relative;
+    z-index: 1;
+    background-color: var(--app-color);
+
+  }
+
+  .business-Hours-main {
     display: flex;
     flex-direction: row;
     /* justify-content: center; */
     align-items: center;
     gap: 2vw;
+    background-color: var(--app-color);
+    position: relative;
+    z-index: 1;
   }
-@media only screen and (min-width:700px) and (max-width:1000px){
-  .tabs button, .tabs1 button{
-    width: 20%;
-    font-size: 1vw;
-    margin: 0.5vw;
+
+  @media only screen and (min-width:700px) and (max-width:1000px) {
+
+    .tabs button,
+    .tabs1 button {
+      width: 20%;
+      font-size: 1vw;
+      margin: 0.5vw;
+    }
   }
-}
-@media only screen and (min-width:1001px) and (max-width:1500px){
-  .tabs button, .tabs1 button{
-    width: 15%;
-    font-size: 1vw;
-    margin: 0.5vw;
+
+  @media only screen and (min-width:1001px) and (max-width:1500px) {
+
+    .tabs button,
+    .tabs1 button {
+      width: 15%;
+      font-size: 1vw;
+      margin: 0.5vw;
+    }
   }
-}
-@media only screen and (max-width:1300px){
-  .business-Hours-main{
-    /* flex-direction: column; */
+
+  @media only screen and (max-width:1300px) {
+    .business-Hours-main {
+      /* flex-direction: column; */
+      align-items: center;
+    }
+
+    .business-Hours-main>div {
+      width: 70%;
+    }
+
+  }
+
+  .checkbox-settings {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .checkbox-settings h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .checkbox-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .checkbox-item {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    display: flex;
     align-items: center;
+    justify-content: space-between;
   }
-  .business-Hours-main > div{
-    width: 70%;
+
+  .checkbox-item label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
   }
-  
-}
-.checkbox-settings {
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 20px;
-}
 
-.checkbox-settings h2 {
-  text-align: center;
-  margin-bottom: 20px;
-}
+  .payroll-checkbox {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
 
-.checkbox-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
+  @media only screen and (max-width:700px) {
+    .tabs button {
+      font-size: 2.7vw;
+      width: 40%;
+      margin: 1vw;
+    }
 
-.checkbox-item {
-  margin-bottom: 15px;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  background-color: #f9f9f9;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
+    .business-Hours-main>div {
+      width: 100%;
+    }
 
-.checkbox-item label {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 16px;
-}
-.payroll-checkbox{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
+    .checkbox-settings {
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tab-content {
+      padding: 20px 0;
+      width: 98%;
+    }
+
+    .checkbox-item {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    #closingDate {
+      padding: 5px;
+      width: 60% !important;
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .tabs {
+      text-align: center;
+    }
+  }
+
+  #closingDate {
+    padding: 5px;
+    width: 30%;
+  }
+
+  .tabs.card-table-toggle {
+    width: 60%;
+  }
+
+  @media only screen and (max-width:1920px) {
+    .tabs.card-table-toggle {
+      width: 40%;
+    }
+  }
+  @media only screen and (max-width:1068px) {
+    .employee-table-new{
+      flex-direction: column;
+      gap: 2vh;
+    }
+    .employee-table-new>div{
+      width: 100%;
+      text-align: center;
+    }
+    .employee-table-new>form{
+      width: 100%;
+
+    }
+    .tabs.card-table-toggle {
+      width: 100%;
+  }
+  .employee-table-new .add-delete-conainer .add-button{
+    width: 45%;
+  }
+  }

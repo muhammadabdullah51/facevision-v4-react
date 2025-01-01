@@ -163,3 +163,39 @@ input[type="checkbox"]:disabled+label {
         font-size: 1.2vw;
     }
 }
+@media only screen and (max-width:700px) {
+    
+    .time-inputs{
+        width: 100%;
+    }
+    .day-row label, .enable-toggle label, .timezone label{
+        font-size: 2.8vw;
+    }
+    .header h2{
+        font-size: 3vw;
+    }
+    .header p{
+        font-size: 3.7vw;
+    }
+    input[type="checkbox"] {
+        width: 45px;
+        height: 20px;
+    }
+    input[type="checkbox"]:before{
+        width: 15px;
+        height: 15px;
+        font-size: small;
+    }
+    .day-row{
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2vh;
+    }
+    .additional-settings button{
+        font-size: 2.5vw;
+    }
+    .enable-toggle, .timezone, .day-row, .additional-settings{
+        justify-content: start;
+    }
+    
+}

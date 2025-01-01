@@ -2,7 +2,7 @@
     width: 97%;
 }
 
-.select{
+.select {
     width: 30%;
     padding: 10px;
     margin-bottom: 15px;
@@ -10,6 +10,7 @@
     border-radius: 4px;
     font-size: 14px;
 }
+
 .addLeave {
     margin-left: 10px;
     padding: 8px 16px;
@@ -28,7 +29,7 @@
     color: white;
 }
 
-.leave-table-outer{
+.leave-table-outer {
     padding: 2% 1%;
     border-radius: 10px;
     background-color: white;
@@ -50,7 +51,8 @@
     font-weight: bold;
 }
 
-.add-leave-form input, .add-leave-form textarea {
+.add-leave-form input,
+.add-leave-form textarea {
     width: 97%;
     padding: 10px;
     margin-bottom: 15px;
@@ -58,7 +60,8 @@
     border-radius: 4px;
     font-size: 14px;
 }
-.add-leave-form select{
+
+.add-leave-form select {
     width: 98.4%;
     padding: 10px;
     margin-bottom: 15px;
@@ -67,15 +70,16 @@
     font-size: 14px;
 }
 
-.form-time{
+.form-time {
     display: flex;
     flex-direction: row;
     gap: 3vw;
     width: 60%;
 }
+
 .export-btn {
     display: flex;
-    align-items:self-end;
+    align-items: self-end;
     /* flex-wrap: wrap; */
     justify-content: center;
     background-color: var(--success-button-color);
@@ -88,10 +92,11 @@
     transition: background-color 0.3s;
     height: 4vh;
     font-style: normal;
-    width:9vw;
-    
+    width: 9vw;
+
 }
-.export-buttons{
+
+.export-buttons {
     display: flex;
     flex-direction: row;
     gap: 2vw;
@@ -99,22 +104,25 @@
     justify-content: end;
     width: -webkit-fill-available;
 }
-.export-btn a{
+
+.export-btn a {
     color: white;
     text-decoration: none;
 }
 
-.payroll-header{
+.payroll-header {
     display: flex;
     flex-direction: row;
     gap: 2vw;
     justify-content: space-between;
     align-items: center;
 }
-.payroll-header-search{
+
+.payroll-header-search {
     width: 40%;
 }
-.payroll-header-search input{
+
+.payroll-header-search input {
     width: 30%;
     background-color: #fff;
     padding: 10px;
@@ -123,29 +131,34 @@
     border-radius: 4px;
     font-size: 14px;
 }
-.item-list-Selected{
+
+.item-list-Selected {
     display: flex;
     flex-direction: row;
 }
-.item-list-Selected .items{
+
+.item-list-Selected .items {
     display: flex;
     flex-direction: column;
 }
 
-.item-list-Selected{
+.item-list-Selected {
     display: flex;
     flex-direction: row;
 }
-.item-list-Selected .items{
+
+.item-list-Selected .items {
     display: flex;
     flex-direction: column;
 }
+
 .checkbox-container {
     display: flex;
     position: relative;
-    padding-left:0vw;
+    padding-left: 0vw;
     font-size: 14px;
 }
+
 .checkbox-container input {
     position: absolute;
     opacity: 0;
@@ -153,42 +166,55 @@
     height: 0;
     width: 0;
 }
+
 .checkmark {
     /* position: absolute;
     top: 0;
     left: 0; */
-    height: 15px;       /* Smaller checkbox size */
+    height: 15px;
+    /* Smaller checkbox size */
     width: 15px;
     background-color: #eee;
-    border: 1px solid #ccc; /* Thinner border */
+    border: 1px solid #ccc;
+    /* Thinner border */
     /* margin-left: 2vw; */
 }
-.checkbox-container input:checked ~ .checkmark {
+
+.checkbox-container input:checked~.checkmark {
     background-color: #7341DA;
 }
+
 .checkmark:after {
     content: "";
     position: absolute;
     display: none;
 }
-.checkbox-container input:checked ~ .checkmark:after {
+
+.checkbox-container input:checked~.checkmark:after {
     display: block;
 }
+
 .checkbox-container .checkmark:after {
-    left: 4px;          /* Adjusted position for smaller checkmark */
+    left: 4px;
+    /* Adjusted position for smaller checkmark */
     top: 2px;
-    width: 4px;         /* Smaller checkmark */
+    width: 4px;
+    /* Smaller checkmark */
     height: 8px;
     border: solid white;
     border-width: 0 2px 2px 0;
     transform: rotate(45deg);
 }
+
 .item-list-Selected {
     display: grid;
-    grid-template-columns: repeat(4, 1fr); /* 4 items per row */
-    grid-gap: 1vw; /* Spacing between items */
+    grid-template-columns: repeat(4, 1fr);
+    /* 4 items per row */
+    grid-gap: 1vw;
+    /* Spacing between items */
     margin: 1vh 0 4vh 0;
 }
+
 .accessible-items {
     /* display: inline-block; */
     /* background-color: #F0F0F0; 
@@ -197,14 +223,16 @@
     font-size: 14px; /* Font size for accessible items */
     width: -webkit-fill-available;
 }
+
 .accessible-items span {
     display: inline-block;
-    margin: 5px 5px 0 0 ;
+    margin: 5px 5px 0 0;
     color: white;
     background-color: #7341DA;
     padding: 3px 6px;
     border-radius: 3px;
 }
+
 .action-button.edit {
     color: var(--success-button-color);
     font-size: 0.9vw;
@@ -217,15 +245,103 @@
     font-size: 0.9vw;
     background-color: transparent;
 }
+
 @media only screen and (min-width: 700px) and (max-width: 1000px) {
-    .export-btn{
+    .export-btn {
         font-size: 1.5vw;
         width: 15vw;
     }
-    .button-icon{
+
+    .button-icon {
         font-size: 2vw;
     }
+
     .payroll-header-search {
         width: 80%;
+    }
+}
+
+@media only screen and (max-width: 700px) {
+    .add-leave-form {
+        width: 90%;
+    }
+    
+    .add-leave-form input,
+    .add-leave-form textarea {
+        width: 90%;
+        padding: 8px;
+    }
+
+    .add-leave-form select {
+        width: 95%;
+        padding: 8px;
+    }
+    
+    .form-time {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .item-list-Selected {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+}
+
+.download-btn {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.download-backup {
+    padding: 1% 2%;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 2vh;
+    transition: background-color 0.3s;
+}
+
+.upload-backup {
+    text-align: center;
+}
+
+.drag-drop-area {
+    border: 2px dashed #cccccc;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    margin-bottom: 20px;
+    background-color: #ffffff;
+    transition: background-color 0.3s ease;
+}
+
+.drag-drop-area.dragging {
+    background-color: #f0f8ff;
+    border-color: #007bff;
+}
+
+.choose-file {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.choose-file:hover {
+    background-color: #0056b3;
+}
+@media only screen and (max-width: 700px) {
+    
+    .download-backup{
+        padding: 10px;
+    }
+    .download-btn{
+        justify-content: center;
+
     }
 }

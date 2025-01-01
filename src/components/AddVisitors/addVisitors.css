@@ -34,14 +34,12 @@
     border-radius: 10px;
     background-color: white;
     display: flex;
-    flex-direction: row;
     justify-content: space-between;
     width: 90%;
     padding: 2%;
 }
 .visitor-info-upper{
     display: flex;
-    flex-direction: row;
     justify-content: space-between;
     /* gap: 5vw; */
 
@@ -140,6 +138,37 @@ h2{
 @media only screen and (min-width:1001px) and (max-width:1300px){
     label{
         font-size: 1.3vw;
+    }
+    
+}
+@media only screen and (max-width:700px){
+    label{
+        font-size: 3.3vw;
+    }
+    .visitor-uper{
+        flex-direction: column !important;
+        /* text-align: center; */
+    }
+    .visitor-form section h1{
+        width: unset;
+        font-size: unset;
+    }
+    .visitor-info-inner{
+        width: 100%;
+    }
+    .visitor-info-inner input{
+        width: 92%;
+        font-size: 0.8rem;
+        /* text-align: center; */
+    }
+    .visitor-info-inner select{
+        width: 99%;
+        font-size: 0.8rem;
+        /* text-align: center; */
+    }
+    .visitor-info-upper{
+        flex-direction: column;
+        /* text-align: center; */
     }
     
 }

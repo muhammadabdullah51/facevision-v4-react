@@ -171,33 +171,24 @@ const UserProfile = () => {
 
 
 
-        <div className="" style={{ position: "relative", display: "block", alignItems: "center" }}>
+        <div className="profile-password" >
           <label>Password:</label>
           <div style={{ position: "relative" }}>
             <input
+            className="profile-password-pw" 
               type={showPassword ? "text" : "password"}
               name="password"
               value={password}
               onChange={handlePasswordChange}
               placeholder="Enter new password"
-              style={{
-                width: "95%",
-                paddingRight: "40px", // Adjust padding to fit the button inside
-              }}
+              
             />
 
             <button
               type="button"
+              id="password-buton"
               onClick={togglePasswordVisibility}
-              style={{
-                position: "absolute",
-                right: "0%", // Position the button inside the input
-                top: "50%",
-                transform: "translateY(-50%)",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-              }}
+              
             >
               <FontAwesomeIcon style={{ color: "gray" }} icon={showPassword ? faEyeSlash : faEye} />
             </button>
@@ -235,6 +226,7 @@ const UserProfile = () => {
         animationData={warningAnimation}
         warningModal={warningModal}
       />
+      
     </div>
   )
 }

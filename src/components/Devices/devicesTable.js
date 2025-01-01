@@ -61,13 +61,13 @@ const DeviceTable = ({ data, setData }) => {
     }));
   }, []);
 
-  
+
   const handleDownload = async (rowData) => {
     const requestData = {
-      cameraIp: rowData.cameraIp, 
-      port: rowData.port, 
+      cameraIp: rowData.cameraIp,
+      port: rowData.port,
     };
-  
+
     try {
       // Send the POST request
       const response = await axios.post(`${SERVER_URL}fetch-data/`, requestData);
@@ -75,8 +75,112 @@ const DeviceTable = ({ data, setData }) => {
     } catch (error) {
     }
   };
+
+
+
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+
+  const filteredData = useMemo(
+    () =>
+      data.filter((row) =>
+        Object.values(row).some((val) =>
+          String(val).toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      ),
+    [data, searchQuery]
+  );
+
+  const handleSelectAllChange = (event) => {
+    const isChecked = event.target.checked;
+    setSelectAll(isChecked);
+
+    if (isChecked) {
+      const allIds = filteredData.map((row) => row.cameraId);
+      setSelectedIds(allIds);
+      console.log(allIds);
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleRowCheckboxChange = (event, rowId) => {
+    const isChecked = event.target.checked;
+
+    setSelectedIds((prevSelectedIds) => {
+      if (isChecked) {
+        // Add the row ID to selected IDs
+        return [...prevSelectedIds, rowId];
+      } else {
+        // Remove the row ID from selected IDs
+        const updatedIds = prevSelectedIds.filter((id) => id !== rowId);
+        if (updatedIds.length !== filteredData.length) {
+          setSelectAll(false); // Uncheck "Select All" if a row is deselected
+        }
+        return updatedIds;
+      }
+    });
+    console.log(selectedIds);
+  };
+  useEffect(() => {
+    if (selectedIds.length === filteredData.length && filteredData.length > 0) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  }, [selectedIds, filteredData]);
+
+
+  const handleBulkDelete = () => {
+    if (selectedIds.length > 0) {
+      setModalType("delete selected");
+      setShowModal(true);
+    } else if (selectedIds.length < 1) {
+      setResMsg("No rows selected for deletion.");
+      setShowModal(false);
+      setWarningModal(true);
+    }
+  };
+
+
+  const confirmBulkDelete = async () => {
+    try {
+      const payload = { ids: selectedIds };
+      const response = await axios.post(`${SERVER_URL}device/del/data`, payload);
+      const updatedData = await axios.get(`${SERVER_URL}device/`);
+      setData(updatedData.data.context);
+      setShowModal(false);
+      setSelectedIds([]);
+      setSuccessModal(true);
+    } catch (error) {
+      console.error("Error deleting rows:", error);
+    } finally {
+      setShowModal(false);
+    }
+  };
+
+
   const columns = useMemo(
     () => [
+      {
+        Header: (
+          <input
+            id="delete-checkbox"
+            type="checkbox"
+            checked={filteredData.length > 0 && selectedIds.length === filteredData.length}
+            onChange={handleSelectAllChange} // Function to handle "Select All"
+          />
+        ),
+        Cell: ({ row }) => (
+          <input
+            id="delete-checkbox"
+            type="checkbox"
+            checked={selectedIds.includes(row.original.cameraId)} // Use an appropriate unique field for row identification
+            onChange={(event) => handleRowCheckboxChange(event, row.original.cameraId)} // Row selection handler
+          />
+        ),
+        id: "selection",
+      },
       {
         Header: "S.No",
         accessor: "serial",
@@ -95,7 +199,7 @@ const DeviceTable = ({ data, setData }) => {
             {row.original.status === "Connected" && (
               <span className="green-dot"></span>
             )}
-            {row.original.status != "Connected" && (
+            {row.original.status !== "Connected" && (
               <span className="red-dot"></span>
             )}
             {value}
@@ -111,9 +215,8 @@ const DeviceTable = ({ data, setData }) => {
         accessor: "status",
         Cell: ({ value }) => (
           <span
-            className={`status ${
-              value === "Connected" ? "connected" : "disconnected"
-            }`}
+            className={`status ${value === "Connected" ? "connected" : "disconnected"
+              }`}
           >
             {value}
           </span>
@@ -146,18 +249,11 @@ const DeviceTable = ({ data, setData }) => {
         ),
       },
     ],
-    []
+    [filteredData, selectedIds] // Ensure the columns are updated when the filteredData or selectedIds change
   );
 
-  const filteredData = useMemo(
-    () =>
-      data.filter((row) =>
-        Object.values(row).some((val) =>
-          String(val).toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      ),
-    [data, searchQuery]
-  );
+
+
 
   const {
     getTableProps,
@@ -277,7 +373,6 @@ const DeviceTable = ({ data, setData }) => {
   const handleUpdate = async () => {
     setModalType("update");
     setFormData({
-      _id: formData._id,
       cameraId: formData.cameraId,
       cameraName: formData.cameraName,
       cameraIp: formData.cameraIp,
@@ -332,10 +427,15 @@ const DeviceTable = ({ data, setData }) => {
     <div className="department-table">
       <ConirmationModal
         isOpen={showModal}
-        message={`Are you sure you want to ${modalType} this Device?`}
+        message={
+          modalType === "delete selected"
+            ? "Are you sure you want to delete selected items?"
+            : `Are you sure you want to ${modalType} this Device?`
+        }
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
           else if (modalType === "update") confirmUpdate();
+          else if (modalType === "delete selected") confirmBulkDelete();
           else confirmDelete();
         }}
         onCancel={() => setShowModal(false)}
@@ -343,13 +443,17 @@ const DeviceTable = ({ data, setData }) => {
           modalType === "create"
             ? addAnimation
             : modalType === "update"
-            ? updateAnimation
-            : deleteAnimation
+              ? updateAnimation
+              : deleteAnimation
         }
       />
       <ConirmationModal
         isOpen={successModal}
-        message={`Device ${modalType}d successfully!`}
+        message={
+          modalType === "delete selected"
+            ? "Selected items deleted successfully!"
+            : `Device ${modalType}d successfully!`
+        }
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
@@ -410,9 +514,14 @@ const DeviceTable = ({ data, setData }) => {
             </svg>
           </button>
         </form>
-        <button className="add-button" onClick={handleAdd}>
-          <FaPlus className="add-icon" /> Add New Device
-        </button>
+        <div className="add-delete-conainer" >
+          <button className="add-button" onClick={handleAdd}>
+            <FaPlus className="add-icon" /> Add New Device
+          </button>
+          <button className="add-button submit-button" onClick={handleBulkDelete}>
+            <FaTrash className="add-icon" /> Delete Bulk
+          </button>
+        </div>
       </div>
 
       {/* Add Device Form */}

@@ -55,7 +55,7 @@ const LeaveTable = () => {
     return () => clearTimeout(timer);
   }, [fetchLvs, successModal]);
 
-  
+
 
   const handleCancel = () => {
     setShowAddForm(false);
@@ -67,22 +67,22 @@ const LeaveTable = () => {
     setShowAddForm(false);
     setShowEditForm(true);
   };
-  const updateOTF = async(row) => {
+  const updateOTF = async (row) => {
     setModalType("update");
-    setFormData({ 
+    setFormData({
       leaveFormulaId: row.leaveFormulaId,
       cutCode: row.cutCode,
       cutRate: row.cutRate,
     });
     setShowModal(true);
   };
-  const confirmUpdate = async() => {
-    if(!formData.cutCode || !formData.cutRate ){
+  const confirmUpdate = async () => {
+    if (!formData.cutCode || !formData.cutRate) {
       setResMsg("Please fill in all required fields.")
       setShowModal(false);
       setWarningModal(true);
       return;
-    } 
+    }
 
     const updatedOTF = {
       leaveFormulaId: formData.leaveFormulaId,
@@ -119,7 +119,7 @@ const LeaveTable = () => {
     setShowModal(true);
   }
   const confirmAdd = async () => {
-    if(!formData.cutCode ||!formData.cutRate){
+    if (!formData.cutCode || !formData.cutRate) {
       setResMsg("Please fill in all required fields.")
       setShowModal(false);
       setWarningModal(true);
@@ -154,10 +154,10 @@ const LeaveTable = () => {
   const handleDelete = async (leaveFormulaId) => {
     setShowModal(true);
     setModalType("delete");
-    setFormData({...formData, leaveFormulaId: leaveFormulaId})
+    setFormData({ ...formData, leaveFormulaId: leaveFormulaId })
   };
   const confirmDelete = async () => {
-    await axios.post(`${SERVER_URL}pyr-lvf-del/`, {leaveFormulaId: formData.leaveFormulaId,});
+    await axios.post(`${SERVER_URL}pyr-lvf-del/`, { leaveFormulaId: formData.leaveFormulaId, });
     const updatedData = await axios.get(`${SERVER_URL}pyr-lvf/`);
     setData(updatedData.data);
     fetchLvs();
@@ -179,14 +179,88 @@ const LeaveTable = () => {
   const filteredData = data.filter((item) =>
     item.cutCode.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+
+  const handleSelectAllChange = (event) => {
+    const isChecked = event.target.checked;
+    setSelectAll(isChecked);
+
+    if (isChecked) {
+      const allIds = filteredData.map((row) => row.leaveFormulaId);
+      setSelectedIds(allIds);
+      console.log(allIds);
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleRowCheckboxChange = (event, rowId) => {
+    const isChecked = event.target.checked;
+
+    setSelectedIds((prevSelectedIds) => {
+      if (isChecked) {
+        return [...prevSelectedIds, rowId];
+      } else {
+        const updatedIds = prevSelectedIds.filter((id) => id !== rowId);
+        if (updatedIds.length !== filteredData.length) {
+          setSelectAll(false);
+        }
+        return updatedIds;
+      }
+    });
+    console.log(selectedIds);
+  };
+  useEffect(() => {
+    if (selectedIds.length === filteredData.length && filteredData.length > 0) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  }, [selectedIds, filteredData]);
+
+
+  const handleBulkDelete = () => {
+    if (selectedIds.length > 0) {
+      setModalType("delete selected");
+      setShowModal(true);
+    } else {
+      setResMsg("No rows selected for deletion.");
+      setShowModal(false);
+      setWarningModal(true);
+    }
+  };
+
+
+  const confirmBulkDelete = async () => {
+    try {
+      const payload = { ids: selectedIds };
+      const response = await axios.post(`${SERVER_URL}lvformula/del/data`, payload);
+      const updatedData = await axios.get(`${SERVER_URL}pyr-lvf/`);
+      setData(updatedData.data);
+      setShowModal(false);
+      setSelectedIds([]);
+      setSuccessModal(true);
+    } catch (error) {
+      console.error("Error deleting rows:", error);
+    } finally {
+      setShowModal(false);
+    }
+  };
+
 
   return (
     <div className="department-table">
       <ConirmationModal
         isOpen={showModal}
-        message={`Are you sure you want to ${modalType} this Leave Formula?`}
+        message={
+          modalType === "delete selected"
+            ? "Are you sure you want to delete selected items?"
+            : `Are you sure you want to ${modalType} this Leave Formula?`
+        }
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
+          else if (modalType === "delete selected") confirmBulkDelete();
           else if (modalType === "update") confirmUpdate();
           else confirmDelete();
         }}
@@ -195,13 +269,17 @@ const LeaveTable = () => {
           modalType === "create"
             ? addAnimation
             : modalType === "update"
-            ? updateAnimation
-            : deleteAnimation
+              ? updateAnimation
+              : deleteAnimation
         }
       />
       <ConirmationModal
         isOpen={successModal}
-        message={`Leave Formula ${modalType}d successfully!`}
+        message={
+          modalType === "delete selected"
+            ? "Selected items deleted successfully!"
+            : `Leave Formula ${modalType}d successfully!`
+        }
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
@@ -244,7 +322,7 @@ const LeaveTable = () => {
             type="text"
           />
           <button className="reset" type="reset"
-          onClick={() => setSearchQuery("")}>
+            onClick={() => setSearchQuery("")}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-6 w-6"
@@ -261,9 +339,15 @@ const LeaveTable = () => {
             </svg>
           </button>
         </form>
-        <button className="add-button" onClick={handleAdd}>
-          <FaPlus /> Add New Leave Formula
-        </button>
+        <div className="add-delete-conainer">
+          <button className="add-button" onClick={handleAdd}>
+            <FaPlus /> Add New Leave Formula
+          </button>
+
+          <button className="add-button submit-button" onClick={handleBulkDelete}>
+            <FaTrash className="add-icon" /> Delete Bulk
+          </button>
+        </div>
       </div>
 
       {showAddForm && !showEditForm && (
@@ -285,7 +369,7 @@ const LeaveTable = () => {
               setFormData({ ...formData, cutRate: e.target.value })
             }
           />
-       
+
           <button className="submit-button" onClick={addOTF}>
             Add Leave Formula
           </button>
@@ -313,7 +397,7 @@ const LeaveTable = () => {
               setFormData({ ...formData, cutRate: e.target.value })
             }
           />
-         
+
           <button className="submit-button" onClick={() => updateOTF(formData)}>
             Update Leave Formula
           </button>
@@ -327,6 +411,14 @@ const LeaveTable = () => {
         <table className="table">
           <thead>
             <tr>
+            <th>
+                <input
+                  id="delete-checkbox"
+                  type="checkbox"
+                  checked={selectAll}
+                  onChange={handleSelectAllChange}
+                />
+              </th>
               <th>Formula ID</th>
               <th>Cut Code</th>
               <th>Cut Per Hour</th>
@@ -336,6 +428,14 @@ const LeaveTable = () => {
           <tbody>
             {filteredData.map((item) => (
               <tr key={item.leaveFormulaId}>
+                <td>
+                  <input
+                    type="checkbox"
+                    id="delete-checkbox"
+                    checked={selectedIds.includes(item.leaveFormulaId)}
+                    onChange={(event) => handleRowCheckboxChange(event, item.leaveFormulaId)}
+                  />
+                </td>
                 <td>{item.leaveFormulaId}</td>
                 <td>{item.cutCode}</td>
                 <td>{item.cutRate}</td>

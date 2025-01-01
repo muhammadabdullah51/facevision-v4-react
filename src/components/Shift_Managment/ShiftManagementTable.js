@@ -41,7 +41,7 @@ const ShiftManagementTable = () => {
   ];
   const savedFormState = useSelector((state) => state.forms.formStates.shifts || {});
   const savedSelectedItems = useSelector((state) => state.forms.selectedItems.shifts || []);
-  
+
   const dispatch = useDispatch();
 
   const [selectedItems, setSelectedItems] = useState(savedSelectedItems);
@@ -79,7 +79,7 @@ const ShiftManagementTable = () => {
 
   // Saving form state
   useEffect(() => {
-      dispatch(saveFormState({ formName: "shifts", data: formData }));
+    dispatch(saveFormState({ formName: "shifts", data: formData }));
   }, [formData, dispatch]);
 
   useEffect(() => {
@@ -87,7 +87,7 @@ const ShiftManagementTable = () => {
       dispatch(saveSelectedItems({ formName: "shifts", items: selectedItems }));
     }
   }, [selectedItems, dispatch]);
-  
+
   // Example of updating selectedItems
   const handleItemChange = (item) => {
     setSelectedItems((prevItems) => [...prevItems, item]);
@@ -371,14 +371,88 @@ const ShiftManagementTable = () => {
         .includes(searchQuery)
   );
 
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+
+  const handleSelectAllChange = (event) => {
+    const isChecked = event.target.checked;
+    setSelectAll(isChecked);
+
+    if (isChecked) {
+      const allIds = filteredData.map((row) => row.shiftId);
+      setSelectedIds(allIds);
+      console.log(allIds);
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleRowCheckboxChange = (event, rowId) => {
+    const isChecked = event.target.checked;
+
+    setSelectedIds((prevSelectedIds) => {
+      if (isChecked) {
+        return [...prevSelectedIds, rowId];
+      } else {
+        const updatedIds = prevSelectedIds.filter((id) => id !== rowId);
+        if (updatedIds.length !== filteredData.length) {
+          setSelectAll(false);
+        }
+        return updatedIds;
+      }
+    });
+    console.log(selectedIds);
+  };
+  useEffect(() => {
+    if (selectedIds.length === filteredData.length && filteredData.length > 0) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  }, [selectedIds, filteredData]);
+
+
+  const handleBulkDelete = () => {
+    if (selectedIds.length > 0) {
+      setModalType("delete selected");
+      setShowModal(true);
+    } else {
+      setResMsg("No rows selected for deletion.");
+      setShowModal(false);
+      setWarningModal(true);
+    }
+  };
+
+
+  const confirmBulkDelete = async () => {
+    try {
+      const payload = { ids: selectedIds };
+      const response = await axios.post(`${SERVER_URL}shft/del/data`, payload);
+      const updatedData = await axios.get(`${SERVER_URL}shft/`);
+      setData(updatedData.data);
+      setShowModal(false);
+      setSelectedIds([]);
+      setSuccessModal(true);
+    } catch (error) {
+      console.error("Error deleting rows:", error);
+    } finally {
+      setShowModal(false);
+    }
+  };
+
   return (
     <div className="department-table">
       <ConirmationModal
         isOpen={showModal}
-        message={`Are you sure you want to ${modalType} this Shift?`}
+        message={
+          modalType === "delete selected"
+            ? "Are you sure you want to delete selected items?"
+            : `Are you sure you want to ${modalType} this Shift?`
+        } 
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
           else if (modalType === "update") confirmUpdate();
+          else if (modalType === "delete selected") confirmBulkDelete();
           else confirmDelete();
         }}
         onCancel={() => setShowModal(false)}
@@ -392,7 +466,11 @@ const ShiftManagementTable = () => {
       />
       <ConirmationModal
         isOpen={successModal}
-        message={`Shift ${modalType}d successfully!`}
+        message={
+          modalType === "delete selected"
+            ? "Selected items deleted successfully!"
+            : `Shift ${modalType}d successfully!`
+        }
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
@@ -454,10 +532,16 @@ const ShiftManagementTable = () => {
             </svg>
           </button>
         </form>
+        <div className="add-delete-conainer">
+
         <button className="add-button" onClick={handleAdd}>
           <FaPlus></FaPlus>
           Add New Shift
         </button>
+        <button className="add-button submit-button" onClick={handleBulkDelete}>
+          <FaTrash className="add-icon" /> Delete Bulk
+        </button>
+        </div>
       </div>
 
       {showAddForm && !showEditForm && (
@@ -833,6 +917,14 @@ const ShiftManagementTable = () => {
         <table className="table">
           <thead>
             <tr>
+            <th>
+                <input
+                  id="delete-checkbox"
+                  type="checkbox"
+                  checked={selectAll}
+                  onChange={handleSelectAllChange}
+                />
+              </th>
               <th>Shift ID</th>
               <th>Shift Name</th>
               <th>Entry Time</th>
@@ -847,6 +939,14 @@ const ShiftManagementTable = () => {
           <tbody>
             {filteredData.map((item, index) => (
               <tr key={index}>
+                <td>
+                  <input
+                    type="checkbox"
+                    id="delete-checkbox"
+                    checked={selectedIds.includes(item.shiftId)}
+                    onChange={(event) => handleRowCheckboxChange(event, item.shiftId)}
+                  />
+                </td>
                 <td>{item.shiftId}</td>
                 <td>{item.name}</td>
                 <td>{item.start_time}</td>

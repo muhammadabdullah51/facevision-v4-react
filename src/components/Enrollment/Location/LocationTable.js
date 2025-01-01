@@ -44,7 +44,7 @@ const LocationTable = ({ data, setData }) => {
       const response = await axios.get(`${SERVER_URL}pr-loc/`);
       const location = response.data.context;
       setData(location);
-      
+
     } catch (error) {
     } finally {
       setLoading(false);
@@ -77,12 +77,12 @@ const LocationTable = ({ data, setData }) => {
   };
 
   const confirmUpdate = async () => {
-    if(
+    if (
       formData.locCode === "" ||
       formData.name === "" ||
       formData.deviceQty === "" ||
-      formData.empQty === "" 
-    ){
+      formData.empQty === ""
+    ) {
       setResMsg("Please fill in all required fields.")
       setShowModal(false);
       setWarningModal(true);
@@ -106,7 +106,7 @@ const LocationTable = ({ data, setData }) => {
       if (response.data.status) {
         setSuccessModal(true);
         fetchLocation();
-      }else {
+      } else {
         setShowModal(false);
         setWarningModal(true);
       }
@@ -115,8 +115,110 @@ const LocationTable = ({ data, setData }) => {
       setWarningModal(true);
     }
   };
+
+  
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+
+  const filteredData = useMemo(
+    () =>
+      data.filter((row) =>
+        Object.values(row).some((val) =>
+          String(val).toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      ),
+    [data, searchQuery]
+  );
+
+  const handleSelectAllChange = (event) => {
+    const isChecked = event.target.checked;
+    setSelectAll(isChecked);
+
+    if (isChecked) {
+      const allIds = filteredData.map((row) => row.locId);
+      setSelectedIds(allIds);
+      console.log(allIds);
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleRowCheckboxChange = (event, rowId) => {
+    const isChecked = event.target.checked;
+    console.log(rowId);
+
+    setSelectedIds((prevSelectedIds) => {
+      if (isChecked) {
+        // Add the row ID to selected IDs
+        return [...prevSelectedIds, rowId];
+      } else {
+        // Remove the row ID from selected IDs
+        const updatedIds = prevSelectedIds.filter((id) => id !== rowId);
+        if (updatedIds.length !== filteredData.length) {
+          setSelectAll(false); // Uncheck "Select All" if a row is deselected
+        }
+        return updatedIds;
+      }
+    });
+    console.log(selectedIds);
+  };
+  useEffect(() => {
+    if (selectedIds.length === filteredData.length && filteredData.length > 0) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  }, [selectedIds, filteredData]);
+
+
+  const handleBulkDelete = () => {
+    if (selectedIds.length > 0) {
+      setModalType("delete selected");
+      setShowModal(true);
+    } else if (selectedIds.length < 1) {
+      setResMsg("No rows selected for deletion.");
+      setShowModal(false);
+      setWarningModal(true);
+    }
+  };
+
+
+  const confirmBulkDelete = async () => {
+    try {
+      const payload = { ids: selectedIds };
+      const response = await axios.post(`${SERVER_URL}loc/del/data`, payload);
+      const updatedData = await axios.get(`${SERVER_URL}pr-loc/`);
+      setData(updatedData.data.context);
+      setShowModal(false);
+      setSelectedIds([]); 
+      setSuccessModal(true);
+    } catch (error) {
+      console.error("Error deleting rows:", error);
+    } finally {
+      setShowModal(false);
+    }
+  };
   const columns = useMemo(
     () => [
+      {
+        Header: (
+          <input
+            id="delete-checkbox"
+            type="checkbox"
+            checked={filteredData.length > 0 && selectedIds.length === filteredData.length}
+            onChange={handleSelectAllChange}
+          />
+        ),
+        Cell: ({ row }) => (
+          <input
+            id="delete-checkbox"
+            type="checkbox"
+            checked={selectedIds.includes(row.original.locId)}
+            onChange={(event) => handleRowCheckboxChange(event, row.original.locId)}
+          />
+        ),
+        id: "selection",
+      },
       {
         Header: "S.No",
         accessor: "serial",
@@ -168,18 +270,14 @@ const LocationTable = ({ data, setData }) => {
         ),
       },
     ],
-    []
+    [selectAll, selectedIds]
   );
 
-  const filteredData = useMemo(
-    () =>
-      data.filter((row) =>
-        Object.values(row).some((val) =>
-          String(val).toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      ),
-    [data, searchQuery]
-  );
+
+
+
+ 
+
   const currentPageData = filteredData.slice(
     currentPage * rowsPerPage,
     (currentPage + 1) * rowsPerPage
@@ -205,7 +303,6 @@ const LocationTable = ({ data, setData }) => {
 
   const handleEdit = (row) => {
     setFormData({
-      _id: row._id,
       locId: row.locId,
       locCode: row.locCode,
       name: row.name,
@@ -258,13 +355,13 @@ const LocationTable = ({ data, setData }) => {
       formData.name === "" ||
       formData.deviceQty === "" ||
       formData.empQty === ""
-    ){
+    ) {
       setResMsg("Please fill in all required fields.")
       setShowModal(false);
       setWarningModal(true);
       return;
     }
-    
+
 
     const location = {
       locCode: formData.locCode,
@@ -274,14 +371,14 @@ const LocationTable = ({ data, setData }) => {
       resignQty: formData.resignQty,
     };
     try {
-     const res =  await axios.post(`${SERVER_URL}pr-loc/`, location);
+      const res = await axios.post(`${SERVER_URL}pr-loc/`, location);
       setShowAddForm(false);
       setResMsg(res.data.msg)
       if (res.data.status) {
         setShowModal(false);
         setSuccessModal(true);
         fetchLocation();
-      }else {
+      } else {
         setShowModal(false);
         setWarningModal(true);
       }
@@ -303,10 +400,15 @@ const LocationTable = ({ data, setData }) => {
     <div className="department-table">
       <ConirmationModal
         isOpen={showModal}
-        message={`Are you sure you want to ${modalType} this location?`}
+        message={
+          modalType === "delete selected"
+            ? "Are you sure you want to delete selected items?"
+            : `Are you sure you want to ${modalType} this Location?`
+        } 
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
           else if (modalType === "update") confirmUpdate();
+          else if (modalType === "delete selected") confirmBulkDelete();
           else confirmDelete();
         }}
         onCancel={() => setShowModal(false)}
@@ -314,19 +416,23 @@ const LocationTable = ({ data, setData }) => {
           modalType === "create"
             ? addAnimation
             : modalType === "update"
-            ? updateAnimation
-            : deleteAnimation
+              ? updateAnimation
+              : deleteAnimation
         }
       />
       <ConirmationModal
         isOpen={successModal}
-        message={`Location ${modalType}d successfully!`}
+        message={
+          modalType === "delete selected"
+            ? "Selected items deleted successfully!"
+            : `Location ${modalType}d successfully!`
+        }
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
         successModal={successModal}
       />
-       <ConirmationModal
+      <ConirmationModal
         isOpen={warningModal}
         message={resMsg}
         onConfirm={() => setWarningModal(false)}
@@ -381,9 +487,14 @@ const LocationTable = ({ data, setData }) => {
             </svg>
           </button>
         </form>
-        <button className="add-button" onClick={handleAdd}>
-          <FaPlus className="add-icon" /> Add New Location
-        </button>
+        <div className="add-delete-conainer" >
+          <button className="add-button" onClick={handleAdd}>
+            <FaPlus className="add-icon" /> Add New Location
+          </button>
+          <button className="add-button submit-button" onClick={handleBulkDelete}>
+            <FaTrash className="add-icon" /> Delete Bulk
+          </button>
+        </div>
       </div>
       {showAddForm && !showEditForm && (
         <div className="add-department-form">

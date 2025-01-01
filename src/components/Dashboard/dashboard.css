@@ -82,3 +82,24 @@
     }
 }
 
+@media (max-width:700px){
+    .dashboard-content {
+        margin-left: 0;
+        width: 100%;
+    }
+    .dashboard-graphs{
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .prefomance-graph{
+        width: 100%;
+    }
+    .main-content{
+        padding: 1% 3%;
+    }
+    .main-content {
+        padding: 1% 3%;
+        display: flex;
+        flex-direction: column;
+    }
+}

@@ -61,7 +61,7 @@ const OvertimeTable = () => {
     return () => clearTimeout(timer);
   }, [fetchOTF, successModal]);
 
-  
+
 
   const handleCancel = () => {
     setShowAddForm(false);
@@ -73,9 +73,9 @@ const OvertimeTable = () => {
     setShowAddForm(false);
     setShowEditForm(true);
   };
-  const updateOTF = async(row) => {
+  const updateOTF = async (row) => {
     setModalType("update");
-    setFormData({ 
+    setFormData({
       OTFormulaId: row.OTFormulaId,
       OTCode: row.OTCode,
       ratePerHour: row.ratePerHour,
@@ -83,13 +83,13 @@ const OvertimeTable = () => {
     });
     setShowModal(true);
   };
-  const confirmUpdate = async() => {
-    if(!formData.OTCode || !formData.ratePerHour || !formData.updateDate){
+  const confirmUpdate = async () => {
+    if (!formData.OTCode || !formData.ratePerHour || !formData.updateDate) {
       setResMsg("Please fill in all required fields.")
       setShowModal(false);
       setWarningModal(true);
       return;
-    } 
+    }
 
     const updatedOTF = {
       OTFormulaId: formData.OTFormulaId,
@@ -128,7 +128,7 @@ const OvertimeTable = () => {
     setShowModal(true);
   }
   const confirmAdd = async () => {
-    if(!formData.OTCode ||!formData.ratePerHour ||!formData.updateDate){
+    if (!formData.OTCode || !formData.ratePerHour || !formData.updateDate) {
       setResMsg("Please fill in all required fields.")
       setShowModal(false);
       setWarningModal(true);
@@ -164,10 +164,10 @@ const OvertimeTable = () => {
   const handleDelete = async (OTFormulaId) => {
     setShowModal(true);
     setModalType("delete");
-    setFormData({...formData, OTFormulaId: OTFormulaId})
+    setFormData({ ...formData, OTFormulaId: OTFormulaId })
   };
   const confirmDelete = async () => {
-    await axios.post(`${SERVER_URL}pyr-ot-del/`, {OTFormulaId: formData.OTFormulaId,});
+    await axios.post(`${SERVER_URL}pyr-ot-del/`, { OTFormulaId: formData.OTFormulaId, });
     const updatedData = await axios.get(`${SERVER_URL}pyr-ot/`);
     setData(updatedData.data);
     fetchOTF();
@@ -196,13 +196,88 @@ const OvertimeTable = () => {
     item.OTCode.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+
+  const handleSelectAllChange = (event) => {
+    const isChecked = event.target.checked;
+    setSelectAll(isChecked);
+
+    if (isChecked) {
+      const allIds = filteredData.map((row) => row.OTFormulaId);
+      setSelectedIds(allIds);
+      console.log(allIds);
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleRowCheckboxChange = (event, rowId) => {
+    const isChecked = event.target.checked;
+
+    setSelectedIds((prevSelectedIds) => {
+      if (isChecked) {
+        return [...prevSelectedIds, rowId];
+      } else {
+        const updatedIds = prevSelectedIds.filter((id) => id !== rowId);
+        if (updatedIds.length !== filteredData.length) {
+          setSelectAll(false);
+        }
+        return updatedIds;
+      }
+    });
+    console.log(selectedIds);
+  };
+  useEffect(() => {
+    if (selectedIds.length === filteredData.length && filteredData.length > 0) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  }, [selectedIds, filteredData]);
+
+
+  const handleBulkDelete = () => {
+    if (selectedIds.length > 0) {
+      setModalType("delete selected");
+      setShowModal(true);
+    } else {
+      setResMsg("No rows selected for deletion.");
+      setShowModal(false);
+      setWarningModal(true);
+    }
+  };
+
+
+  const confirmBulkDelete = async () => {
+    try {
+      const payload = { ids: selectedIds };
+      const response = await axios.post(`${SERVER_URL}otformula/del/data`, payload);
+      const updatedData = await axios.get(`${SERVER_URL}pyr-ot/`);
+      setData(updatedData.data);
+      setShowModal(false);
+      setSelectedIds([]);
+      setSuccessModal(true);
+    } catch (error) {
+      console.error("Error deleting rows:", error);
+    } finally {
+      setShowModal(false);
+    }
+  };
+
+
   return (
     <div className="department-table">
       <ConirmationModal
         isOpen={showModal}
-        message={`Are you sure you want to ${modalType} this Overtime Formula?`}
+        message={
+          modalType === "delete selected"
+            ? "Are you sure you want to delete selected items?"
+            : `Are you sure you want to ${modalType} this Overtime Formula?`
+        }
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
+          else if (modalType === "delete selected") confirmBulkDelete();
           else if (modalType === "update") confirmUpdate();
           else confirmDelete();
         }}
@@ -211,13 +286,17 @@ const OvertimeTable = () => {
           modalType === "create"
             ? addAnimation
             : modalType === "update"
-            ? updateAnimation
-            : deleteAnimation
+              ? updateAnimation
+              : deleteAnimation
         }
       />
       <ConirmationModal
         isOpen={successModal}
-        message={`Overtime Formula ${modalType}d successfully!`}
+        message={
+          modalType === "delete selected"
+            ? "Selected items deleted successfully!"
+            : `Overtime Formula ${modalType}d successfully!`
+        }
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
@@ -260,7 +339,7 @@ const OvertimeTable = () => {
             type="text"
           />
           <button className="reset" type="reset"
-          onClick={() => setSearchQuery("")}>
+            onClick={() => setSearchQuery("")}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-6 w-6"
@@ -277,9 +356,15 @@ const OvertimeTable = () => {
             </svg>
           </button>
         </form>
-        <button className="add-button" onClick={handleAdd}>
-          <FaPlus /> Add New Overtime Formula
-        </button>
+        <div className="add-delete-conainer">
+          <button className="add-button" onClick={handleAdd}>
+            <FaPlus /> Add New Overtime Formula
+          </button>
+
+          <button className="add-button submit-button" onClick={handleBulkDelete}>
+            <FaTrash className="add-icon" /> Delete Bulk
+          </button>
+        </div>
       </div>
 
       {showAddForm && !showEditForm && (
@@ -357,6 +442,14 @@ const OvertimeTable = () => {
         <table className="table">
           <thead>
             <tr>
+            <th>
+                <input
+                  id="delete-checkbox"
+                  type="checkbox"
+                  checked={selectAll}
+                  onChange={handleSelectAllChange}
+                />
+              </th>
               <th>Formula ID</th>
               <th>Pay Code</th>
               <th>Rate Per Hour</th>
@@ -367,6 +460,14 @@ const OvertimeTable = () => {
           <tbody>
             {filteredData.map((item) => (
               <tr key={item.OTFormulaId}>
+                <td>
+                  <input
+                    type="checkbox"
+                    id="delete-checkbox"
+                    checked={selectedIds.includes(item.OTFormulaId)}
+                    onChange={(event) => handleRowCheckboxChange(event, item.OTFormulaId)}
+                  />
+                </td>
                 <td>{item.OTFormulaId}</td>
                 <td>{item.OTCode}</td>
                 <td>{item.ratePerHour}</td>

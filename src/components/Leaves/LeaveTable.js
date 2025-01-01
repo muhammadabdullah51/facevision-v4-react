@@ -74,8 +74,114 @@ const LeaveTable = ({ data, setData }) => {
     }));
   }, []);
 
+
+
+
+
+
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+
+  const filteredData = useMemo(
+    () =>
+      data.filter((row) =>
+        Object.values(row).some((val) =>
+          String(val).toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      ),
+    [data, searchQuery]
+  );
+
+  const handleSelectAllChange = (event) => {
+    const isChecked = event.target.checked;
+    setSelectAll(isChecked);
+
+    if (isChecked) {
+      const allIds = filteredData.map((row) => row.id);
+      setSelectedIds(allIds);
+      console.log(allIds);
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleRowCheckboxChange = (event, rowId) => {
+    const isChecked = event.target.checked;
+
+    setSelectedIds((prevSelectedIds) => {
+      if (isChecked) {
+        // Add the row ID to selected IDs
+        return [...prevSelectedIds, rowId];
+      } else {
+        // Remove the row ID from selected IDs
+        const updatedIds = prevSelectedIds.filter((id) => id !== rowId);
+        if (updatedIds.length !== filteredData.length) {
+          setSelectAll(false); // Uncheck "Select All" if a row is deselected
+        }
+        return updatedIds;
+      }
+    });
+    console.log(selectedIds);
+  };
+  useEffect(() => {
+    if (selectedIds.length === filteredData.length && filteredData.length > 0) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  }, [selectedIds, filteredData]);
+
+
+  const handleBulkDelete = () => {
+    if (selectedIds.length > 0) {
+      setModalType("delete selected");
+      setShowModal(true);
+    } else if (selectedIds.length < 1) {
+      setResMsg("No rows selected for deletion.");
+      setShowModal(false);
+      setWarningModal(true);
+    }
+  };
+
+
+  const confirmBulkDelete = async () => {
+    try {
+      const payload = { ids: selectedIds };
+      const response = await axios.post(`${SERVER_URL}leaves/del/data`, payload);
+      const updatedData = await axios.get(`${SERVER_URL}att-lv-cr/`);
+      setData(updatedData.data);
+      setShowModal(false);
+      setSelectedIds([]);
+      setSuccessModal(true);
+    } catch (error) {
+      console.error("Error deleting rows:", error);
+    } finally {
+      setShowModal(false);
+    }
+  };
+
+
   const columns = useMemo(
     () => [
+      {
+        Header: (
+          <input
+            id="delete-checkbox"
+            type="checkbox"
+            checked={filteredData.length > 0 && selectedIds.length === filteredData.length}
+            onChange={handleSelectAllChange} // Function to handle "Select All"
+          />
+        ),
+        Cell: ({ row }) => (
+          <input
+            id="delete-checkbox"
+            type="checkbox"
+            checked={selectedIds.includes(row.original.id)} // Unique identifier (id)
+            onChange={(event) => handleRowCheckboxChange(event, row.original.id)} // Row selection handler
+          />
+        ),
+        id: "selection",
+      },
       {
         Header: "S.No",
         accessor: "serial",
@@ -107,9 +213,12 @@ const LeaveTable = ({ data, setData }) => {
         accessor: "status",
         Cell: ({ value }) => (
           <span
-            className={`status ${
-              value === "Approved" || value === "Cancelled" ? "approvedStatus" : value === "Pending" ? "lateStatus" : "absentStatus"
-            }`}
+            className={`status ${value === "Approved" || value === "Cancelled"
+                ? "approvedStatus"
+                : value === "Pending"
+                  ? "lateStatus"
+                  : "absentStatus"
+              }`}
           >
             {value}
           </span>
@@ -152,18 +261,16 @@ const LeaveTable = ({ data, setData }) => {
         ),
       },
     ],
-    []
+    [filteredData, selectedIds] // Re-render when filteredData or selectedIds changes
   );
 
-  const filteredData = useMemo(
-    () =>
-      data.filter((row) =>
-        Object.values(row).some((val) =>
-          String(val).toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      ),
-    [data, searchQuery]
-  );
+
+
+
+
+
+
+
 
   const {
     getTableProps,
@@ -314,10 +421,15 @@ const LeaveTable = ({ data, setData }) => {
     <div className="department-table">
       <ConirmationModal
         isOpen={showModal}
-        message={`Are you sure you want to ${modalType} this Leave?`}
+        message={
+          modalType === "delete selected"
+            ? "Are you sure you want to delete selected items?"
+            : `Are you sure you want to ${modalType} this Leave?`
+        }
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
           else if (modalType === "update") confirmUpdate();
+          else if (modalType === "delete selected") confirmBulkDelete();
           else confirmDelete();
         }}
         onCancel={() => setShowModal(false)}
@@ -325,13 +437,17 @@ const LeaveTable = ({ data, setData }) => {
           modalType === "create"
             ? addAnimation
             : modalType === "update"
-            ? updateAnimation
-            : deleteAnimation
+              ? updateAnimation
+              : deleteAnimation
         }
       />
       <ConirmationModal
         isOpen={successModal}
-        message={`Leave ${modalType}d successfully!`}
+        message={
+          modalType === "delete selected"
+            ? "Selected items deleted successfully!"
+            : `Leave ${modalType}d successfully!`
+        }
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
@@ -392,9 +508,15 @@ const LeaveTable = ({ data, setData }) => {
             </svg>
           </button>
         </form>
-        <button className="add-button" onClick={handleAdd}>
-          <FaPlus className="add-icon" /> Add New Leave
-        </button>
+        <div className="add-delete-conainer" >
+          <button className="add-button" onClick={handleAdd}>
+            <FaPlus className="add-icon" /> Add New Leave
+          </button>
+
+          <button className="add-button submit-button" onClick={handleBulkDelete}>
+            <FaTrash className="add-icon" /> Delete Bulk
+          </button>
+        </div>
       </div>
 
       {/* Add Leave Form */}
@@ -406,26 +528,23 @@ const LeaveTable = ({ data, setData }) => {
             list="employeesList"
             value={
               employees.find((emp) => emp.empId === formData.employee)
-              ? `${
-                employees.find((emp) => emp.empId === formData.employee)
-                .empId
-              } ${
-                employees.find((emp) => emp.empId === formData.employee)
-                .fName
-              } ${
-                employees.find((emp) => emp.empId === formData.employee)
-                .lName
-              }`
-              : formData.employee || "" // Display empId, fName, and lName if employee is found or allow typing
+                ? `${employees.find((emp) => emp.empId === formData.employee)
+                  .empId
+                } ${employees.find((emp) => emp.empId === formData.employee)
+                  .fName
+                } ${employees.find((emp) => emp.empId === formData.employee)
+                  .lName
+                }`
+                : formData.employee || "" // Display empId, fName, and lName if employee is found or allow typing
             }
             onChange={(e) => {
               const value = e.target.value;
-              
+
               // If the input is a valid match for employee full name, find the employee
               const selectedEmployee = employees.find(
                 (emp) => `${emp.empId} ${emp.fName} ${emp.lName}` === value
               );
-              
+
               // Set the form data
               setFormData({
                 ...formData,
@@ -434,19 +553,19 @@ const LeaveTable = ({ data, setData }) => {
               });
             }}
             placeholder="Search or select an employee"
-            />
+          />
 
           <datalist id="employeesList">
             {employees.map((emp) => (
               // Display employee's full name in datalist options
               <option
-              key={emp.empId}
-              value={`${emp.empId} ${emp.fName} ${emp.lName}`}
+                key={emp.empId}
+                value={`${emp.empId} ${emp.fName} ${emp.lName}`}
               />
             ))}
           </datalist>
 
-            <label>Leave Type</label>
+          <label>Leave Type</label>
           <select
             value={formData.leave_type}
             onChange={(e) =>
@@ -554,7 +673,7 @@ const LeaveTable = ({ data, setData }) => {
               setFormData({ ...formData, end_date: e.target.value })
             }
           />
-          
+
           <label>Reason</label>
           <input
             type="text"

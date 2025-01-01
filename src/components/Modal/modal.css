@@ -49,3 +49,8 @@
     color: white;
   }
   
+  @media only screen and (max-width:700px){
+    .modal-content-modal{
+      width: 50%;
+    }
+  }

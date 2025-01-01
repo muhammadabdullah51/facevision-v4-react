@@ -77,3 +77,15 @@
 .company-button:hover {
     background-color: #553c9a;
 }
+@media only screen and (max-width:700px){
+    .input-group input, .input-group textarea{
+        width: 96%;
+    }
+    .company-container{
+        height: unset;
+    }
+    .company-card{
+        width: 100%;
+
+    }
+}

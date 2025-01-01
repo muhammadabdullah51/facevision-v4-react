@@ -191,13 +191,88 @@ const AdvanceSalary = () => {
       item.reason?.toLowerCase().includes(searchQuery)
   );
 
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+
+  const handleSelectAllChange = (event) => {
+    const isChecked = event.target.checked;
+    setSelectAll(isChecked);
+
+    if (isChecked) {
+      const allIds = filteredData.map((row) => row.advSalaryId);
+      setSelectedIds(allIds);
+      console.log(allIds);
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleRowCheckboxChange = (event, rowId) => {
+    const isChecked = event.target.checked;
+
+    setSelectedIds((prevSelectedIds) => {
+      if (isChecked) {
+        return [...prevSelectedIds, rowId];
+      } else {
+        const updatedIds = prevSelectedIds.filter((id) => id !== rowId);
+        if (updatedIds.length !== filteredData.length) {
+          setSelectAll(false);
+        }
+        return updatedIds;
+      }
+    });
+    console.log(selectedIds);
+  };
+  useEffect(() => {
+    if (selectedIds.length === filteredData.length && filteredData.length > 0) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  }, [selectedIds, filteredData]);
+
+
+  const handleBulkDelete = () => {
+    if (selectedIds.length > 0) {
+      setModalType("delete selected");
+      setShowModal(true);
+    } else {
+      setResMsg("No rows selected for deletion.");
+      setShowModal(false);
+      setWarningModal(true);
+    }
+  };
+
+
+  const confirmBulkDelete = async () => {
+    try {
+      const payload = { ids: selectedIds };
+      const response = await axios.post(`${SERVER_URL}advsal/del/data`, payload);
+      const updatedData = await axios.get(`${SERVER_URL}pyr-adv/`);
+      setData(updatedData.data);
+      setShowModal(false);
+      setSelectedIds([]);
+      setSuccessModal(true);
+    } catch (error) {
+      console.error("Error deleting rows:", error);
+    } finally {
+      setShowModal(false);
+    }
+  };
+
+
   return (
     <div className="department-table">
       <ConirmationModal
         isOpen={showModal}
-        message={`Are you sure you want to ${modalType} this Advance Salary?`}
+        message={
+          modalType === "delete selected"
+            ? "Are you sure you want to delete selected items?"
+            : `Are you sure you want to ${modalType} this Advance Salary?`
+        }
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
+          else if (modalType === "delete selected") confirmBulkDelete();
           else if (modalType === "update") confirmUpdate();
           else confirmDelete();
         }}
@@ -206,13 +281,17 @@ const AdvanceSalary = () => {
           modalType === "create"
             ? addAnimation
             : modalType === "update"
-            ? updateAnimation
-            : deleteAnimation
+              ? updateAnimation
+              : deleteAnimation
         }
       />
       <ConirmationModal
         isOpen={successModal}
-        message={`Advance Salary ${modalType}d successfully!`}
+        message={
+          modalType === "delete selected"
+            ? "Selected items deleted successfully!"
+            : `Advance Salary ${modalType}d successfully!`
+        }
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
@@ -273,9 +352,17 @@ const AdvanceSalary = () => {
             </svg>
           </button>
         </form>
-        <button className="add-button" onClick={handleAddNew}>
-          <FaPlus /> Add New Advance Salary
-        </button>
+
+        <div className="add-delete-conainer">
+
+          <button className="add-button" onClick={handleAddNew}>
+            <FaPlus /> Add New Advance Salary
+          </button>
+          <button className="add-button submit-button" onClick={handleBulkDelete}>
+            <FaTrash className="add-icon" /> Delete Bulk
+          </button>
+        </div>
+
       </div>
 
       {showAddForm && !showEditForm && (
@@ -286,13 +373,10 @@ const AdvanceSalary = () => {
             list="employeesList"
             value={
               employees.find((emp) => emp.empId === formData.empId)
-                ? `${
-                    employees.find((emp) => emp.empId === formData.empId).empId
-                  } ${
-                    employees.find((emp) => emp.empId === formData.empId).fName
-                  } ${
-                    employees.find((emp) => emp.empId === formData.empId).lName
-                  }`
+                ? `${employees.find((emp) => emp.empId === formData.empId).empId
+                } ${employees.find((emp) => emp.empId === formData.empId).fName
+                } ${employees.find((emp) => emp.empId === formData.empId).lName
+                }`
                 : formData.empId || ""
             } // Display empId, fName, and lName of the selected employee or inputted empId
             onChange={(e) => {
@@ -350,7 +434,7 @@ const AdvanceSalary = () => {
             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
           />
 
-         
+
 
           <button className="submit-button" onClick={addAdvSalary}>
             Add Advance Salary
@@ -369,13 +453,10 @@ const AdvanceSalary = () => {
             list="employeesList"
             value={
               employees.find((emp) => emp.empId === formData.empId)
-                ? `${
-                    employees.find((emp) => emp.empId === formData.empId).empId
-                  } ${
-                    employees.find((emp) => emp.empId === formData.empId).fName
-                  } ${
-                    employees.find((emp) => emp.empId === formData.empId).lName
-                  }`
+                ? `${employees.find((emp) => emp.empId === formData.empId).empId
+                } ${employees.find((emp) => emp.empId === formData.empId).fName
+                } ${employees.find((emp) => emp.empId === formData.empId).lName
+                }`
                 : formData.empId || ""
             } // Display empId, fName, and lName of the selected employee or inputted empId
             onChange={(e) => {
@@ -433,7 +514,7 @@ const AdvanceSalary = () => {
             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
           />
 
-          
+
 
           <button
             className="submit-button"
@@ -451,6 +532,14 @@ const AdvanceSalary = () => {
         <table className="table">
           <thead>
             <tr>
+            <th>
+                <input
+                  id="delete-checkbox"
+                  type="checkbox"
+                  checked={selectAll}
+                  onChange={handleSelectAllChange}
+                />
+              </th>
               <th>Adv Salary ID</th>
               <th>Employee ID</th>
               <th>Employee Name</th>
@@ -464,6 +553,14 @@ const AdvanceSalary = () => {
           <tbody>
             {filteredData.map((adv) => (
               <tr key={adv.advSalaryId}>
+                <td>
+                  <input
+                    type="checkbox"
+                    id="delete-checkbox"
+                    checked={selectedIds.includes(adv.advSalaryId)}
+                    onChange={(event) => handleRowCheckboxChange(event, adv.advSalaryId)}
+                  />
+                </td>
                 <td>{adv.advSalaryId}</td>
                 <td>{adv.empId}</td>
                 <td className="bold-fonts">{adv.empName}</td>

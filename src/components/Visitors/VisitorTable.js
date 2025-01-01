@@ -69,10 +69,110 @@ const VisitorTable = ({
     );
   };
 
-  // Define visitor table columns
+
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+
+  const filteredData = useMemo(
+    () =>
+      data.filter((row) =>
+        Object.values(row).some((val) =>
+          String(val).toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      ),
+    [data, searchQuery]
+  );
+
+  const handleSelectAllChange = (event) => {
+    const isChecked = event.target.checked;
+    setSelectAll(isChecked);
+
+    if (isChecked) {
+      const allIds = filteredData.map((row) => row.id);
+      setSelectedIds(allIds);
+      console.log(allIds);
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleRowCheckboxChange = (event, rowId) => {
+    const isChecked = event.target.checked;
+    console.log(rowId);
+
+    setSelectedIds((prevSelectedIds) => {
+      if (isChecked) {
+        // Add the row ID to selected IDs
+        return [...prevSelectedIds, rowId];
+      } else {
+        // Remove the row ID from selected IDs
+        const updatedIds = prevSelectedIds.filter((id) => id !== rowId);
+        if (updatedIds.length !== filteredData.length) {
+          setSelectAll(false); // Uncheck "Select All" if a row is deselected
+        }
+        return updatedIds;
+      }
+    });
+    console.log(selectedIds);
+  };
+  useEffect(() => {
+    if (selectedIds.length === filteredData.length && filteredData.length > 0) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  }, [selectedIds, filteredData]);
+
+
+  const handleBulkDelete = () => {
+    if (selectedIds.length > 0) {
+      setModalType("delete selected");
+      setShowModal(true);
+    } else if (selectedIds.length < 1) {
+      setResMsg("No rows selected for deletion.");
+      setShowModal(false);
+      setWarningModal(true);
+    }
+  };
+
+
+  const confirmBulkDelete = async () => {
+    try {
+      const payload = { ids: selectedIds };
+      const response = await axios.post(`${SERVER_URL}vistor/del/data`, payload);
+      const updatedData = await axios.get(`${SERVER_URL}visitors/`);
+      setData(updatedData.data);
+      setShowModal(false);
+      setSelectedIds([]);
+      setSuccessModal(true);
+    } catch (error) {
+      console.error("Error deleting rows:", error);
+    } finally {
+      setShowModal(false);
+    }
+  };
+
   const columns = useMemo(
     () => [
-     
+      {
+        Header: (
+          <input
+            id="delete-checkbox"
+            type="checkbox"
+            checked={filteredData.length > 0 && selectedIds.length === filteredData.length}
+            onChange={handleSelectAllChange}
+          />
+        ),
+        Cell: ({ row }) => (
+          <input
+            id="delete-checkbox"
+            type="checkbox"
+            checked={selectedIds.includes(row.original.id)} 
+            onChange={(event) => handleRowCheckboxChange(event, row.original.id)}
+          />
+        ),
+        id: "selection",
+      },
       {
         Header: "Visitor ID",
         accessor: "visitorsId",
@@ -152,19 +252,9 @@ const VisitorTable = ({
         ),
       },
     ],
-    []
+    [filteredData, selectedIds] // Dependencies for updates
   );
 
-  // Filter the data based on search input
-  const filteredData = useMemo(
-    () =>
-      data.filter((row) =>
-        Object.values(row).some((val) =>
-          String(val).toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      ),
-    [data, searchQuery]
-  );
 
   const {
     getTableProps,
@@ -184,15 +274,15 @@ const VisitorTable = ({
     useRowSelect
   );
 
-  
-  const fetchVisitors = useCallback( async () => {
+
+  const fetchVisitors = useCallback(async () => {
     try {
       const response = await axios.get(`${SERVER_URL}visitors/`);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching resignation data:", error);
     }
-  },[setData])
+  }, [setData])
 
   useEffect(() => {
     fetchVisitors();
@@ -208,19 +298,19 @@ const VisitorTable = ({
 
   // Handle Edit
   const handleEdit = (row) => {
-   onEdit(row)
+    onEdit(row)
   };
 
 
   const handleDelete = async (row) => {
     setModalType("delete");
     setShowModal(true);
-    setFormData(row.id );
-    
+    setFormData(row.id);
+
   };
 
 
-  const confirmDelete = async() => {
+  const confirmDelete = async () => {
     try {
       await axios.delete(`${SERVER_URL}visitors/${formData}/`);
       const updatedData = await axios.get(`${SERVER_URL}visitors/`);
@@ -228,35 +318,46 @@ const VisitorTable = ({
       fetchVisitors();
       setShowModal(false);
       setSuccessModal(true);
-      
+
     } catch (error) {
     }
-  } 
+  }
 
   const handleAdd = () => {
     onAdd()
   };
 
- 
+
 
   return (
     <div className="visitor-table">
       <ConirmationModal
         isOpen={showModal}
-        message={`Are you sure you want to ${modalType} this Visitor?`}
-        onConfirm={() =>  confirmDelete()}
+        message={
+          modalType === "delete selected"
+            ? "Are you sure you want to delete selected items?"
+            : `Are you sure you want to ${modalType} this Visitor?`
+        }
+        onConfirm={() => {
+          if (modalType === "delete selected") confirmBulkDelete();
+          else confirmDelete();
+        }}
         onCancel={() => setShowModal(false)}
         animationData={
           modalType === "create"
             ? addAnimation
             : modalType === "update"
-            ? updateAnimation
-            : deleteAnimation
+              ? updateAnimation
+              : deleteAnimation
         }
       />
-       <ConirmationModal
+      <ConirmationModal
         isOpen={successModal}
-        message={`Visitor ${modalType}d successfully!`}
+        message={
+          modalType === "delete selected"
+            ? "Selected items deleted successfully!"
+            : `Visitor ${modalType}d successfully!`
+        }
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
@@ -317,9 +418,15 @@ const VisitorTable = ({
             </svg>
           </button>
         </form>
-        <button className="add-button" onClick={handleAdd}>
-          <FaPlus className="add-icon" /> Add New Visitor
-        </button>
+        <div className="add-delete-conainer" >
+          <button className="add-button" onClick={handleAdd}>
+            <FaPlus className="add-icon" /> Add New Visitor
+          </button>
+
+          <button className="add-button submit-button" onClick={handleBulkDelete}>
+            <FaTrash className="add-icon" /> Delete Bulk
+          </button>
+        </div>
       </div>
       <div className="departments-table">
         <table {...getTableProps()} className="table">

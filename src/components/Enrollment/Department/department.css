@@ -262,3 +262,27 @@ input:not(:placeholder-shown)~.reset {
     }
 
 }
+
+@media only screen and (max-width:700px){
+    .add-department-form input{
+        width: 90%;
+    }
+    .table-header {
+        flex-direction: column;
+        gap: 2vh;
+    }
+    .card-table-toggle{
+        display: flex;
+    }
+    .add-button{
+        width: var(--width-of-input);
+    }
+    
+    .add-delete-conainer{
+        display: flex;
+        width: 100%;
+    }
+}
+.table td, .table th{
+    text-wrap: nowrap;
+}

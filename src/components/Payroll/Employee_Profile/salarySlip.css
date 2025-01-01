@@ -93,6 +93,7 @@
     flex-direction: column;
     text-align: center;
     width: 100%;
+    /* width: 210mm; */
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     justify-content: center;
 }
@@ -211,7 +212,7 @@ th.th-component, td.th-component{
   /* background: linear-gradient(45deg, #5A34AC, #472882); */
   background: linear-gradient(45deg, #d3bfff, #a176fc);
 }
-.button.export-csv a{
+.button.export-csv a, .button.export-pdf a {
   text-decoration: none;
 
 }
@@ -297,3 +298,15 @@ th.th-component, td.th-component{
       font-size: 0.7vw; /* Slightly larger font size for tablets */
   }
 }
+@media (max-width: 700px) {
+  .button {
+      font-size: 2vw; /* Slightly larger font size for tablets */
+  }
+}
+@media (max-width: 1010px){
+  
+  .modal-salary{
+    width: 210mm;
+  }
+}
+

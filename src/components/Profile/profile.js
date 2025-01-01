@@ -15,6 +15,9 @@ function ProfileSettings() {
     <div className="profiles">
       <UserProfile/>
       {/* <UserProfile/> */}
+      <div className="footer-profile">
+        <h5>Powered by Axix Technologies</h5>
+      </div>
       
     </div>
 

@@ -42,6 +42,7 @@ const CheckInOutTable = ({ dash }) => {
     try {
       const response = await axios.get(`${SERVER_URL}att-chkinout/`);
       setData(response.data);
+      console.log(data);
     } catch (error) {
     }
   }, [setData]);
@@ -66,9 +67,112 @@ const CheckInOutTable = ({ dash }) => {
     return () => clearTimeout(timer);
   }, [fetchAtt, successModal]);
 
-  // Define columns for the table
+
+
+
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+
+  const filteredData = useMemo(
+    () =>
+      data.filter((row) =>
+        Object.values(row).some((val) =>
+          String(val).toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      ),
+    [data, searchQuery]
+  );
+
+  const handleSelectAllChange = (event) => {
+    const isChecked = event.target.checked;
+    setSelectAll(isChecked);
+
+    if (isChecked) {
+      const allIds = filteredData.map((row) => row.id);
+      setSelectedIds(allIds);
+      console.log(allIds);
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleRowCheckboxChange = (event, rowId) => {
+    const isChecked = event.target.checked;
+
+    setSelectedIds((prevSelectedIds) => {
+      if (isChecked) {
+        // Add the row ID to selected IDs
+        return [...prevSelectedIds, rowId];
+      } else {
+        // Remove the row ID from selected IDs
+        const updatedIds = prevSelectedIds.filter((id) => id !== rowId);
+        if (updatedIds.length !== filteredData.length) {
+          setSelectAll(false); // Uncheck "Select All" if a row is deselected
+        }
+        return updatedIds;
+      }
+    });
+    console.log(selectedIds);
+  };
+  useEffect(() => {
+    if (selectedIds.length === filteredData.length && filteredData.length > 0) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  }, [selectedIds, filteredData]);
+
+
+  const handleBulkDelete = () => {
+    if (selectedIds.length > 0) {
+      setModalType("delete selected");
+      setShowModal(true);
+    } else if (selectedIds.length < 1) {
+      setResMsg("No rows selected for deletion.");
+      setShowModal(false);
+      setWarningModal(true);
+    }
+  };
+
+
+  const confirmBulkDelete = async () => {
+    try {
+      const payload = { ids: selectedIds };
+      const response = await axios.post(`${SERVER_URL}chkinout/del/data`, payload);
+      const updatedData = await axios.get(`${SERVER_URL}att-chkinout/`);
+      setData(updatedData.data);
+      setShowModal(false);
+      setSelectedIds([]);
+      setSuccessModal(true);
+    } catch (error) {
+      console.error("Error deleting rows:", error);
+    } finally {
+      setShowModal(false);
+    }
+  };
+
+
   const columns = useMemo(
     () => [
+      {
+        Header: (
+          <input
+            id="delete-checkbox"
+            type="checkbox"
+            checked={filteredData.length > 0 && selectedIds.length === filteredData.length}
+            onChange={handleSelectAllChange} // Function to handle "Select All"
+          />
+        ),
+        Cell: ({ row }) => (
+          <input
+            id="delete-checkbox"
+            type="checkbox"
+            checked={selectedIds.includes(row.original.id)} // Unique identifier (id)
+            onChange={(event) => handleRowCheckboxChange(event, row.original.id)} // Row selection handler
+          />
+        ),
+        id: "selection",
+      },
       {
         Header: "S.No",
         accessor: "serial",
@@ -76,11 +180,10 @@ const CheckInOutTable = ({ dash }) => {
       },
       {
         Header: "Employee ID",
-        accessor: "empId", // Keeps the original field name
+        accessor: "empId",
       },
       {
         Header: "Employee Name",
-        // Combines first name and last name
         Cell: ({ row }) => (
           <span className="bold-fonts">
             {row.original.lName} {row.original.fName}
@@ -89,11 +192,11 @@ const CheckInOutTable = ({ dash }) => {
       },
       {
         Header: "Time",
-        accessor: "time", // Keeps the original field name
+        accessor: "time",
       },
       {
         Header: "Date",
-        accessor: "date", // Keeps the original field name
+        accessor: "date",
       },
       {
         Header: "Status",
@@ -101,17 +204,16 @@ const CheckInOutTable = ({ dash }) => {
         Cell: ({ value }) => (
           <span
             className={`status ${value === "checkin"
-                ? "presentStatus"
-                : value === "checkout"
-                  ? "lateStatus"
-                  : "none"
+              ? "presentStatus"
+              : value === "checkout"
+                ? "lateStatus"
+                : "none"
               }`}
           >
             {value}
           </span>
         ),
       },
-
       {
         Header: "Action",
         accessor: "action",
@@ -133,19 +235,13 @@ const CheckInOutTable = ({ dash }) => {
         ),
       },
     ],
-    []
+    [filteredData, selectedIds] // Update columns when filteredData or selectedIds changes
   );
 
-  // Filter data based on search query
-  const filteredData = useMemo(
-    () =>
-      data.filter((row) =>
-        Object.values(row).some((val) =>
-          String(val).toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      ),
-    [data, searchQuery]
-  );
+
+
+
+
 
   // Set up the table
   const {
@@ -297,7 +393,7 @@ const CheckInOutTable = ({ dash }) => {
   const formatTime = (time) => {
     // If time already includes seconds, return as is.
     if (time.split(':').length === 3) return time;
-  
+
     // Otherwise, append ":00" for seconds.
     return `${time}:00`;
   };
@@ -309,9 +405,14 @@ const CheckInOutTable = ({ dash }) => {
 
           <ConirmationModal
             isOpen={showModal}
-            message={`Are you sure you want to ${modalType} this Manual Check In / Out?`}
+            message={
+              modalType === "delete selected"
+                ? "Are you sure you want to delete selected items?"
+                : `Are you sure you want to ${modalType} this Manual Check In / Out?`
+            }
             onConfirm={() => {
               if (modalType === "create") confirmAdd();
+              else if (modalType === "delete selected") confirmBulkDelete();
               else if (modalType === "update") confirmUpdate();
               // if (modalType === "update") confirmUpdate();
               else confirmDelete();
@@ -327,7 +428,11 @@ const CheckInOutTable = ({ dash }) => {
           />
           <ConirmationModal
             isOpen={successModal}
-            message={`Check In / Out ${modalType}d successfully!`}
+            message={
+              modalType === "delete selected"
+                ? "Selected items deleted successfully!"
+                : `Check In / Out ${modalType}d successfully!`
+            }
             onConfirm={() => setSuccessModal(false)}
             onCancel={() => setSuccessModal(false)}
             animationData={successAnimation}
@@ -388,9 +493,15 @@ const CheckInOutTable = ({ dash }) => {
                 </svg>
               </button>
             </form>
+        <div className="add-delete-conainer" >
+
             <button className="add-button" onClick={handleAdd}>
               <FaPlus className="add-icon" /> Add Manual Check In / Out
             </button>
+            <button className="add-button submit-button" onClick={handleBulkDelete}>
+              <FaTrash className="add-icon" /> Delete Bulk
+            </button>
+        </div>
           </div>
         </>
       )}
@@ -500,7 +611,7 @@ const CheckInOutTable = ({ dash }) => {
           <h3>Edit Manual Check In / Out</h3>
           <label>Selected Employee</label>
           <input
-          disabled
+            disabled
             list="employeesList"
             value={formData.empId} // Display the selected or entered empId
             onChange={(e) => {
@@ -617,22 +728,22 @@ const CheckInOutTable = ({ dash }) => {
         </table>
       </div>
 
-{!dash &&(
+      {!dash && (
 
-  <div className="pagination">
-        <ReactPaginate
-          previousLabel={"Previous"}
-          nextLabel={"Next"}
-          breakLabel={"..."}
-          pageCount={pageOptions.length}
-          marginPagesDisplayed={2}
-          pageRangeDisplayed={5}
-          onPageChange={({ selected }) => gotoPage(selected)}
-          containerClassName={"pagination"}
-          activeClassName={"active"}
+        <div className="pagination">
+          <ReactPaginate
+            previousLabel={"Previous"}
+            nextLabel={"Next"}
+            breakLabel={"..."}
+            pageCount={pageOptions.length}
+            marginPagesDisplayed={2}
+            pageRangeDisplayed={5}
+            onPageChange={({ selected }) => gotoPage(selected)}
+            containerClassName={"pagination"}
+            activeClassName={"active"}
           />
-      </div>
-        )}
+        </div>
+      )}
     </div>
   );
 };

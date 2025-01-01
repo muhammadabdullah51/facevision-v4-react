@@ -29,3 +29,11 @@
     border-radius: 4px;
     font-size: 14px;
 }
+@media only screen and (max-width:700px){
+    .search-select select{
+        height: 7vh;
+    }
+    .search-select{
+        width: 100%;
+    }
+} 

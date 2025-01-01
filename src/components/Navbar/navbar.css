@@ -178,9 +178,9 @@ ul.setting-menu li {
 .dropdown {
     position: relative;
     display: inline-block;
-  }
-  
-  .setting-menu {
+}
+
+.setting-menu {
     position: absolute;
     width: 11vw;
     right: 0;
@@ -192,20 +192,49 @@ ul.setting-menu li {
     padding: 10px;
     margin: 0;
     z-index: 1000;
-    display: none; /* Hidden by default */
-  }
-  
-  .dropdown:hover .setting-menu {
-    display: block; /* Show menu on hover */
-  }
-  
-  .setting-menu li {
+    display: none;
+    /* Hidden by default */
+}
+
+.dropdown:hover .setting-menu {
+    display: block;
+    /* Show menu on hover */
+}
+
+.setting-menu li {
     padding: 8px 16px;
     cursor: pointer;
     transition: background-color 0.2s ease;
-  }
-  
-  .setting-menu li:hover {
+}
+
+.setting-menu li:hover {
     background-color: #f0f0f0;
-  }
-  
+}
+
+@media only screen and (min-width:700px) and (max-width:1500px){
+    .setting-toggle img{
+        width: 100%;
+    }
+}
+@media only screen and (max-width:700px) {
+    .navbar-company-logo {
+        display: none;
+    }
+    .navbar h2{
+        margin: 0 0 0 15vw;
+        font-size: large;
+    }
+    .setting-menu{
+        width: 50vw;
+    }
+    .setting-toggle img{
+        width: 360%;
+    }
+    
+}
+@media only screen and (min-width:700px) and (max-width:701px) {
+    .setting-toggle img{
+        width: 100%;
+    }
+
+}

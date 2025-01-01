@@ -91,7 +91,7 @@ const TaxSettings = () => {
       setShowModal(false);
       setSuccessModal(true);
       setResMsg(res.data.msg);
-  
+
       const updatedData = await axios.get(`${SERVER_URL}tax-types/`);
       setData(updatedData.data);
     } catch (error) {
@@ -173,13 +173,89 @@ const TaxSettings = () => {
     item.type.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+
+  const handleSelectAllChange = (event) => {
+    const isChecked = event.target.checked;
+    setSelectAll(isChecked);
+
+    if (isChecked) {
+      const allIds = filteredData.map((row) => row.id);
+      setSelectedIds(allIds);
+      console.log(allIds);
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleRowCheckboxChange = (event, rowId) => {
+    const isChecked = event.target.checked;
+
+    setSelectedIds((prevSelectedIds) => {
+      if (isChecked) {
+        return [...prevSelectedIds, rowId];
+      } else {
+        const updatedIds = prevSelectedIds.filter((id) => id !== rowId);
+        if (updatedIds.length !== filteredData.length) {
+          setSelectAll(false);
+        }
+        return updatedIds;
+      }
+    });
+    console.log(selectedIds);
+  };
+  useEffect(() => {
+    if (selectedIds.length === filteredData.length && filteredData.length > 0) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  }, [selectedIds, filteredData]);
+
+
+  const handleBulkDelete = () => {
+    if (selectedIds.length > 0) {
+      setModalType("delete selected");
+      setShowModal(true);
+    } else {
+      setResMsg("No rows selected for deletion.");
+      setShowModal(false);
+      setWarningModal(true);
+    }
+  };
+
+
+  const confirmBulkDelete = async () => {
+    try {
+      const payload = { ids: selectedIds };
+      const response = await axios.post(`${SERVER_URL}taxtype/del/data`, payload);
+      const updatedData = await axios.get(`${SERVER_URL}tax-types/`);
+      setData(updatedData.data);
+      setShowModal(false);
+      setSelectedIds([]);
+      setSuccessModal(true);
+    } catch (error) {
+      console.error("Error deleting rows:", error);
+    } finally {
+      setShowModal(false);
+    }
+  };
+
+
+
   return (
     <div className="department-table">
       <ConirmationModal
         isOpen={showModal}
-        message={`Are you sure you want to ${modalType} this Tax?`}
+        message={
+          modalType === "delete selected"
+            ? "Are you sure you want to delete selected items?"
+            : `Are you sure you want to ${modalType} this Tax?`
+        }
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
+          else if (modalType === "delete selected") confirmBulkDelete();
           else if (modalType === "update") confirmUpdate();
           else confirmDelete();
         }}
@@ -188,13 +264,17 @@ const TaxSettings = () => {
           modalType === "create"
             ? addAnimation
             : modalType === "update"
-            ? updateAnimation
-            : deleteAnimation
+              ? updateAnimation
+              : deleteAnimation
         }
       />
       <ConirmationModal
         isOpen={successModal}
-        message={`Tax ${modalType}d successfully!`}
+        message={
+          modalType === "delete selected"
+            ? "Selected items deleted successfully!"
+            : `Tax ${modalType}d successfully!`
+        }
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
@@ -237,7 +317,7 @@ const TaxSettings = () => {
             type="text"
           />
           <button className="reset" type="reset"
-           onClick={() => setSearchQuery("")}>
+            onClick={() => setSearchQuery("")}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-6 w-6"
@@ -254,9 +334,15 @@ const TaxSettings = () => {
             </svg>
           </button>
         </form>
-        <button className="add-button" onClick={handleAdd}>
-          <FaPlus /> Add New Tax
-        </button>
+        <div className="add-delete-conainer">
+          <button className="add-button" onClick={handleAdd}>
+            <FaPlus /> Add New Tax
+          </button>
+
+          <button className="add-button submit-button" onClick={handleBulkDelete}>
+            <FaTrash className="add-icon" /> Delete Bulk
+          </button>
+        </div>
       </div>
 
       {showAddForm && !showEditForm && (
@@ -300,6 +386,14 @@ const TaxSettings = () => {
         <table className="table">
           <thead>
             <tr>
+            <th>
+                <input
+                  id="delete-checkbox"
+                  type="checkbox"
+                  checked={selectAll}
+                  onChange={handleSelectAllChange}
+                />
+              </th>
               <th>ID</th>
               <th>Tax Type</th>
               <th>Actions</th>
@@ -308,6 +402,14 @@ const TaxSettings = () => {
           <tbody>
             {filteredData.map((item) => (
               <tr key={item.id}>
+                <td>
+                  <input
+                    type="checkbox"
+                    id="delete-checkbox"
+                    checked={selectedIds.includes(item.id)}
+                    onChange={(event) => handleRowCheckboxChange(event, item.id)}
+                  />
+                </td>
                 <td>{item.id}</td>
                 <td>{item.type}</td>
                 <td>

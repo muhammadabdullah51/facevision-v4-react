@@ -53,10 +53,10 @@ function App() {
       <PersistGate loading={null} persistor={persistor}>
       <Router>
         <Routes>
-          {/* <Route path="/" element={ <Dashboard />} /> */}
+          {/* <Route path="/" element={ <Dashboard />} />  */}
           <Route path="/" element={ renderHome()} />
-          <Route path="/Signup" element={<Register />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/Signup" element={<Register />} />
         </Routes>
       </Router>
       </PersistGate>

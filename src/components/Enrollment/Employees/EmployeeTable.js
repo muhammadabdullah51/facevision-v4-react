@@ -146,12 +146,90 @@ const EmployeeTable = ({
 
   const [isTableView, setIsTableView] = useState(true);
 
+
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+
+  const handleSelectAllChange = (event) => {
+    const isChecked = event.target.checked;
+    setSelectAll(isChecked);
+
+    if (isChecked) {
+      const allIds = currentPageData.map((row) => row.id);
+      setSelectedIds(allIds);
+      console.log(allIds);
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleRowCheckboxChange = (event, rowId) => {
+    const isChecked = event.target.checked;
+
+    setSelectedIds((prevSelectedIds) => {
+      if (isChecked) {
+        return [...prevSelectedIds, rowId];
+      } else {
+        const updatedIds = prevSelectedIds.filter((id) => id !== rowId);
+        if (updatedIds.length !== currentPageData.length) {
+          setSelectAll(false);
+        }
+        return updatedIds;
+      }
+    });
+    console.log(selectedIds);
+  };
+  useEffect(() => {
+    if (selectedIds.length === currentPageData.length && currentPageData.length > 0) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  }, [selectedIds, currentPageData]);
+
+
+  const handleBulkDelete = () => {
+    if (selectedIds.length > 0) {
+      setModalType("delete selected");
+      setShowModal(true);
+    } else {
+      setResMsg("No rows selected for deletion.");
+      setShowModal(false);
+      setWarningModal(true);
+    }
+  };
+
+
+  const confirmBulkDelete = async () => {
+    try {
+      const payload = { ids: selectedIds };
+      console.log(payload);
+      const response = await axios.post(`${SERVER_URL}emp/del/data`, payload);
+      const updatedData = await axios.get(`${SERVER_URL}pr-emp/`);
+      setData(updatedData.data);
+      setShowModal(false);
+      setSelectedIds([]);
+      setSuccessModal(true);
+    } catch (error) {
+      console.error("Error deleting rows:", error);
+    } finally {
+      setShowModal(false);
+    }
+  };
+
   return (
     <div className="department-table">
       <ConirmationModal
         isOpen={showModal}
-        message={`Are you sure you want to ${modalType} this employee?`}
-        onConfirm={() => confirmDelete()}
+        message={
+          modalType === "delete selected"
+            ? "Are you sure you want to delete selected items?"
+            : `Are you sure you want to ${modalType} this Employee?`
+        } 
+        onConfirm={() => 
+          {if (modalType === "delete selected") confirmBulkDelete();
+          else confirmDelete();
+        }}
         onCancel={() => setShowModal(false)}
         animationData={
           modalType === "create"
@@ -163,7 +241,11 @@ const EmployeeTable = ({
       />
       <ConirmationModal
         isOpen={successModal}
-        message={`Employee ${modalType}d successfully!`}
+        message={
+          modalType === "delete selected"
+            ? "Selected items deleted successfully!"
+            : `Employee ${modalType}d successfully!`
+        }
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
@@ -182,8 +264,8 @@ const EmployeeTable = ({
         onClose={closeModal}
         rowData={selectedRow}
       />
-      <div className="table-header">
-        <form className="form" onSubmit={(e) => e.preventDefault()}>
+      <div className="table-header employee-table-new">
+        <form className="form" id="employee-form" onSubmit={(e) => e.preventDefault()}>
           <button type="submit">
             <svg
               width="17"
@@ -231,12 +313,6 @@ const EmployeeTable = ({
         </form>
 
         <div className="tabs card-table-toggle">
-          {/* <button onClick={() => setIsTableView(true)} className={`toggle-button ${isTableView ? "active" : ""}`}>
-            Table View
-          </button>
-          <button onClick={() => setIsTableView(false)} className={`toggle-button ${!isTableView ? "active" : ""}`}>
-            Card View
-          </button> */}
           <button
             onClick={() => setIsTableView(true)}
             className={`table-view-123 toggle-button ${isTableView ? "active" : ""}`}
@@ -245,7 +321,7 @@ const EmployeeTable = ({
           >
             <FaTable className="table-view" />
           </button>
-          <Tooltip anchorSelect=".table-view-123" id="tableViewTooltip" place="bottom"  effect="solid">Table View</Tooltip>
+          <Tooltip anchorSelect=".table-view-123" id="tableViewTooltip" place="bottom" effect="solid">Table View</Tooltip>
 
           <button
             onClick={() => setIsTableView(false)}
@@ -255,12 +331,18 @@ const EmployeeTable = ({
           >
             <FaThLarge className="table-view" />
           </button>
-          <Tooltip anchorSelect=".card-view-123" id="cardViewTooltip" place="bottom"  effect="solid">Card View</Tooltip>
+          <Tooltip anchorSelect=".card-view-123" id="cardViewTooltip" place="bottom" effect="solid">Card View</Tooltip>
         </div>
 
-        <button className="add-button employee-add-button" onClick={handleAdd}>
+        <div className="add-delete-conainer">
+        <button className="add-button" onClick={handleAdd}>
           <FaPlus className="add-icon" /> Add New Employee
         </button>
+          <button className="add-button submit-button" onClick={handleBulkDelete}>
+            <FaTrash className="add-icon" /> Delete Bulk
+          </button>
+
+        </div>
       </div>
 
 
@@ -270,6 +352,14 @@ const EmployeeTable = ({
           <table className="table">
             <thead>
               <tr>
+              <th>
+                <input
+                  id="delete-checkbox"
+                  type="checkbox"
+                  checked={selectAll}
+                  onChange={handleSelectAllChange}
+                />
+              </th>
                 {/* <th>Serial No</th> */}
                 <th>Employee ID</th>
                 <th>Employee Name</th>
@@ -289,6 +379,14 @@ const EmployeeTable = ({
               {currentPageData.map((row, index) => (
 
                 <tr key={row.empId}>
+                   <td>
+                  <input
+                    type="checkbox"
+                    id="delete-checkbox"
+                    checked={selectedIds.includes(row.id)}
+                    onChange={(event) => handleRowCheckboxChange(event, row.id)}
+                  />
+                </td>
                   {/* <td>{index + 1 + currentPage * rowsPerPage}</td> */}
                   <td>{row.empId}</td>
                   <td className="bold-fonts">
@@ -344,67 +442,67 @@ const EmployeeTable = ({
           </table>
         ) : (
           <div className="employee-cards">
-              <div className="card-employee card-header" >
-                <div className="card-body image-name">
-                    <p>Employee Info</p>
-                </div>
-                <div className="card-body">
-                  <p>Shift</p>
-                </div>
-                <div className="card-body">
-                  <p>Payroll Info</p>
-                </div>
-                <div className="card-body">
-                  <p>Location</p>
-                </div>
-                <div className="card-body">
-                </div>
+            <div className="card-employee card-header" >
+              <div className="card-body image-name">
+                <p>Employee Info</p>
               </div>
+              <div className="card-body">
+                <p>Shift</p>
+              </div>
+              <div className="card-body">
+                <p>Payroll Info</p>
+              </div>
+              <div className="card-body">
+                <p>Location</p>
+              </div>
+              <div className="card-body">
+              </div>
+            </div>
             {currentPageData.map((row) => (
               <>
-              
-              <div className="card-employee" key={row.empId}>
-                <div className="card-body image-name">
-                  <img
-                    src={row.image1 ? `${SERVER_URL}${row.image1}` : Default_picture}
-                    alt={row.employeeName}
-                    className="card-image"
-                  />
-                  <div>
-                    <p>{row.empId}</p>
-                    <h3>{row.fName} {row.lName}</h3>
-                    <p>{row.department} / {row.designation}</p>
+
+                <div className="card-employee" key={row.empId}>
+                  <div className={`card-body empImage ${window.innerWidth <= 700 ? '' : 'image-name'}`}>
+                    <img
+                      src={row.image1 ? `${SERVER_URL}${row.image1}` : Default_picture}
+                      alt={row.employeeName}
+                      className="employee-image"
+                    />
+                    <div>
+                      <p>{row.empId}</p>
+                      <h3>{row.fName} {row.lName}</h3>
+                      <p>{row.department} / {row.designation}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="card-body">
-                  <p>{row.shift}</p>
-                </div>
-                <div className="card-body">
-                  <p>{row.salaryType} / {row.salaryPeriod} / Rs. {row.basicSalary}</p>
-                </div>
-                <div className="card-body">
-                  <p>{row.enrollSite}</p>
-                </div>
-                <div className="card-body icons-box">
-                      <button
-                        onClick={() => handleEdit(row)}
-                        style={{ background: "none", border: "none" }}
-                      >
-                        <FaEdit className="table-edit" />
-                      </button>
-                      {/* {isActiveTab === "Add Employee" &&(
+                  <div className="card-body">
+                    <p>{row.shift}</p>
+                  </div>
+                  <div className="card-body">
+                    <p>{row.salaryType} / {row.salaryPeriod} / Rs. {row.basicSalary}</p>
+                  </div>
+                  <div className="card-body">
+                    <p>{row.enrollSite}</p>
+                  </div>
+                  <div className="card-body icons-box">
+                    <button
+                      onClick={() => handleEdit(row)}
+                      style={{ background: "none", border: "none" }}
+                    >
+                      <FaEdit className="table-edit" />
+                    </button>
+                    {/* {isActiveTab === "Add Employee" &&(
                       <AddEmployee editData={editData} isEditMode={isEditMode} />
                       )} */}
-                      <button
-                        onClick={() => handleDelete(row.id)}
-                        style={{ background: "none", border: "none" }}
-                      >
-                        <FaTrash className="table-delete" />
-                      </button>
-                      
-                    </div>
-                
-              </div>
+                    <button
+                      onClick={() => handleDelete(row.id)}
+                      style={{ background: "none", border: "none" }}
+                    >
+                      <FaTrash className="table-delete" />
+                    </button>
+
+                  </div>
+
+                </div>
               </>
             ))}
           </div>

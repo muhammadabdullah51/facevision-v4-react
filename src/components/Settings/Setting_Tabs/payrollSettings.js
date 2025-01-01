@@ -12,8 +12,8 @@ const PayrollSettings = () => {
     pyOtByDf: "No",
     cutSalWhByDf: "No",
     lvPUnPByDf: "No",
-    pyrClDt: "No",
-    closingDate: ""
+    isEndDate: "No",
+    customeDate: ""
   });
 
   // Fetch settings from the server
@@ -24,7 +24,7 @@ const PayrollSettings = () => {
       setSettings((prevSettings) => ({
         ...prevSettings,
         ...fetchedData,
-        closingDate: fetchedData.closingDate || "",
+        customeDate: fetchedData.customeDate || "",
       }));
     } catch (error) {
       console.error('Error fetching payroll settings:', error);
@@ -48,7 +48,7 @@ const PayrollSettings = () => {
     if (value >= 1 && value <= 31) {
       setSettings((prevState) => ({
         ...prevState,
-        closingDate: value,
+        customeDate: value,
       }));
     } else {
       alert("Please enter a valid date between 1 and 31.");
@@ -64,7 +64,7 @@ const PayrollSettings = () => {
     { key: "pyOtByDf", label: "Pay for Overtime" },
     { key: "cutSalWhByDf", label: "Cut Salary on working hours" },
     { key: "lvPUnPByDf", label: "Leaves are paid or unpaid" },
-    { key: "pyrClDt", label: "Consider last day of the month for payroll closing date" },
+    { key: "isEndDate", label: "Consider last day of the month for payroll closing date" },
   ];
 
   const handleSubmit = async () => {
@@ -103,18 +103,17 @@ const PayrollSettings = () => {
         ))}
       </ul>
 
-      {settings.pyrClDt === "No" && (
+      {settings.isEndDate === "No" && (
         <div className="checkbox-item" style={{ padding: '25px 10px' }}>
-          <label htmlFor="closingDate">
+          <label>
             If not the last day of the month then choose Closing Date
           </label>
           <input
             type="number"
             placeholder="Enter Closing Date"
             id="closingDate"
-            value={settings.closingDate}
+            value={settings.customeDate}
             onChange={handleDateChange}
-            style={{ padding: '5px', width: '7vw' }}
           />
         </div>
       )}

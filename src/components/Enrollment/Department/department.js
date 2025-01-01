@@ -24,6 +24,8 @@ const Department = () => {
     }
   };
 
+  
+
   return (
     <div>
       <TableComponent

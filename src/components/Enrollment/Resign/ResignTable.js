@@ -61,8 +61,114 @@ const ResignTable = ({ data, setData }) => {
     return () => clearTimeout(timer);
   }, [fetchResign, successModal]);
 
+
+
+
+
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+
+  const filteredData = useMemo(
+    () =>
+      data.filter((row) =>
+        Object.values(row).some((val) =>
+          String(val).toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      ),
+    [data, searchQuery]
+  );
+
+  const handleSelectAllChange = (event) => {
+    const isChecked = event.target.checked;
+    setSelectAll(isChecked);
+
+    if (isChecked) {
+      const allIds = filteredData.map((row) => row.resignId);
+      setSelectedIds(allIds);
+      console.log(allIds);
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleRowCheckboxChange = (event, rowId) => {
+    const isChecked = event.target.checked;
+
+    setSelectedIds((prevSelectedIds) => {
+      if (isChecked) {
+        // Add the row ID to selected IDs
+        return [...prevSelectedIds, rowId];
+      } else {
+        // Remove the row ID from selected IDs
+        const updatedIds = prevSelectedIds.filter((id) => id !== rowId);
+        if (updatedIds.length !== filteredData.length) {
+          setSelectAll(false); // Uncheck "Select All" if a row is deselected
+        }
+        return updatedIds;
+      }
+    });
+    console.log(selectedIds);
+  };
+  useEffect(() => {
+    if (selectedIds.length === filteredData.length && filteredData.length > 0) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  }, [selectedIds, filteredData]);
+
+
+  const handleBulkDelete = () => {
+    if (selectedIds.length > 0) {
+      setModalType("delete selected");
+      setShowModal(true);
+    } else if (selectedIds.length < 1) {
+      setResMsg("No rows selected for deletion.");
+      setShowModal(false);
+      setWarningModal(true);
+    }
+  };
+
+
+  const confirmBulkDelete = async () => {
+    try {
+      const payload = { ids: selectedIds };
+      const response = await axios.post(`${SERVER_URL}rsgn/del/data`, payload);
+      const updatedData = await axios.get(`${SERVER_URL}pr-emp-rsgn/`);
+      setData(updatedData.data);
+      setShowModal(false);
+      setSelectedIds([]); 
+      setSuccessModal(true);
+    } catch (error) {
+      console.error("Error deleting rows:", error);
+    } finally {
+      setShowModal(false);
+    }
+  };
+
+
+ 
   const columns = useMemo(
     () => [
+      {
+        Header: (
+          <input
+            id="delete-checkbox"
+            type="checkbox"
+            checked={filteredData.length > 0 && selectedIds.length === filteredData.length}
+            onChange={handleSelectAllChange}
+          />
+        ),
+        Cell: ({ row }) => (
+          <input
+            id="delete-checkbox"
+            type="checkbox"
+            checked={selectedIds.includes(row.original.resignId)}
+            onChange={(event) => handleRowCheckboxChange(event, row.original.resignId)}
+          />
+        ),
+        id: "selection",
+      },
       {
         Header: "S.No",
         accessor: "serial",
@@ -97,18 +203,55 @@ const ResignTable = ({ data, setData }) => {
         ),
       },
     ],
-    []
+    [filteredData, selectedIds]
   );
 
-  const filteredData = useMemo(
-    () =>
-      data.filter((row) =>
-        Object.values(row).some((val) =>
-          String(val).toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      ),
-    [data, searchQuery]
-  );
+
+
+
+
+
+
+  // const columns = useMemo(
+  //   () => [
+  //     {
+  //       Header: "S.No",
+  //       accessor: "serial",
+  //       Cell: ({ row }) => row.index + 1,
+  //     },
+  //     {
+  //       Header: "Employee Name",
+  //       accessor: "empName",
+  //       Cell: ({ value }) => <span className="bold-fonts">{value}</span>,
+  //     },
+  //     {
+  //       Header: "Date",
+  //       accessor: "date",
+  //     },
+  //     {
+  //       Header: "Reason",
+  //       accessor: "reason",
+  //       Cell: ({ value }) => <span className="bold-fonts">{value}</span>,
+  //     },
+  //     {
+  //       Header: "Action",
+  //       accessor: "action",
+  //       Cell: ({ row }) => (
+  //         <div>
+  //           <button
+  //             onClick={() => handleDelete(row.original.resignId)}
+  //             style={{ background: "none", border: "none" }}
+  //           >
+  //             <FaTrash className="table-delete" />
+  //           </button>
+  //         </div>
+  //       ),
+  //     },
+  //   ],
+  //   []
+  // );
+
+
 
   const {
     getTableProps,
@@ -195,9 +338,14 @@ const ResignTable = ({ data, setData }) => {
     <div className="department-table">
       <ConirmationModal
         isOpen={showModal}
-        message={`Are you sure you want to ${modalType} this Resign?`}
+        message={
+          modalType === "delete selected"
+            ? "Are you sure you want to delete selected items?"
+            : `Are you sure you want to ${modalType} this Resign?`
+        }
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
+          else if (modalType === "delete selected") confirmBulkDelete();
           else confirmDelete();
         }}
         onCancel={() => setShowModal(false)}
@@ -205,13 +353,17 @@ const ResignTable = ({ data, setData }) => {
           modalType === "create"
             ? addAnimation
             : modalType === "update"
-            ? updateAnimation
-            : deleteAnimation
+              ? updateAnimation
+              : deleteAnimation
         }
       />
       <ConirmationModal
         isOpen={successModal}
-        message={`Resign ${modalType}d successfully!`}
+        message={
+          modalType === "delete selected"
+            ? "Selected items deleted successfully!"
+            : `Resign ${modalType}d successfully!`
+        }
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
@@ -272,9 +424,15 @@ const ResignTable = ({ data, setData }) => {
             </svg>
           </button>
         </form>
-        <button className="add-button" onClick={handleAdd}>
-          <FaPlus className="add-icon" /> Add Employee
-        </button>
+
+        <div className="add-delete-conainer" >
+          <button className="add-button" onClick={handleAdd}>
+            <FaPlus className="add-icon" /> Add Employee
+          </button>
+          <button className="add-button submit-button" onClick={handleBulkDelete}>
+            <FaTrash className="add-icon" /> Delete Bulk
+          </button>
+        </div>
       </div>
       {showAddForm && !showEditForm && (
         <div className="add-department-form add-leave-form">
@@ -283,16 +441,13 @@ const ResignTable = ({ data, setData }) => {
             list="employeesList"
             value={
               employees.find((emp) => emp.empId === formData.employee)
-                ? `${
-                    employees.find((emp) => emp.empId === formData.employee)
-                      .empId
-                  } ${
-                    employees.find((emp) => emp.empId === formData.employee)
-                      .fName
-                  } ${
-                    employees.find((emp) => emp.empId === formData.employee)
-                      .lName
-                  }`
+                ? `${employees.find((emp) => emp.empId === formData.employee)
+                  .empId
+                } ${employees.find((emp) => emp.empId === formData.employee)
+                  .fName
+                } ${employees.find((emp) => emp.empId === formData.employee)
+                  .lName
+                }`
                 : formData.employee // Display the selected or typed value
             }
             onChange={(e) => {

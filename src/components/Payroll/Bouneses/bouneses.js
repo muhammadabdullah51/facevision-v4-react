@@ -175,7 +175,7 @@ const Bonuses = () => {
       bonusDuration: formData.bonusDuration,
       bonusAmount: formData.bonusAmount,
       bonusDate: formData.bonusDate,
-      
+
     };
     try {
       await axios.post(`${SERVER_URL}pyr-bns-up/`, updateBounses);
@@ -197,13 +197,87 @@ const Bonuses = () => {
     item.bonusName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+
+  const handleSelectAllChange = (event) => {
+    const isChecked = event.target.checked;
+    setSelectAll(isChecked);
+
+    if (isChecked) {
+      const allIds = filteredData.map((row) => row.id);
+      setSelectedIds(allIds);
+      console.log(allIds);
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleRowCheckboxChange = (event, rowId) => {
+    const isChecked = event.target.checked;
+
+    setSelectedIds((prevSelectedIds) => {
+      if (isChecked) {
+        return [...prevSelectedIds, rowId];
+      } else {
+        const updatedIds = prevSelectedIds.filter((id) => id !== rowId);
+        if (updatedIds.length !== filteredData.length) {
+          setSelectAll(false);
+        }
+        return updatedIds;
+      }
+    });
+    console.log(selectedIds);
+  };
+  useEffect(() => {
+    if (selectedIds.length === filteredData.length && filteredData.length > 0) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  }, [selectedIds, filteredData]);
+
+
+  const handleBulkDelete = () => {
+    if (selectedIds.length > 0) {
+      setModalType("delete selected");
+      setShowModal(true);
+    } else {
+      setResMsg("No rows selected for deletion.");
+      setShowModal(false);
+      setWarningModal(true);
+    }
+  };
+
+
+  const confirmBulkDelete = async () => {
+    try {
+      const payload = { ids: selectedIds };
+      const response = await axios.post(`${SERVER_URL}bonus/del/data`, payload);
+      const updatedData = await axios.get(`${SERVER_URL}pyr-bns/`);
+      setData(updatedData.data);
+      setShowModal(false);
+      setSelectedIds([]);
+      setSuccessModal(true);
+    } catch (error) {
+      console.error("Error deleting rows:", error);
+    } finally {
+      setShowModal(false);
+    }
+  };
+
   return (
     <div className="department-table">
       <ConirmationModal
         isOpen={showModal}
-        message={`Are you sure you want to ${modalType} this Advance Salary?`}
+        message={
+          modalType === "delete selected"
+            ? "Are you sure you want to delete selected items?"
+            : `Are you sure you want to ${modalType} this Bonus?`
+        }
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
+          else if (modalType === "delete selected") confirmBulkDelete();
           else if (modalType === "update") confirmUpdate();
           else confirmDelete();
         }}
@@ -212,13 +286,17 @@ const Bonuses = () => {
           modalType === "create"
             ? addAnimation
             : modalType === "update"
-            ? updateAnimation
-            : deleteAnimation
+              ? updateAnimation
+              : deleteAnimation
         }
       />
       <ConirmationModal
         isOpen={successModal}
-        message={`Advance Salary ${modalType}d successfully!`}
+        message={
+          modalType === "delete selected"
+            ? "Selected items deleted successfully!"
+            : `Bonus ${modalType}d successfully!`
+        }
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
@@ -279,9 +357,15 @@ const Bonuses = () => {
             </svg>
           </button>
         </form>
-        <button className="add-button" onClick={handleAddNew}>
-          <FaPlus /> Add New Bonus
-        </button>
+        <div className="add-delete-conainer">
+          <button className="add-button" onClick={handleAddNew}>
+            <FaPlus /> Add New Bonus
+          </button>
+
+          <button className="add-button submit-button" onClick={handleBulkDelete}>
+            <FaTrash className="add-icon" /> Delete Bulk
+          </button>
+        </div>
       </div>
 
       {showAddForm && !showEditForm && (
@@ -372,7 +456,7 @@ const Bonuses = () => {
           />
           <label>Bonus Date</label>
           <input
-          readOnly
+            readOnly
             type="date"
             placeholder="Bonus Date"
             value={formData.bonusDate}
@@ -380,7 +464,7 @@ const Bonuses = () => {
               setFormData({ ...formData, bonusDate: e.target.value })
             }
           />
-          <button className="submit-button" onClick={()=> updateBonus(formData)}>Update Bonus</button>
+          <button className="submit-button" onClick={() => updateBonus(formData)}>Update Bonus</button>
           <button className="cancel-button" onClick={handleCancel}>Cancel</button>
         </div>
       )}
@@ -389,6 +473,14 @@ const Bonuses = () => {
         <table className="table">
           <thead>
             <tr>
+              <th>
+                <input
+                  id="delete-checkbox"
+                  type="checkbox"
+                  checked={selectAll}
+                  onChange={handleSelectAllChange}
+                />
+              </th>
               <th>Bonus ID</th>
               <th>Bonus Name</th>
               <th>Bonus Duration</th>
@@ -399,7 +491,15 @@ const Bonuses = () => {
           </thead>
           <tbody>
             {filteredData.map((bonus) => (
-              <tr key={bonus._id}>
+              <tr key={bonus.id}>
+                <td>
+                  <input
+                    type="checkbox"
+                    id="delete-checkbox"
+                    checked={selectedIds.includes(bonus.id)}
+                    onChange={(event) => handleRowCheckboxChange(event, bonus.id)}
+                  />
+                </td>
                 <td>{bonus.id}</td>
                 <td className="bold-fonts">{bonus.bonusName}</td>
                 <td>{bonus.bonusDuration}</td>
@@ -427,7 +527,7 @@ const Bonuses = () => {
       </div>
       <div className="break-table">
 
-      <AssignBonus />
+        <AssignBonus />
       </div>
     </div>
   );

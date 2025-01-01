@@ -18,7 +18,7 @@ const Settings = () => {
             case 'general-setting':
                 return <GeneralSettings />;
             case 'advanced-settings':
-                return <AdvancesSettings/>;
+                return <AdvancesSettings />;
             default:
                 return <GeneralSettings />;
         }
@@ -26,13 +26,14 @@ const Settings = () => {
 
     return (
         <div className="settings-page">
-            <div className="tabs">
+            <div className="tabs1 tabs">
                 <button className={`${activeTab === 'general-setting' ? 'active' : ''}`} onClick={() => setActiveTab('general-setting')}>General Settings</button>
                 <button className={`${activeTab === 'advanced-settings' ? 'active' : ''}`} onClick={() => setActiveTab('advanced-settings')}>Advanced Settings</button>
             </div>
             <div className="tab-content">
                 {renderTabContent()}
             </div>
+           
         </div>
     );
 };

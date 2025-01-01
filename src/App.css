@@ -95,6 +95,17 @@
   }
 }
 
+@media only screen and (max-width:700px){
+  :root {
+    --sidebar-font: 0.7rem;
+    --sidebar-font-dropdown: 1vw;
+    --table-text-font: 0.8rem;
+    --headerFont-size:4.5vw;
+    --icon-size:3.5vw;
+    --width-of-input: 90%
+  }
+} 
+
 .break-table {
   margin: 6vh 0;
 }
@@ -211,4 +222,25 @@ body {
     border-radius: 4px;
     font-size: 14px;
     margin: 0 0.5vw 0 0.3vw;
+}
+@media only screen and (max-width:700px) {
+  .date-search input{
+    width: 70%;
+    margin: 0 10%;
+  }
+  .date-search{
+    margin-bottom: 2vh;
+  }
+}
+
+
+input[type="checkbox"]#delete-checkbox::before{
+  content: unset;
+  
+}
+input[type="checkbox"]#delete-checkbox{
+  appearance:auto;
+  accent-color: var(--button-hover-color);
+  width: unset;
+  height: unset;
 }

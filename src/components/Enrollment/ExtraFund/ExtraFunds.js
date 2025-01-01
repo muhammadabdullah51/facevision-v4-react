@@ -222,17 +222,91 @@ const ExtraFunds = () => {
       item.extraFundAmount?.toLowerCase().includes(searchQuery)
   );
 
+
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+
+  const handleSelectAllChange = (event) => {
+    const isChecked = event.target.checked;
+    setSelectAll(isChecked);
+
+    if (isChecked) {
+      const allIds = filteredData.map((row) => row.id);
+      setSelectedIds(allIds);
+      console.log(allIds);
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleRowCheckboxChange = (event, rowId) => {
+    const isChecked = event.target.checked;
+
+    setSelectedIds((prevSelectedIds) => {
+      if (isChecked) {
+        return [...prevSelectedIds, rowId];
+      } else {
+        const updatedIds = prevSelectedIds.filter((id) => id !== rowId);
+        if (updatedIds.length !== filteredData.length) {
+          setSelectAll(false);
+        }
+        return updatedIds;
+      }
+    });
+    console.log(selectedIds);
+  };
+  useEffect(() => {
+    if (selectedIds.length === filteredData.length && filteredData.length > 0) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  }, [selectedIds, filteredData]);
+
+
+  const handleBulkDelete = () => {
+    if (selectedIds.length > 0) {
+      setModalType("delete selected");
+      setShowModal(true);
+    } else {
+      setResMsg("No rows selected for deletion.");
+      setShowModal(false);
+      setWarningModal(true);
+    }
+  };
+
+
+  const confirmBulkDelete = async () => {
+    try {
+      const payload = { ids: selectedIds };
+      const response = await axios.post(`${SERVER_URL}extfund/del/data`, payload);
+      const updatedData = await axios.get(`${SERVER_URL}pyr-ext/`);
+      setData(updatedData.data);
+      setShowModal(false);
+      setSelectedIds([]);
+      setSuccessModal(true);
+    } catch (error) {
+      console.error("Error deleting rows:", error);
+    } finally {
+      setShowModal(false);
+    }
+  };
+
+
   return (
     <div className="department-table">
       <ConirmationModal
         isOpen={showModal}
         message={
-          formData.type === "NotPayable"
-            ? `Are you sure you want to ${modalType} this Extra Fund as NOT PAYABLE amount?`
-            : `Are you sure you want to ${modalType} this Extra Fund as PAYABLE amount?`
+          modalType === "delete selected"
+            ? "Are you sure you want to delete selected items?"
+            : formData.type === "NotPayable"
+              ? `Are you sure you want to ${modalType} this Extra Fund as NOT PAYABLE amount?`
+              : `Are you sure you want to ${modalType} this Extra Fund as PAYABLE amount?`
         }
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
+          else if (modalType === "delete selected") confirmBulkDelete();
           else if (modalType === "update") confirmUpdate();
           else confirmDelete();
         }}
@@ -241,13 +315,17 @@ const ExtraFunds = () => {
           modalType === "create"
             ? addAnimation
             : modalType === "update"
-            ? updateAnimation
-            : deleteAnimation
+              ? updateAnimation
+              : deleteAnimation
         }
       />
       <ConirmationModal
         isOpen={successModal}
-        message={`Extra Fund ${modalType}d successfully!`}
+        message={
+          modalType === "delete selected"
+            ? "Selected items deleted successfully!"
+            : `Extra Fund ${modalType}d successfully!`
+        }
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
@@ -309,9 +387,14 @@ const ExtraFunds = () => {
             </svg>
           </button>
         </form>
-        <button className="add-button" onClick={handleAddNew}>
-          <FaPlus /> Add New Extra Funds
-        </button>
+        <div className="add-delete-conainer">
+          <button className="add-button" onClick={handleAddNew}>
+            <FaPlus /> Add New Extra Funds
+          </button>
+          <button className="add-button submit-button" onClick={handleBulkDelete}>
+            <FaTrash className="add-icon" /> Delete Bulk
+          </button>
+        </div>
       </div>
 
       {showAddForm && !showEditForm && (
@@ -322,13 +405,10 @@ const ExtraFunds = () => {
             list="employeesList"
             value={
               employees.find((emp) => emp.empId === formData.empId)
-                ? `${
-                    employees.find((emp) => emp.empId === formData.empId).empId
-                  } ${
-                    employees.find((emp) => emp.empId === formData.empId).fName
-                  } ${
-                    employees.find((emp) => emp.empId === formData.empId).lName
-                  }`
+                ? `${employees.find((emp) => emp.empId === formData.empId).empId
+                } ${employees.find((emp) => emp.empId === formData.empId).fName
+                } ${employees.find((emp) => emp.empId === formData.empId).lName
+                }`
                 : formData.empId || "" // Display empId, fName, and lName of selected employee or inputted empId
             }
             onChange={(e) => {
@@ -428,17 +508,14 @@ const ExtraFunds = () => {
           <h3>Update Loan</h3>
           <label>Selected Employee</label>
           <input
-          disabled
+            disabled
             list="employeesList"
             value={
               employees.find((emp) => emp.empId === formData.empId)
-                ? `${
-                    employees.find((emp) => emp.empId === formData.empId).empId
-                  } ${
-                    employees.find((emp) => emp.empId === formData.empId).fName
-                  } ${
-                    employees.find((emp) => emp.empId === formData.empId).lName
-                  }`
+                ? `${employees.find((emp) => emp.empId === formData.empId).empId
+                } ${employees.find((emp) => emp.empId === formData.empId).fName
+                } ${employees.find((emp) => emp.empId === formData.empId).lName
+                }`
                 : formData.empId || "" // Display empId, fName, and lName of selected employee or inputted empId
             }
             onChange={(e) => {
@@ -552,6 +629,14 @@ const ExtraFunds = () => {
         <table className="table">
           <thead>
             <tr>
+            <th>
+                <input
+                  id="delete-checkbox"
+                  type="checkbox"
+                  checked={selectAll}
+                  onChange={handleSelectAllChange}
+                />
+              </th>
               <th>ID</th>
               <th>Employee ID</th>
               <th>Employee Name</th>
@@ -569,6 +654,14 @@ const ExtraFunds = () => {
           <tbody>
             {filteredData.map((adv) => (
               <tr key={adv.id}>
+                <td>
+                  <input
+                    type="checkbox"
+                    id="delete-checkbox"
+                    checked={selectedIds.includes(adv.id)}
+                    onChange={(event) => handleRowCheckboxChange(event, adv.id)}
+                  />
+                </td>
                 <td>{adv.id}</td>
                 <td>{adv.empId}</td>
                 <td className="bold-fonts">{adv.empName}</td>
@@ -581,13 +674,12 @@ const ExtraFunds = () => {
                 <td>{adv.reason}</td>
                 <td>
                   <span
-                    className={`status ${
-                      adv.type === "payable"
+                    className={`status ${adv.type === "payable"
                         ? "absentStatus"
                         : adv.type === "Rejected"
-                        ? "absentStatus"
-                        : "presentStatus"
-                    }`}
+                          ? "absentStatus"
+                          : "presentStatus"
+                      }`}
                   >
                     {adv.type}
                   </span>

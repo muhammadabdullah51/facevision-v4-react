@@ -181,11 +181,80 @@ const AssignAllowance = () => {
     item.allowanceName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.allowanceAmount.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.employeeId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.date.toLowerCase().includes(searchQuery.toLowerCase()) 
+    item.date.toLowerCase().includes(searchQuery.toLowerCase())
   );
   const handleCancel = () => {
     setShowAddForm(false);
     setShowEditForm(false);
+  };
+
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+
+  const handleSelectAllChange = (event) => {
+    const isChecked = event.target.checked;
+    setSelectAll(isChecked);
+
+    if (isChecked) {
+      const allIds = filteredData.map((row) => row.id);
+      setSelectedIds(allIds);
+      console.log(allIds);
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleRowCheckboxChange = (event, rowId) => {
+    const isChecked = event.target.checked;
+
+    setSelectedIds((prevSelectedIds) => {
+      if (isChecked) {
+        return [...prevSelectedIds, rowId];
+      } else {
+        const updatedIds = prevSelectedIds.filter((id) => id !== rowId);
+        if (updatedIds.length !== filteredData.length) {
+          setSelectAll(false);
+        }
+        return updatedIds;
+      }
+    });
+    console.log(selectedIds);
+  };
+  useEffect(() => {
+    if (selectedIds.length === filteredData.length && filteredData.length > 0) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  }, [selectedIds, filteredData]);
+
+
+  const handleBulkDelete = () => {
+    if (selectedIds.length > 0) {
+      setModalType("delete selected");
+      setShowModal(true);
+    } else {
+      setResMsg("No rows selected for deletion.");
+      setShowModal(false);
+      setWarningModal(true);
+    }
+  };
+
+
+  const confirmBulkDelete = async () => {
+    try {
+      const payload = { ids: selectedIds };
+      const response = await axios.post(`${SERVER_URL}asgnawlc/del/data`, payload);
+      const updatedData = await axios.get(`${SERVER_URL}assign-allowances/`);
+      setData(updatedData.data);
+      setShowModal(false);
+      setSelectedIds([]);
+      setSuccessModal(true);
+    } catch (error) {
+      console.error("Error deleting rows:", error);
+    } finally {
+      setShowModal(false);
+    }
   };
 
   return (
@@ -196,11 +265,14 @@ const AssignAllowance = () => {
           modalType === "create"
             ? `Are you sure you want to confirm Assign Allowance?`
             : modalType === "update"
-            ? "Are you sure you want to update Assigned Allowance?"
-            : `Are you sure you want to delete Assigned Allowance?`
+              ? "Are you sure you want to update Assigned Allowance?"
+              : modalType === "delete selected"
+                ? "Are you sure you want to delete selected items?"
+                : `Are you sure you want to delete Assigned Allowance?`
         }
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
+          else if (modalType === "delete selected") confirmBulkDelete();
           else if (modalType === "update") confirmUpdate();
           else confirmDelete();
         }}
@@ -209,13 +281,17 @@ const AssignAllowance = () => {
           modalType === "create"
             ? addAnimation
             : modalType === "update"
-            ? updateAnimation
-            : deleteAnimation
+              ? updateAnimation
+              : deleteAnimation
         }
       />
       <ConirmationModal
         isOpen={successModal}
-        message={`Assign Allowance ${modalType}d successfully!`}
+        message={
+          modalType === "delete selected"
+            ? "Selected items deleted successfully!"
+            : `Assign Allowance ${modalType}d successfully!`
+        }
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
@@ -230,57 +306,60 @@ const AssignAllowance = () => {
         warningModal={warningModal}
       />
       <div className="table-header" >
-      <form className="form">
-            <button>
-              <svg
-                width="17"
-                height="16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                role="img"
-                aria-labelledby="search"
-              >
-                <path
-                  d="M7.667 12.667A5.333 5.333 0 107.667 2a5.333 5.333 0 000 10.667zM14.334 14l-2.9-2.9"
-                  stroke="currentColor"
-                  strokeWidth="1.333"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                ></path>
-              </svg>
-            </button>
-            <input
-              value={searchQuery}
-              onChange={handleSearchChange}
-              placeholder="Search..."
-              className="input"
-              required
-              type="text"
-            />
-            <button className="reset" type="reset"
-            onClick={() => setSearchQuery("")}>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
+        <form className="form">
+          <button>
+            <svg
+              width="17"
+              height="16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              role="img"
+              aria-labelledby="search"
+            >
+              <path
+                d="M7.667 12.667A5.333 5.333 0 107.667 2a5.333 5.333 0 000 10.667zM14.334 14l-2.9-2.9"
                 stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 18L18 6M6 6l12 12"
-                ></path>
-              </svg>
-            </button>
-          </form>
-        <button
-          className="add-button"
-          onClick={handleAddNew}
-        >
-          <FaPlus /> Assign New Allowance
-        </button>
+                strokeWidth="1.333"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              ></path>
+            </svg>
+          </button>
+          <input
+            value={searchQuery}
+            onChange={handleSearchChange}
+            placeholder="Search..."
+            className="input"
+            required
+            type="text"
+          />
+          <button className="reset" type="reset"
+            onClick={() => setSearchQuery("")}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            </svg>
+          </button>
+        </form>
+
+        <div className="add-delete-conainer">
+          <button className="add-button" onClick={handleAddNew}>
+            <FaPlus /> Assign New Allowance
+          </button>
+          <button className="add-button submit-button" onClick={handleBulkDelete}>
+            <FaTrash className="add-icon" /> Delete Bulk
+          </button>
+        </div>
       </div>
       {showAddForm && !showEditForm && (
         <div className="add-leave-form">
@@ -292,11 +371,9 @@ const AssignAllowance = () => {
             placeholder="Search or select an employee"
             value={
               employees.find((emp) => emp.id === formData.empId)
-                ? `${
-                    employees.find((emp) => emp.id === formData.empId).empId
-                  } ${
-                    employees.find((emp) => emp.id === formData.empId).fName
-                  } ${employees.find((emp) => emp.id === formData.empId).lName}`
+                ? `${employees.find((emp) => emp.id === formData.empId).empId
+                } ${employees.find((emp) => emp.id === formData.empId).fName
+                } ${employees.find((emp) => emp.id === formData.empId).lName}`
                 : formData.empId || "" // Display empId, fName, and lName of the selected employee or user input
             }
             onChange={(e) => {
@@ -363,11 +440,9 @@ const AssignAllowance = () => {
             placeholder="Search or select an employee"
             value={
               employees.find((emp) => emp.id === formData.empId)
-                ? `${
-                    employees.find((emp) => emp.id === formData.empId).empId
-                  } ${
-                    employees.find((emp) => emp.id === formData.empId).fName
-                  } ${employees.find((emp) => emp.id === formData.empId).lName}`
+                ? `${employees.find((emp) => emp.id === formData.empId).empId
+                } ${employees.find((emp) => emp.id === formData.empId).fName
+                } ${employees.find((emp) => emp.id === formData.empId).lName}`
                 : formData.empId || "" // Display empId, fName, and lName of the selected employee or user input
             }
             onChange={(e) => {
@@ -431,6 +506,14 @@ const AssignAllowance = () => {
         <table className="table">
           <thead>
             <tr>
+            <th>
+                <input
+                  id="delete-checkbox"
+                  type="checkbox"
+                  checked={selectAll}
+                  onChange={handleSelectAllChange}
+                />
+              </th>
               <th>ID</th>
               <th>Employee ID</th>
               <th>Employee Name</th>
@@ -443,6 +526,14 @@ const AssignAllowance = () => {
           <tbody>
             {filteredData.map((bonus) => (
               <tr key={bonus.id}>
+                <td>
+                  <input
+                    type="checkbox"
+                    id="delete-checkbox"
+                    checked={selectedIds.includes(bonus.id)}
+                    onChange={(event) => handleRowCheckboxChange(event, bonus.id)}
+                  />
+                </td>
                 <td>{bonus.id}</td>
                 <td>{bonus.employeeId}</td>
                 <td className="bold-fonts">{bonus.empName}</td>

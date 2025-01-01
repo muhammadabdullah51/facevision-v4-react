@@ -69,3 +69,10 @@ button {
         font-size: 1.2vw;
     }
 }
+@media only screen and (max-width: 1300px) {
+    input[type="time"] {
+        width: 92%;
+        height: 3vh;
+        font-size: var(--table-text-font)
+    }
+}

@@ -42,16 +42,16 @@ const AttendanceTable = ({ data, setData }) => {
       location: "",
     });
   const [editFormData, setEditFormData] = useState({
-      allAttendanceId: null,
-      empId: "",
-      employee: "",
-      time_in: "",
-      time_out: "",
-      date: "",
-      attendance_marked: false,
-      status: "Absent",
-      location: "",
-    });
+    allAttendanceId: null,
+    empId: "",
+    employee: "",
+    time_in: "",
+    time_out: "",
+    date: "",
+    attendance_marked: false,
+    status: "Absent",
+    location: "",
+  });
 
   useEffect(() => {
     dispatch(setAttendanceData({ formName: "attendance", data: formData }));
@@ -102,9 +102,114 @@ const AttendanceTable = ({ data, setData }) => {
     return () => clearTimeout(timer);
   }, [fetchAtt, successModal]);
 
-  // Define columns for the table
+
+
+
+
+
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+
+  const filteredData = useMemo(
+    () =>
+      data.filter((row) =>
+        Object.values(row).some((val) =>
+          String(val).toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      ),
+    [data, searchQuery]
+  );
+
+  const handleSelectAllChange = (event) => {
+    const isChecked = event.target.checked;
+    setSelectAll(isChecked);
+
+    if (isChecked) {
+      const allIds = filteredData.map((row) => row.allAttendanceId);
+      setSelectedIds(allIds);
+      console.log(allIds);
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleRowCheckboxChange = (event, rowId) => {
+    const isChecked = event.target.checked;
+
+    setSelectedIds((prevSelectedIds) => {
+      if (isChecked) {
+        // Add the row ID to selected IDs
+        return [...prevSelectedIds, rowId];
+      } else {
+        // Remove the row ID from selected IDs
+        const updatedIds = prevSelectedIds.filter((id) => id !== rowId);
+        if (updatedIds.length !== filteredData.length) {
+          setSelectAll(false); // Uncheck "Select All" if a row is deselected
+        }
+        return updatedIds;
+      }
+    });
+    console.log(selectedIds);
+  };
+  useEffect(() => {
+    if (selectedIds.length === filteredData.length && filteredData.length > 0) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  }, [selectedIds, filteredData]);
+
+
+  const handleBulkDelete = () => {
+    if (selectedIds.length > 0) {
+      setModalType("delete selected");
+      setShowModal(true);
+    } else if (selectedIds.length < 1) {
+      setResMsg("No rows selected for deletion.");
+      setShowModal(false);
+      setWarningModal(true);
+    }
+  };
+
+
+  const confirmBulkDelete = async () => {
+    try {
+      const payload = { ids: selectedIds };
+      const response = await axios.post(`${SERVER_URL}allatt/del/data`, payload);
+      const updatedData = await axios.get(`${SERVER_URL}all-attendance/`);
+      setData(updatedData.data);
+      setShowModal(false);
+      setSelectedIds([]);
+      setSuccessModal(true);
+    } catch (error) {
+      console.error("Error deleting rows:", error);
+    } finally {
+      setShowModal(false);
+    }
+  };
+
+
   const columns = useMemo(
     () => [
+      {
+        Header: (
+          <input
+            id="delete-checkbox"
+            type="checkbox"
+            checked={filteredData.length > 0 && selectedIds.length === filteredData.length}
+            onChange={handleSelectAllChange} // Function to handle "Select All"
+          />
+        ),
+        Cell: ({ row }) => (
+          <input
+            id="delete-checkbox"
+            type="checkbox"
+            checked={selectedIds.includes(row.original.allAttendanceId)} // Use an appropriate unique field for row identification (e.g., allAttendanceId)
+            onChange={(event) => handleRowCheckboxChange(event, row.original.allAttendanceId)} // Row selection handler
+          />
+        ),
+        id: "selection",
+      },
       {
         Header: "S.No",
         accessor: "serial",
@@ -112,11 +217,10 @@ const AttendanceTable = ({ data, setData }) => {
       },
       {
         Header: "Employee ID",
-        accessor: "employeeId", // Keeps the original field name
+        accessor: "employeeId",
       },
       {
         Header: "Employee Name",
-        // Combines first name and last name
         Cell: ({ row }) => (
           <span className="bold-fonts">
             {row.original.emp_fName} {row.original.emp_lName}
@@ -125,15 +229,15 @@ const AttendanceTable = ({ data, setData }) => {
       },
       {
         Header: "Time In",
-        accessor: "time_in", // Keeps the original field name
+        accessor: "time_in",
       },
       {
         Header: "Time Out",
-        accessor: "time_out", // Keeps the original field name
+        accessor: "time_out",
       },
       {
         Header: "Date",
-        accessor: "date", // Keeps the original field name
+        accessor: "date",
       },
       {
         Header: "Attendance Marked",
@@ -146,12 +250,12 @@ const AttendanceTable = ({ data, setData }) => {
         Cell: ({ value }) => (
           <span
             className={`status ${value === "Present"
-              ? "presentStatus"
-              : value === "Late"
-                ? "lateStatus"
-                : value === "Absent"
-                  ? "absentStatus"
-                  : "none"
+                ? "presentStatus"
+                : value === "Late"
+                  ? "lateStatus"
+                  : value === "Absent"
+                    ? "absentStatus"
+                    : "none"
               }`}
           >
             {value}
@@ -183,19 +287,9 @@ const AttendanceTable = ({ data, setData }) => {
         ),
       },
     ],
-    []
+    [filteredData, selectedIds] // Ensure the columns are updated when the filteredData or selectedIds change
   );
 
-  // Filter data based on search query
-  const filteredData = useMemo(
-    () =>
-      data.filter((row) =>
-        Object.values(row).some((val) =>
-          String(val).toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      ),
-    [data, searchQuery]
-  );
 
   // Set up the table
   const {
@@ -394,9 +488,14 @@ const AttendanceTable = ({ data, setData }) => {
     <div className="department-table">
       <ConirmationModal
         isOpen={showModal}
-        message={`Are you sure you want to ${modalType} this Manual Attendance?`}
+        message={
+          modalType === "delete selected"
+            ? "Are you sure you want to delete selected items?"
+            : `Are you sure you want to ${modalType} this Manual Attendance?`
+        }
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
+          else if (modalType === "delete selected") confirmBulkDelete();
           else if (modalType === "update") confirmUpdate();
           else confirmDelete();
         }}
@@ -411,7 +510,11 @@ const AttendanceTable = ({ data, setData }) => {
       />
       <ConirmationModal
         isOpen={successModal}
-        message={`Attendance ${modalType}d successfully!`}
+        message={
+          modalType === "delete selected"
+            ? "Selected items deleted successfully!"
+            : `Attendance ${modalType}d successfully!`
+        }
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
@@ -472,9 +575,16 @@ const AttendanceTable = ({ data, setData }) => {
             </svg>
           </button>
         </form>
-        <button className="add-button" onClick={handleAdd}>
-          <FaPlus className="add-icon" /> Add Manual Attendance
-        </button>
+        <div className="add-delete-conainer" >
+
+          <button className="add-button" onClick={handleAdd}>
+            <FaPlus className="add-icon" /> Add Manual Attendance
+          </button>
+
+          <button className="add-button submit-button" onClick={handleBulkDelete}>
+            <FaTrash className="add-icon" /> Delete Bulk
+          </button>
+        </div>
       </div>
 
 
@@ -740,7 +850,7 @@ const AttendanceTable = ({ data, setData }) => {
                 status: "",
                 location: "",
               });
-              
+
             }}
           >
             Cancel

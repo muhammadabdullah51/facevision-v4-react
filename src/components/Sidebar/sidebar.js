@@ -8,7 +8,9 @@ import {
     faUsers, faBan, faCog, faUser, faBuilding, faTag,
     faMapMarkerAlt, faIdBadge, faPersonWalkingDashedLineArrowRight, faChevronDown,
     faChevronUp, faHandHoldingUsd, faClipboardCheck, faAward, faFileInvoiceDollar,
-    faTabletAlt, faDollarSign, faInfoCircle, faCheckCircle, faFileInvoice, faMoneyBillWave, faBed, faCoffee 
+    faTabletAlt, faDollarSign, faInfoCircle, faCheckCircle, faFileInvoice, faMoneyBillWave, faBed, faCoffee, 
+    faTimes,
+    faBars
 } from '@fortawesome/free-solid-svg-icons';
 
 
@@ -55,6 +57,8 @@ const menuItems = [
 const Sidebar = ({ onMenuChange }) => {
     const [activeMenu, setActiveMenu] = useState('');
     const [activeButton, setActiveButton] = useState('Dashboard');
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
 
     const handleMenuClick = (menu) => {
         setActiveMenu(menu === activeMenu ? '' : menu);
@@ -63,10 +67,16 @@ const Sidebar = ({ onMenuChange }) => {
     const handleButtonClick = (menu) => {
         onMenuChange(menu);
         setActiveButton(menu);
+        if (window.innerWidth <= 700) setIsSidebarOpen(false);
     };
 
     return (
-        <div className="sidebar">
+        <>
+        <button className="hamburger" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+                <FontAwesomeIcon icon={isSidebarOpen ? faTimes : faBars} />
+            </button>
+        {/* <div className="sidebar"> */}
+        <div className={`sidebar ${isSidebarOpen ? 'active' : ''}`}>
             <img src={Logo} alt="FaceVision Logo" className="logo" />
             <div className="sidebar-main">
                 <div className="sidebar-menu">
@@ -109,6 +119,7 @@ const Sidebar = ({ onMenuChange }) => {
                 </div>
             </div>
         </div>
+        </>
     );
 };
 

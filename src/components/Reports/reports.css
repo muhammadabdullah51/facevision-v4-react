@@ -156,3 +156,36 @@
         width: 18vw;
     }
 }
+
+@media only screen and (max-width: 700px){
+    .report-header{
+        flex-direction: column;
+        width: 100%;
+    }
+    .report-header h2{
+        font-size: var(--table-text-font);
+        width: unset;
+    }
+    .report-selector{
+        width: 95%;
+        padding: 2vw;
+    }
+    .report-selector select{
+        font-size: var(--table-text-font);
+        width: 80%;
+    }
+    .report-selector svg{
+        font-size: 1.5rem;
+
+    }
+    .dropdown{
+        width: 100%;
+    }
+    .button.export-csv{
+        width: 45%;
+    }
+    .report{
+        flex-direction: column;
+        gap: 2vh;
+    }
+}

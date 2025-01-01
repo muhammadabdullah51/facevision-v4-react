@@ -95,8 +95,8 @@ const Tax = () => {
   const handleAddNew = () => {
     setFormData({
       type: "",
-      nature:"",
-      percent:"",
+      nature: "",
+      percent: "",
       amount: "",
       date: "",
     });
@@ -113,7 +113,7 @@ const Tax = () => {
       setShowModal(false);
       setWarningModal(true);
     }
-    if(formData.nature === 'percentage' ){
+    if (formData.nature === 'percentage') {
 
       if (formData.percent < 1 || formData.percent > 100) {
         setResMsg("Values Can't be Less than 1 or Greater then 100");
@@ -121,8 +121,8 @@ const Tax = () => {
         setWarningModal(true);
         return;
       }
-      
-    } else if(formData.nature === 'fixedamount' ){
+
+    } else if (formData.nature === 'fixedamount') {
 
       if (formData.amount < 1) {
         setResMsg("Values Can't be Negative or zero");
@@ -134,8 +134,8 @@ const Tax = () => {
 
     const bouneses = {
       type: formData.type,
-      nature:formData.nature,
-      percent:formData.nature == 'fixedamount' ? 0 : formData.percent,
+      nature: formData.nature,
+      percent: formData.nature == 'fixedamount' ? 0 : formData.percent,
       amount: formData.nature == 'percentage' ? 0 : formData.amount,
       date: formData.date,
     };
@@ -170,7 +170,7 @@ const Tax = () => {
       id: row.id,
       type: row.type,
       nature: row.nature,
-      percent:formData.nature == 'fixedamount' ? 0 : formData.percent,
+      percent: formData.nature == 'fixedamount' ? 0 : formData.percent,
       amount: formData.nature == 'percentage' ? 0 : formData.amount,
       date: row.date,
     });
@@ -182,7 +182,7 @@ const Tax = () => {
       setShowModal(false);
       setWarningModal(true);
     }
-    if(formData.nature === 'percentage' ){
+    if (formData.nature === 'percentage') {
 
       if (formData.percent < 1 || formData.percent > 100) {
         setResMsg("Values Can't be Less than 1 or Greater then 100");
@@ -190,7 +190,7 @@ const Tax = () => {
         setWarningModal(true);
         return;
       }
-    } else if(formData.nature === 'fixedamount' ){
+    } else if (formData.nature === 'fixedamount') {
 
       if (formData.amount < 1) {
         setResMsg("Values Can't be Negative or zero");
@@ -203,7 +203,7 @@ const Tax = () => {
       id: formData.id,
       type: formData.type,
       nature: formData.nature,
-      percent:formData.nature == 'fixedamount' ? 0 : formData.percent,
+      percent: formData.nature == 'fixedamount' ? 0 : formData.percent,
       amount: formData.nature == 'percentage' ? 0 : formData.amount,
       date: formData.date,
     };
@@ -228,13 +228,87 @@ const Tax = () => {
     item.taxName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+
+  const handleSelectAllChange = (event) => {
+    const isChecked = event.target.checked;
+    setSelectAll(isChecked);
+
+    if (isChecked) {
+      const allIds = filteredData.map((row) => row.id);
+      setSelectedIds(allIds);
+      console.log(allIds);
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleRowCheckboxChange = (event, rowId) => {
+    const isChecked = event.target.checked;
+
+    setSelectedIds((prevSelectedIds) => {
+      if (isChecked) {
+        return [...prevSelectedIds, rowId];
+      } else {
+        const updatedIds = prevSelectedIds.filter((id) => id !== rowId);
+        if (updatedIds.length !== filteredData.length) {
+          setSelectAll(false);
+        }
+        return updatedIds;
+      }
+    });
+    console.log(selectedIds);
+  };
+  useEffect(() => {
+    if (selectedIds.length === filteredData.length && filteredData.length > 0) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  }, [selectedIds, filteredData]);
+
+
+  const handleBulkDelete = () => {
+    if (selectedIds.length > 0) {
+      setModalType("delete selected");
+      setShowModal(true);
+    } else {
+      setResMsg("No rows selected for deletion.");
+      setShowModal(false);
+      setWarningModal(true);
+    }
+  };
+
+
+  const confirmBulkDelete = async () => {
+    try {
+      const payload = { ids: selectedIds };
+      const response = await axios.post(`${SERVER_URL}tax/del/data`, payload);
+      const updatedData = await axios.get(`${SERVER_URL}taxes/`);
+      setData(updatedData.data);
+      setShowModal(false);
+      setSelectedIds([]);
+      setSuccessModal(true);
+    } catch (error) {
+      console.error("Error deleting rows:", error);
+    } finally {
+      setShowModal(false);
+    }
+  };
+
   return (
     <div className="department-table">
       <ConirmationModal
         isOpen={showModal}
-        message={`Are you sure you want to ${modalType} this Tax?`}
+        message={
+          modalType === "delete selected"
+            ? "Are you sure you want to delete selected items?"
+            : `Are you sure you want to ${modalType} this Tax?`
+        }
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
+          else if (modalType === "delete selected") confirmBulkDelete();
           else if (modalType === "update") confirmUpdate();
           else confirmDelete();
         }}
@@ -243,13 +317,17 @@ const Tax = () => {
           modalType === "create"
             ? addAnimation
             : modalType === "update"
-            ? updateAnimation
-            : deleteAnimation
+              ? updateAnimation
+              : deleteAnimation
         }
       />
       <ConirmationModal
         isOpen={successModal}
-        message={`Tax ${modalType}d successfully!`}
+        message={
+          modalType === "delete selected"
+            ? "Selected items deleted successfully!"
+            : `Tax ${modalType}d successfully!`
+        }
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
@@ -310,9 +388,14 @@ const Tax = () => {
             </svg>
           </button>
         </form>
-        <button className="add-button" onClick={handleAddNew}>
-          <FaPlus /> Add New Tax
-        </button>
+        <div className="add-delete-conainer">
+          <button className="add-button" onClick={handleAddNew}>
+            <FaPlus /> Add New Tax
+          </button>
+          <button className="add-button submit-button" onClick={handleBulkDelete}>
+            <FaTrash className="add-icon" /> Delete Bulk
+          </button>
+        </div>
       </div>
 
       {showAddForm && !showEditForm && (
@@ -344,12 +427,12 @@ const Tax = () => {
             ))}
           </datalist>
 
-            <label>Nature</label>
+          <label>Nature</label>
           <select
-          value={formData.nature}
-          onChange={(e) =>
-            setFormData({...formData, nature: e.target.value })
-          }
+            value={formData.nature}
+            onChange={(e) =>
+              setFormData({ ...formData, nature: e.target.value })
+            }
           >
             <option value="">Select Nature</option>
             <option value="fixedamount">Fixed Amount</option>
@@ -360,29 +443,29 @@ const Tax = () => {
             <>
               <label>Percentage %</label>
               <input
-              type="number"
-              placeholder="Percentage %"
-              value={formData.percent}
-              onChange={(e) =>
-                setFormData({ ...formData, percent: e.target.value })
-              }
+                type="number"
+                placeholder="Percentage %"
+                value={formData.percent}
+                onChange={(e) =>
+                  setFormData({ ...formData, percent: e.target.value })
+                }
               />
             </>
-        ) : (
-          <>
-          <label>Amount</label>
-          <input
-            type="number"
-            placeholder="Tax Amount"
-            value={formData.amount}
-            onChange={(e) =>
-              setFormData({ ...formData, amount: e.target.value })
-            }
-          />
-          </>
-        )}
-          
-          
+          ) : (
+            <>
+              <label>Amount</label>
+              <input
+                type="number"
+                placeholder="Tax Amount"
+                value={formData.amount}
+                onChange={(e) =>
+                  setFormData({ ...formData, amount: e.target.value })
+                }
+              />
+            </>
+          )}
+
+
           <label>Date</label>
           <input
             type="date"
@@ -427,12 +510,12 @@ const Tax = () => {
             ))}
           </datalist>
 
-            <label>Nature</label>
+          <label>Nature</label>
           <select
-          value={formData.nature}
-          onChange={(e) =>
-            setFormData({...formData, nature: e.target.value })
-          }
+            value={formData.nature}
+            onChange={(e) =>
+              setFormData({ ...formData, nature: e.target.value })
+            }
           >
             <option value="fixedamount">Fixed Amount</option>
             <option value="percentage">Percentage</option>
@@ -442,31 +525,31 @@ const Tax = () => {
             <>
               <label>Percentage %</label>
               <input
-              type="number"
-              placeholder="Percentage %"
-              value={formData.percent}
-              onChange={(e) =>
-                setFormData({ ...formData, percent: e.target.value })
-              }
-              
+                type="number"
+                placeholder="Percentage %"
+                value={formData.percent}
+                onChange={(e) =>
+                  setFormData({ ...formData, percent: e.target.value })
+                }
+
               />
             </>
-        ) : (
-          <>
-          <label>Amount</label>
-          <input
-            type="number"
-            placeholder="Tax Amount"
-            value={formData.amount}
-            onChange={(e) =>
-              setFormData({ ...formData, amount: e.target.value })
-            }
-          />
-          </>
-        )}
-          
-         
-          
+          ) : (
+            <>
+              <label>Amount</label>
+              <input
+                type="number"
+                placeholder="Tax Amount"
+                value={formData.amount}
+                onChange={(e) =>
+                  setFormData({ ...formData, amount: e.target.value })
+                }
+              />
+            </>
+          )}
+
+
+
           <label>Date</label>
           <input
             type="date"
@@ -490,6 +573,14 @@ const Tax = () => {
         <table className="table">
           <thead>
             <tr>
+            <th>
+                <input
+                  id="delete-checkbox"
+                  type="checkbox"
+                  checked={selectAll}
+                  onChange={handleSelectAllChange}
+                />
+              </th>
               <th>ID</th>
               <th>Tax Type</th>
               <th>Nature</th>
@@ -501,6 +592,14 @@ const Tax = () => {
           <tbody>
             {filteredData.map((bonus) => (
               <tr key={bonus.id}>
+                <td>
+                  <input
+                    type="checkbox"
+                    id="delete-checkbox"
+                    checked={selectedIds.includes(bonus.id)}
+                    onChange={(event) => handleRowCheckboxChange(event, bonus.id)}
+                  />
+                </td>
                 <td>{bonus.id}</td>
                 <td className="bold-fonts">{bonus.taxName}</td>
                 <td>{bonus.nature}</td>
@@ -527,7 +626,7 @@ const Tax = () => {
         </table>
       </div>
       <div className="break-table">
-      <AssignTax />
+        <AssignTax />
       </div>
     </div>
   );

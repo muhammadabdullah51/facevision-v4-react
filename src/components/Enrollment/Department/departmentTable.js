@@ -22,8 +22,8 @@ const TableComponent = ({ data, setData }) => {
     setCurrentPage(selected);
   };
 
- 
- 
+
+
   const [formData, setFormData] = useState({
     // _id: "",
     dptId: null,
@@ -41,7 +41,7 @@ const TableComponent = ({ data, setData }) => {
   // Fetch departments data
   const fetchDepartments = useCallback(async () => {
     setLoading(true);
-   try {
+    try {
       const response = await axios.get(`${SERVER_URL}pr-dpt/`);
       setData(response.data.context);
     } catch (error) {
@@ -112,12 +112,12 @@ const TableComponent = ({ data, setData }) => {
   };
 
   const confirmAdd = async () => {
-    if (!formData.name ) {
+    if (!formData.name) {
       setResMsg("Please fill in atleast Department Name fields.")
       setShowModal(false);
       setWarningModal(true);
       return;
-  }
+    }
     const newDepartment = {
       // dptId: formData.dptId,
       'name': formData.name,
@@ -133,14 +133,14 @@ const TableComponent = ({ data, setData }) => {
         setShowModal(false);
         setSuccessModal(true);
         fetchDepartments();
-      }else {
+      } else {
         setShowModal(false);
         setWarningModal(true);
       }
       const updatedData = await axios.get(`${SERVER_URL}pr-dpt/`
       );
       setData(updatedData.data.context);
-     
+
     } catch (error) {
       setWarningModal(true);
     }
@@ -159,7 +159,7 @@ const TableComponent = ({ data, setData }) => {
       String(val).toLowerCase().includes(searchQuery.toLowerCase())
     )
   );
- 
+
   const currentPageData = filteredData.slice(
     currentPage * rowsPerPage,
     (currentPage + 1) * rowsPerPage
@@ -177,7 +177,7 @@ const TableComponent = ({ data, setData }) => {
     setShowModal(true);
   };
   const confirmUpdate = async () => {
-    if (!formData.name){
+    if (!formData.name) {
       setResMsg("Please fill in atleast Department Name fields.")
       setShowModal(false);
       setWarningModal(true);
@@ -205,14 +205,94 @@ const TableComponent = ({ data, setData }) => {
     } catch (error) {
     }
   };
+
+
+
+
+
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+
+  const handleSelectAllChange = (event) => {
+    const isChecked = event.target.checked;
+    setSelectAll(isChecked);
+
+    if (isChecked) {
+      const allIds = currentPageData.map((row) => row.dptId);
+      setSelectedIds(allIds);
+      console.log(allIds);
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleRowCheckboxChange = (event, rowId) => {
+    const isChecked = event.target.checked;
+
+    setSelectedIds((prevSelectedIds) => {
+      if (isChecked) {
+        // Add the row ID to selected IDs
+        return [...prevSelectedIds, rowId];
+      } else {
+        // Remove the row ID from selected IDs
+        const updatedIds = prevSelectedIds.filter((id) => id !== rowId);
+        if (updatedIds.length !== currentPageData.length) {
+          setSelectAll(false); // Uncheck "Select All" if a row is deselected
+        }
+        return updatedIds;
+      }
+    });
+    console.log(selectedIds);
+  };
+  useEffect(() => {
+    if (selectedIds.length === currentPageData.length && currentPageData.length > 0) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  }, [selectedIds, currentPageData]);
+
+
+  const handleBulkDelete = () => {
+    if (selectedIds.length > 0) {
+      setModalType("delete selected");
+      setShowModal(true);
+    } else if (selectedIds.length < 1) {
+      setResMsg("No rows selected for deletion.");
+      setShowModal(false);
+      setWarningModal(true);
+    }
+  };
+
+
+  const confirmBulkDelete = async () => {
+    try {
+      const payload = { ids: selectedIds };
+      const response = await axios.post(`${SERVER_URL}dpt/del/data`, payload);
+      const updatedData = await axios.get(`${SERVER_URL}pr-dpt/`);
+      setData(updatedData.data.context);
+      setShowModal(false);
+      setSelectedIds([]); 
+      setSuccessModal(true);
+    } catch (error) {
+      console.error("Error deleting rows:", error);
+    } finally {
+      setShowModal(false);
+    }
+  };
   return (
     <div className="department-table">
       <ConirmationModal
         isOpen={showModal}
-        message={`Are you sure you want to ${modalType} this department?`}
+        message={
+          modalType === "delete selected"
+            ? "Are you sure you want to delete selected items?"
+            : `Are you sure you want to ${modalType} this Department?`
+        } 
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
           else if (modalType === "update") confirmUpdate();
+          else if (modalType === "delete selected") confirmBulkDelete();
           else confirmDelete();
         }}
         onCancel={() => setShowModal(false)}
@@ -220,13 +300,17 @@ const TableComponent = ({ data, setData }) => {
           modalType === "create"
             ? addAnimation
             : modalType === "update"
-            ? updateAnimation
-            : deleteAnimation
+              ? updateAnimation
+              : deleteAnimation
         }
       />
       <ConirmationModal
         isOpen={successModal}
-        message={`Department ${modalType}d successfully!`}
+        message={
+          modalType === "delete selected"
+            ? "Selected items deleted successfully!"
+            : `Department ${modalType}d successfully!`
+        }
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
@@ -288,10 +372,15 @@ const TableComponent = ({ data, setData }) => {
             </svg>
           </button>
         </form>
+        <div className="add-delete-conainer" >
 
-        <button className="add-button" onClick={handleAdd}>
-          <FaPlus className="add-icon" /> Add New Department
-        </button>
+          <button className="add-button " onClick={handleAdd}>
+            <FaPlus className="add-icon" /> Add New Department
+          </button>
+          <button className="add-button submit-button" onClick={handleBulkDelete}>
+            <FaTrash className="add-icon" /> Delete Bulk
+          </button>
+        </div>
       </div>
 
       {showAddForm && !showEditForm && (
@@ -376,6 +465,14 @@ const TableComponent = ({ data, setData }) => {
         <table className="table">
           <thead>
             <tr className="thead-row">
+              <th>
+                <input
+                  id="delete-checkbox"
+                  type="checkbox"
+                  checked={selectAll}
+                  onChange={handleSelectAllChange}
+                />
+              </th>
               <th>S.No</th>
               <th>Department ID</th>
               <th>Department Name</th>
@@ -387,6 +484,14 @@ const TableComponent = ({ data, setData }) => {
           <tbody>
             {currentPageData.map((row, index) => (
               <tr key={row.dptId}>
+                <td>
+                  <input
+                    type="checkbox"
+                    id="delete-checkbox"
+                    checked={selectedIds.includes(row.dptId)}
+                    onChange={(event) => handleRowCheckboxChange(event, row.dptId)}
+                  />
+                </td>
                 <td>{index + 1}</td>
                 <td>{row.dptId}</td>
                 <td>{row.name}</td>
@@ -413,7 +518,7 @@ const TableComponent = ({ data, setData }) => {
       </div>
 
       <div className="pagination">
-      <ReactPaginate
+        <ReactPaginate
           previousLabel={"Previous"}
           nextLabel={"Next"}
           breakLabel={"..."}

@@ -496,7 +496,7 @@ const EmplyeeProfile = () => {
                              Download All Sallary Slips
                           </button>
 
-                          <button className="button export-csv">
+                          <button className="button  export-pdf">
                             <CSVLink
                               data={filteredData}
                               filename="employee-profile.csv"

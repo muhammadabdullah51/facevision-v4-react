@@ -62,7 +62,7 @@ const Dashboard = () => {
 
 
                             <div className="card">
-                                <div className="card-header">
+                                <div className="card-header-dash">
                                     <span className="card-title">Total Employees</span>
                                     <FontAwesomeIcon className="icon" icon={faIdBadge} />
                                 </div>
@@ -82,7 +82,7 @@ const Dashboard = () => {
 
 
                             <div className="card">
-                                <div className="card-header">
+                                <div className="card-header-dash">
                                     <span className="card-title">Attendance</span>
                                     <FontAwesomeIcon className="icon" icon={faCalendarCheck} />
                                 </div>
@@ -102,7 +102,7 @@ const Dashboard = () => {
 
 
                             <div className="card">
-                                <div className="card-header">
+                                <div className="card-header-dash">
                                     <span className="card-title">Payrolls</span>
                                     <FontAwesomeIcon className="icon" icon={faCalendarAlt} />
                                 </div>
@@ -122,7 +122,7 @@ const Dashboard = () => {
 
 
                             <div className="card">
-                                <div className="card-header">
+                                <div className="card-header-dash">
                                     <span className="card-title">Devices</span>
                                     <FontAwesomeIcon className="icon" icon={faTabletAlt} />
                                 </div>

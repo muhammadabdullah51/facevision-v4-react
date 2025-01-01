@@ -103,10 +103,10 @@ const EditorSettings = () => {
       status: row.status,
     });
     console.log(formData)
-    setSelectedItems(row.day || []); 
+    setSelectedItems(row.day || []);
     setShowModal(true);
     console.log("asdasdaas")
-    
+
     console.log(selectedItems)
   };
   const confirmUpdate = async () => {
@@ -146,7 +146,7 @@ const EditorSettings = () => {
       day: selectedItems,
     };
     try {
-      const res = await axios.post(`${SERVER_URL}sett-edtr-sch-up/`,updatedOTF);
+      const res = await axios.post(`${SERVER_URL}sett-edtr-sch-up/`, updatedOTF);
       setShowEditForm(false);
       setShowModal(false);
       setSuccessModal(true);
@@ -257,13 +257,88 @@ const EditorSettings = () => {
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+
+  const handleSelectAllChange = (event) => {
+    const isChecked = event.target.checked;
+    setSelectAll(isChecked);
+
+    if (isChecked) {
+      const allIds = filteredData.map((row) => row.id);
+      setSelectedIds(allIds);
+      console.log(allIds);
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleRowCheckboxChange = (event, rowId) => {
+    const isChecked = event.target.checked;
+
+    setSelectedIds((prevSelectedIds) => {
+      if (isChecked) {
+        return [...prevSelectedIds, rowId];
+      } else {
+        const updatedIds = prevSelectedIds.filter((id) => id !== rowId);
+        if (updatedIds.length !== filteredData.length) {
+          setSelectAll(false);
+        }
+        return updatedIds;
+      }
+    });
+    console.log(selectedIds);
+  };
+  useEffect(() => {
+    if (selectedIds.length === filteredData.length && filteredData.length > 0) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  }, [selectedIds, filteredData]);
+
+
+  const handleBulkDelete = () => {
+    if (selectedIds.length > 0) {
+      setModalType("delete selected");
+      setShowModal(true);
+    } else {
+      setResMsg("No rows selected for deletion.");
+      setShowModal(false);
+      setWarningModal(true);
+    }
+  };
+
+
+  const confirmBulkDelete = async () => {
+    try {
+      const payload = { ids: selectedIds };
+      const response = await axios.post(`${SERVER_URL}editor/del/data`, payload);
+      const updatedData = await axios.get(`${SERVER_URL}sett-edtr-sch/`);
+      setData(updatedData.data);
+      setShowModal(false);
+      setSelectedIds([]);
+      setSuccessModal(true);
+    } catch (error) {
+      console.error("Error deleting rows:", error);
+    } finally {
+      setShowModal(false);
+    }
+  };
+
+
   return (
     <div className="department-table">
       <ConirmationModal
         isOpen={showModal}
-        message={`Are you sure you want to ${modalType} this Email Scheduler?`}
+        message={
+          modalType === "delete selected"
+            ? "Are you sure you want to delete selected items?"
+            : `Are you sure you want to ${modalType} this Email Scheduler?`
+        }
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
+          else if (modalType === "delete selected") confirmBulkDelete();
           else if (modalType === "update") confirmUpdate();
           else confirmDelete();
         }}
@@ -272,13 +347,17 @@ const EditorSettings = () => {
           modalType === "create"
             ? addAnimation
             : modalType === "update"
-            ? updateAnimation
-            : deleteAnimation
+              ? updateAnimation
+              : deleteAnimation
         }
       />
       <ConirmationModal
         isOpen={successModal}
-        message={`Email Scheduler ${modalType}d successfully!`}
+        message={
+          modalType === "delete selected"
+            ? "Selected items deleted successfully!"
+            : `Email Scheduler ${modalType}d successfully!`
+        }
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
@@ -321,7 +400,7 @@ const EditorSettings = () => {
             type="text"
           />
           <button className="reset" type="reset"
-          onClick={() => setSearchQuery("")}>
+            onClick={() => setSearchQuery("")}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-6 w-6"
@@ -338,9 +417,15 @@ const EditorSettings = () => {
             </svg>
           </button>
         </form>
-        <button className="add-button" onClick={handleAdd}>
-          <FaPlus /> Add New Email Scheduler
-        </button>
+        <div className="add-delete-conainer">
+          <button className="add-button" onClick={handleAdd}>
+            <FaPlus /> Add New Email Scheduler
+          </button>
+
+          <button className="add-button submit-button" onClick={handleBulkDelete}>
+            <FaTrash className="add-icon" /> Delete Bulk
+          </button>
+        </div>
       </div>
 
       {showAddForm && !showEditForm && (
@@ -404,21 +489,21 @@ const EditorSettings = () => {
               <div className="item-list-Selected">
                 {days.map((item) => (
                   <div className="items" key={item}>
-                  <label className="checkbox-container">
-                    <input
-                      type="checkbox"
-                      value={item}
-                      checked={selectedItems.includes(item)}
-                      onChange={(e) => {
-                        const { value, checked } = e.target;
-                        setSelectedItems((prevItems) =>
-                          checked
-                            ? [...prevItems, value]
-                            : prevItems.filter((i) => i !== value)
-                        );
-                      }}
-                    />
-                    <span className="checkmark"></span>
+                    <label className="checkbox-container">
+                      <input
+                        type="checkbox"
+                        value={item}
+                        checked={selectedItems.includes(item)}
+                        onChange={(e) => {
+                          const { value, checked } = e.target;
+                          setSelectedItems((prevItems) =>
+                            checked
+                              ? [...prevItems, value]
+                              : prevItems.filter((i) => i !== value)
+                          );
+                        }}
+                      />
+                      <span className="checkmark"></span>
                       {item}
                     </label>
                   </div>
@@ -525,33 +610,33 @@ const EditorSettings = () => {
           {formData.sch === "Weekly" && (
             <>
               <div className="item-list-Selected">
-              {days.map((item) => (
-              <div className="items" key={item}>
-                <label className="checkbox-container">
-                  <input
-                    type="checkbox"
-                    value={item}
-                    checked={selectedItems.includes(item)}
-                    onChange={(e) => {
-                      const { value, checked } = e.target;
-                      setSelectedItems((prevItems) =>
-                        checked
-                          ? [...prevItems, value]
-                          : prevItems.filter((i) => i !== value)
-                      );
-                      setFormData((prevFormData) => ({
-                        ...prevFormData,
-                        day: checked
-                          ? [...(prevFormData.day || []), value] // Ensure 'days' is an array
-                          : (prevFormData.day || []).filter((i) => i !== value), // Safely filter
-                      }));
-                    }}
-                  />
-                  <span className="checkmark"></span>
-                  {item}
-                </label>
-              </div>
-            ))}
+                {days.map((item) => (
+                  <div className="items" key={item}>
+                    <label className="checkbox-container">
+                      <input
+                        type="checkbox"
+                        value={item}
+                        checked={selectedItems.includes(item)}
+                        onChange={(e) => {
+                          const { value, checked } = e.target;
+                          setSelectedItems((prevItems) =>
+                            checked
+                              ? [...prevItems, value]
+                              : prevItems.filter((i) => i !== value)
+                          );
+                          setFormData((prevFormData) => ({
+                            ...prevFormData,
+                            day: checked
+                              ? [...(prevFormData.day || []), value] // Ensure 'days' is an array
+                              : (prevFormData.day || []).filter((i) => i !== value), // Safely filter
+                          }));
+                        }}
+                      />
+                      <span className="checkmark"></span>
+                      {item}
+                    </label>
+                  </div>
+                ))}
               </div>
               <label>Time</label>
               <input
@@ -590,6 +675,14 @@ const EditorSettings = () => {
         <table className="table">
           <thead>
             <tr>
+            <th>
+                <input
+                  id="delete-checkbox"
+                  type="checkbox"
+                  checked={selectAll}
+                  onChange={handleSelectAllChange}
+                />
+              </th>
               <th>ID</th>
               <th>Name</th>
               <th>Email</th>
@@ -603,6 +696,14 @@ const EditorSettings = () => {
           <tbody>
             {filteredData.map((item) => (
               <tr key={item.id}>
+                <td>
+                  <input
+                    type="checkbox"
+                    id="delete-checkbox"
+                    checked={selectedIds.includes(item.id)}
+                    onChange={(event) => handleRowCheckboxChange(event, item.id)}
+                  />
+                </td>
                 <td>{item.id}</td>
                 <td>{item.name}</td>
                 <td>{item.email}</td>
@@ -610,13 +711,13 @@ const EditorSettings = () => {
                 <td className="accessible-items">
                   {Array.isArray(item.day) && item.day.length > 0
                     ? item.day.map((day, index) => (
-                        <span key={index} style={{ marginRight: "5px" }}>
-                          {day}
-                        </span>
-                      ))
+                      <span key={index} style={{ marginRight: "5px" }}>
+                        {day}
+                      </span>
+                    ))
                     : item.sch == "Monthly"
-                    ? item.date
-                    : "All Working days"}
+                      ? item.date
+                      : "All Working days"}
                 </td>
                 <td>{item.timeobj}</td>
                 <td>{item.status}</td>

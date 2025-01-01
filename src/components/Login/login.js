@@ -70,9 +70,9 @@ const Login = () => {
                     <p>Please enter your details to Sign In</p>
                 </div>
                 
-                <div className="divider">
+                {/* <div className="divider">
                     <span>or</span>
-                </div>
+                </div> */}
                 <form onSubmit={handleSubmit}>
                     <div className="input-group">
                         <label htmlFor="email">Email address</label>
