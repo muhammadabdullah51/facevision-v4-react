@@ -17,7 +17,6 @@ const Login = () => {
     const [loading, setLoading] = useState(false); // Loading state for UX
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    console.log(SERVER_URL);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -25,6 +24,7 @@ const Login = () => {
             setLoading(true); // Start loading
             try {
                 const response = await axios.post(`${SERVER_URL}auth-lgin/`, { email, password });
+                console.log(response.data)
                 if(response.data.context.login){
                     
 

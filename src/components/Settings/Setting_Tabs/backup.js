@@ -144,7 +144,7 @@ const BackupComponent = () => {
             </button>
           </div>
         )}
-        <BackupSchedular/>
+        {/* <BackupSchedular/> */}
       </>
     )}
   </div>

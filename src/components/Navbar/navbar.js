@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSignOutAlt, faUser } from "@fortawesome/free-solid-svg-icons";
 import { SERVER_URL } from "../../config";
 
+
 const menuItems = [
   { label: "Logout", icon: faSignOutAlt, key: "logout" },
 ];
@@ -62,12 +63,13 @@ const Navbar = ({ onMenuChange, selectedMenu, setSelectedMenu }) => {
 
         <div className="navbar-links">
           <div className="dropdown">
-            <button className="setting-toggle">
+            <button className="setting-toggle ">
+
               {userInfo?.profilePicture ? (
                 <img
-                  src={`${SERVER_URL}${userInfo.profilePicture}`}
-                  alt="Profile"
-                  className="user-profile-picture"
+                src={`${SERVER_URL}${userInfo.profilePicture}`}
+                alt="Profile"
+                className="user-profile-picture"
                 />
               ) : (
                 <div className="default-avatar">U</div>

@@ -13,7 +13,7 @@ const PayrollSettings = () => {
     cutSalWhByDf: "No",
     lvPUnPByDf: "No",
     isEndDate: "No",
-    customeDate: ""
+    customeDate: "0"
   });
 
   // Fetch settings from the server

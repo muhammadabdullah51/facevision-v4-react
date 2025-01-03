@@ -26,7 +26,7 @@ const Register = () => {
      useEffect(() => {
         const checkCompanyInfo = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/check-company');
+                const response = await axios.get(`${SERVER_URL}/auth-cmp-reg/`);
                 setCompanyExists(response.data.companyExists);
             } catch (error) {
                 console.error('Error checking company info:', error);

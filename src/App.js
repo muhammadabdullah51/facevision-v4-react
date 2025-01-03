@@ -18,6 +18,8 @@ function App() {
   const [companyInfoCompleted, setCompanyInfoCompleted] = useState(false);
   const [authTrue, setAuthTrue] = useState(false);
 
+  console.log(SERVER_URL);
+
   useEffect(() => {
     // Make API call to check company info status
     axios.get(`${SERVER_URL}auth-cmp-reg/`)
@@ -29,7 +31,8 @@ function App() {
       })
     axios.get(`${SERVER_URL}auth-vrf/`)
       .then(response => {
-        setAuthTrue(response.data.status);
+        console.log(response.data.msg);
+        setAuthTrue(!response.data.status);
       })
       .catch(error => {
         console.error("There was an error checking auth token status", error);
@@ -37,9 +40,9 @@ function App() {
   }, []);
 
   const renderHome = () => {
-    if (authTrue) {
+    if (!authTrue) {
       return <AuthToken />;
-    } else if (!companyInfoCompleted) {
+    } else if (companyInfoCompleted) {
       return <Information />;
     } else {
       return <Login />;

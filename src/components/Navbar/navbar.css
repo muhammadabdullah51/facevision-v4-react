@@ -76,7 +76,8 @@
 
 
 .setting-toggle img {
-    width: 50%;
+    width: 2.7vw;
+    height: 2.7vw;
     border-radius: 50px;
     object-fit: cover;
     padding: 5px;
@@ -213,7 +214,8 @@ ul.setting-menu li {
 
 @media only screen and (min-width:700px) and (max-width:1500px){
     .setting-toggle img{
-        width: 100%;
+        width: 3vw;
+        height: 3vw;
     }
 }
 @media only screen and (max-width:700px) {
@@ -228,13 +230,16 @@ ul.setting-menu li {
         width: 50vw;
     }
     .setting-toggle img{
-        width: 360%;
+        width: 5.5vw;
+        height: 5.5vw;
     }
     
 }
 @media only screen and (min-width:700px) and (max-width:701px) {
     .setting-toggle img{
-        width: 100%;
+        width: 5.5vw;
+        height: 5.5vw;
     }
+    
 
 }
