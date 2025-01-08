@@ -13,11 +13,43 @@ import warningAnimation from "../../../assets/Lottie/warningAnim.json";
 import { SERVER_URL } from "../../../config";
 import AssignTax from "./assignTax";
 
+import { useDispatch, useSelector } from "react-redux";
+import { setTaxData, resetTaxData } from "../../../redux/taxSlice";
+
+
 const Tax = () => {
   const [data, setData] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
-  const [formData, setFormData] = useState({
+
+  const dispatch = useDispatch();
+  const taxData = useSelector((state) => state.tax);
+
+
+  const [formData, setFormData] = useState(
+    taxData || {
+      id: "",
+      type: "",
+      nature: "",
+      percent: "",
+      amount: "",
+      date: "",
+    });
+  const handleReset = () => {
+    dispatch(resetTaxData());
+    setFormData({
+      id: "",
+      type: "",
+      nature: "",
+      percent: "",
+      amount: "",
+      date: "",
+    });
+    setShowAddForm(false);
+    setShowEditForm(false);
+  };
+
+  const [editFormData, setEditFormData] = useState({
     id: "",
     type: "",
     nature: "",
@@ -25,6 +57,17 @@ const Tax = () => {
     amount: "",
     date: "",
   });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => {
+      const updatedFormData = { ...prevState, [name]: value };
+      dispatch(setTaxData(updatedFormData));
+      return updatedFormData;
+    });
+  };
+
+
 
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
@@ -67,10 +110,6 @@ const Tax = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  const handleCancel = () => {
-    setShowAddForm(false);
-    setShowEditForm(false);
-  };
 
   const handleDelete = async (id) => {
     setModalType("delete");
@@ -87,13 +126,6 @@ const Tax = () => {
   };
 
   const handleAddNew = () => {
-    setFormData({
-      type: "",
-      nature: "",
-      percent: "",
-      amount: "",
-      date: "",
-    });
     setShowAddForm(true);
     setShowEditForm(false);
   };
@@ -133,6 +165,7 @@ const Tax = () => {
       amount: formData.nature === 'percentage' ? 0 : formData.amount,
       date: formData.date,
     };
+    console.log(bouneses);
     try {
       axios.post(`${SERVER_URL}taxes/`, bouneses);
       const updatedData = await axios.get(`${SERVER_URL}taxes/`);
@@ -141,13 +174,14 @@ const Tax = () => {
       setSuccessModal(true);
       setShowAddForm(false);
       fetchTax();
+      handleReset();
     } catch (error) {
       console.log(error);
     }
   };
 
   const handleEdit = (data) => {
-    setFormData({
+    setEditFormData({
       id: data.id,
       type: data.type,
       nature: data.nature,
@@ -160,33 +194,26 @@ const Tax = () => {
 
   const updateBonus = (row) => {
     setModalType("update");
-    setFormData({
-      id: row.id,
-      type: row.type,
-      nature: row.nature,
-      percent: formData.nature === 'fixedamount' ? 0 : formData.percent,
-      amount: formData.nature === 'percentage' ? 0 : formData.amount,
-      date: row.date,
-    });
+    setEditFormData({ ...editFormData });
     setShowModal(true);
   };
   const confirmUpdate = async () => {
-    if (!formData.type || !formData.nature || !formData.date) {
+    if (!editFormData.type || !editFormData.nature || !editFormData.date) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
       setWarningModal(true);
     }
-    if (formData.nature === 'percentage') {
+    if (editFormData.nature === 'percentage') {
 
-      if (formData.percent < 1 || formData.percent > 100) {
+      if (editFormData.percent < 1 || editFormData.percent > 100) {
         setResMsg("Values Can't be Less than 1 or Greater then 100");
         setShowModal(false);
         setWarningModal(true);
         return;
       }
-    } else if (formData.nature === 'fixedamount') {
+    } else if (editFormData.nature === 'fixedamount') {
 
-      if (formData.amount < 1) {
+      if (editFormData.amount < 1) {
         setResMsg("Values Can't be Negative or zero");
         setShowModal(false);
         setWarningModal(true);
@@ -194,21 +221,22 @@ const Tax = () => {
       }
     }
     const updateBounses = {
-      id: formData.id,
-      type: formData.type,
-      nature: formData.nature,
-      percent: formData.nature === 'fixedamount' ? 0 : formData.percent,
-      amount: formData.nature === 'percentage' ? 0 : formData.amount,
-      date: formData.date,
+      id: editFormData.id,
+      type: editFormData.type,
+      nature: editFormData.nature,
+      percent: editFormData.nature === 'fixedamount' ? 0 : editFormData.percent,
+      amount: editFormData.nature === 'percentage' ? 0 : editFormData.amount,
+      date: editFormData.date,
     };
     try {
-      await axios.put(`${SERVER_URL}taxes/${formData.id}/`, updateBounses);
+      await axios.put(`${SERVER_URL}taxes/${editFormData.id}/`, updateBounses);
       const updatedData = await axios.get(`${SERVER_URL}taxes/`);
       setData(updatedData.data);
       setShowModal(false);
       setSuccessModal(true);
       setShowEditForm(false);
       fetchTax();
+      handleReset();
     } catch (error) {
       console.log(error);
     }
@@ -421,10 +449,9 @@ const Tax = () => {
 
           <label>Nature</label>
           <select
+            name="nature"
             value={formData.nature}
-            onChange={(e) =>
-              setFormData({ ...formData, nature: e.target.value })
-            }
+            onChange={handleInputChange}
           >
             <option value="">Select Nature</option>
             <option value="fixedamount">Fixed Amount</option>
@@ -436,11 +463,10 @@ const Tax = () => {
               <label>Percentage %</label>
               <input
                 type="number"
+                name="percent"
                 placeholder="Percentage %"
                 value={formData.percent}
-                onChange={(e) =>
-                  setFormData({ ...formData, percent: e.target.value })
-                }
+                onChange={handleInputChange}
               />
             </>
           ) : (
@@ -448,11 +474,10 @@ const Tax = () => {
               <label>Amount</label>
               <input
                 type="number"
+                name="amount"
                 placeholder="Tax Amount"
                 value={formData.amount}
-                onChange={(e) =>
-                  setFormData({ ...formData, amount: e.target.value })
-                }
+                onChange={handleInputChange}
               />
             </>
           )}
@@ -461,14 +486,15 @@ const Tax = () => {
           <label>Date</label>
           <input
             type="date"
+            name="date"
             placeholder="Tax Date"
             value={formData.date}
-            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+            onChange={handleInputChange}
           />
           <button className="submit-button" onClick={addBonus}>
             Add Tax
           </button>
-          <button className="cancel-button" onClick={handleCancel}>
+          <button className="cancel-button" onClick={handleReset}>
             Cancel
           </button>
         </div>
@@ -482,14 +508,14 @@ const Tax = () => {
             list="taxType" // Link to the datalist by id
             placeholder="Allowance Type"
             value={
-              taxSettings.find((setting) => setting.id === formData.type)
+              taxSettings.find((setting) => setting.id === editFormData.type)
                 ?.type || ""
             } // Display the type based on the selected id
             onChange={(e) => {
               const selectedId = taxSettings.find(
                 (setting) => setting.type === e.target.value
               )?.id;
-              setFormData({ ...formData, type: selectedId });
+              setEditFormData({ ...editFormData, type: selectedId });
             }}
           />
 
@@ -504,24 +530,24 @@ const Tax = () => {
 
           <label>Nature</label>
           <select
-            value={formData.nature}
+            value={editFormData.nature}
             onChange={(e) =>
-              setFormData({ ...formData, nature: e.target.value })
+              setEditFormData({ ...editFormData, nature: e.target.value })
             }
           >
             <option value="fixedamount">Fixed Amount</option>
             <option value="percentage">Percentage</option>
           </select>
 
-          {formData.nature === 'percentage' ? (
+          {editFormData.nature === 'percentage' ? (
             <>
               <label>Percentage %</label>
               <input
                 type="number"
                 placeholder="Percentage %"
-                value={formData.percent}
+                value={editFormData.percent}
                 onChange={(e) =>
-                  setFormData({ ...formData, percent: e.target.value })
+                  setEditFormData({ ...editFormData, percent: e.target.value })
                 }
 
               />
@@ -532,9 +558,9 @@ const Tax = () => {
               <input
                 type="number"
                 placeholder="Tax Amount"
-                value={formData.amount}
+                value={editFormData.amount}
                 onChange={(e) =>
-                  setFormData({ ...formData, amount: e.target.value })
+                  setEditFormData({ ...editFormData, amount: e.target.value })
                 }
               />
             </>
@@ -546,16 +572,16 @@ const Tax = () => {
           <input
             type="date"
             placeholder="Tax Date"
-            value={formData.date}
-            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+            value={editFormData.date}
+            onChange={(e) => setEditFormData({ ...editFormData, date: e.target.value })}
           />
           <button
             className="submit-button"
-            onClick={() => updateBonus(formData)}
+            onClick={() => updateBonus(editFormData)}
           >
             Update Tax
           </button>
-          <button className="cancel-button" onClick={handleCancel}>
+          <button className="cancel-button" onClick={handleReset}>
             Cancel
           </button>
         </div>
@@ -565,7 +591,7 @@ const Tax = () => {
         <table className="table">
           <thead>
             <tr>
-            <th>
+              <th>
                 <input
                   id="delete-checkbox"
                   type="checkbox"
@@ -595,7 +621,7 @@ const Tax = () => {
                 <td>{bonus.id}</td>
                 <td className="bold-fonts">{bonus.taxName}</td>
                 <td>{bonus.nature}</td>
-                <td>{bonus.amount === 0 ? bonus.percent : bonus.amount} {bonus.percent !== 0 ? '%' : 'Rs'}</td>
+                <td>{bonus.amount === 0 ? bonus.percent : bonus.amount} {bonus.nature == 'percentage' ? '%' : 'Rs'}</td>
                 <td>{bonus.date}</td>
                 <td>
                   <button

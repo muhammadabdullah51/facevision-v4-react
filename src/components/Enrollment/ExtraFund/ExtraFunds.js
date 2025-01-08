@@ -12,23 +12,69 @@ import successAnimation from "../../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../../assets/Lottie/warningAnim.json";
 import { SERVER_URL } from "../../../config";
 
+import { useDispatch, useSelector } from "react-redux";
+import { setExtraFundsData, resetExtraFundsData } from "../../../redux/extraFundsSlice";
+
+
+
 const ExtraFunds = () => {
   const [data, setData] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
-  const [formData, setFormData] = useState({
+
+  const dispatch = useDispatch();
+  const extraFundsData = useSelector((state) => state.extraFunds);
+
+  const [formData, setFormData] = useState(
+    extraFundsData || {
+      id: "",
+      empId: "",
+      extraFundAmount: "",
+      returnInMonths: "",
+      paidAmount: "",
+      pendingAmount: "",
+      nextMonthPayable: "",
+      reason: "",
+      date: "",
+      type: "Pending",
+    });
+
+  const handleReset = () => {
+    dispatch(resetExtraFundsData());
+    setFormData({
+      id: "",
+      empId: "",
+      appraisal: "",
+      reason: "",
+      date: "",
+      status: "Pending",
+      desc: "",
+    });
+    setShowAddForm(false);
+    setShowEditForm(false);
+  };
+
+  const [editFormData, setEditFormData] = useState({
     id: "",
     empId: "",
-    extraFundAmount: "",
-    returnInMonths: "",
-    paidAmount: "",
-    pendingAmount: "",
-    nextMonthPayable: "",
+    appraisal: "",
     reason: "",
     date: "",
-    type: "Pending",
+    status: "Pending",
+    desc: "",
   });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => {
+      const updatedFormData = { ...prevState, [name]: value };
+      dispatch(setExtraFundsData(updatedFormData));
+      return updatedFormData;
+    });
+  };
+
+
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
@@ -66,10 +112,7 @@ const ExtraFunds = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  const handleCancel = () => {
-    setShowAddForm(false);
-    setShowEditForm(false);
-  };
+
 
   // Delete an extraFundAmount
   const handleDelete = async (id) => {
@@ -90,14 +133,6 @@ const ExtraFunds = () => {
   };
 
   const handleAddNew = () => {
-    setFormData({
-      empId: "",
-      extraFundAmount: "",
-      returnInMonths: "",
-      reason: "",
-      date: "",
-      type: "Pending",
-    });
     setShowAddForm(true);
     setShowEditForm(false);
   };
@@ -141,12 +176,13 @@ const ExtraFunds = () => {
       setSuccessModal(true);
       setShowAddForm(false);
       fetchLoan();
+      handleReset()
     } catch (error) {
     }
   };
   // Handle form data changes
   const handleEdit = (data) => {
-    setFormData({
+    setEditFormData({
       id: data.id,
       empId: data.empId,
       extraFundAmount: data.extraFundAmount,
@@ -162,31 +198,23 @@ const ExtraFunds = () => {
 
   const updateLoan = (row) => {
     setModalType("update");
-    setFormData({
-      id: row.id,
-      empId: row.empId,
-      extraFundAmount: row.extraFundAmount,
-      returnInMonths: row.returnInMonths,
-      paidAmount: row.paidAmount,
-      reason: row.reason,
-      date: row.date,
-    });
+    setEditFormData({ ...editFormData });
     setShowModal(true);
   };
 
   const confirmUpdate = async () => {
     if (
-      !formData.extraFundAmount ||
-      !formData.returnInMonths ||
-      !formData.reason ||
-      !formData.date
+      !editFormData.extraFundAmount ||
+      !editFormData.returnInMonths ||
+      !editFormData.reason ||
+      !editFormData.date
     ) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
       setWarningModal(true);
       return;
     }
-    if (formData.extraFundAmount < 1 || formData.returnInMonths < 1) {
+    if (editFormData.extraFundAmount < 1 || editFormData.returnInMonths < 1) {
       setResMsg("Values Can't be Negative or zero");
       setShowModal(false);
       setWarningModal(true);
@@ -195,18 +223,19 @@ const ExtraFunds = () => {
 
     try {
       const updateLoan = {
-        id: formData.id,
-        extraFundAmount: formData.extraFundAmount,
-        returnInMonths: formData.returnInMonths,
-        paidAmount: formData.paidAmount,
-        reason: formData.reason,
-        date: formData.date,
+        id: editFormData.id,
+        extraFundAmount: editFormData.extraFundAmount,
+        returnInMonths: editFormData.returnInMonths,
+        paidAmount: editFormData.paidAmount,
+        reason: editFormData.reason,
+        date: editFormData.date,
       };
       await axios.post(`${SERVER_URL}pyr-ext-up/`, updateLoan);
       setShowModal(false);
       setSuccessModal(true);
       setShowEditForm(false);
       fetchLoan();
+      handleReset()
     } catch (error) {
     }
   };
@@ -440,22 +469,22 @@ const ExtraFunds = () => {
           <label>Given Amount</label>
           <input
             type="number"
+            name="extraFundAmount"
             placeholder="Given Amount"
             value={formData.extraFundAmount}
-            onChange={(e) =>
-              setFormData({ ...formData, extraFundAmount: e.target.value })
-            }
+            onChange={handleInputChange}
+
           />
           {formData.type !== "NotPayable" && (
             <>
               <label>Return In Months</label>
               <input
                 type="number"
+                name="returnInMonths"
                 placeholder="Return In Months"
                 value={formData.returnInMonths}
-                onChange={(e) =>
-                  setFormData({ ...formData, returnInMonths: e.target.value })
-                }
+                onChange={handleInputChange}
+
               />
             </>
           )}
@@ -463,18 +492,20 @@ const ExtraFunds = () => {
           <label>Date</label>
           <input
             type="date"
+            name="date"
             placeholder="Date"
             value={formData.date}
-            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+            onChange={handleInputChange}
+
           />
           <label>Reason</label>
           <input
             type="text"
+            name="reason"
             placeholder="Reason"
             value={formData.reason}
-            onChange={(e) =>
-              setFormData({ ...formData, reason: e.target.value })
-            }
+            onChange={handleInputChange}
+
           />
           <label>Select Type</label>
           <select
@@ -497,7 +528,7 @@ const ExtraFunds = () => {
           <button className="submit-button" onClick={addLoan}>
             Add Extra Funds
           </button>
-          <button className="cancel-button" onClick={handleCancel}>
+          <button className="cancel-button" onClick={handleReset}>
             Cancel
           </button>
         </div>
@@ -510,12 +541,12 @@ const ExtraFunds = () => {
             disabled
             list="employeesList"
             value={
-              employees.find((emp) => emp.empId === formData.empId)
-                ? `${employees.find((emp) => emp.empId === formData.empId).empId
-                } ${employees.find((emp) => emp.empId === formData.empId).fName
-                } ${employees.find((emp) => emp.empId === formData.empId).lName
+              employees.find((emp) => emp.empId === editFormData.empId)
+                ? `${employees.find((emp) => emp.empId === editFormData.empId).empId
+                } ${employees.find((emp) => emp.empId === editFormData.empId).fName
+                } ${employees.find((emp) => emp.empId === editFormData.empId).lName
                 }`
-                : formData.empId || "" // Display empId, fName, and lName of selected employee or inputted empId
+                : editFormData.empId || "" // Display empId, fName, and lName of selected employee or inputted empId
             }
             onChange={(e) => {
               const value = e.target.value;
@@ -525,8 +556,8 @@ const ExtraFunds = () => {
                   emp.empId === value
               );
 
-              setFormData({
-                ...formData,
+              setEditFormData({
+                ...editFormData,
                 empId: selectedEmployee ? selectedEmployee.empId : value, // Store empId or raw input
               });
             }}
@@ -548,21 +579,21 @@ const ExtraFunds = () => {
           <input
             type="number"
             placeholder="Given Amount"
-            value={formData.extraFundAmount}
+            value={editFormData.extraFundAmount}
             onChange={(e) =>
-              setFormData({ ...formData, extraFundAmount: e.target.value })
+              setEditFormData({ ...editFormData, extraFundAmount: e.target.value })
             }
           />
 
-          {formData.type !== "NotPayable" && (
+          {editFormData.type !== "NotPayable" && (
             <>
               <label>Return In Months</label>
               <input
                 type="number"
                 placeholder="Return In Months"
-                value={formData.returnInMonths}
+                value={editFormData.returnInMonths}
                 onChange={(e) =>
-                  setFormData({ ...formData, returnInMonths: e.target.value })
+                  setEditFormData({ ...editFormData, returnInMonths: e.target.value })
                 }
               />
             </>
@@ -571,9 +602,9 @@ const ExtraFunds = () => {
           <input
             type="number"
             placeholder="Paid Amount"
-            value={formData.paidAmount}
+            value={editFormData.paidAmount}
             onChange={(e) =>
-              setFormData({ ...formData, paidAmount: e.target.value })
+              setEditFormData({ ...editFormData, paidAmount: e.target.value })
             }
           />
 
@@ -581,29 +612,29 @@ const ExtraFunds = () => {
           <input
             type="date"
             placeholder="Date"
-            value={formData.date}
-            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+            value={editFormData.date}
+            onChange={(e) => setEditFormData({ ...editFormData, date: e.target.value })}
           />
           <label>Reason</label>
           <input
             type="text"
             placeholder="Reason"
-            value={formData.reason}
+            value={editFormData.reason}
             onChange={(e) =>
-              setFormData({ ...formData, reason: e.target.value })
+              setEditFormData({ ...editFormData, reason: e.target.value })
             }
           />
           <label>Selected Type</label>
           <select
             disabled
-            value={formData.type}
+            value={editFormData.type}
             onChange={(e) => {
               const selectedType = e.target.value;
-              setFormData({
-                ...formData,
+              setEditFormData({
+                ...editFormData,
                 type: selectedType,
                 returnInMonths:
-                  selectedType === "NotPayable" ? "1" : formData.returnInMonths,
+                  selectedType === "NotPayable" ? "1" : editFormData.returnInMonths,
               });
             }}
           >
@@ -614,11 +645,11 @@ const ExtraFunds = () => {
 
           <button
             className="submit-button"
-            onClick={() => updateLoan(formData)}
+            onClick={() => updateLoan(editFormData)}
           >
             Update Extra Funds
           </button>
-          <button className="cancel-button" onClick={handleCancel}>
+          <button className="cancel-button" onClick={handleReset}>
             Cancel
           </button>
         </div>
@@ -628,7 +659,7 @@ const ExtraFunds = () => {
         <table className="table">
           <thead>
             <tr>
-            <th>
+              <th>
                 <input
                   id="delete-checkbox"
                   type="checkbox"
@@ -674,10 +705,10 @@ const ExtraFunds = () => {
                 <td>
                   <span
                     className={`status ${adv.type === "payable"
+                      ? "absentStatus"
+                      : adv.type === "Rejected"
                         ? "absentStatus"
-                        : adv.type === "Rejected"
-                          ? "absentStatus"
-                          : "presentStatus"
+                        : "presentStatus"
                       }`}
                   >
                     {adv.type}

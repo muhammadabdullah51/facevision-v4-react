@@ -11,11 +11,42 @@ import successAnimation from "../../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../../assets/Lottie/warningAnim.json";
 import { SERVER_URL } from "../../../config";
 
+import { useDispatch, useSelector } from "react-redux";
+import { setHolidayData, resetHolidayData } from "../../../redux/holidaySlice";
+
+
 const AttendanceSettings = () => {
   const [data, setData] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
-  const [formData, setFormData] = useState({
+
+  const dispatch = useDispatch();
+  const holidayData = useSelector((state) => state.holiday);
+  const [formData, setFormData] = useState(
+    holidayData || {
+      holidayId: "",
+      holidayName: "",
+      startDate: "",
+      endDate: "",
+      status: "",
+      type: "",
+    });
+
+  const handleReset = () => {
+    dispatch(resetHolidayData());
+    setFormData({
+      holidayId: "",
+      holidayName: "",
+      startDate: "",
+      endDate: "",
+      status: "",
+      type: "",
+    });
+    setShowAddForm(false);
+    setShowEditForm(false);
+  };
+
+  const [editFormData, setEditFormData] = useState({
     holidayId: "",
     holidayName: "",
     startDate: "",
@@ -23,6 +54,15 @@ const AttendanceSettings = () => {
     status: "",
     type: "",
   });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => {
+      const updatedFormData = { ...prevState, [name]: value };
+      dispatch(setHolidayData(updatedFormData));
+      return updatedFormData;
+    });
+  };
 
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
@@ -76,14 +116,6 @@ const AttendanceSettings = () => {
   };
 
   const handleAddNew = () => {
-    setFormData({
-      holidayId: "",
-      holidayName: "",
-      startDate: "",
-      endDate: "",
-      status: "",
-      type: "",
-    });
     setShowAddForm(true);
     setShowEditForm(false);
   };
@@ -121,14 +153,14 @@ const AttendanceSettings = () => {
       setSuccessModal(true);
       setShowAddForm(false);
       fetchBouneses();
+      handleReset();
     } catch (error) {
       console.log(error);
     }
   };
 
   const handleEdit = (data) => {
-    setFormData({
-
+    setEditFormData({
       id: data.id,
       holidayId: data.holidayId,
       holidayName: data.holidayName,
@@ -142,40 +174,31 @@ const AttendanceSettings = () => {
 
   const updateBonus = (row) => {
     setModalType("update");
-    setFormData({
-      id: row.id,
-      holidayId: row.holidayId,
-      holidayName: row.holidayName,
-      startDate: row.startDate,
-      endDate: row.endDate,
-      status: row.status,
-      type: row.type,
-    });
+    setEditFormData({ ...editFormData });
     setShowModal(true);
   };
   const confirmUpdate = async () => {
     if (
-      !formData.holidayId ||
-      !formData.holidayName ||
-      !formData.startDate ||
-      !formData.endDate ||
-      !formData.status ||
-      !formData.type
+      !editFormData.holidayId ||
+      !editFormData.holidayName ||
+      !editFormData.startDate ||
+      !editFormData.endDate ||
+      !editFormData.status ||
+      !editFormData.type
     ) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
       setWarningModal(true);
     }
     const updateBounses = {
-      id: formData.id,
-      holidayId: formData.holidayId,
-      holidayName: formData.holidayName,
-      startDate: formData.startDate,
-      endDate: formData.endDate,
-      status: formData.status,
-      type: formData.type,
+      id: editFormData.id,
+      holidayId: editFormData.holidayId,
+      holidayName: editFormData.holidayName,
+      startDate: editFormData.startDate,
+      endDate: editFormData.endDate,
+      status: editFormData.status,
+      type: editFormData.type,
     };
-    console.log(updateBounses);
     try {
       await axios.post(`${SERVER_URL}sett-adv-att-up/`, updateBounses);
       const updatedData = await axios.get(`${SERVER_URL}sett-adv-att/`);
@@ -184,6 +207,7 @@ const AttendanceSettings = () => {
       setSuccessModal(true);
       setShowEditForm(false);
       fetchBouneses();
+      handleReset();
     } catch (error) {
       console.log(error);
     }
@@ -378,6 +402,7 @@ const AttendanceSettings = () => {
           <label>Holiday ID</label>
           <input
             type="text"
+            name="holidayId"
             placeholder="Holiday ID"
             value={formData.holidayId}
             onChange={(e) =>
@@ -387,6 +412,7 @@ const AttendanceSettings = () => {
           <label>Holiday Name</label>
           <input
             type="text"
+            name="holidayName"
             placeholder="Holiday Name"
             value={formData.holidayName}
             onChange={(e) =>
@@ -400,27 +426,24 @@ const AttendanceSettings = () => {
             <label>From</label>
             <input
               type="date"
+              name="startDate"
               value={formData.startDate}
-              onChange={(e) =>
-                setFormData({ ...formData, startDate: e.target.value })
-              }
+              onChange={handleInputChange}
             />
             <label>To</label>
             <input
               type="date"
+              name="endDate"
               value={formData.endDate}
-              onChange={(e) =>
-                setFormData({ ...formData, endDate: e.target.value })
-              }
+              onChange={handleInputChange}
             />
           </div>
 
           <label>Status</label>
           <select
+            name="status"
             value={formData.status}
-            onChange={(e) =>
-              setFormData({ ...formData, status: e.target.value })
-            }
+            onChange={handleInputChange}
           >
             <option value="">Select Status</option>
             <option value="Active">Active</option>
@@ -429,8 +452,9 @@ const AttendanceSettings = () => {
 
           <label>Holiday Type</label>
           <select
+            name="type"
             value={formData.type}
-            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+            onChange={handleInputChange}
           >
             <option value="">Select Holiday Type</option>
             <option value="Occasional Holidays">Occasional Holidays</option>
@@ -440,7 +464,7 @@ const AttendanceSettings = () => {
           <button className="submit-button" onClick={addBonus}>
             Add Holiday
           </button>
-          <button className="cancel-button" onClick={handleCancel}>
+          <button className="cancel-button" onClick={handleReset}>
             Cancel
           </button>
         </div>
@@ -451,19 +475,20 @@ const AttendanceSettings = () => {
           <label>Holiday ID</label>
           <input
             type="text"
+            disabled
             placeholder="Holiday ID"
-            value={formData.holidayId}
+            value={editFormData.holidayId}
             onChange={(e) =>
-              setFormData({ ...formData, holidayId: e.target.value })
+              setEditFormData({ ...editFormData, holidayId: e.target.value })
             }
           />
           <label>Holiday Name</label>
           <input
             type="text"
             placeholder="Holiday Name"
-            value={formData.holidayName}
+            value={editFormData.holidayName}
             onChange={(e) =>
-              setFormData({ ...formData, holidayName: e.target.value })
+              setEditFormData({ ...editFormData, holidayName: e.target.value })
             }
           />
 
@@ -473,26 +498,26 @@ const AttendanceSettings = () => {
             <label>From</label>
             <input
               type="date"
-              value={formData.startDate}
+              value={editFormData.startDate}
               onChange={(e) =>
-                setFormData({ ...formData, startDate: e.target.value })
+                setEditFormData({ ...editFormData, startDate: e.target.value })
               }
             />
             <label>To</label>
             <input
               type="date"
-              value={formData.endDate}
+              value={editFormData.endDate}
               onChange={(e) =>
-                setFormData({ ...formData, endDate: e.target.value })
+                setEditFormData({ ...editFormData, endDate: e.target.value })
               }
             />
           </div>
 
           <label>Status</label>
           <select
-            value={formData.status}
+            value={editFormData.status}
             onChange={(e) =>
-              setFormData({ ...formData, status: e.target.value })
+              setEditFormData({ ...editFormData, status: e.target.value })
             }
           >
             <option value="">Select Status</option>
@@ -502,8 +527,8 @@ const AttendanceSettings = () => {
 
           <label>Holiday Type</label>
           <select
-            value={formData.type}
-            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+            value={editFormData.type}
+            onChange={(e) => setEditFormData({ ...editFormData, type: e.target.value })}
           >
             <option value="">Select Holiday Type</option>
             <option value="Occasional Holidays">Occasional Holidays</option>
@@ -511,11 +536,11 @@ const AttendanceSettings = () => {
           </select>
           <button
             className="submit-button"
-            onClick={() => updateBonus(formData)}
+            onClick={() => updateBonus(editFormData)}
           >
             Update Holiday
           </button>
-          <button className="cancel-button" onClick={handleCancel}>
+          <button className="cancel-button" onClick={handleReset}>
             Cancel
           </button>
         </div>

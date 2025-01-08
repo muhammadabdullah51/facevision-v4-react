@@ -12,16 +12,54 @@ import successAnimation from "../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../assets/Lottie/warningAnim.json";
 import { SERVER_URL } from "../../config";
 
+import { useDispatch, useSelector } from "react-redux";
+import { setHDeviceData, resetHDeviceData } from "../../redux/deviceSlice";
+
+
 const DeviceTable = ({ data, setData }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
-  const [formData, setFormData] = useState({
+
+  const dispatch = useDispatch();
+  const deviceData = useSelector((state) => state.device);
+
+  const [formData, setFormData] = useState(
+    deviceData || {
+      cameraId: null,
+      cameraName: "",
+      cameraIp: "",
+      port: "",
+    });
+
+  const handleReset = () => {
+    dispatch(resetHDeviceData());
+    setFormData({
+      cameraId: null,
+      cameraName: "",
+      cameraIp: "",
+      port: "",
+    });
+    setShowAddForm(false);
+    setShowEditForm(false);
+  };
+
+  const [editFormData, setEditFormData] = useState({
     cameraId: null,
     cameraName: "",
     cameraIp: "",
     port: "",
   });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => {
+      const updatedFormData = { ...prevState, [name]: value };
+      dispatch(setHDeviceData(updatedFormData));
+      return updatedFormData;
+    });
+  };
+
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
@@ -35,7 +73,7 @@ const DeviceTable = ({ data, setData }) => {
       setData(devices);
       console.log(devices);
     } catch (error) {
-    } 
+    }
   }, [setData]);
 
   // Call fetchDepartments when component mounts
@@ -50,12 +88,6 @@ const DeviceTable = ({ data, setData }) => {
     return () => clearTimeout(timer);
   }, [fetchDevices, successModal]);
 
-  // const handleStatusToggle = useCallback(() => {
-  //   setFormData((prevState) => ({
-  //     ...prevState,
-  //     status: prevState.status === "Active" ? "Inactive" : "Active",
-  //   }));
-  // }, []);
 
 
   const handleDownload = async (rowData) => {
@@ -267,7 +299,7 @@ const DeviceTable = ({ data, setData }) => {
   );
 
   const handleEdit = (row) => {
-    setFormData({
+    setEditFormData({
       cameraId: row.cameraId,
       cameraName: row.cameraName,
       cameraIp: row.cameraIp,
@@ -297,12 +329,6 @@ const DeviceTable = ({ data, setData }) => {
   };
 
   const handleAdd = () => {
-    setFormData({
-      cameraId: null,
-      cameraName: "",
-      cameraIp: "",
-      port: "",
-    });
     setShowAddForm(true);
     setShowEditForm(false);
     fetchDevices();
@@ -348,38 +374,25 @@ const DeviceTable = ({ data, setData }) => {
       setShowModal(false);
       setSuccessModal(true);
       fetchDevices();
+      handleReset()
     } catch (error) {
       setWarningModal(true);
     }
 
-    // Reset form data
-    setFormData({
-      cameraId: null,
-      cameraName: "",
-      cameraIp: "",
-      port: "",
-    });
 
-    // Hide form
     setShowAddForm(false);
   };
 
   const handleUpdate = async () => {
     setModalType("update");
-    setFormData({
-      cameraId: formData.cameraId,
-      cameraName: formData.cameraName,
-      cameraIp: formData.cameraIp,
-      port: formData.port,
-      status: formData.status,
-    });
+    setEditFormData({ ...editFormData });
     setShowModal(true);
   };
   const confirmUpdate = async () => {
     if (
-      formData.cameraName === "" ||
-      formData.cameraIp === "" ||
-      formData.port === ""
+      editFormData.cameraName === "" ||
+      editFormData.cameraIp === "" ||
+      editFormData.port === ""
     ) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
@@ -387,10 +400,10 @@ const DeviceTable = ({ data, setData }) => {
       return;
     }
     const updatedDevice = {
-      cameraId: formData.cameraId,
-      cameraName: formData.cameraName,
-      cameraIp: formData.cameraIp,
-      port: formData.port,
+      cameraId: editFormData.cameraId,
+      cameraName: editFormData.cameraName,
+      cameraIp: editFormData.cameraIp,
+      port: editFormData.port,
       // status: formData.status,
     };
 
@@ -412,6 +425,7 @@ const DeviceTable = ({ data, setData }) => {
 
       const updatedData = await axios.get(`${SERVER_URL}device/`);
       setData(updatedData.data.context);
+      handleReset()
     } catch (error) {
       setWarningModal(true);
     }
@@ -525,34 +539,33 @@ const DeviceTable = ({ data, setData }) => {
           <label>Device Name</label>
           <input
             type="text"
+            name="cameraName"
             placeholder="Device Name"
             value={formData.cameraName}
-            onChange={(e) =>
-              setFormData({ ...formData, cameraName: e.target.value })
-            }
+            onChange={handleInputChange}
           />
           <label>Device IP</label>
           <input
             type="text"
+            name="cameraIp"
             placeholder="Device IP"
             value={formData.cameraIp}
-            onChange={(e) =>
-              setFormData({ ...formData, cameraIp: e.target.value })
-            }
+            onChange={handleInputChange}
           />
           <label>Device Port</label>
           <input
             type="text"
+            name="port"
             placeholder="Device Port"
             value={formData.port}
-            onChange={(e) => setFormData({ ...formData, port: e.target.value })}
+            onChange={handleInputChange}
           />
           <button className="submit-button" onClick={addDevice}>
             Add Device
           </button>
           <button
             className="cancel-button"
-            onClick={() => setShowAddForm(false)}
+            onClick={handleReset}
           >
             Cancel
           </button>
@@ -567,33 +580,33 @@ const DeviceTable = ({ data, setData }) => {
           <input
             type="text"
             placeholder="Device Name"
-            value={formData.cameraName}
+            value={editFormData.cameraName}
             onChange={(e) =>
-              setFormData({ ...formData, cameraName: e.target.value })
+              setEditFormData({ ...editFormData, cameraName: e.target.value })
             }
           />
           <label>Device IP</label>
           <input
             type="text"
             placeholder="Device IP"
-            value={formData.cameraIp}
+            value={editFormData.cameraIp}
             onChange={(e) =>
-              setFormData({ ...formData, cameraIp: e.target.value })
+              setEditFormData({ ...editFormData, cameraIp: e.target.value })
             }
           />
           <label>Device Port</label>
           <input
             type="text"
             placeholder="Device Port"
-            value={formData.port}
-            onChange={(e) => setFormData({ ...formData, port: e.target.value })}
+            value={editFormData.port}
+            onChange={(e) => setEditFormData({ ...editFormData, port: e.target.value })}
           />
-          <button className="submit-button" onClick={handleUpdate}>
+          <button className="submit-button" onClick={() => handleUpdate(editFormData)}>
             Update Device
           </button>
           <button
             className="cancel-button"
-            onClick={() => setShowEditForm(false)}
+            onClick={handleReset}
           >
             Cancel
           </button>

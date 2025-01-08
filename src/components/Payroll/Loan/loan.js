@@ -12,12 +12,51 @@ import successAnimation from "../../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../../assets/Lottie/warningAnim.json";
 import { SERVER_URL } from "../../../config";
 
+import { useDispatch, useSelector } from "react-redux";
+import { setLoanData, resetLoanData } from "../../../redux/loanSlice";
+
+
 const Loan = () => {
   const [data, setData] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
-  const [formData, setFormData] = useState({
+
+  const dispatch = useDispatch();
+  const loanData = useSelector((state) => state.loan);
+  const [formData, setFormData] = useState(
+    loanData || {
+      id: "",
+      empId: "",
+      givenLoan: "",
+      returnInMonths: "",
+      paidAmount: "",
+      pendingAmount: "",
+      nextMonthPayable: "",
+      reason: "",
+      date: "",
+      status: "Pending",
+    });
+
+  const handleReset = () => {
+    dispatch(resetLoanData());
+    setFormData({
+      id: "",
+      empId: "",
+      givenLoan: "",
+      returnInMonths: "",
+      paidAmount: "",
+      pendingAmount: "",
+      nextMonthPayable: "",
+      reason: "",
+      date: "",
+      status: "Pending",
+    });
+    setShowAddForm(false);
+    setShowEditForm(false);
+  };
+
+  const [editFormData, setEditFormData] = useState({
     id: "",
     empId: "",
     givenLoan: "",
@@ -29,6 +68,17 @@ const Loan = () => {
     date: "",
     status: "Pending",
   });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => {
+      const updatedFormData = { ...prevState, [name]: value };
+      dispatch(setLoanData(updatedFormData));
+      return updatedFormData;
+    });
+  };
+
+
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
@@ -68,10 +118,7 @@ const Loan = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  const handleCancel = () => {
-    setShowAddForm(false);
-    setShowEditForm(false);
-  };
+
 
   // Delete an givenLoan
   const handleDelete = async (id) => {
@@ -93,14 +140,6 @@ const Loan = () => {
   };
 
   const handleAddNew = () => {
-    setFormData({
-      empId: "",
-      givenLoan: "",
-      returnInMonths: "",
-      reason: "",
-      date: "",
-      status: "Pending",
-    });
     setShowAddForm(true);
     setShowEditForm(false);
   };
@@ -144,13 +183,14 @@ const Loan = () => {
       setSuccessModal(true);
       setShowAddForm(false);
       fetchLoan();
+      handleReset()
     } catch (error) {
       console.log(error);
     }
   };
   // Handle form data changes
   const handleEdit = (data) => {
-    setFormData({
+    setEditFormData({
       id: data.id,
       empId: data.empId,
       givenLoan: data.givenLoan,
@@ -166,32 +206,23 @@ const Loan = () => {
 
   const updateLoan = (row) => {
     setModalType("update");
-    setFormData({
-      id: row.id,
-      empId: row.empId,
-      givenLoan: row.givenLoan,
-      returnInMonths: row.returnInMonths,
-      paidAmount: row.paidAmount,
-      reason: row.reason,
-      date: row.date,
-      status: row.status,
-    });
+    setEditFormData({ ...editFormData });
     setShowModal(true);
   };
 
   const confirmUpdate = async () => {
     if (
-      !formData.givenLoan ||
-      !formData.returnInMonths ||
-      !formData.reason ||
-      !formData.date
+      !editFormData.givenLoan ||
+      !editFormData.returnInMonths ||
+      !editFormData.reason ||
+      !editFormData.date
     ) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
       setWarningModal(true);
       return;
     }
-    if (formData.givenLoan < 1 || formData.returnInMonths < 1) {
+    if (editFormData.givenLoan < 1 || editFormData.returnInMonths < 1) {
       setResMsg("Values Can't be Negative or zero");
       setShowModal(false);
       setWarningModal(true);
@@ -200,19 +231,20 @@ const Loan = () => {
 
     try {
       const updateLoan = {
-        id: formData.id,
-        givenLoan: formData.givenLoan,
-        returnInMonths: formData.returnInMonths,
-        paidAmount: formData.paidAmount,
-        reason: formData.reason,
-        date: formData.date,
-        status: formData.status,
+        id: editFormData.id,
+        givenLoan: editFormData.givenLoan,
+        returnInMonths: editFormData.returnInMonths,
+        paidAmount: editFormData.paidAmount,
+        reason: editFormData.reason,
+        date: editFormData.date,
+        status: editFormData.status,
       };
       await axios.post(`${SERVER_URL}pyr-loan-up/`, updateLoan);
       setShowModal(false);
       setSuccessModal(true);
       setShowEditForm(false);
       fetchLoan();
+      handleReset()
     } catch (error) {
       console.log(error);
     }
@@ -443,22 +475,22 @@ const Loan = () => {
           <label>Given Loan</label>
           <input
             type="number"
+            name="givenLoan"
             placeholder="Given Loan"
             value={formData.givenLoan}
-            onChange={(e) =>
-              setFormData({ ...formData, givenLoan: e.target.value })
-            }
+            onChange={handleInputChange}
+
           />
           {formData.type !== "NotPayable" && (
             <>
               <label>Return In Months</label>
               <input
                 type="number"
+                name="returnInMonths"
                 placeholder="Return In Months"
                 value={formData.returnInMonths}
-                onChange={(e) =>
-                  setFormData({ ...formData, returnInMonths: e.target.value })
-                }
+                onChange={handleInputChange}
+
               />
             </>
           )}
@@ -466,25 +498,27 @@ const Loan = () => {
           <label>Date</label>
           <input
             type="date"
+            name="date"
             placeholder="Date"
             value={formData.date}
-            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+            onChange={handleInputChange}
+
           />
           <label>Reason</label>
           <input
             type="text"
+            name="reason"
             placeholder="Reason"
             value={formData.reason}
-            onChange={(e) =>
-              setFormData({ ...formData, reason: e.target.value })
-            }
+            onChange={handleInputChange}
+
           />
           <label>Select Status</label>
           <select
             value={formData.status}
-            onChange={(e) =>
-              setFormData({ ...formData, status: e.target.value })
-            }
+            name="status"
+            onChange={handleInputChange}
+
           >
             <option value="">Select Status</option>
             <option value="Pending">Pending</option>
@@ -495,7 +529,7 @@ const Loan = () => {
           <button className="submit-button" onClick={addLoan}>
             Add Loan
           </button>
-          <button className="cancel-button" onClick={handleCancel}>
+          <button className="cancel-button" onClick={handleReset}>
             Cancel
           </button>
         </div>
@@ -508,12 +542,12 @@ const Loan = () => {
             disabled
             list="employeesList"
             value={
-              employees.find((emp) => emp.empId === formData.empId)
-                ? `${employees.find((emp) => emp.empId === formData.empId).empId
-                } ${employees.find((emp) => emp.empId === formData.empId).fName
-                } ${employees.find((emp) => emp.empId === formData.empId).lName
+              employees.find((emp) => emp.empId === editFormData.empId)
+                ? `${employees.find((emp) => emp.empId === editFormData.empId).empId
+                } ${employees.find((emp) => emp.empId === editFormData.empId).fName
+                } ${employees.find((emp) => emp.empId === editFormData.empId).lName
                 }`
-                : formData.empId || "" // Display empId, fName, and lName of selected employee or inputted empId
+                : editFormData.empId || "" // Display empId, fName, and lName of selected employee or inputted empId
             }
             onChange={(e) => {
               const value = e.target.value;
@@ -523,8 +557,8 @@ const Loan = () => {
                   emp.empId === value
               );
 
-              setFormData({
-                ...formData,
+              setEditFormData({
+                ...editFormData,
                 empId: selectedEmployee ? selectedEmployee.empId : value, // Store empId or raw input
               });
             }}
@@ -546,9 +580,9 @@ const Loan = () => {
           <input
             type="number"
             placeholder="Given Loan"
-            value={formData.givenLoan}
+            value={editFormData.givenLoan}
             onChange={(e) =>
-              setFormData({ ...formData, givenLoan: e.target.value })
+              setEditFormData({ ...editFormData, givenLoan: e.target.value })
             }
           />
 
@@ -556,9 +590,9 @@ const Loan = () => {
           <input
             type="number"
             placeholder="Return In Months"
-            value={formData.returnInMonths}
+            value={editFormData.returnInMonths}
             onChange={(e) =>
-              setFormData({ ...formData, returnInMonths: e.target.value })
+              setEditFormData({ ...editFormData, returnInMonths: e.target.value })
             }
           />
 
@@ -566,9 +600,9 @@ const Loan = () => {
           <input
             type="number"
             placeholder="Paid Amount"
-            value={formData.paidAmount}
+            value={editFormData.paidAmount}
             onChange={(e) =>
-              setFormData({ ...formData, paidAmount: e.target.value })
+              setEditFormData({ ...editFormData, paidAmount: e.target.value })
             }
           />
 
@@ -576,23 +610,23 @@ const Loan = () => {
           <input
             type="date"
             placeholder="Date"
-            value={formData.date}
-            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+            value={editFormData.date}
+            onChange={(e) => setEditFormData({ ...editFormData, date: e.target.value })}
           />
           <label>Reason</label>
           <input
             type="text"
             placeholder="Reason"
-            value={formData.reason}
+            value={editFormData.reason}
             onChange={(e) =>
-              setFormData({ ...formData, reason: e.target.value })
+              setEditFormData({ ...editFormData, reason: e.target.value })
             }
           />
           <label>Select Status</label>
           <select
-            value={formData.status}
+            value={editFormData.status}
             onChange={(e) =>
-              setFormData({ ...formData, status: e.target.value })
+              setEditFormData({ ...editFormData, status: e.target.value })
             }
           >
             <option value="">Select Status</option>
@@ -607,7 +641,7 @@ const Loan = () => {
           >
             Update Loan
           </button>
-          <button className="cancel-button" onClick={handleCancel}>
+          <button className="cancel-button" onClick={handleReset}>
             Cancel
           </button>
         </div>
@@ -617,7 +651,7 @@ const Loan = () => {
         <table className="table">
           <thead>
             <tr>
-            <th>
+              <th>
                 <input
                   id="delete-checkbox"
                   type="checkbox"
@@ -663,10 +697,10 @@ const Loan = () => {
                 <td>
                   <span
                     className={`status ${adv.status === "Rejected"
-                        ? "absentStatus"
-                        : adv.status === "Pending"
-                          ? "lateStatus"
-                          : "presentStatus"
+                      ? "absentStatus"
+                      : adv.status === "Pending"
+                        ? "lateStatus"
+                        : "presentStatus"
                       }`}
                   >
                     {adv.status}

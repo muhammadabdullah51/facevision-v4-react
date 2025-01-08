@@ -11,6 +11,11 @@ import successAnimation from "../../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../../assets/Lottie/warningAnim.json";
 import { SERVER_URL } from "../../../config";
 
+
+import { useDispatch, useSelector } from "react-redux";
+import { setAssignBonusData, resetAssignBonusData } from "../../../redux/assignBonusSlice";
+
+
 const AssignBonus = () => {
   const [data, setData] = useState([]);
   const [employees, setEmployees] = useState([]);
@@ -19,12 +24,44 @@ const AssignBonus = () => {
   const [showEditForm, setShowEditForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const [formData, setFormData] = useState({
+  const dispatch = useDispatch();
+  const assignBonusData = useSelector((state) => state.assignBonus);
+
+  const [formData, setFormData] = useState(
+    assignBonusData || {
+      id: "",
+      empId: "",
+      bonusId: "",
+      bonusAssignDate: "",
+    });
+
+  const handleReset = () => {
+    dispatch(resetAssignBonusData());
+    setFormData({
+      id: "",
+      empId: "",
+      bonusId: "",
+      bonusAssignDate: "",
+    });
+    setShowAddForm(false);
+    setShowEditForm(false);
+  };
+
+  const [editFormData, setEditFormData] = useState({
     id: "",
     empId: "",
     bonusId: "",
     bonusAssignDate: "",
   });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => {
+      const updatedFormData = { ...prevState, [name]: value };
+      dispatch(setAssignBonusData(updatedFormData));
+      return updatedFormData;
+    });
+  };
 
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
@@ -87,11 +124,6 @@ const AssignBonus = () => {
   };
 
   const handleAddNew = () => {
-    setFormData({
-      empId: "",
-      bonusId: "",
-      bonusAssignDate: "",
-    });
     setShowAddForm(true);
     setShowEditForm(false);
   };
@@ -112,10 +144,11 @@ const AssignBonus = () => {
     setSuccessModal(true);
     setShowAddForm(false);
     fetchEmployeesBonus();
+    handleReset();
   };
 
   const handleEdit = (item) => {
-    setFormData({
+    setEditFormData({
       id: item.id,
       empId: item.empId,
       bonusId: item.bonusId,
@@ -126,28 +159,24 @@ const AssignBonus = () => {
   };
   const updateAssign = (row) => {
     setModalType("update");
-    setFormData({
-      id: row.id,
-      empId: row.empId,
-      bonusId: row.bonusId,
-      bonusAssignDate: row.bonusAssignDate,
-    });
+    setEditFormData({ ...editFormData });
     setShowModal(true);
   };
   const confirmUpdate = async () => {
-    if (!formData.empId || !formData.bonusId || !formData.bonusAssignDate) {
+    if (!editFormData.empId || !editFormData.bonusId || !editFormData.bonusAssignDate) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
       setWarningModal(true);
       return;
     }
-    await axios.post(`${SERVER_URL}pyr-asg-bns-up/`, formData);
+    await axios.post(`${SERVER_URL}pyr-asg-bns-up/`, editFormData);
     setShowModal(false);
     setSuccessModal(true);
     setShowEditForm(false);
     fetchEmployeesBonus();
+    handleReset();
   };
- 
+
 
 
 
@@ -161,10 +190,7 @@ const AssignBonus = () => {
     item.bonusAmount.toLowerCase().includes(searchQuery.toLowerCase())
 
   );
-  const handleCancel = () => {
-    setShowAddForm(false);
-    setShowEditForm(false);
-  };
+
 
   const [selectedIds, setSelectedIds] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
@@ -381,10 +407,9 @@ const AssignBonus = () => {
           </datalist>
           <label>Select Bonus</label>
           <select
+            name="bonusId"
             value={formData.bonusId}
-            onChange={(e) =>
-              setFormData({ ...formData, bonusId: e.target.value })
-            }
+            onChange={handleInputChange}
           >
             <option value="">Select Bonus</option>
             {bonuses.map((bonus) => (
@@ -396,15 +421,14 @@ const AssignBonus = () => {
           <label>Date</label>
           <input
             type="date"
+            name="bonusAssignDate"
             value={formData.bonusAssignDate}
-            onChange={(e) =>
-              setFormData({ ...formData, bonusAssignDate: e.target.value })
-            }
+            onChange={handleInputChange}
           />
           <button className="submit-button" onClick={addAssign}>
             Assign Bonus
           </button>
-          <button className="cancel-button" onClick={handleCancel}>
+          <button className="cancel-button" onClick={handleReset}>
             Cancel
           </button>
         </div>
@@ -417,12 +441,12 @@ const AssignBonus = () => {
             list="employeesList"
             disabled
             value={
-              employees.find((emp) => emp.empId === formData.empId)
-                ? `${employees.find((emp) => emp.empId === formData.empId).empId
-                } ${employees.find((emp) => emp.empId === formData.empId).fName
-                } ${employees.find((emp) => emp.empId === formData.empId).lName
+              employees.find((emp) => emp.empId === editFormData.empId)
+                ? `${employees.find((emp) => emp.empId === editFormData.empId).empId
+                } ${employees.find((emp) => emp.empId === editFormData.empId).fName
+                } ${employees.find((emp) => emp.empId === editFormData.empId).lName
                 }`
-                : formData.empId || "" // Display empId, fName, and lName of selected employee or inputted empId
+                : editFormData.empId || "" // Display empId, fName, and lName of selected employee or inputted empId
             }
             onChange={(e) => {
               const value = e.target.value;
@@ -432,8 +456,8 @@ const AssignBonus = () => {
                   emp.empId === value
               );
 
-              setFormData({
-                ...formData,
+              setEditFormData({
+                ...editFormData,
                 empId: selectedEmployee ? selectedEmployee.empId : value, // Store empId or raw input
               });
             }}
@@ -450,11 +474,11 @@ const AssignBonus = () => {
               </option>
             ))}
           </datalist>
-
+          <label>Select Bonus</label>
           <select
-            value={formData.bonusId}
+            value={editFormData.bonusId}
             onChange={(e) =>
-              setFormData({ ...formData, bonusId: e.target.value })
+              setEditFormData({ ...editFormData, bonusId: e.target.value })
             }
           >
             <option value="">Select Bonus</option>
@@ -464,20 +488,21 @@ const AssignBonus = () => {
               </option>
             ))}
           </select>
+          <label>Date</label>
           <input
             type="date"
-            value={formData.bonusAssignDate}
+            value={editFormData.bonusAssignDate}
             onChange={(e) =>
-              setFormData({ ...formData, bonusAssignDate: e.target.value })
+              setEditFormData({ ...editFormData, bonusAssignDate: e.target.value })
             }
           />
           <button
             className="submit-button"
-            onClick={() => updateAssign(formData)}
+            onClick={() => updateAssign(editFormData)}
           >
             Update Assigned Bonus
           </button>
-          <button className="cancel-button" onClick={handleCancel}>
+          <button className="cancel-button" onClick={handleReset}>
             Cancel
           </button>
         </div>
@@ -486,7 +511,7 @@ const AssignBonus = () => {
         <table className="table">
           <thead>
             <tr>
-            <th>
+              <th>
                 <input
                   id="delete-checkbox"
                   type="checkbox"

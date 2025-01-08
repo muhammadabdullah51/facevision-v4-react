@@ -14,22 +14,52 @@ import warningAnimation from "../../../assets/Lottie/warningAnim.json";
 
 import { SERVER_URL } from "../../../config";
 import AssignAllowance from "./AssignAllowance";
+import { useDispatch, useSelector } from "react-redux";
+import { setAllowanceData, resetAllowanceData } from "../../../redux/allowancesSlice";
 
 const Allowance = () => {
   const [data, setData] = useState([]);
-  const [showForm, setShowForm] = useState(false);
-  const [formMode, setFormMode] = useState("add");
-  const [currentItemId, setCurrentItemId] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [allSettings, setAllSettings] = useState("");
 
-  const [formData, setFormData] = useState({
+  const dispatch = useDispatch();
+  const allowancesData = useSelector((state) => state.allowances);
+
+  const [formData, setFormData] = useState(
+    allowancesData || {
+      id: "",
+      type: "",
+      amount: "",
+      date: "",
+    });
+  const handleReset = () => {
+    dispatch(resetAllowanceData());
+    setFormData({
+      id: "",
+      type: "",
+      amount: "",
+      date: "",
+    });
+    setShowAddForm(false);
+    setShowEditForm(false);
+  };
+
+  const [editFormData, setEditFormData] = useState({
     id: "",
     type: "",
     amount: "",
     date: "",
   });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => {
+      const updatedFormData = { ...prevState, [name]: value };
+      dispatch(setAllowanceData(updatedFormData));
+      return updatedFormData;
+    });
+  };
 
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
@@ -37,7 +67,6 @@ const Allowance = () => {
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
 
-  const [loading, setLoading] = useState(false); // Loading state
 
   const fetchAllSettings = async () => {
     try {
@@ -69,11 +98,6 @@ const Allowance = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  const handleCancel = () => {
-    setShowAddForm(false);
-    setShowEditForm(false);
-  };
-
   const handleDelete = async (id) => {
     setModalType("delete");
     setShowModal(true);
@@ -94,11 +118,6 @@ const Allowance = () => {
   };
 
   const handleAddNew = () => {
-    setFormData({
-      type: "",
-      amount: "",
-      date: "",
-    });
     setShowAddForm(true);
     setShowEditForm(false);
   };
@@ -132,12 +151,13 @@ const Allowance = () => {
       setSuccessModal(true);
       setShowAddForm(false);
       fetchAllowances();
+      handleReset()
     } catch (error) {
     }
   };
 
   const handleEdit = (data) => {
-    setFormData({
+    setEditFormData({
       id: data.id,
       type: data.type,
       amount: data.amount,
@@ -148,16 +168,11 @@ const Allowance = () => {
 
   const updateBonus = (row) => {
     setModalType("update");
-    setFormData({
-      id: row.id,
-      type: row.type,
-      amount: row.amount,
-      date: row.date,
-    });
+    setEditFormData({ ...editFormData });
     setShowModal(true);
   };
   const confirmUpdate = async () => {
-    if (!formData.type || !formData.amount || !formData.date) {
+    if (!editFormData.type || !editFormData.amount || !editFormData.date) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
       setWarningModal(true);
@@ -165,28 +180,26 @@ const Allowance = () => {
 
 
     const updateBonuses = {
-      type: formData.type,
-      amount: formData.amount,
-      date: formData.date,
+      type: editFormData.type,
+      amount: editFormData.amount,
+      date: editFormData.date,
     };
 
     try {
-      await axios.put(`${SERVER_URL}allowances/${formData.id}/`, updateBonuses);
+      await axios.put(`${SERVER_URL}allowances/${editFormData.id}/`, updateBonuses);
       const updatedData = await axios.get(`${SERVER_URL}allowances/`);
       setData(updatedData.data);
       setShowModal(false);
       setSuccessModal(true);
       setShowEditForm(false);
       fetchAllowances();
+      handleReset()
     } catch (error) {
       setShowModal(false);
       setWarningModal(true);
     }
   };
 
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-  };
 
   const filteredData = data.filter((item) =>
     item.allowanceName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -397,23 +410,25 @@ const Allowance = () => {
           <label>Allowance Amount</label>
           <input
             type="number"
+            name="amount"
             placeholder="Allowance Amount"
             value={formData.amount}
-            onChange={(e) =>
-              setFormData({ ...formData, amount: e.target.value })
-            }
+            onChange={handleInputChange}
+
           />
           <label>Allowance Date</label>
           <input
             type="date"
+            name="date"
             placeholder="Allowance Date"
             value={formData.date}
-            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+            onChange={handleInputChange}
+
           />
           <button className="submit-button" onClick={addBonus}>
             Add Allowance
           </button>
-          <button className="cancel-button" onClick={handleCancel}>
+          <button className="cancel-button" onClick={handleReset}>
             Cancel
           </button>
         </div>
@@ -427,14 +442,14 @@ const Allowance = () => {
             list="allowanceTypesList" // Link to the datalist by id
             placeholder="Allowance Type"
             value={
-              allSettings.find((setting) => setting.id === formData.type)
+              allSettings.find((setting) => setting.id === editFormData.type)
                 ?.type || ""
             } // Display the type based on the selected id
             onChange={(e) => {
               const selectedId = allSettings.find(
                 (setting) => setting.type === e.target.value
               )?.id;
-              setFormData({ ...formData, type: selectedId });
+              setEditFormData({ ...editFormData, type: selectedId });
             }}
           />
 
@@ -451,25 +466,25 @@ const Allowance = () => {
           <input
             type="number"
             placeholder="Allowance Amount"
-            value={formData.amount}
+            value={editFormData.amount}
             onChange={(e) =>
-              setFormData({ ...formData, amount: e.target.value })
+              setEditFormData({ ...editFormData, amount: e.target.value })
             }
           />
           <label>Allowance Date</label>
           <input
             type="date"
             placeholder="Allowance Date"
-            value={formData.date}
-            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+            value={editFormData.date}
+            onChange={(e) => setEditFormData({ ...editFormData, date: e.target.value })}
           />
           <button
             className="submit-button"
-            onClick={() => updateBonus(formData)}
+            onClick={() => updateBonus(editFormData)}
           >
             Update Allowance
           </button>
-          <button className="cancel-button" onClick={handleCancel}>
+          <button className="cancel-button" onClick={handleReset}>
             Cancel
           </button>
         </div>
@@ -479,7 +494,7 @@ const Allowance = () => {
         <table className="table">
           <thead>
             <tr>
-            <th>
+              <th>
                 <input
                   id="delete-checkbox"
                   type="checkbox"

@@ -162,6 +162,7 @@ const ShiftManagementTable = () => {
       });
     setSelectedItems([]);
     setShowAddForm(true);
+    setShowEditForm(false);
   };
 
   const addShift = async () => {

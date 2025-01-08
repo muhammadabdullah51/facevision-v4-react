@@ -10,12 +10,20 @@ import successAnimation from "../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../assets/Lottie/warningAnim.json";
 import { SERVER_URL } from "../../config";
 
+import { useDispatch, useSelector } from "react-redux";
+import { setblocklistData, resetblocklistData } from "../../redux/blocklistSlice";
+
 const BlockListTable = ({ data, setData }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [employees, setEmployees] = useState([]);
-  const [formData, setFormData] = useState({
+
+  const dispatch = useDispatch();
+  const blicklistData = useSelector((state) => state.blocklist);
+
+  const [formData, setFormData] = useState(
+    blicklistData || {
     blockId: "",
     empId: "",
     blockDate: "",
@@ -24,6 +32,42 @@ const BlockListTable = ({ data, setData }) => {
     allowReason: "",
     status: "Blocked",
   });
+
+  const handleReset = () => {
+    dispatch(resetblocklistData());
+    setFormData({
+      blockId: "",
+      empId: "",
+      blockDate: "",
+      blockReason: "",
+      allowAttendance: false,
+      allowReason: "",
+      status: "Blocked",
+    });
+    setShowAddForm(false);
+    setShowEditForm(false);
+  };
+
+  const [editFormData, setEditFormData] = useState({
+    blockId: "",
+    empId: "",
+    blockDate: "",
+    blockReason: "",
+    allowAttendance: false,
+    allowReason: "",
+    status: "Blocked",
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => {
+      const updatedFormData = { ...prevState, [name]: value };
+      dispatch(setblocklistData(updatedFormData));
+      return updatedFormData;
+    });
+  };
+
+
 
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
@@ -231,7 +275,7 @@ const BlockListTable = ({ data, setData }) => {
     );
 
   const handleEdit = (row) => {
-    setFormData({
+    setEditFormData({
       ...row,
       allowAttendance: row.allowAttendance || false,
       blockDate: row.blockDate ? row.blockDate.slice(0, 10) : "",
@@ -242,24 +286,15 @@ const BlockListTable = ({ data, setData }) => {
 
   const handleUpdate = async () => {
     setModalType("update");
-
-    setFormData({
-      blockId: formData.blockId,
-      empId: formData.empId,
-      blockDate: formData.blockDate,
-      blockReason: formData.blockReason,
-      allowAttendance: formData.allowAttendance,
-      allowReason: formData.allowReason,
-      status: formData.status,
-    });
+    setEditFormData({ ...editFormData });
     setShowModal(true);
   };
 
   const confirmUpdate = async () => {
     if (
-      formData.empId === "" ||
-      formData.blockDate === "" ||
-      formData.blockReason === ""
+      editFormData.empId === "" ||
+      editFormData.blockDate === "" ||
+      editFormData.blockReason === ""
     ) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
@@ -267,24 +302,25 @@ const BlockListTable = ({ data, setData }) => {
       return;
     }
     const updateBlock = {
-      blockId: formData.blockId,
-      empId: formData.empId,
-      blockDate: formData.blockDate,
-      blockReason: formData.blockReason,
-      allowAttendance: formData.allowAttendance,
-      allowReason: formData.allowReason,
-      status: formData.status,
+      blockId: editFormData.blockId,
+      empId: editFormData.empId,
+      blockDate: editFormData.blockDate,
+      blockReason: editFormData.blockReason,
+      allowAttendance: editFormData.allowAttendance,
+      allowReason: editFormData.allowReason,
+      status: editFormData.status,
     };
 
     try {
       await axios.put(
-        `${SERVER_URL}blocklist/${formData.blockId}/`,
+        `${SERVER_URL}blocklist/${editFormData.blockId}/`,
         updateBlock
       );
       fetchBlock(); // Fetch the updated locations
       setShowEditForm(false); // Close the edit form
       setShowModal(false); // Close the confirmation modal
       setSuccessModal(true); // Show the success modal
+      handleReset()
     } catch (error) {
     }
   };
@@ -306,14 +342,6 @@ const BlockListTable = ({ data, setData }) => {
   };
 
   const handleAdd = () => {
-    setFormData({
-      empId: "",
-      blockDate: "",
-      blockReason: "",
-      allowAttendance: false,
-      allowReason: "",
-      status: "Blocked",
-    });
     setShowAddForm(true);
     setShowEditForm(false);
   };
@@ -342,6 +370,7 @@ const BlockListTable = ({ data, setData }) => {
       setShowModal(false);
       setSuccessModal(true);
       fetchBlock();
+      handleReset()
     } catch (error) {
     }
   };
@@ -350,14 +379,9 @@ const BlockListTable = ({ data, setData }) => {
     <div className="department-table">
       <ConirmationModal
         isOpen={showModal}
-        message={
-          modalType === "delete selected"
-            ? "Are you sure you want to delete selected items?"
-            : `Are you sure you want to ${modalType} this Blocked Employees?`
-        }
+        message={`Are you sure you want to ${modalType} this to Blocked Employees?`}
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
-          else if (modalType === "delete selected") confirmBulkDelete();
           else if (modalType === "update") confirmUpdate();
           else confirmDelete();
         }}
@@ -372,11 +396,7 @@ const BlockListTable = ({ data, setData }) => {
       />
       <ConirmationModal
         isOpen={successModal}
-        message={
-          modalType === "delete selected"
-            ? "Selected items deleted successfully!"
-            : `Employee ${modalType}d from Blocklist successfully!`
-        }
+        message={`Employee ${modalType}d from Blocklist successfully!`}
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
@@ -437,24 +457,16 @@ const BlockListTable = ({ data, setData }) => {
             </svg>
           </button>
         </form>
-        <div className="add-delete-conainer" >
-          <button className="add-button" onClick={handleAdd}>
-            <FaPlus className="add-icon" /> Block New Employee
-          </button>
-          <button className="add-button submit-button" onClick={handleBulkDelete}>
-            <FaTrash className="add-icon" /> Delete Bulk
-          </button>
-        </div>
+        <button className="add-button" onClick={handleAdd}>
+          <FaPlus className="add-icon" /> Block New Employee
+        </button>
       </div>
-      {(showAddForm || showEditForm) && (
+      {showAddForm && !showEditForm && (
         <div className="add-department-form add-leave-form">
-          <h3>
-            {showAddForm ? "Add Blocked Employee" : "Edit Blocked Employee"}
-          </h3>
-          <label>{showAddForm ? "Select Employee" : `Selected Employee`}</label>
+          <h3>Add Blocked Employee</h3>
+          <label>Select Employee</label>
           <input
             list="employeesList"
-            disabled={showEditForm}
             value={
               employees.find((emp) => emp.id === formData.empId)
                 ? `${employees.find((emp) => emp.id === formData.empId).empId
@@ -465,14 +477,110 @@ const BlockListTable = ({ data, setData }) => {
             onChange={(e) => {
               const value = e.target.value;
 
+              const selectedEmployee = employees.find(
+                (emp) => `${emp.empId} ${emp.fName} ${emp.lName}` === value
+              );
+
+              setFormData({
+                ...formData,
+                empId: selectedEmployee ? selectedEmployee.id : value,
+              });
+            }}
+            placeholder="Search or select an employee"
+          />
+
+          <datalist id="employeesList">
+            {employees.map((emp) => (
+              <option
+                key={emp.id}
+                value={`${emp.empId} ${emp.fName} ${emp.lName}`}
+              />
+            ))}
+          </datalist>
+          <label>Date</label>
+
+          <input
+            type="date"
+            name="blockDate"
+            placeholder="Block Date"
+            value={formData.blockDate}
+            onChange={handleInputChange}
+          />
+          <label>Block Reason</label>
+
+          <input
+            type="text"
+            name="blockReason"
+            placeholder="Block Reason"
+            value={formData.blockReason}
+            onChange={handleInputChange}
+          />
+          <label>Allow Attendance</label>
+          <select
+            name="allowAttendance"
+            value={formData.allowAttendance}
+            onChange={handleInputChange}
+          >
+            <option value="">Allow Attendance?</option>
+            <option value={true}>Yes</option>
+            <option value={false}>No</option>
+          </select>
+
+          {formData.allowAttendance && (
+            <>
+              <label htmlFor="allowReason">Allow Reason</label>
+              <input
+                type="text"
+                name="allowReason"
+                id="allowReason"
+                placeholder="Allow Reason"
+                value={formData.allowReason}
+                onChange={handleInputChange}
+              />
+            </>
+          )}
+          <label>Status</label>
+          <select
+            name="status"
+            value={formData.status}
+            onChange={handleInputChange}
+          >
+            <option value="Blocked">Blocked</option>
+            <option value="Active">Active</option>
+          </select>
+          <button className="submit-button" onClick={addBlock}>Add Employee</button>
+          <button className="cancel-button"
+            onClick={handleReset}
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+      {!showAddForm && showEditForm && (
+        <div className="add-department-form add-leave-form">
+          <h3>Edit Blocked Employee</h3>
+          <label>Selected Employee</label>
+          <input
+            list="employeesList"
+            disabled
+            value={
+              employees.find((emp) => emp.id === editFormData.empId)
+                ? `${employees.find((emp) => emp.id === editFormData.empId).empId
+                } ${employees.find((emp) => emp.id === editFormData.empId).fName
+                } ${employees.find((emp) => emp.id === editFormData.empId).lName}`
+                : editFormData.empId || "" // Display empId, fName, and lName if employee is found or allow typing
+            }
+            onChange={(e) => {
+              const value = e.target.value;
+
               // If the input is a valid match for employee full name, find the employee
               const selectedEmployee = employees.find(
                 (emp) => `${emp.empId} ${emp.fName} ${emp.lName}` === value
               );
 
               // Set the form data
-              setFormData({
-                ...formData,
+              setEditFormData({
+                ...editFormData,
                 // If a valid employee is selected, store id, otherwise keep the current input (for free typing)
                 empId: selectedEmployee ? selectedEmployee.id : value,
               });
@@ -494,9 +602,9 @@ const BlockListTable = ({ data, setData }) => {
           <input
             type="date"
             placeholder="Block Date"
-            value={formData.blockDate}
+            value={editFormData.blockDate}
             onChange={(e) =>
-              setFormData({ ...formData, blockDate: e.target.value })
+              setEditFormData({ ...editFormData, blockDate: e.target.value })
             }
           />
           <label>Block Reason</label>
@@ -504,16 +612,16 @@ const BlockListTable = ({ data, setData }) => {
           <input
             type="text"
             placeholder="Block Reason"
-            value={formData.blockReason}
+            value={editFormData.blockReason}
             onChange={(e) =>
-              setFormData({ ...formData, blockReason: e.target.value })
+              setEditFormData({ ...editFormData, blockReason: e.target.value })
             }
           />
           <label>Allow Attendance</label>
           <select
-            value={formData.allowAttendance}
+            value={editFormData.allowAttendance}
             onChange={(e) =>
-              setFormData({ ...formData, allowAttendance: e.target.value })
+              setEditFormData({ ...editFormData, allowAttendance: e.target.value })
             }
           >
             <option value="">Allow Attendance?</option>
@@ -521,25 +629,25 @@ const BlockListTable = ({ data, setData }) => {
             <option value={false}>No</option>
           </select>
 
-          {formData.allowAttendance && (
+          {editFormData.allowAttendance && (
             <>
               <label htmlFor="allowReason">Allow Reason</label>
               <input
                 type="text"
                 id="allowReason"
                 placeholder="Allow Reason"
-                value={formData.allowReason}
+                value={editFormData.allowReason}
                 onChange={(e) =>
-                  setFormData({ ...formData, allowReason: e.target.value })
+                  setEditFormData({ ...editFormData, allowReason: e.target.value })
                 }
               />
             </>
           )}
           <label>Status</label>
           <select
-            value={formData.status}
+            value={editFormData.status}
             onChange={(e) =>
-              setFormData({ ...formData, status: e.target.value })
+              setEditFormData({ ...editFormData, status: e.target.value })
             }
           >
             <option value="Blocked">Blocked</option>
@@ -547,17 +655,10 @@ const BlockListTable = ({ data, setData }) => {
           </select>
           <button
             className="submit-button"
-            onClick={showAddForm ? addBlock : handleUpdate}
-          >
-            {showAddForm ? "Add Employee" : "Update Employee"}
+            onClick={() => handleUpdate(editFormData)}
+          >Update Employee
           </button>
-          <button
-            className="cancel-button"
-            onClick={() => {
-              setShowEditForm(false);
-              setShowAddForm(false);
-            }}
-          >
+          <button className="cancel-button" onClick={handleReset}>
             Cancel
           </button>
         </div>

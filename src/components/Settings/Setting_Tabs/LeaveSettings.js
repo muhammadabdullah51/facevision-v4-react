@@ -10,17 +10,59 @@ import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../../assets/Lottie/warningAnim.json";
 
+import { useDispatch, useSelector } from "react-redux";
+import { setLvFData, resetLvFData } from "../../../redux/lvfSlice";
+
+
 const LeaveTable = () => {
   const [data, setData] = useState([]);
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
-  const [formData, setFormData] = useState({
-    leaveFormulaId: "",
-    cutCode: "",
-    cutRate: "",
+
+  const dispatch = useDispatch();
+  const lvfData = useSelector((state) => state.lvf);
+
+
+  const [formData, setFormData] = useState(
+    lvfData || {
+      leaveFormulaId: "",
+      cutCode: "",
+      cutRate: "",
+    });
+
+  const handleReset = () => {
+    dispatch(resetLvFData());
+    setFormData({
+      id: "",
+      type: "",
+      nature: "",
+      percent: "",
+      amount: "",
+      date: "",
+    });
+    setShowAddForm(false);
+    setShowEditForm(false);
+  };
+
+  const [editFormData, setEditFormData] = useState({
+    id: "",
+    type: "",
+    nature: "",
+    percent: "",
+    amount: "",
+    date: "",
   });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => {
+      const updatedFormData = { ...prevState, [name]: value };
+      dispatch(setLvFData(updatedFormData));
+      return updatedFormData;
+    });
+  };
 
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
@@ -36,7 +78,7 @@ const LeaveTable = () => {
       setData(response.data);
     } catch (error) {
       console.error("Error fetching shift data:", error);
-    } 
+    }
   }, [setData]);
 
   useEffect(() => {
@@ -51,28 +93,18 @@ const LeaveTable = () => {
   }, [fetchLvs, successModal]);
 
 
-
-  const handleCancel = () => {
-    setShowAddForm(false);
-    setShowEditForm(false);
-  };
-
   const handleEdit = (row) => {
-    setFormData({ ...row });
+    setEditFormData({ ...row });
     setShowAddForm(false);
     setShowEditForm(true);
   };
   const updateOTF = async (row) => {
     setModalType("update");
-    setFormData({
-      leaveFormulaId: row.leaveFormulaId,
-      cutCode: row.cutCode,
-      cutRate: row.cutRate,
-    });
+    setEditFormData({ ...editFormData });
     setShowModal(true);
   };
   const confirmUpdate = async () => {
-    if (!formData.cutCode || !formData.cutRate) {
+    if (!editFormData.cutCode || !editFormData.cutRate) {
       setResMsg("Please fill in all required fields.")
       setShowModal(false);
       setWarningModal(true);
@@ -80,9 +112,9 @@ const LeaveTable = () => {
     }
 
     const updatedOTF = {
-      leaveFormulaId: formData.leaveFormulaId,
-      cutCode: formData.cutCode,
-      cutRate: formData.cutRate,
+      leaveFormulaId: editFormData.leaveFormulaId,
+      cutCode: editFormData.cutCode,
+      cutRate: editFormData.cutRate,
     };
     try {
       const res = await axios.post(`${SERVER_URL}pyr-lvf-up/`, updatedOTF);
@@ -93,6 +125,7 @@ const LeaveTable = () => {
       setResMsg(res.data.msg)
       const updatedData = await axios.get(`${SERVER_URL}pyr-lvf/`);
       setData(updatedData.data);
+      handleReset()
     } catch (error) {
       console.error("Error updating Leave:", error);
       setShowModal(false);
@@ -103,11 +136,8 @@ const LeaveTable = () => {
 
 
   const handleAdd = () => {
-    setFormData({
-      cutCode: "",
-      cutRate: "",
-    });
     setShowAddForm(true);
+    setShowEditForm(false);
   };
   const addOTF = async () => {
     setModalType("create");
@@ -134,7 +164,7 @@ const LeaveTable = () => {
       setSuccessModal(true)
       const updatedData = await axios.get(`${SERVER_URL}pyr-lvf/`);
       setData(updatedData.data);
-      // setShowAddForm(false)
+      handleReset()
     } catch (error) {
       console.log(error);
       setShowModal(false)
@@ -159,7 +189,7 @@ const LeaveTable = () => {
     setShowModal(false);
     setSuccessModal(true);
   }
- 
+
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
@@ -345,27 +375,25 @@ const LeaveTable = () => {
           <label>Cut Code</label>
           <input
             type="text"
+            name="cutCode"
             placeholder="Cut Code"
             value={formData.cutCode}
-            onChange={(e) =>
-              setFormData({ ...formData, cutCode: e.target.value })
-            }
+            onChange={handleInputChange}
           />
           <br />
           <label>Cut Per Hour</label>
           <input
             type="number"
+            name="cutRate"
             placeholder="Cut Per Hour"
             value={formData.cutRate}
-            onChange={(e) =>
-              setFormData({ ...formData, cutRate: e.target.value })
-            }
+            onChange={handleInputChange}
           />
 
           <button className="submit-button" onClick={addOTF}>
             Add Leave Formula
           </button>
-          <button className="cancel-button" onClick={handleCancel}>
+          <button className="cancel-button" onClick={handleReset}>
             Cancel
           </button>
         </div>
@@ -377,9 +405,9 @@ const LeaveTable = () => {
           <input
             type="text"
             placeholder="Cut Code"
-            value={formData.cutCode}
+            value={editFormData.cutCode}
             onChange={(e) =>
-              setFormData({ ...formData, cutCode: e.target.value })
+              setEditFormData({ ...editFormData, cutCode: e.target.value })
             }
           />
           <br />
@@ -387,16 +415,16 @@ const LeaveTable = () => {
           <input
             type="number"
             placeholder="Cut Per Hour"
-            value={formData.cutRate}
+            value={editFormData.cutRate}
             onChange={(e) =>
-              setFormData({ ...formData, cutRate: e.target.value })
+              setEditFormData({ ...editFormData, cutRate: e.target.value })
             }
           />
 
-          <button className="submit-button" onClick={() => updateOTF(formData)}>
+          <button className="submit-button" onClick={() => updateOTF(editFormData)}>
             Update Leave Formula
           </button>
-          <button className="cancel-button" onClick={handleCancel}>
+          <button className="cancel-button" onClick={handleReset}>
             Cancel
           </button>
         </div>
@@ -406,7 +434,7 @@ const LeaveTable = () => {
         <table className="table">
           <thead>
             <tr>
-            <th>
+              <th>
                 <input
                   id="delete-checkbox"
                   type="checkbox"

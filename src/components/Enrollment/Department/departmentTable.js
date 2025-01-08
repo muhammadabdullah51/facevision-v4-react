@@ -10,6 +10,8 @@ import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../../assets/Lottie/warningAnim.json";
 import { SERVER_URL } from "../../../config";
+import { useDispatch, useSelector } from "react-redux";
+import { setDeptData, resetDeptData } from "../../../redux/departmentSlice";
 
 
 const TableComponent = ({ data, setData }) => {
@@ -24,13 +26,49 @@ const TableComponent = ({ data, setData }) => {
 
 
 
-  const [formData, setFormData] = useState({
-    // _id: "",
+  const dispatch = useDispatch();
+  const deptData = useSelector((state) => state.department);
+
+
+
+
+
+  const [formData, setFormData] = useState(
+    deptData || {
+      dptId: null,
+      name: "",
+      superior: "",
+      empQty: "",
+    });
+
+    const handleReset = () => {
+      dispatch(resetDeptData());
+      setFormData({
+        dptId: null,
+        name: "",
+        superior: "",
+        empQty: "",
+      });
+      setShowAddForm(false);
+      setShowEditForm(false);
+    };
+
+  const [editFormData, setEditFormData] = useState({
     dptId: null,
     name: "",
     superior: "",
     empQty: "",
   });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => {
+      const updatedFormData = { ...prevState, [name]: value };
+      dispatch(setDeptData(updatedFormData)); 
+      return updatedFormData;
+    });
+  };
+
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
@@ -59,8 +97,7 @@ const TableComponent = ({ data, setData }) => {
   }, [fetchDepartments, successModal]);
 
   const handleEdit = (row) => {
-    setFormData({
-      // _id: row._id,
+    setEditFormData({
       dptId: row.dptId,
       name: row.name,
       superior: row.superior,
@@ -92,12 +129,7 @@ const TableComponent = ({ data, setData }) => {
   };
 
   const handleAdd = () => {
-    setFormData({
-      dptId: null,
-      name: "",
-      superior: "",
-      empQty: "",
-    });
+   
     setShowAddForm(true);
     setShowEditForm(false);
     fetchDepartments();
@@ -109,7 +141,7 @@ const TableComponent = ({ data, setData }) => {
   };
 
   const confirmAdd = async () => {
-    if (!formData.name) {
+    if (!formData.name || !formData.superior || !formData.empQty ) {
       setResMsg("Please fill in atleast Department Name fields.")
       setShowModal(false);
       setWarningModal(true);
@@ -137,18 +169,11 @@ const TableComponent = ({ data, setData }) => {
       const updatedData = await axios.get(`${SERVER_URL}pr-dpt/`
       );
       setData(updatedData.data.context);
-
+      handleReset()
     } catch (error) {
       setWarningModal(true);
     }
 
-    // Reset the form data
-    setFormData({
-      dptId: null,
-      name: "",
-      superior: "",
-      empQty: "",
-    });
   };
 
   const filteredData = data.filter((row) =>
@@ -164,28 +189,21 @@ const TableComponent = ({ data, setData }) => {
 
   const updateDepartment = async (row) => {
     setModalType("update");
-    setFormData({
-      // _id: row._id,
-      dptId: row.dptId,
-      name: row.name,
-      superior: row.superior,
-      empQty: row.empQty,
-    });
+    setEditFormData({ ...editFormData });
     setShowModal(true);
   };
   const confirmUpdate = async () => {
-    if (!formData.name) {
+    if (!editFormData.name  || !editFormData.superior || !editFormData.empQty) {
       setResMsg("Please fill in atleast Department Name fields.")
       setShowModal(false);
       setWarningModal(true);
       return;
     }
     const updatedDepartment = {
-      // _id: formData._id,
-      dptId: formData.dptId,
-      name: formData.name,
-      superior: formData.superior,
-      empQty: formData.empQty,
+      dptId: editFormData.dptId,
+      name: editFormData.name,
+      superior: editFormData.superior,
+      empQty: editFormData.empQty,
     };
 
     try {
@@ -197,6 +215,7 @@ const TableComponent = ({ data, setData }) => {
       setShowEditForm(false);
       const updatedData = await axios.get(`${SERVER_URL}pr-dpt/`);
       setData(updatedData.data.context);
+      handleReset();
       setShowModal(false);
       setSuccessModal(true);
     } catch (error) {
@@ -269,7 +288,7 @@ const TableComponent = ({ data, setData }) => {
       const updatedData = await axios.get(`${SERVER_URL}pr-dpt/`);
       setData(updatedData.data.context);
       setShowModal(false);
-      setSelectedIds([]); 
+      setSelectedIds([]);
       setSuccessModal(true);
     } catch (error) {
       console.error("Error deleting rows:", error);
@@ -285,7 +304,7 @@ const TableComponent = ({ data, setData }) => {
           modalType === "delete selected"
             ? "Are you sure you want to delete selected items?"
             : `Are you sure you want to ${modalType} this Department?`
-        } 
+        }
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
           else if (modalType === "update") confirmUpdate();
@@ -386,35 +405,33 @@ const TableComponent = ({ data, setData }) => {
           <label>Department Name</label>
           <input
             type="text"
+            name="name"
             placeholder="Department Name"
             value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            />
-            <label>Superior Name</label>
+            onChange={handleInputChange} 
+          />
+          <label>Superior Name</label>
           <input
             type="text"
+            name="superior"
             placeholder="Superior"
             value={formData.superior}
-            onChange={(e) =>
-              setFormData({ ...formData, superior: e.target.value })
-            }
-            />
-            <label>Employee Quantity</label>
+            onChange={handleInputChange} 
+          />
+          <label>Employee Quantity</label>
           <input
             type="number"
+            name="empQty"
             placeholder="Employee Qty"
             value={formData.empQty}
-            onChange={(e) =>
-              setFormData({ ...formData, empQty: e.target.value })
-            }
+            onChange={handleInputChange} 
           />
           <button className="submit-button" onClick={addDepartment}>
             Add Department
           </button>
           <button
             className="cancel-button"
-            onClick={() => setShowAddForm(false)}
-          >
+            onClick={handleReset}>
             Cancel
           </button>
         </div>
@@ -427,37 +444,37 @@ const TableComponent = ({ data, setData }) => {
           <input
             type="text"
             placeholder="Department Name"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            value={editFormData.name}
+            onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
           />
           <label>Superior Name</label>
           <input
             type="text"
             placeholder="Superior"
-            value={formData.superior}
+            value={editFormData.superior}
             onChange={(e) =>
-              setFormData({ ...formData, superior: e.target.value })
+              setEditFormData({ ...editFormData, superior: e.target.value })
             }
           />
           <label>Employee Quantity</label>
           <input
             type="number"
             placeholder="Employee Qty"
-            value={formData.empQty}
+            value={editFormData.empQty}
             onChange={(e) =>
-              setFormData({ ...formData, empQty: e.target.value })
+              setEditFormData({ ...editFormData, empQty: e.target.value })
             }
           />
 
           <button
             className="submit-button"
-            onClick={() => updateDepartment(formData)}
+            onClick={() => updateDepartment(editFormData)}
           >
             Update Department
           </button>
           <button
             className="cancel-button"
-            onClick={() => setShowEditForm(false)}
+            onClick={handleReset}
           >
             Cancel
           </button>

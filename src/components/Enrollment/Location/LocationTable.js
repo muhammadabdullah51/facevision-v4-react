@@ -13,6 +13,9 @@ import warningAnimation from "../../../assets/Lottie/warningAnim.json";
 
 import { SERVER_URL } from "../../../config";
 
+import { useDispatch, useSelector } from "react-redux";
+import { setLocationData, resetLocationData } from "../../../redux/locationSlice";
+
 const LocationTable = ({ data, setData }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
@@ -22,7 +25,36 @@ const LocationTable = ({ data, setData }) => {
   const handlePageChange = ({ selected }) => {
     setCurrentPage(selected);
   };
-  const [formData, setFormData] = useState({
+
+
+  const dispatch = useDispatch();
+  const locData = useSelector((state) => state.location);
+
+  const [formData, setFormData] = useState(
+    locData || {
+      locId: null,
+      locCode: "",
+      name: "",
+      deviceQty: "",
+      empQty: "",
+      resignQty: "",
+    });
+
+  const handleReset = () => {
+    dispatch(resetLocationData());
+    setFormData({
+      locId: null,
+      locCode: "",
+      name: "",
+      deviceQty: "",
+      empQty: "",
+      resignQty: "",
+    });
+    setShowAddForm(false);
+    setShowEditForm(false);
+  };
+
+  const [editFormData, setEditFormData] = useState({
     locId: null,
     locCode: "",
     name: "",
@@ -31,22 +63,31 @@ const LocationTable = ({ data, setData }) => {
     resignQty: "",
   });
 
+   const handleInputChange = (e) => {
+      const { name, value } = e.target;
+      setFormData((prevState) => {
+        const updatedFormData = { ...prevState, [name]: value };
+        dispatch(setLocationData(updatedFormData));
+        return updatedFormData;
+      });
+    };
+
+
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
 
   const fetchLocation = useCallback(async () => {
-    
+
     try {
       const response = await axios.get(`${SERVER_URL}pr-loc/`);
       const location = response.data.context;
       setData(location);
 
     } catch (error) {
-    } 
+    }
   }, [setData]);
 
   // Call fetchDepartments when component mounts
@@ -63,7 +104,7 @@ const LocationTable = ({ data, setData }) => {
 
   const handleUpdate = async (row) => {
     setModalType("update");
-    setFormData({
+    setEditFormData({
       locId: row.locId,
       locCode: row.locCode,
       name: row.name,
@@ -76,10 +117,10 @@ const LocationTable = ({ data, setData }) => {
 
   const confirmUpdate = async () => {
     if (
-      formData.locCode === "" ||
-      formData.name === "" ||
-      formData.deviceQty === "" ||
-      formData.empQty === ""
+      editFormData.locCode === "" ||
+      editFormData.name === "" ||
+      editFormData.deviceQty === "" ||
+      editFormData.empQty === ""
     ) {
       setResMsg("Please fill in all required fields.")
       setShowModal(false);
@@ -87,12 +128,12 @@ const LocationTable = ({ data, setData }) => {
       return;
     }
     const updateLocation = {
-      locId: formData.locId,
-      locCode: formData.locCode,
-      name: formData.name,
-      deviceQty: formData.deviceQty,
-      empQty: formData.empQty,
-      resignQty: formData.resignQty,
+      locId: editFormData.locId,
+      locCode: editFormData.locCode,
+      name: editFormData.name,
+      deviceQty: editFormData.deviceQty,
+      empQty: editFormData.empQty,
+      resignQty: editFormData.resignQty,
     };
 
     try {
@@ -108,13 +149,14 @@ const LocationTable = ({ data, setData }) => {
         setShowModal(false);
         setWarningModal(true);
       }
-      setSuccessModal(true); // Show the success modal
+      setSuccessModal(true); 
+      handleReset();
     } catch (error) {
       setWarningModal(true);
     }
   };
 
-  
+
   const [selectedIds, setSelectedIds] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
 
@@ -188,7 +230,7 @@ const LocationTable = ({ data, setData }) => {
       const updatedData = await axios.get(`${SERVER_URL}pr-loc/`);
       setData(updatedData.data.context);
       setShowModal(false);
-      setSelectedIds([]); 
+      setSelectedIds([]);
       setSuccessModal(true);
     } catch (error) {
       console.error("Error deleting rows:", error);
@@ -271,11 +313,6 @@ const LocationTable = ({ data, setData }) => {
     [selectAll, selectedIds]
   );
 
-
-
-
- 
-
   const currentPageData = filteredData.slice(
     currentPage * rowsPerPage,
     (currentPage + 1) * rowsPerPage
@@ -300,7 +337,7 @@ const LocationTable = ({ data, setData }) => {
   );
 
   const handleEdit = (row) => {
-    setFormData({
+    setEditFormData({
       locId: row.locId,
       locCode: row.locCode,
       name: row.name,
@@ -330,14 +367,6 @@ const LocationTable = ({ data, setData }) => {
   };
 
   const handleAdd = () => {
-    setFormData({
-      locId: null,
-      locCode: "",
-      name: "",
-      deviceQty: "",
-      empQty: "",
-      resignQty: "",
-    });
     setShowAddForm(true);
     setShowEditForm(false); // Hide Edit Form
   };
@@ -389,6 +418,7 @@ const LocationTable = ({ data, setData }) => {
       setShowModal(false);
       setSuccessModal(true);
       fetchLocation();
+      handleReset();
     } catch (error) {
       setWarningModal(true);
     }
@@ -402,7 +432,7 @@ const LocationTable = ({ data, setData }) => {
           modalType === "delete selected"
             ? "Are you sure you want to delete selected items?"
             : `Are you sure you want to ${modalType} this Location?`
-        } 
+        }
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
           else if (modalType === "update") confirmUpdate();
@@ -500,52 +530,49 @@ const LocationTable = ({ data, setData }) => {
           <label>Location Code</label>
           <input
             type="text"
+            name="locCode"
             placeholder="Location Code"
             value={formData.locCode}
-            onChange={(e) =>
-              setFormData({ ...formData, locCode: e.target.value })
-            }
+            onChange={handleInputChange}
           />
           <label>Location Name</label>
           <input
             type="text"
+            name="name"
             placeholder="Location Name"
             value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            onChange={handleInputChange}
           />
           <label>Device Quantity</label>
           <input
             type="number"
+            name="deviceQty"
             placeholder="Device Quantity"
             value={formData.deviceQty}
-            onChange={(e) =>
-              setFormData({ ...formData, deviceQty: e.target.value })
-            }
+            onChange={handleInputChange}
           />
           <label>Employee Quantity</label>
           <input
             type="number"
+            name="empQty"
             placeholder="Employee Quantity"
             value={formData.empQty}
-            onChange={(e) =>
-              setFormData({ ...formData, empQty: e.target.value })
-            }
+            onChange={handleInputChange}
           />
           <label>Resigned Quantity</label>
           <input
             type="number"
+            name="resignQty"
             placeholder="Resigned Quantity"
             value={formData.resignQty}
-            onChange={(e) =>
-              setFormData({ ...formData, resignQty: e.target.value })
-            }
+            onChange={handleInputChange}
           />
           <button className="submit-button" onClick={addLocation}>
             Add Location
           </button>
           <button
             className="cancel-button"
-            onClick={() => setShowAddForm(false)}
+            onClick={handleReset}
           >
             Cancel
           </button>
@@ -558,54 +585,54 @@ const LocationTable = ({ data, setData }) => {
           <input
             type="text"
             placeholder="Location Code"
-            value={formData.locCode}
+            value={editFormData.locCode}
             onChange={(e) =>
-              setFormData({ ...formData, locCode: e.target.value })
+              setEditFormData({ ...editFormData, locCode: e.target.value })
             }
           />
           <label>Location Name</label>
           <input
             type="text"
             placeholder="Location Name"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            value={editFormData.name}
+            onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
           />
           <label>Device Quantity</label>
           <input
             type="number"
             placeholder="Device Quantity"
-            value={formData.deviceQty}
+            value={editFormData.deviceQty}
             onChange={(e) =>
-              setFormData({ ...formData, deviceQty: e.target.value })
+              setEditFormData({ ...editFormData, deviceQty: e.target.value })
             }
           />
           <label>Employee Quantity</label>
           <input
             type="number"
             placeholder="Employee Quantity"
-            value={formData.empQty}
+            value={editFormData.empQty}
             onChange={(e) =>
-              setFormData({ ...formData, empQty: e.target.value })
+              setEditFormData({ ...editFormData, empQty: e.target.value })
             }
           />
           <label>Resigned Quantity</label>
           <input
             type="number"
             placeholder="Resigned Quantity"
-            value={formData.resignQty}
+            value={editFormData.resignQty}
             onChange={(e) =>
-              setFormData({ ...formData, resignQty: e.target.value })
+              setEditFormData({ ...editFormData, resignQty: e.target.value })
             }
           />
           <button
             className="submit-button"
-            onClick={() => handleUpdate(formData)}
+            onClick={() => handleUpdate(editFormData)}
           >
             Update Location
           </button>
           <button
             className="cancel-button"
-            onClick={() => setShowEditForm(false)}
+            onClick={handleReset}
           >
             Cancel
           </button>

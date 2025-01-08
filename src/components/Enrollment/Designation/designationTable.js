@@ -10,6 +10,10 @@ import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../../assets/Lottie/warningAnim.json";
 import { SERVER_URL } from "../../../config";
+import { useDispatch, useSelector } from "react-redux";
+import { setDesignationData, resetDesignationData } from "../../../redux/designationSlice";
+
+
 
 const DesignationTable = ({ data, setData }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -21,11 +25,44 @@ const DesignationTable = ({ data, setData }) => {
     setCurrentPage(selected);
   };
 
-  const [formData, setFormData] = useState({
+  const dispatch = useDispatch();
+  const dsgData = useSelector((state) => state.designation);
+
+  const [formData, setFormData] = useState(
+    dsgData || {
+      dsgId: null,
+      dsgCode: "",
+      name: "",
+    });
+
+  const handleReset = () => {
+    dispatch(resetDesignationData());
+    setFormData({
+      dsgId: null,
+      dsgCode: "",
+      name: "",
+    });
+    setShowAddForm(false);
+    setShowEditForm(false);
+  };
+
+  const [editFormData, setEditFormData] = useState({
     dsgId: null,
     dsgCode: "",
     name: "",
   });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => {
+      const updatedFormData = { ...prevState, [name]: value };
+      dispatch(setDesignationData(updatedFormData));
+      return updatedFormData;
+    });
+  };
+
+
+
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
@@ -88,10 +125,6 @@ const DesignationTable = ({ data, setData }) => {
 
 
   const handleAdd = () => {
-    setFormData({
-      dsgCode: "",
-      name: "",
-    });
     setShowAddForm(true);
     setShowEditForm(false);
     fetchDesignation();
@@ -128,6 +161,7 @@ const DesignationTable = ({ data, setData }) => {
 
       const updatedData = await axios.get(`${SERVER_URL}pr-dsg/`);
       setData(updatedData.data.context);
+      handleReset()
     } catch (error) {
       setWarningModal(true);
     }
@@ -135,7 +169,7 @@ const DesignationTable = ({ data, setData }) => {
 
 
   const handleEdit = (row) => {
-    setFormData({
+    setEditFormData({
       dsgId: row.dsgId,
       dsgCode: row.dsgCode,
       name: row.name,
@@ -145,25 +179,21 @@ const DesignationTable = ({ data, setData }) => {
   };
   const handleUpdate = async (row) => {
     setModalType("update");
-    setFormData({
-      dsgId: row.dsgId,
-      dsgCode: row.dsgCode,
-      name: row.name,
-    });
+    setEditFormData({ ...editFormData });
     setShowModal(true);
   };
 
   const confirmUpdate = async () => {
-    if (!formData.name || !formData.dsgCode) {
+    if (!editFormData.name || !editFormData.dsgCode) {
       setResMsg("Please fill in all required fields.")
       setShowModal(false);
       setWarningModal(true);
       return;
     }
     const updatedDepartment = {
-      dsgId: formData.dsgId,
-      dsgCode: formData.dsgCode,
-      name: formData.name,
+      dsgId: editFormData.dsgId,
+      dsgCode: editFormData.dsgCode,
+      name: editFormData.name,
     };
 
     try {
@@ -182,6 +212,7 @@ const DesignationTable = ({ data, setData }) => {
       setSuccessModal(true);
       const updatedData = await axios.get(`${SERVER_URL}pr-dsg/`);
       setData(updatedData.data.context);
+      handleReset();
     } catch (error) {
       setWarningModal(true);
     }
@@ -367,25 +398,25 @@ const DesignationTable = ({ data, setData }) => {
           <label>Designation Code</label>
           <input
             type="text"
+            name="dsgCode"
             placeholder="Designation Code"
             value={formData.dsgCode}
-            onChange={(e) =>
-              setFormData({ ...formData, dsgCode: e.target.value })
-            }
+            onChange={handleInputChange}
           />
           <label>Designation Name</label>
           <input
             type="text"
+            name="name"
             placeholder="Designation Name"
             value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            onChange={handleInputChange}
           />
           <button className="submit-button" onClick={addDesignation}>
             Add Designation
           </button>
           <button
             className="cancel-button"
-            onClick={() => setShowAddForm(false)}
+            onClick={handleReset}
           >
             Cancel
           </button>
@@ -398,27 +429,27 @@ const DesignationTable = ({ data, setData }) => {
           <input
             type="text"
             placeholder="Designation Code"
-            value={formData.dsgCode}
+            value={editFormData.dsgCode}
             onChange={(e) =>
-              setFormData({ ...formData, dsgCode: e.target.value })
+              setEditFormData({ ...editFormData, dsgCode: e.target.value })
             }
           />
           <label>Designation Name</label>
           <input
             type="text"
             placeholder="Designation Name"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            value={editFormData.name}
+            onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
           />
           <button
             className="submit-button"
-            onClick={() => handleUpdate(formData)}
+            onClick={() => handleUpdate(editFormData)}
           >
             Update Designation
           </button>
           <button
             className="cancel-button"
-            onClick={() => setShowEditForm(false)}
+            onClick={handleReset}
           >
             Cancel
           </button>

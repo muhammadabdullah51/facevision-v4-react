@@ -11,6 +11,9 @@ import successAnimation from "../../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../../assets/Lottie/warningAnim.json";
 
 import { SERVER_URL } from "../../../config";
+import { useDispatch, useSelector } from "react-redux";
+import { setAppraisalsData, resetAppraisalsData } from "../../../redux/appraisalsSlice";
+
 
 const Appraisal = () => {
   const [data, setData] = useState([]);
@@ -18,7 +21,36 @@ const Appraisal = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
 
-  const [formData, setFormData] = useState({
+
+  const dispatch = useDispatch();
+  const appr = useSelector((state) => state.appraisals);
+
+  const [formData, setFormData] = useState(
+    appr || {
+      id: "",
+      empId: "",
+      appraisal: "",
+      reason: "",
+      date: "",
+      status: "Pending",
+      desc: "",
+    });
+  const handleReset = () => {
+    dispatch(resetAppraisalsData());
+    setFormData({
+      id: "",
+      empId: "",
+      appraisal: "",
+      reason: "",
+      date: "",
+      status: "Pending",
+      desc: "",
+    });
+    setShowAddForm(false);
+    setShowEditForm(false);
+  };
+
+  const [editFormData, setEditFormData] = useState({
     id: "",
     empId: "",
     appraisal: "",
@@ -27,6 +59,15 @@ const Appraisal = () => {
     status: "Pending",
     desc: "",
   });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => {
+      const updatedFormData = { ...prevState, [name]: value };
+      dispatch(setAppraisalsData(updatedFormData));
+      return updatedFormData;
+    });
+  };
 
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
@@ -64,31 +105,14 @@ const Appraisal = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Handle form data changes
-  const handleEdit = (data) => {
-    setFormData({
-      id: data.id,
-      empId: data.empId,
-      appraisal: data.appraisal,
-      reason: data.reason,
-      date: data.date,
-      status: data.status,
-      desc: data.desc,
-    });
-    setShowAddForm(false);
-    setShowEditForm(true);
-  };
 
-  const handleCancel = () => {
-    setShowAddForm(false);
-    setShowEditForm(false);
-  };
 
   // Delete an appraisal
   const handleDelete = async (id) => {
     setModalType("delete");
     setShowModal(true);
-    setFormData({ ...formData, _id: id });
+    setFormData({ ...formData, id: id });
+
   };
   const confirmDelete = async () => {
     try {
@@ -102,14 +126,7 @@ const Appraisal = () => {
   };
 
   const handleAddNew = () => {
-    setFormData({
-      empId: "",
-      appraisal: "",
-      reason: "",
-      date: "",
-      status: "",
-      desc: "",
-    });
+
     setShowAddForm(true);
     setShowEditForm(false);
   };
@@ -151,36 +168,44 @@ const Appraisal = () => {
       setShowModal(false);
       setSuccessModal(true);
       fetchAppraisals();
+      handleReset()
     } catch (error) {
     }
   };
+
+  // Handle form data changes
+  const handleEdit = (data) => {
+    setEditFormData({
+      id: data.id,
+      empId: data.empId,
+      appraisal: data.appraisal,
+      reason: data.reason,
+      date: data.date,
+      status: data.status,
+      desc: data.desc,
+    });
+    setShowAddForm(false);
+    setShowEditForm(true);
+  };
+
   const updateAppraisal = (row) => {
     setModalType("update");
-    setFormData({
-      id: row.id,
-      empId: row.empId,
-      empName: row.empName,
-      appraisal: row.appraisal,
-      reason: row.reason,
-      date: row.date,
-      status: row.status,
-      desc: row.desc,
-    });
+    setEditFormData({ ...editFormData });
     setShowModal(true);
   };
   const confirmUpdate = async () => {
     if (
-      formData.empId === "" ||
-      formData.appraisal === "" ||
-      formData.reason === "" ||
-      formData.date === ""
+      editFormData.empId === "" ||
+      editFormData.appraisal === "" ||
+      editFormData.reason === "" ||
+      editFormData.date === ""
     ) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
       setWarningModal(true);
       return;
     }
-    if (formData.appraisal < 1) {
+    if (editFormData.appraisal < 1) {
       setResMsg("Values Can't be Negative or zero");
       setShowModal(false);
       setWarningModal(true);
@@ -189,14 +214,14 @@ const Appraisal = () => {
 
     try {
       const updateAppraisal = {
-        id: formData.id,
-        empId: formData.empId,
-        empName: formData.empName,
-        appraisal: formData.appraisal,
-        reason: formData.reason,
-        date: formData.date,
-        status: formData.status,
-        desc: formData.desc,
+        id: editFormData.id,
+        empId: editFormData.empId,
+        empName: editFormData.empName,
+        appraisal: editFormData.appraisal,
+        reason: editFormData.reason,
+        date: editFormData.date,
+        status: editFormData.status,
+        desc: editFormData.desc,
       };
 
       await axios.post(`${SERVER_URL}pyr-appr-up/`, updateAppraisal);
@@ -206,6 +231,7 @@ const Appraisal = () => {
       setSuccessModal(true);
       setShowEditForm(false);
       fetchAppraisals();
+      handleReset();
     } catch (error) {
     }
   };
@@ -437,38 +463,36 @@ const Appraisal = () => {
           <label>Appraisal Amount</label>
           <input
             type="Number"
+            name="appraisal"
             placeholder="Appraisal"
             value={formData.appraisal}
-            onChange={(e) =>
-              setFormData({ ...formData, appraisal: e.target.value })
-            }
+            onChange={handleInputChange}
           />
 
           <label>Reason</label>
           <input
             type="text"
+            name="reason"
             placeholder="Reason"
             value={formData.reason}
-            onChange={(e) =>
-              setFormData({ ...formData, reason: e.target.value })
-            }
+            onChange={handleInputChange}
           />
 
           <label>Date</label>
           <input
             type="Date"
+            name="date"
             placeholder="Date"
             value={formData.date}
-            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+            onChange={handleInputChange}
           />
 
           <label>Select Status</label>
 
           <select
+            name="status"
             value={formData.status}
-            onChange={(e) =>
-              setFormData({ ...formData, status: e.target.value })
-            }
+            onChange={handleInputChange}
           >
             <option value="">Select Status</option>
             <option value="Pending">Pending</option>
@@ -482,13 +506,13 @@ const Appraisal = () => {
             name="desc"
             placeholder="Description"
             value={formData.desc}
-            onChange={(e) => setFormData({ ...formData, desc: e.target.value })}
+            onChange={handleInputChange}
           />
 
           <button className="submit-button" onClick={addAppraisal}>
             Add Appraisal
           </button>
-          <button className="cancel-button" onClick={handleCancel}>
+          <button className="cancel-button" onClick={handleReset}>
             Cancel
           </button>
         </div>
@@ -501,12 +525,12 @@ const Appraisal = () => {
             disabled
             list="employeesList"
             value={
-              employees.find((emp) => emp.empId === formData.empId)
-                ? `${employees.find((emp) => emp.empId === formData.empId).empId
-                } ${employees.find((emp) => emp.empId === formData.empId).fName
-                } ${employees.find((emp) => emp.empId === formData.empId).lName
+              employees.find((emp) => emp.empId === editFormData.empId)
+                ? `${employees.find((emp) => emp.empId === editFormData.empId).empId
+                } ${employees.find((emp) => emp.empId === editFormData.empId).fName
+                } ${employees.find((emp) => emp.empId === editFormData.empId).lName
                 }`
-                : formData.empId || "" // Display empId, fName, and lName of selected employee or inputted empId
+                : editFormData.empId || "" // Display empId, fName, and lName of selected employee or inputted empId
             }
             onChange={(e) => {
               const value = e.target.value;
@@ -516,8 +540,8 @@ const Appraisal = () => {
                   emp.empId === value
               );
 
-              setFormData({
-                ...formData,
+              setEditFormData({
+                ...editFormData,
                 empId: selectedEmployee ? selectedEmployee.empId : value, // Store empId or raw input
               });
             }}
@@ -539,33 +563,33 @@ const Appraisal = () => {
           <input
             type="Number"
             placeholder="Appraisal"
-            value={formData.appraisal}
+            value={editFormData.appraisal}
             onChange={(e) =>
-              setFormData({ ...formData, appraisal: e.target.value })
+              setEditFormData({ ...editFormData, appraisal: e.target.value })
             }
           />
           <label>Reason</label>
           <input
             type="text"
             placeholder="Reason"
-            value={formData.reason}
+            value={editFormData.reason}
             onChange={(e) =>
-              setFormData({ ...formData, reason: e.target.value })
+              setEditFormData({ ...editFormData, reason: e.target.value })
             }
           />
           <label>Date</label>
           <input
             type="Date"
             placeholder="Date"
-            value={formData.date}
-            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+            value={editFormData.date}
+            onChange={(e) => setEditFormData({ ...editFormData, date: e.target.value })}
           />
           <label>Select Status</label>
 
           <select
-            value={formData.status}
+            value={editFormData.status}
             onChange={(e) =>
-              setFormData({ ...formData, status: e.target.value })
+              setEditFormData({ ...editFormData, status: e.target.value })
             }
           >
             <option value="">Select Status</option>
@@ -578,17 +602,17 @@ const Appraisal = () => {
           <textarea
             name="desc"
             placeholder="Description"
-            value={formData.desc}
-            onChange={(e) => setFormData({ ...formData, desc: e.target.value })}
+            value={editFormData.desc}
+            onChange={(e) => setEditFormData({ ...editFormData, desc: e.target.value })}
           />
 
           <button
             className="submit-button"
-            onClick={() => updateAppraisal(formData)}
+            onClick={() => updateAppraisal(editFormData)}
           >
             Update Appraisal
           </button>
-          <button className="cancel-button" onClick={handleCancel}>
+          <button className="cancel-button" onClick={handleReset}>
             Cancel
           </button>
         </div>
@@ -598,7 +622,7 @@ const Appraisal = () => {
         <table className="table">
           <thead>
             <tr>
-            <th>
+              <th>
                 <input
                   id="delete-checkbox"
                   type="checkbox"
@@ -655,7 +679,7 @@ const Appraisal = () => {
                     <FaEdit className="table-edit" />
                   </button>
                   <button
-                    onClick={() => handleDelete(adv._id)}
+                    onClick={() => handleDelete(adv.id)}
                     style={{ background: "none", border: "none" }}
                   >
                     <FaTrash className="table-delete" />

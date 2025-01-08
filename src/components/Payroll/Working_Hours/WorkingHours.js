@@ -11,6 +11,10 @@ import successAnimation from "../../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../../assets/Lottie/warningAnim.json";
 import { SERVER_URL } from "../../../config";
 
+import { useDispatch, useSelector } from "react-redux";
+import { setWorkingHoursData, resetWorkingHoursData } from "../../../redux/workingHoursSlice";
+
+
 const WorkingHours = () => {
     const [data, setData] = useState([]);
     const [employees, setEmployees] = useState([]);
@@ -18,7 +22,34 @@ const WorkingHours = () => {
     const [showEditForm, setShowEditForm] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
 
-    const [formData, setFormData] = useState({
+
+    const dispatch = useDispatch();
+    const WHData = useSelector((state) => state.workingHours);
+    const [formData, setFormData] = useState(
+        WHData || {
+            id: "",
+            empId: "",
+            first_checkin: "",
+            last_checkout: "",
+            calcHours: '',
+            date: "",
+        });
+
+    const handleReset = () => {
+        dispatch(resetWorkingHoursData());
+        setFormData({
+            id: "",
+            empId: "",
+            first_checkin: "",
+            last_checkout: "",
+            calcHours: '',
+            date: "",
+        });
+        setShowAddForm(false);
+        setShowEditForm(false);
+    };
+
+    const [editFormData, setEditFormData] = useState({
         id: "",
         empId: "",
         first_checkin: "",
@@ -26,6 +57,15 @@ const WorkingHours = () => {
         calcHours: '',
         date: "",
     });
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prevState) => {
+            const updatedFormData = { ...prevState, [name]: value };
+            dispatch(setWorkingHoursData(updatedFormData));
+            return updatedFormData;
+        });
+    };
 
     const [showModal, setShowModal] = useState(false);
     const [modalType, setModalType] = useState("");
@@ -82,13 +122,6 @@ const WorkingHours = () => {
     };
 
     const handleAddNew = () => {
-        setFormData({
-            empId: "",
-            first_checkin: "",
-            last_checkout: "",
-            calcHours: '',
-            date: "",
-        });
         setShowAddForm(true);
         setShowEditForm(false);
     };
@@ -116,10 +149,11 @@ const WorkingHours = () => {
         setSuccessModal(true);
         setShowAddForm(false);
         fetchWH();
+        handleReset()
     };
 
     const handleEdit = (item) => {
-        setFormData({
+        setEditFormData({
             id: item.id,
             empId: item.empId,
             first_checkin: item.first_checkin,
@@ -132,38 +166,33 @@ const WorkingHours = () => {
     };
     const updateAssign = (row) => {
         setModalType("update");
-        setFormData({
-            id: row.id,
-            empId: row.empId,
-            first_checkin: row.first_checkin,
-            last_checkout: row.last_checkout,
-            calcHours: row.calcHours,
-            date: row.date,
-        });
+        setEditFormData({ ...editFormData });
         setShowModal(true);
     };
     const confirmUpdate = async () => {
-        if (!formData.empId || !formData.first_checkin || !formData.last_checkout || !formData.date || !formData.calcHours) {
+        if (!editFormData.empId || !editFormData.first_checkin || !editFormData.last_checkout || !editFormData.date || !editFormData.calcHours) {
             setResMsg("Please fill in all required fields.");
             setShowModal(false);
             setWarningModal(true);
             return;
         }
-        if (formData.calcHours < 1) {
+        if (editFormData.calcHours < 1) {
             setResMsg("Working hours should be greater than 1");
             setShowModal(false);
             setWarningModal(true);
             return;
         }
-        await axios.put(`${SERVER_URL}working-hours/update/${formData.id}/`, formData);
+        console.log(editFormData.id);
+        await axios.put(`${SERVER_URL}working-hours/update/${editFormData.id}/`, editFormData);
         setShowModal(false);
         setSuccessModal(true);
         setShowEditForm(false);
         fetchWH();
+        handleReset()
     };
 
 
-  
+
 
     const handleSearchChange = (e) => setSearchQuery(e.target.value);
 
@@ -175,10 +204,7 @@ const WorkingHours = () => {
         item.last_checkout.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.calcHours.toLowerCase().includes(searchQuery.toLowerCase())
     );
-    const handleCancel = () => {
-        setShowAddForm(false);
-        setShowEditForm(false);
-    };
+
 
     const [selectedIds, setSelectedIds] = useState([]);
     const [selectAll, setSelectAll] = useState(false);
@@ -231,7 +257,6 @@ const WorkingHours = () => {
             setWarningModal(true);
         }
     };
-
 
     const confirmBulkDelete = async () => {
         try {
@@ -404,37 +429,45 @@ const WorkingHours = () => {
                             <label>First Checkin</label> <br />
                             <input
                                 type="time"
+                                name="first_checkin"
                                 value={formData.first_checkin}
-                                onChange={(e) => setFormData({ ...formData, first_checkin: e.target.value })}
+                                onChange={handleInputChange}
+
                             />
                         </div>
                         <div>
                             <label>Last Checkout</label> <br />
                             <input
                                 type="time"
+                                name="last_checkout"
                                 value={formData.last_checkout}
-                                onChange={(e) => setFormData({ ...formData, last_checkout: e.target.value })}
+                                onChange={handleInputChange}
+
                             />
                         </div>
                     </div>
                     <label>Working Hours</label>
                     <input
                         type="number"
+                        name="calcHours"
                         placeholder="Working Hours"
                         value={formData.calcHours}
-                        onChange={(e) => setFormData({ ...formData, calcHours: e.target.value })}
+                        onChange={handleInputChange}
+
                     />
 
                     <label>Date</label>
                     <input
                         type="date"
+                        name="date"
                         value={formData.date}
-                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                        onChange={handleInputChange}
+
                     />
                     <button className="submit-button" onClick={addAssign}>
                         Add Working Hours
                     </button>
-                    <button className="cancel-button" onClick={handleCancel}>
+                    <button className="cancel-button" onClick={handleReset}>
                         Cancel
                     </button>
                 </div>
@@ -449,12 +482,12 @@ const WorkingHours = () => {
                         disabled
                         placeholder="Search or select an employee"
                         value={
-                            employees.find((emp) => emp.empId === formData.empId)
-                                ? `${employees.find((emp) => emp.empId === formData.empId).empId
-                                } ${employees.find((emp) => emp.empId === formData.empId).fName
-                                } ${employees.find((emp) => emp.empId === formData.empId).lName
+                            employees.find((emp) => emp.empId === editFormData.empId)
+                                ? `${employees.find((emp) => emp.empId === editFormData.empId).empId
+                                } ${employees.find((emp) => emp.empId === editFormData.empId).fName
+                                } ${employees.find((emp) => emp.empId === editFormData.empId).lName
                                 }`
-                                : formData.empId || "" // Display empId, fName, and lName of the selected employee or user input
+                                : editFormData.empId || "" // Display empId, fName, and lName of the selected employee or user input
                         }
                         onChange={(e) => {
                             const value = e.target.value;
@@ -468,9 +501,10 @@ const WorkingHours = () => {
                                     emp.lName === value
                             );
 
-                            setFormData({
-                                ...formData,
-                                empId: selectedEmployee ? selectedEmployee.empId : value, // Update empId if matched, otherwise store raw input
+                            setEditFormData({
+                                ...editFormData,
+                                empId: selectedEmployee ? selectedEmployee.empId : value, 
+                                
                             });
                         }}
                     />
@@ -479,8 +513,11 @@ const WorkingHours = () => {
                         {employees.map((emp) => (
                             <option
                                 key={emp.id}
-                                value={`${emp.empId} ${emp.fName} ${emp.lName}`} // Format: empId fName lName
-                            />
+                                value={emp.id}
+                                // value={`${emp.empId} ${emp.fName} ${emp.lName}`} // Format: empId fName lName
+                            >
+                                {emp.empId} {emp.fName} {emp.lName}
+                            </option>
                         ))}
                     </datalist>
 
@@ -490,16 +527,16 @@ const WorkingHours = () => {
                             <label>First Checkin</label> <br />
                             <input
                                 type="time"
-                                value={formData.first_checkin}
-                                onChange={(e) => setFormData({ ...formData, first_checkin: e.target.value })}
+                                value={editFormData.first_checkin}
+                                onChange={(e) => setEditFormData({ ...editFormData, first_checkin: e.target.value })}
                             />
                         </div>
                         <div>
                             <label>Last Checkout</label> <br />
                             <input
                                 type="time"
-                                value={formData.last_checkout}
-                                onChange={(e) => setFormData({ ...formData, last_checkout: e.target.value })}
+                                value={editFormData.last_checkout}
+                                onChange={(e) => setEditFormData({ ...editFormData, last_checkout: e.target.value })}
                             />
                         </div>
                     </div>
@@ -507,23 +544,23 @@ const WorkingHours = () => {
                     <input
                         type="number"
                         placeholder="Working Hours"
-                        value={formData.calcHours}
-                        onChange={(e) => setFormData({ ...formData, calcHours: e.target.value })}
+                        value={editFormData.calcHours}
+                        onChange={(e) => setEditFormData({ ...editFormData, calcHours: e.target.value })}
                     />
 
                     <label>Date</label>
                     <input
                         type="date"
-                        value={formData.date}
-                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                        value={editFormData.date}
+                        onChange={(e) => setEditFormData({ ...editFormData, date: e.target.value })}
                     />
                     <button
                         className="submit-button"
-                        onClick={() => updateAssign(formData)}
+                        onClick={() => updateAssign(editFormData)}
                     >
                         Update Working Hours
                     </button>
-                    <button className="cancel-button" onClick={handleCancel}>
+                    <button className="cancel-button" onClick={handleReset}>
                         Cancel
                     </button>
                 </div>

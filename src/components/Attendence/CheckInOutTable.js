@@ -12,13 +12,47 @@ import deleteAnimation from "../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../assets/Lottie/warningAnim.json";
 
+import { useDispatch, useSelector } from "react-redux";
+import { setCheckInOutData, resetCheckInOutData } from "../../redux/checkinoutSlice";
+
 const CheckInOutTable = ({ dash }) => {
   const [data, setData] = useState([])
 
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
-  const [formData, setFormData] = useState({
+
+  const dispatch = useDispatch();
+  const ckhinoutData = useSelector((state) => state.checkinout);
+  const [formData, setFormData] = useState(
+    ckhinoutData || {
+      id: "",
+      empId: "",
+      fName: "",
+      lName: "",
+      time: "",
+      date: "",
+      status: "",
+      ip: "",
+    });
+
+  const handleReset = () => {
+    dispatch(resetCheckInOutData());
+    setFormData({
+      id: "",
+      empId: "",
+      fName: "",
+      lName: "",
+      time: "",
+      date: "",
+      status: "",
+      ip: "",
+    });
+    setShowAddForm(false);
+    setShowEditForm(false);
+  };
+
+  const [editFormData, setEditFormData] = useState({
     id: "",
     empId: "",
     fName: "",
@@ -28,6 +62,15 @@ const CheckInOutTable = ({ dash }) => {
     status: "",
     ip: "",
   });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => {
+      const updatedFormData = { ...prevState, [name]: value };
+      dispatch(setCheckInOutData(updatedFormData));
+      return updatedFormData;
+    });
+  };
 
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
@@ -242,7 +285,6 @@ const CheckInOutTable = ({ dash }) => {
 
 
 
-  // Set up the table
   const {
     getTableProps,
     getTableBodyProps,
@@ -261,7 +303,7 @@ const CheckInOutTable = ({ dash }) => {
   );
 
   const handleEdit = (row) => {
-    setFormData({
+    setEditFormData({
       id: row.id,
       empId: row.empId,
       fName: row.fName,
@@ -277,18 +319,18 @@ const CheckInOutTable = ({ dash }) => {
 
   const handleUpdate = async () => {
     setModalType("update");
-    setFormData({ ...formData });
+    setEditFormData({ ...editFormData });
     setShowModal(true);
   };
 
   const confirmUpdate = async () => {
     if (
-      !formData.empId ||
-      !formData.time ||
-      !formData.fName ||
-      !formData.lName ||
-      !formData.date ||
-      !formData.status
+      !editFormData.empId ||
+      !editFormData.time ||
+      !editFormData.fName ||
+      !editFormData.lName ||
+      !editFormData.date ||
+      !editFormData.status
     ) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
@@ -296,18 +338,18 @@ const CheckInOutTable = ({ dash }) => {
       return;
     }
     const attPayload = {
-      id: formData.id,
-      empId: formData.empId,
-      fName: formData.lName,
-      lName: formData.fName,
-      time: formatTime(formData.time),
-      date: formData.date,
-      status: formData.status,
+      id: editFormData.id,
+      empId: editFormData.empId,
+      fName: editFormData.lName,
+      lName: editFormData.fName,
+      time: formatTime(editFormData.time),
+      date: editFormData.date,
+      status: editFormData.status,
     };
     console.log(attPayload);
     try {
       await axios.put(
-        `${SERVER_URL}att-chkinout/${formData.id}/`,
+        `${SERVER_URL}att-chkinout/${editFormData.id}/`,
         attPayload
       );
       const updatedData = await axios.get(`${SERVER_URL}att-chkinout/`);
@@ -316,6 +358,8 @@ const CheckInOutTable = ({ dash }) => {
       setShowEditForm(false);
       setShowModal(false);
       setSuccessModal(true);
+      handleReset();
+
     } catch (error) {
     }
   };
@@ -336,17 +380,6 @@ const CheckInOutTable = ({ dash }) => {
   };
 
   const handleAdd = () => {
-    setFormData({
-      empId: "",
-      fName: "",
-      lName: "",
-      time: "",
-      date: "",
-      status: "",
-      ip: "",
-
-    });
-
     setShowAddForm(true);
     setShowEditForm(false);
   };
@@ -386,14 +419,12 @@ const CheckInOutTable = ({ dash }) => {
       setShowAddForm(false);
       setShowModal(false);
       setSuccessModal(true);
+      handleReset()
     } catch (error) {
     }
   };
   const formatTime = (time) => {
-    // If time already includes seconds, return as is.
     if (time.split(':').length === 3) return time;
-
-    // Otherwise, append ":00" for seconds.
     return `${time}:00`;
   };
 
@@ -538,15 +569,15 @@ const CheckInOutTable = ({ dash }) => {
           <label>First Name</label>
           <input
             type="text"
-            value={formData.fName} // Display the auto-filled first name
-            disabled // Make it read-only to prevent user edits
+            value={formData.fName}
+            disabled
           />
 
           <label>Last Name</label>
           <input
             type="text"
-            value={formData.lName} // Display the auto-filled last name
-            disabled // Make it read-only to prevent user edits
+            value={formData.lName}
+            disabled
           />
 
           <div>
@@ -554,26 +585,25 @@ const CheckInOutTable = ({ dash }) => {
             <input
               type="time"
               placeholder="Time"
+              name="time"
               value={formData.time}
-              onChange={(e) =>
-                setFormData({ ...formData, time: e.target.value })
-              }
+              onChange={handleInputChange}
             />
           </div>
 
           <label>Date</label>
           <input
             type="date"
+            name="date"
             value={formData.date}
-            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+            onChange={handleInputChange}
           />
 
           <label>Select Status</label>
           <select
+          name="status"
             value={formData.status}
-            onChange={(e) =>
-              setFormData({ ...formData, status: e.target.value })
-            }
+            onChange={handleInputChange}
           >
             <option>Select Status</option>
             <option value="checkin">Checkin</option>
@@ -583,10 +613,9 @@ const CheckInOutTable = ({ dash }) => {
           <label>Marked By</label>
           <select
             disabled
+            name="ip"
             value={formData.ip}
-            onChange={(e) =>
-              setFormData({ ...formData, ip: e.target.value })
-            }
+            onChange={handleInputChange}
           >
 
             <option value="byAdmin">By Admin</option>
@@ -596,10 +625,7 @@ const CheckInOutTable = ({ dash }) => {
           </button>
           <button
             className="cancel-button"
-            onClick={() => {
-              setShowAddForm(false);
-              setShowEditForm(false);
-            }}
+            onClick={handleReset}
           >
             Cancel
           </button>
@@ -612,15 +638,15 @@ const CheckInOutTable = ({ dash }) => {
           <input
             disabled
             list="employeesList"
-            value={formData.empId} // Display the selected or entered empId
+            value={editFormData.empId} // Display the selected or entered empId
             onChange={(e) => {
               const selectedEmpId = e.target.value; // Capture the entered/selected empId
               const selectedEmployee = employees.find(
                 (emp) => emp.empId === selectedEmpId
               ); // Find the corresponding employee
 
-              setFormData({
-                ...formData,
+              setEditFormData({
+                ...editFormData,
                 empId: selectedEmpId, // Update empId in formData
                 fName: selectedEmployee ? selectedEmployee.fName : "", // Auto-fill fName
                 lName: selectedEmployee ? selectedEmployee.lName : "", // Auto-fill lName
@@ -640,14 +666,14 @@ const CheckInOutTable = ({ dash }) => {
           <label>First Name</label>
           <input
             type="text"
-            value={formData.fName} // Display the auto-filled first name
+            value={editFormData.fName} // Display the auto-filled first name
             disabled // Make it read-only to prevent user edits
           />
 
           <label>Last Name</label>
           <input
             type="text"
-            value={formData.lName} // Display the auto-filled last name
+            value={editFormData.lName} // Display the auto-filled last name
             disabled // Make it read-only to prevent user edits
           />
 
@@ -656,9 +682,9 @@ const CheckInOutTable = ({ dash }) => {
             <input
               type="time"
               placeholder="Time"
-              value={formData.time}
+              value={editFormData.time}
               onChange={(e) =>
-                setFormData({ ...formData, time: e.target.value })
+                setEditFormData({ ...editFormData, time: e.target.value })
               }
             />
           </div>
@@ -666,15 +692,15 @@ const CheckInOutTable = ({ dash }) => {
           <label>Date</label>
           <input
             type="date"
-            value={formData.date}
-            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+            value={editFormData.date}
+            onChange={(e) => setEditFormData({ ...editFormData, date: e.target.value })}
           />
 
           <label>Select Status</label>
           <select
-            value={formData.status}
+            value={editFormData.status}
             onChange={(e) =>
-              setFormData({ ...formData, status: e.target.value })
+              setEditFormData({ ...editFormData, status: e.target.value })
             }
           >
             <option>Select Status</option>
@@ -683,16 +709,13 @@ const CheckInOutTable = ({ dash }) => {
           </select>
           <button
             className="submit-button"
-            onClick={() => handleUpdate(formData)}
+            onClick={() => handleUpdate(editFormData)}
           >
             Update Manual Check In / Out
           </button>
           <button
             className="cancel-button"
-            onClick={() => {
-              setShowAddForm(false);
-              setShowEditForm(false);
-            }}
+            onClick={handleReset}
           >
             Cancel
           </button>

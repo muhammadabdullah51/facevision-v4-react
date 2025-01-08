@@ -10,16 +10,49 @@ import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../../assets/Lottie/warningAnim.json";
 
+import { useDispatch, useSelector } from "react-redux";
+import { setTaxSettingData, resetTaxSettingData } from "../../../redux/taxSettingSlice";
+
 const TaxSettings = () => {
   const [data, setData] = useState([]);
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
-  const [formData, setFormData] = useState({
+  const dispatch = useDispatch();
+  const taxSettingData = useSelector((state) => state.taxSetting);
+
+  const [formData, setFormData] = useState(
+    taxSettingData || {
+      id: "",
+      type: "",
+    });
+
+
+  const handleReset = () => {
+    dispatch(resetTaxSettingData());
+    setFormData({
+      id: "",
+      type: "",
+    });
+    setShowAddForm(false);
+    setShowEditForm(false);
+  };
+
+  const [editFormData, setEditFormData] = useState({
     id: "",
     type: "",
   });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => {
+      const updatedFormData = { ...prevState, [name]: value };
+      dispatch(setTaxSettingData(updatedFormData));
+      return updatedFormData;
+    });
+  };
+
 
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
@@ -35,7 +68,7 @@ const TaxSettings = () => {
       setData(response.data);
     } catch (error) {
       console.error("Error fetching taxes data:", error);
-    } 
+    }
   }, [setData]);
 
   useEffect(() => {
@@ -49,26 +82,19 @@ const TaxSettings = () => {
     return () => clearTimeout(timer);
   }, [fetchTax, successModal]);
 
-  const handleCancel = () => {
-    setShowAddForm(false);
-    setShowEditForm(false);
-  };
 
   const handleEdit = (row) => {
-    setFormData({ ...row });
+    setEditFormData({ ...row });
     setShowAddForm(false);
     setShowEditForm(true);
   };
   const updateOTF = async (row) => {
     setModalType("update");
-    setFormData({
-      id: row.id,
-      type: row.type,
-    });
+    setEditFormData({ ...editFormData });
     setShowModal(true);
   };
   const confirmUpdate = async () => {
-    if (!formData.type) {
+    if (!editFormData.type) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
       setWarningModal(true);
@@ -76,11 +102,11 @@ const TaxSettings = () => {
     }
 
     const updatedOTF = {
-      id: formData.id,
-      type: formData.type,
+      id: editFormData.id,
+      type: editFormData.type,
     };
     try {
-      const res = await axios.put(`${SERVER_URL}tax-types/${formData.id}/`, updatedOTF);
+      const res = await axios.put(`${SERVER_URL}tax-types/${editFormData.id}/`, updatedOTF);
       console.log("Tax type updated successfully");
       setShowEditForm(false);
       setShowModal(false);
@@ -89,6 +115,7 @@ const TaxSettings = () => {
 
       const updatedData = await axios.get(`${SERVER_URL}tax-types/`);
       setData(updatedData.data);
+      handleReset()
     } catch (error) {
       console.error("Error updating tax type:", error);
       setShowModal(false);
@@ -97,10 +124,8 @@ const TaxSettings = () => {
   };
 
   const handleAdd = () => {
-    setFormData({
-      type: "",
-    });
     setShowAddForm(true);
+    setShowEditForm(false);
   };
   const addOTF = async () => {
     setModalType("create");
@@ -124,7 +149,7 @@ const TaxSettings = () => {
       setSuccessModal(true);
       const updatedData = await axios.get(`${SERVER_URL}tax-types/`);
       setData(updatedData.data);
-      // setShowAddForm(false)
+      handleReset()
     } catch (error) {
       console.log(error);
       setShowModal(false);
@@ -340,14 +365,15 @@ const TaxSettings = () => {
           <h4>Add New Tax</h4>
           <input
             type="text"
+            name="type"
             placeholder="Tax Type"
             value={formData.type}
-            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+            onChange={handleInputChange}
           />
           <button className="submit-button" onClick={addOTF}>
             Add Tax
           </button>
-          <button className="cancel-button" onClick={handleCancel}>
+          <button className="cancel-button" onClick={handleReset}>
             Cancel
           </button>
         </div>
@@ -359,14 +385,14 @@ const TaxSettings = () => {
           <input
             type="text"
             placeholder="Tax Type"
-            value={formData.type}
-            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+            value={editFormData.type}
+            onChange={(e) => setEditFormData({ ...editFormData, type: e.target.value })}
           />
 
-          <button className="submit-button" onClick={() => updateOTF(formData)}>
+          <button className="submit-button" onClick={() => updateOTF(editFormData)}>
             Update Tax
           </button>
-          <button className="cancel-button" onClick={handleCancel}>
+          <button className="cancel-button" onClick={handleReset}>
             Cancel
           </button>
         </div>
@@ -376,7 +402,7 @@ const TaxSettings = () => {
         <table className="table">
           <thead>
             <tr>
-            <th>
+              <th>
                 <input
                   id="delete-checkbox"
                   type="checkbox"

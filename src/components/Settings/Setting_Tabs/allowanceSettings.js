@@ -10,35 +10,64 @@ import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../../assets/Lottie/warningAnim.json";
 
+import { useDispatch, useSelector } from "react-redux";
+import { setAllowanceSettingData, resetAllowanceSettingData } from "../../../redux/allowanceSettingSlice";
+
+
 const AllowanceSettings = () => {
   const [data, setData] = useState([]);
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
-  const [formData, setFormData] = useState({
+
+  const dispatch = useDispatch();
+  const alcSettingData = useSelector((state) => state.allowanceSetting);
+
+  const [formData, setFormData] = useState(
+    alcSettingData || {
     id: "",
     type: "",
   });
 
+  const handleReset = () => {
+    dispatch(resetAllowanceSettingData());
+    setFormData({
+      id: "",
+      type: "",
+    });
+    setShowAddForm(false);
+    setShowEditForm(false);
+  };
+
+  const [editFormData, setEditFormData] = useState({
+    id: "",
+    type: "",
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => {
+      const updatedFormData = { ...prevState, [name]: value };
+      dispatch(setAllowanceSettingData(updatedFormData));
+      return updatedFormData;
+    });
+  };
+
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
-  const [loading, setLoading] = useState(false); // Loading state
 
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
 
   const fetchTax = useCallback(async () => {
-    setLoading(true);
     try {
       const response = await axios.get(`${SERVER_URL}allowance-types/`);
       console.log(response.data);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching allowances data:", error);
-    } finally {
-      setLoading(false);
     }
   }, [setData]);
 
@@ -53,26 +82,19 @@ const AllowanceSettings = () => {
     return () => clearTimeout(timer);
   }, [fetchTax, successModal]);
 
-  const handleCancel = () => {
-    setShowAddForm(false);
-    setShowEditForm(false);
-  };
-
+  
   const handleEdit = (row) => {
-    setFormData({ ...row });
+    setEditFormData({ ...row });
     setShowAddForm(false);
     setShowEditForm(true);
   };
   const updateOTF = async (row) => {
     setModalType("update");
-    setFormData({
-      id: row.id,
-      type: row.type,
-    });
+    setEditFormData({ ...editFormData });
     setShowModal(true);
   };
   const confirmUpdate = async () => {
-    if (!formData.type) {
+    if (!editFormData.type) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
       setWarningModal(true);
@@ -80,11 +102,11 @@ const AllowanceSettings = () => {
     }
 
     const updatedOTF = {
-      type: formData.type,
+      type: editFormData.type,
     };
 
     try {
-      const res = await axios.put(`${SERVER_URL}allowance-types/${formData.id}/`, updatedOTF);
+      const res = await axios.put(`${SERVER_URL}allowance-types/${editFormData.id}/`, updatedOTF);
       console.log("Allowance updated successfully");
       setShowEditForm(false);
       setShowModal(false);
@@ -93,6 +115,7 @@ const AllowanceSettings = () => {
 
       const updatedData = await axios.get(`${SERVER_URL}allowance-types/`);
       setData(updatedData.data);
+      handleReset()
     } catch (error) {
       console.error("Error updating allowance:", error);
       setShowModal(false);
@@ -102,10 +125,8 @@ const AllowanceSettings = () => {
 
 
   const handleAdd = () => {
-    setFormData({
-      type: "",
-    });
     setShowAddForm(true);
+    setShowEditForm(false);
   };
   const addOTF = async () => {
     setModalType("create");
@@ -134,6 +155,7 @@ const AllowanceSettings = () => {
 
       const updatedData = await axios.get(`${SERVER_URL}allowance-types/`);
       setData(updatedData.data);
+      handleReset()
     } catch (error) {
       console.error("Error adding allowance:", error.response?.data || error.message);
       setShowModal(false);
@@ -162,12 +184,7 @@ const AllowanceSettings = () => {
     }
   };
 
-  const resetForm = () => {
-    setFormData({
-      type: "",
-    });
-    handleCancel();
-  };
+ 
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
@@ -353,14 +370,15 @@ const AllowanceSettings = () => {
           <h4>Add New Allowance</h4>
           <input
             type="text"
+            name="type"
             placeholder="Allowance Type"
             value={formData.type}
-            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+            onChange={handleInputChange}
           />
           <button className="submit-button" onClick={addOTF}>
             Add Allowance
           </button>
-          <button className="cancel-button" onClick={handleCancel}>
+          <button className="cancel-button" onClick={handleReset}>
             Cancel
           </button>
         </div>
@@ -372,14 +390,14 @@ const AllowanceSettings = () => {
           <input
             type="text"
             placeholder="Allowance Type"
-            value={formData.type}
-            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+            value={editFormData.type}
+            onChange={(e) => setEditFormData({ ...editFormData, type: e.target.value })}
           />
 
-          <button className="submit-button" onClick={() => updateOTF(formData)}>
+          <button className="submit-button" onClick={() => updateOTF(editFormData)}>
             Update Allowance
           </button>
-          <button className="cancel-button" onClick={handleCancel}>
+          <button className="cancel-button" onClick={handleReset}>
             Cancel
           </button>
         </div>
@@ -389,7 +407,7 @@ const AllowanceSettings = () => {
         <table className="table">
           <thead>
             <tr>
-            <th>
+              <th>
                 <input
                   id="delete-checkbox"
                   type="checkbox"

@@ -10,18 +10,61 @@ import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../../assets/Lottie/warningAnim.json";
 import { SERVER_URL } from "../../../config";
+import { useDispatch, useSelector } from "react-redux";
+import { setAdvanceSalaryData, resetAdvanceSalaryData } from "../../../redux/advanceSalarySlice";
+
 
 const AdvanceSalary = () => {
   const [data, setData] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
-  const [formData, setFormData] = useState({
+
+
+
+  const dispatch = useDispatch();
+  const advSalData = useSelector((state) => state.advanceSalary);
+
+  const [formData, setFormData] = useState(
+    advSalData || {
+      empId: "",
+      amount: "",
+      reason: "",
+      date: "",
+    });
+
+  const handleReset = () => {
+    dispatch(resetAdvanceSalaryData());
+    setFormData({
+      id: "",
+      empId: "",
+      first_checkin: "",
+      last_checkout: "",
+      calcHours: '',
+      date: "",
+    });
+    setShowAddForm(false);
+    setShowEditForm(false);
+  };
+
+  const [editFormData, setEditFormData] = useState({
+    id: "",
     empId: "",
-    amount: "",
-    reason: "",
+    first_checkin: "",
+    last_checkout: "",
+    calcHours: '',
     date: "",
   });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => {
+      const updatedFormData = { ...prevState, [name]: value };
+      dispatch(setAdvanceSalaryData(updatedFormData));
+      return updatedFormData;
+    });
+  };
+
 
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
@@ -58,16 +101,9 @@ const AdvanceSalary = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  const handleEdit = (data) => {
-    setFormData({ ...data });
-    setShowAddForm(false);
-    setShowEditForm(true);
-  };
 
-  const handleCancel = () => {
-    setShowAddForm(false);
-    setShowEditForm(false);
-  };
+
+
 
   const handleDelete = async (advSalaryId) => {
     setModalType("delete");
@@ -88,12 +124,6 @@ const AdvanceSalary = () => {
   };
 
   const handleAddNew = () => {
-    setFormData({
-      empId: "",
-      amount: "",
-      reason: "",
-      date: "",
-    });
     setShowAddForm(true);
     setShowEditForm(false);
   };
@@ -129,26 +159,31 @@ const AdvanceSalary = () => {
       setShowAddForm(false);
       setSuccessModal(true);
       fetchAdvSalary();
+      handleReset()
     } catch (error) {
     }
   };
 
+
+
+  const handleEdit = (data) => {
+    setEditFormData({ ...data });
+    setShowAddForm(false);
+    setShowEditForm(true);
+  };
+
   const updateAdvSalary = (row) => {
     setModalType("update");
-    setFormData({
-      advSalaryId: formData.advSalaryId,
-      amount: row.amount,
-      reason: row.reason,
-      date: row.date,
-    });
+    setEditFormData({ ...editFormData });
     setShowModal(true);
   };
   const confirmUpdate = async () => {
+    console.log(editFormData);
     if (
-      formData.empId === "" ||
-      formData.amount === "" ||
-      formData.reason === "" ||
-      formData.date === ""
+      editFormData.empId === "" ||
+      editFormData.amount === "" ||
+      editFormData.reason === "" ||
+      editFormData.date === ""
     ) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
@@ -156,11 +191,11 @@ const AdvanceSalary = () => {
       return;
     }
     const updateAdvSalary = {
-      advSalaryId: formData.advSalaryId,
-      empId: formData.empId,
-      amount: formData.amount,
-      reason: formData.reason,
-      date: formData.date,
+      advSalaryId: editFormData.advSalaryId,
+      empId: editFormData.empId,
+      amount: editFormData.amount,
+      reason: editFormData.reason,
+      date: editFormData.date,
     };
     try {
       axios.post(`${SERVER_URL}pyr-adv-up/`, updateAdvSalary);
@@ -169,15 +204,12 @@ const AdvanceSalary = () => {
       setShowModal(false);
       setSuccessModal(true);
       setShowEditForm(false);
-
       fetchAdvSalary();
+      handleReset()
     } catch (error) {
     }
   };
 
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-  };
 
   const filteredData = data.filter(
     (item) =>
@@ -408,35 +440,36 @@ const AdvanceSalary = () => {
           <label>Advance Salary Amount</label>
           <input
             type="Number"
+            name="amount"
             placeholder="Amount"
             value={formData.amount}
-            onChange={(e) =>
-              setFormData({ ...formData, amount: e.target.value })
-            }
+            onChange={handleInputChange}
+
           />
           <label>Reason</label>
           <input
             type="text"
+            name="reason"
             placeholder="Reason"
             value={formData.reason}
-            onChange={(e) =>
-              setFormData({ ...formData, reason: e.target.value })
-            }
+            onChange={handleInputChange}
+
           />
           <label>Date</label>
           <input
             type="Date"
+            name="date"
             placeholder="Date"
             value={formData.date}
-            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-          />
+            onChange={handleInputChange}
 
+          />
 
 
           <button className="submit-button" onClick={addAdvSalary}>
             Add Advance Salary
           </button>
-          <button className="cancel-button" onClick={handleCancel}>
+          <button className="cancel-button" onClick={handleReset}>
             Cancel
           </button>
         </div>
@@ -449,12 +482,12 @@ const AdvanceSalary = () => {
             disabled
             list="employeesList"
             value={
-              employees.find((emp) => emp.empId === formData.empId)
-                ? `${employees.find((emp) => emp.empId === formData.empId).empId
-                } ${employees.find((emp) => emp.empId === formData.empId).fName
-                } ${employees.find((emp) => emp.empId === formData.empId).lName
+              employees.find((emp) => emp.empId === editFormData.empId)
+                ? `${employees.find((emp) => emp.empId === editFormData.empId).empId
+                } ${employees.find((emp) => emp.empId === editFormData.empId).fName
+                } ${employees.find((emp) => emp.empId === editFormData.empId).lName
                 }`
-                : formData.empId || ""
+                : editFormData.empId || ""
             } // Display empId, fName, and lName of the selected employee or inputted empId
             onChange={(e) => {
               const value = e.target.value;
@@ -464,8 +497,8 @@ const AdvanceSalary = () => {
                   emp.empId === value
               );
 
-              setFormData({
-                ...formData,
+              setEditFormData({
+                ...editFormData,
                 empId: selectedEmployee ? selectedEmployee.empId : value, // Store empId or raw input
                 empName: selectedEmployee
                   ? `${selectedEmployee.fName} ${selectedEmployee.lName}`
@@ -489,37 +522,37 @@ const AdvanceSalary = () => {
           <input
             type="Number"
             placeholder="Amount"
-            value={formData.amount}
+            value={editFormData.amount}
             onChange={(e) =>
-              setFormData({ ...formData, amount: e.target.value })
+              setEditFormData({ ...editFormData, amount: e.target.value })
             }
           />
           <label>Reason</label>
           <input
             type="text"
             placeholder="Reason"
-            value={formData.reason}
+            value={editFormData.reason}
             onChange={(e) =>
-              setFormData({ ...formData, reason: e.target.value })
+              setEditFormData({ ...editFormData, reason: e.target.value })
             }
           />
           <label>Date</label>
           <input
             type="Date"
             placeholder="Date"
-            value={formData.date}
-            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+            value={editFormData.date}
+            onChange={(e) => setEditFormData({ ...editFormData, date: e.target.value })}
           />
 
 
 
           <button
             className="submit-button"
-            onClick={() => updateAdvSalary(formData)}
+            onClick={() => updateAdvSalary(editFormData)}
           >
             Update Advance Salary
           </button>
-          <button className="cancel-button" onClick={handleCancel}>
+          <button className="cancel-button" onClick={handleReset}>
             Cancel
           </button>
         </div>
@@ -529,7 +562,7 @@ const AdvanceSalary = () => {
         <table className="table">
           <thead>
             <tr>
-            <th>
+              <th>
                 <input
                   id="delete-checkbox"
                   type="checkbox"

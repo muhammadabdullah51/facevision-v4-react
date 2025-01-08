@@ -327,7 +327,7 @@ const AttendanceTable = ({ data, setData }) => {
 
   const handleUpdate = async () => {
     setModalType("update");
-    setFormData({ ...editFormData });
+    setEditFormData({ ...editFormData });
     setShowModal(true);
   };
 
@@ -403,16 +403,6 @@ const AttendanceTable = ({ data, setData }) => {
   };
 
   const handleAdd = () => {
-    // setFormData({
-    //   empId: "",
-    //   time_in: "",
-    //   time_out: "",
-    //   date: "",
-    //   attendance_marked: "by Admin",
-    //   status: "",
-    //   location: "",
-    // });
-
     setShowAddForm(true);
     setShowEditForm(false);
   };
@@ -424,8 +414,6 @@ const AttendanceTable = ({ data, setData }) => {
   const confirmAdd = async () => {
     if (
       !formData.empId ||
-      // !formData.time_in ||
-      // !formData.time_out ||
       !formData.date ||
       !formData.status
     ) {
@@ -611,7 +599,7 @@ const AttendanceTable = ({ data, setData }) => {
 
               setFormData({
                 ...formData,
-                empId: selectedEmployee ? selectedEmployee.empId : value, // Update empId if matched, otherwise store raw input
+                empId: selectedEmployee ? selectedEmployee.empId : value,
               });
             }}
           />

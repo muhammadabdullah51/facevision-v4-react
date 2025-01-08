@@ -12,6 +12,10 @@ import successAnimation from "../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../assets/Lottie/warningAnim.json";
 import { SERVER_URL } from "../../config";
 
+import { useDispatch, useSelector } from "react-redux";
+import { setLeaveData, resetLeaveData } from "../../redux/leaveSlice.js";
+
+
 const LeaveTable = ({ data, setData }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
@@ -20,7 +24,11 @@ const LeaveTable = ({ data, setData }) => {
   const leaveTypes = ["Sick Leave", "Vacation", "Personal Leave"];
   const statuses = ["Pending", "Approved", "Rejected", "Cancelled"];
 
-  const [formData, setFormData] = useState({
+  const dispatch = useDispatch();
+  const leaveData = useSelector((state) => state.leave);
+
+  const [formData, setFormData] = useState(
+    leaveData || {
     id: null,
     employee: "",
     leave_type: "",
@@ -30,6 +38,42 @@ const LeaveTable = ({ data, setData }) => {
     status: "Pending",
     created_at: "",
   });
+
+  const handleReset = () => {
+    dispatch(resetLeaveData());
+    setFormData({
+      id: null,
+      employee: "",
+      leave_type: "",
+      start_date: "",
+      end_date: "",
+      reason: "",
+      status: "Pending",
+      created_at: "",
+    });
+    setShowAddForm(false);
+    setShowEditForm(false);
+  };
+
+  const [editFormData, setEditFormData] = useState({
+    id: null,
+    employee: "",
+    leave_type: "",
+    start_date: "",
+    end_date: "",
+    reason: "",
+    status: "Pending",
+    created_at: "",
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => {
+      const updatedFormData = { ...prevState, [name]: value };
+      dispatch(setLeaveData(updatedFormData));
+      return updatedFormData;
+    });
+  };
 
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
@@ -64,16 +108,6 @@ const LeaveTable = ({ data, setData }) => {
     }
     return () => clearTimeout(timer);
   }, [fetchLeave, successModal]);
-
-  const handleStatusToggle = useCallback(() => {
-    setFormData((prevState) => ({
-      ...prevState,
-      status: prevState.status === "Approved" ? "Pending" : "Approved",
-    }));
-  }, []);
-
-
-
 
 
 
@@ -212,10 +246,10 @@ const LeaveTable = ({ data, setData }) => {
         Cell: ({ value }) => (
           <span
             className={`status ${value === "Approved" || value === "Cancelled"
-                ? "approvedStatus"
-                : value === "Pending"
-                  ? "lateStatus"
-                  : "absentStatus"
+              ? "approvedStatus"
+              : value === "Pending"
+                ? "lateStatus"
+                : "absentStatus"
               }`}
           >
             {value}
@@ -264,12 +298,6 @@ const LeaveTable = ({ data, setData }) => {
 
 
 
-
-
-
-
-
-
   const {
     getTableProps,
     getTableBodyProps,
@@ -288,7 +316,7 @@ const LeaveTable = ({ data, setData }) => {
   );
 
   const handleEdit = (row) => {
-    setFormData({
+    setEditFormData({
       id: row.id,
       empName: row.empName,
       leave_type: row.leave_type,
@@ -304,19 +332,19 @@ const LeaveTable = ({ data, setData }) => {
 
   const handleUpdate = async () => {
     setModalType("update");
-    setFormData({ ...formData });
+    setEditFormData({ ...editFormData });
     setShowModal(true);
   };
 
   const confirmUpdate = async () => {
     if (
-      formData.employee === "" ||
-      formData.leave_type === "" ||
-      formData.start_date === "" ||
-      formData.end_date === "" ||
-      formData.reason === "" ||
-      formData.status === "" ||
-      formData.created_at === ""
+      editFormData.employee === "" ||
+      editFormData.leave_type === "" ||
+      editFormData.start_date === "" ||
+      editFormData.end_date === "" ||
+      editFormData.reason === "" ||
+      editFormData.status === "" ||
+      editFormData.created_at === ""
     ) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
@@ -324,12 +352,12 @@ const LeaveTable = ({ data, setData }) => {
       return;
     }
     const leavePayload = {
-      id: formData.id,
-      leave_type: formData.leave_type,
-      start_date: formData.start_date,
-      end_date: formData.end_date,
-      reason: formData.reason,
-      status: formData.status,
+      id: editFormData.id,
+      leave_type: editFormData.leave_type,
+      start_date: editFormData.start_date,
+      end_date: editFormData.end_date,
+      reason: editFormData.reason,
+      status: editFormData.status,
     };
     try {
       await axios.post(`${SERVER_URL}att-lv-up/`, leavePayload);
@@ -339,6 +367,7 @@ const LeaveTable = ({ data, setData }) => {
       setShowEditForm(false);
       setShowModal(false);
       setSuccessModal(true);
+      handleReset();
     } catch (error) {
     }
   };
@@ -361,16 +390,6 @@ const LeaveTable = ({ data, setData }) => {
   };
 
   const handleAdd = () => {
-    setFormData({
-      employee: "",
-      leave_type: "",
-      start_date: "",
-      end_date: "",
-      reason: "",
-      status: "Pending",
-      created_at: new Date().toISOString().split("T")[0],
-    });
-
     setShowAddForm(true);
     setShowEditForm(false);
   };
@@ -386,8 +405,7 @@ const LeaveTable = ({ data, setData }) => {
       formData.start_date === "" ||
       formData.end_date === "" ||
       formData.reason === "" ||
-      formData.status === "" ||
-      formData.created_at === ""
+      formData.status === ""
     ) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
@@ -401,7 +419,7 @@ const LeaveTable = ({ data, setData }) => {
       end_date: formData.end_date,
       reason: formData.reason,
       status: formData.status,
-      created_at: formData.created_at,
+      created_at: new Date().toISOString().split("T")[0],
     };
     try {
       await axios.post(`${SERVER_URL}att-lv-cr/`, leavePayload);
@@ -411,6 +429,7 @@ const LeaveTable = ({ data, setData }) => {
       setShowAddForm(false);
       setShowModal(false);
       setSuccessModal(true);
+      handleReset();
     } catch (error) {
     }
   };
@@ -566,9 +585,9 @@ const LeaveTable = ({ data, setData }) => {
           <label>Leave Type</label>
           <select
             value={formData.leave_type}
-            onChange={(e) =>
-              setFormData({ ...formData, leave_type: e.target.value })
-            }
+            name="leave_type"
+            onChange={handleInputChange}
+
           >
             <option value="">Select Leave Type</option>
             {leaveTypes.map((type) => (
@@ -580,34 +599,34 @@ const LeaveTable = ({ data, setData }) => {
           <label>Start Date</label>
           <input
             type="date"
+            name="start_date"
             value={formData.start_date}
-            onChange={(e) =>
-              setFormData({ ...formData, start_date: e.target.value })
-            }
+            onChange={handleInputChange}
+
           />
           <label>End Date</label>
           <input
             type="date"
+            name="end_date"
             value={formData.end_date}
-            onChange={(e) =>
-              setFormData({ ...formData, end_date: e.target.value })
-            }
+            onChange={handleInputChange}
+
           />
           <label>Reason</label>
           <input
             type="text"
+            name="reason"
             placeholder="Reason"
             value={formData.reason}
-            onChange={(e) =>
-              setFormData({ ...formData, reason: e.target.value })
-            }
+            onChange={handleInputChange}
+
           />
           <label>Status</label>
           <select
             value={formData.status}
-            onChange={(e) =>
-              setFormData({ ...formData, status: e.target.value })
-            }
+            name="status"
+            onChange={handleInputChange}
+
           >
             {statuses.map((status) => (
               <option key={status} value={status}>
@@ -620,10 +639,7 @@ const LeaveTable = ({ data, setData }) => {
           </button>
           <button
             className="cancel-button"
-            onClick={() => {
-              setShowAddForm(false);
-              setShowEditForm(false);
-            }}
+            onClick={handleReset}
           >
             Cancel
           </button>
@@ -635,17 +651,17 @@ const LeaveTable = ({ data, setData }) => {
           <label>Selected Employee</label>
           <input
             type="text"
-            value={formData.empName}
+            value={editFormData.empName}
             disabled
             onChange={(e) =>
-              setFormData({ ...formData, empName: e.target.value })
+              setEditFormData({ ...editFormData, empName: e.target.value })
             }
           />
           <label>Leave Type</label>
           <select
-            value={formData.leave_type}
+            value={editFormData.leave_type}
             onChange={(e) =>
-              setFormData({ ...formData, leave_type: e.target.value })
+              setEditFormData({ ...editFormData, leave_type: e.target.value })
             }
           >
             <option value="">Select Leave Type</option>
@@ -658,17 +674,17 @@ const LeaveTable = ({ data, setData }) => {
           <label>Start Date</label>
           <input
             type="date"
-            value={formData.start_date}
+            value={editFormData.start_date}
             onChange={(e) =>
-              setFormData({ ...formData, start_date: e.target.value })
+              setEditFormData({ ...editFormData, start_date: e.target.value })
             }
           />
           <label>End Date</label>
           <input
             type="date"
-            value={formData.end_date}
+            value={editFormData.end_date}
             onChange={(e) =>
-              setFormData({ ...formData, end_date: e.target.value })
+              setEditFormData({ ...editFormData, end_date: e.target.value })
             }
           />
 
@@ -676,16 +692,16 @@ const LeaveTable = ({ data, setData }) => {
           <input
             type="text"
             placeholder="Reason"
-            value={formData.reason}
+            value={editFormData.reason}
             onChange={(e) =>
-              setFormData({ ...formData, reason: e.target.value })
+              setEditFormData({ ...editFormData, reason: e.target.value })
             }
           />
           <label>Status</label>
           <select
-            value={formData.status}
+            value={editFormData.status}
             onChange={(e) =>
-              setFormData({ ...formData, status: e.target.value })
+              setEditFormData({ ...editFormData, status: e.target.value })
             }
           >
             {statuses.map((status) => (
@@ -696,16 +712,13 @@ const LeaveTable = ({ data, setData }) => {
           </select>
           <button
             className="submit-button"
-            onClick={() => handleUpdate(formData)}
+            onClick={() => handleUpdate(editFormData)}
           >
             Update Leave
           </button>
           <button
             className="cancel-button"
-            onClick={() => {
-              setShowAddForm(false);
-              setShowEditForm(false);
-            }}
+            onClick={handleReset}
           >
             Cancel
           </button>

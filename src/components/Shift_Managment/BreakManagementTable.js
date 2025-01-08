@@ -9,18 +9,55 @@ import deleteAnimation from "../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../assets/Lottie/warningAnim.json";
 
+import { useDispatch, useSelector } from "react-redux";
+import { setBreakData, resetBreakData } from "../../redux/breakSlice";
+
+
 const BreakManagementTable = ({ onDataUpdate }) => {
   const [data, setData] = useState([]);
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
-  const [formData, setFormData] = useState({
+
+  const dispatch = useDispatch();
+  const breakData = useSelector((state) => state.break);
+  const [formData, setFormData] = useState(
+    breakData || {
+      id: "",
+      name: "",
+      start_time: "",
+      end_time: "",
+    });
+
+  const handleReset = () => {
+    dispatch(resetBreakData());
+    setFormData({
+      id: "",
+      name: "",
+      start_time: "",
+      end_time: "",
+    });
+    setShowAddForm(false);
+    setShowEditForm(false);
+  };
+
+  const [editFormData, setEditFormData] = useState({
     id: "",
     name: "",
     start_time: "",
     end_time: "",
   });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => {
+      const updatedFormData = { ...prevState, [name]: value };
+      dispatch(setBreakData(updatedFormData));
+      return updatedFormData;
+    });
+  };
+
 
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
@@ -30,14 +67,14 @@ const BreakManagementTable = ({ onDataUpdate }) => {
   const [resMsg, setResMsg] = useState("");
 
   const fetchBreaks = useCallback(async () => {
- 
+
     try {
       const response = await axios.get(`${SERVER_URL}brk-sch/`);
       setData(response.data);
       onDataUpdate(response.data);
     } catch (error) {
       console.error("Error fetching shift data:", error);
-    } 
+    }
   }, [setData]);
 
   useEffect(() => {
@@ -54,28 +91,19 @@ const BreakManagementTable = ({ onDataUpdate }) => {
 
 
 
-  const handleCancel = () => {
-    setShowAddForm(false);
-    setShowEditForm(false);
-  };
 
   const handleEdit = (row) => {
-    setFormData({ ...row });
+    setEditFormData({ ...row });
     setShowAddForm(false);
     setShowEditForm(true);
   };
   const updateOTF = async (row) => {
     setModalType("update");
-    setFormData({
-      id: row.id,
-      name: row.name,
-      start_time: row.start_time,
-      end_time: row.end_time,
-    });
+    setEditFormData({ ...editFormData });
     setShowModal(true);
   };
   const confirmUpdate = async () => {
-    if (!formData.name || !formData.start_time || !formData.end_time) {
+    if (!editFormData.name || !editFormData.start_time || !editFormData.end_time) {
       setResMsg("Please fill in all required fields.")
       setShowModal(false);
       setWarningModal(true);
@@ -83,13 +111,13 @@ const BreakManagementTable = ({ onDataUpdate }) => {
     }
 
     const updatedOTF = {
-      id: formData.id,
-      name: formData.name,
-      start_time: formData.start_time,
-      end_time: formData.end_time,
+      id: editFormData.id,
+      name: editFormData.name,
+      start_time: editFormData.start_time,
+      end_time: editFormData.end_time,
     };
     try {
-      const res = await axios.put(`${SERVER_URL}brk-sch/${formData.id}/`, updatedOTF);
+      const res = await axios.put(`${SERVER_URL}brk-sch/${editFormData.id}/`, updatedOTF);
       setShowEditForm(false);
       setShowModal(false);
       setSuccessModal(true);
@@ -97,6 +125,7 @@ const BreakManagementTable = ({ onDataUpdate }) => {
       const updatedData = await axios.get(`${SERVER_URL}brk-sch/`);
       setData(updatedData.data);
       onDataUpdate(updatedData.data)
+      handleReset()
     } catch (error) {
       console.error("Error updating Leave:", error);
       setShowModal(false);
@@ -107,12 +136,8 @@ const BreakManagementTable = ({ onDataUpdate }) => {
 
 
   const handleAdd = () => {
-    setFormData({
-      name: "",
-      start_time: "",
-      end_time: "",
-    });
     setShowAddForm(true);
+    setShowEditForm(false);
   };
   const addOTF = async () => {
     setModalType("create");
@@ -140,8 +165,8 @@ const BreakManagementTable = ({ onDataUpdate }) => {
       const updatedData = await axios.get(`${SERVER_URL}brk-sch/`);
       setData(updatedData.data);
       onDataUpdate(updatedData.data)
+      handleReset()
 
-      // setShowAddForm(false)
     } catch (error) {
       console.log(error);
       setShowModal(false)
@@ -353,36 +378,33 @@ const BreakManagementTable = ({ onDataUpdate }) => {
           <label>Break Name</label>
           <input
             type="text"
+            name="name"
             placeholder="Break Name"
             value={formData.name}
-            onChange={(e) =>
-              setFormData({ ...formData, name: e.target.value })
-            }
+            onChange={handleInputChange}
           />
           <label style={{ margin: '0 10px' }}>Break Start Time</label>
           <input
             type="time"
+            name="start_time"
             placeholder="Break Start Time"
             value={formData.start_time}
-            onChange={(e) =>
-              setFormData({ ...formData, start_time: e.target.value })
-            }
+            onChange={handleInputChange}
           />
           <label style={{ margin: '0 10px' }}>Break End Time</label>
           <input
             type="time"
+            name="end_time"
             placeholder="Break End Time"
             value={formData.end_time}
-            onChange={(e) =>
-              setFormData({ ...formData, end_time: e.target.value })
-            }
+            onChange={handleInputChange}
           />
           <br />
 
           <button className="submit-button" onClick={addOTF}>
             Add Break Schedule
           </button>
-          <button className="cancel-button" onClick={handleCancel}>
+          <button className="cancel-button" onClick={handleReset}>
             Cancel
           </button>
         </div>
@@ -394,35 +416,35 @@ const BreakManagementTable = ({ onDataUpdate }) => {
           <input
             type="text"
             placeholder="Break Name"
-            value={formData.name}
+            value={editFormData.name}
             onChange={(e) =>
-              setFormData({ ...formData, name: e.target.value })
+              setEditFormData({ ...editFormData, name: e.target.value })
             }
           />
           <label style={{ margin: '0 10px' }}>Break Start Time</label>
           <input
             type="time"
             placeholder="Break Start Time"
-            value={formData.start_time}
+            value={editFormData.start_time}
             onChange={(e) =>
-              setFormData({ ...formData, start_time: e.target.value })
+              setEditFormData({ ...editFormData, start_time: e.target.value })
             }
           />
           <label style={{ margin: '0 10px' }}>Break End Time</label>
           <input
             type="time"
             placeholder="Break End Time"
-            value={formData.end_time}
+            value={editFormData.end_time}
             onChange={(e) =>
-              setFormData({ ...formData, end_time: e.target.value })
+              setEditFormData({ ...editFormData, end_time: e.target.value })
             }
           />
           <br />
 
-          <button className="submit-button" onClick={() => updateOTF(formData)}>
+          <button className="submit-button" onClick={() => updateOTF(editFormData)}>
             Update Break Schedule
           </button>
-          <button className="cancel-button" onClick={handleCancel}>
+          <button className="cancel-button" onClick={handleReset}>
             Cancel
           </button>
         </div>

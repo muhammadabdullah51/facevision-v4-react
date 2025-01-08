@@ -10,36 +10,71 @@ import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../../assets/Lottie/warningAnim.json";
 
+import { useDispatch, useSelector } from "react-redux";
+import { setOtfData, resetOtfData } from "../../../redux/otfSlice";
+
 const OvertimeTable = () => {
   const [data, setData] = useState([]);
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
-  const [formData, setFormData] = useState({
+
+
+  const dispatch = useDispatch();
+  const otfData = useSelector((state) => state.otf);
+
+
+  const [formData, setFormData] = useState(
+    otfData || {
+      OTFormulaId: "",
+      OTCode: "",
+      ratePerHour: "",
+      updateDate: "",
+    });
+
+  const handleReset = () => {
+    dispatch(resetOtfData());
+    setFormData({
+      OTFormulaId: "",
+      OTCode: "",
+      ratePerHour: "",
+      updateDate: "",
+    });
+    setShowAddForm(false);
+    setShowEditForm(false);
+  };
+
+  const [editFormData, setEditFormData] = useState({
     OTFormulaId: "",
     OTCode: "",
     ratePerHour: "",
     updateDate: "",
   });
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => {
+      const updatedFormData = { ...prevState, [name]: value };
+      dispatch(setOtfData(updatedFormData));
+      return updatedFormData;
+    });
+  };
+
+
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
-  const [loading, setLoading] = useState(false); // Loading state
 
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
 
   const fetchOTF = useCallback(async () => {
-    setLoading(true);
     try {
       const response = await axios.get(`${SERVER_URL}pyr-ot/`);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching shift data:", error);
-    } finally {
-      setLoading(false);
     }
   }, [setData]);
 
@@ -56,28 +91,18 @@ const OvertimeTable = () => {
 
 
 
-  const handleCancel = () => {
-    setShowAddForm(false);
-    setShowEditForm(false);
-  };
-
   const handleEdit = (row) => {
-    setFormData({ ...row });
+    setEditFormData({ ...row });
     setShowAddForm(false);
     setShowEditForm(true);
   };
   const updateOTF = async (row) => {
     setModalType("update");
-    setFormData({
-      OTFormulaId: row.OTFormulaId,
-      OTCode: row.OTCode,
-      ratePerHour: row.ratePerHour,
-      updateDate: row.updateDate,
-    });
+    setEditFormData({ ...editFormData });
     setShowModal(true);
   };
   const confirmUpdate = async () => {
-    if (!formData.OTCode || !formData.ratePerHour || !formData.updateDate) {
+    if (!editFormData.OTCode || !editFormData.ratePerHour || !editFormData.updateDate) {
       setResMsg("Please fill in all required fields.")
       setShowModal(false);
       setWarningModal(true);
@@ -85,10 +110,10 @@ const OvertimeTable = () => {
     }
 
     const updatedOTF = {
-      OTFormulaId: formData.OTFormulaId,
-      OTCode: formData.OTCode,
-      ratePerHour: formData.ratePerHour,
-      updateDate: formData.updateDate,
+      OTFormulaId: editFormData.OTFormulaId,
+      OTCode: editFormData.OTCode,
+      ratePerHour: editFormData.ratePerHour,
+      updateDate: editFormData.updateDate,
     };
     try {
       const res = await axios.post(`${SERVER_URL}pyr-ot-up/`, updatedOTF);
@@ -99,6 +124,7 @@ const OvertimeTable = () => {
       setResMsg(res.data.msg)
       const updatedData = await axios.get(`${SERVER_URL}pyr-ot/`);
       setData(updatedData.data);
+      handleReset();
     } catch (error) {
       console.error("Error updating overtime:", error);
       setShowModal(false);
@@ -109,12 +135,8 @@ const OvertimeTable = () => {
 
 
   const handleAdd = () => {
-    setFormData({
-      OTCode: "",
-      ratePerHour: "",
-      updateDate: "",
-    });
     setShowAddForm(true);
+    setShowEditForm(false);
   };
   const addOTF = async () => {
     setModalType("create");
@@ -142,7 +164,7 @@ const OvertimeTable = () => {
       setSuccessModal(true)
       const updatedData = await axios.get(`${SERVER_URL}pyr-ot/`);
       setData(updatedData.data);
-      // setShowAddForm(false)
+      handleReset()
     } catch (error) {
       console.log(error);
       setShowModal(false)
@@ -171,15 +193,7 @@ const OvertimeTable = () => {
 
 
 
-  // const resetForm = () => {
-  //   setFormData({
-  //     OTFormulaId: "",
-  //     OTCode: "",
-  //     ratePerHour: "",
-  //     updateDate: "",
-  //   });
-  //   handleCancel();
-  // };
+
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
@@ -366,34 +380,31 @@ const OvertimeTable = () => {
           <label>Pay Code</label>
           <input
             type="text"
+            name="OTCode"
             placeholder="Pay Code"
             value={formData.OTCode}
-            onChange={(e) =>
-              setFormData({ ...formData, OTCode: e.target.value })
-            }
+            onChange={handleInputChange}
           />
           <label>Rate Per Hour</label>
           <input
             type="number"
+            name="ratePerHour"
             placeholder="Rate Per Hour"
             value={formData.ratePerHour}
-            onChange={(e) =>
-              setFormData({ ...formData, ratePerHour: e.target.value })
-            }
+            onChange={handleInputChange}
           />
           <label>Update Date</label>
           <input
             type="date"
+            name="updateDate"
             placeholder="Update Date"
             value={formData.updateDate}
-            onChange={(e) =>
-              setFormData({ ...formData, updateDate: e.target.value })
-            }
+            onChange={handleInputChange}
           />
           <button className="submit-button" onClick={addOTF}>
             Add Overtime Formula
           </button>
-          <button className="cancel-button" onClick={handleCancel}>
+          <button className="cancel-button" onClick={handleReset}>
             Cancel
           </button>
         </div>
@@ -405,33 +416,33 @@ const OvertimeTable = () => {
           <input
             type="text"
             placeholder="Pay Code"
-            value={formData.OTCode}
+            value={editFormData.OTCode}
             onChange={(e) =>
-              setFormData({ ...formData, OTCode: e.target.value })
+              setEditFormData({ ...editFormData, OTCode: e.target.value })
             }
           />
           <label>Rate Per Hour</label>
           <input
             type="number"
             placeholder="Rate Per Hour"
-            value={formData.ratePerHour}
+            value={editFormData.ratePerHour}
             onChange={(e) =>
-              setFormData({ ...formData, ratePerHour: e.target.value })
+              setEditFormData({ ...editFormData, ratePerHour: e.target.value })
             }
           />
           <label>Update Date</label>
           <input
             type="date"
             placeholder="Update Date"
-            value={formData.updateDate}
+            value={editFormData.updateDate}
             onChange={(e) =>
-              setFormData({ ...formData, updateDate: e.target.value })
+              setEditFormData({ ...editFormData, updateDate: e.target.value })
             }
           />
-          <button className="submit-button" onClick={() => updateOTF(formData)}>
+          <button className="submit-button" onClick={() => updateOTF(editFormData)}>
             Update Overtime Formula
           </button>
-          <button className="cancel-button" onClick={handleCancel}>
+          <button className="cancel-button" onClick={handleReset}>
             Cancel
           </button>
         </div>
@@ -441,7 +452,7 @@ const OvertimeTable = () => {
         <table className="table">
           <thead>
             <tr>
-            <th>
+              <th>
                 <input
                   id="delete-checkbox"
                   type="checkbox"
