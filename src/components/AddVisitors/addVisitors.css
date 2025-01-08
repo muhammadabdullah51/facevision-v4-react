@@ -123,6 +123,8 @@ h2{
     color: var(--text-color);
     display: flex;
     align-items: center;
+    font-weight: 600;
+    margin-bottom: 1vh;
   }
   
   .back-button svg {

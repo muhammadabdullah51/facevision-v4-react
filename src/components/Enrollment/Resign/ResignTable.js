@@ -133,7 +133,7 @@ const ResignTable = ({ data, setData }) => {
   const confirmBulkDelete = async () => {
     try {
       const payload = { ids: selectedIds };
-      const response = await axios.post(`${SERVER_URL}rsgn/del/data`, payload);
+      await axios.post(`${SERVER_URL}rsgn/del/data`, payload);
       const updatedData = await axios.get(`${SERVER_URL}pr-emp-rsgn/`);
       setData(updatedData.data);
       setShowModal(false);
@@ -437,6 +437,7 @@ const ResignTable = ({ data, setData }) => {
       {showAddForm && !showEditForm && (
         <div className="add-department-form add-leave-form">
           <h3>Add Employee</h3>
+          <label>Select Employee</label>
           <input
             list="employeesList"
             value={
@@ -479,12 +480,14 @@ const ResignTable = ({ data, setData }) => {
             ))}
           </datalist>
 
+            <label>Date</label>
           <input
             type="date"
             placeholder="Date"
             value={formData.date}
             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
           />
+          <label>Reason</label>
           <input
             type="text"
             placeholder="Reason"

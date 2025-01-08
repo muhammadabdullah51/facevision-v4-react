@@ -14,7 +14,6 @@ import { SERVER_URL } from "../../../config";
 
 const Appraisal = () => {
   const [data, setData] = useState([]);
-  const [currentItemId, setCurrentItemId] = useState(null);
   const [employees, setEmployees] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
@@ -32,7 +31,6 @@ const Appraisal = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
-  const [loading, setLoading] = useState(false); // Loading state
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
 
@@ -280,7 +278,7 @@ const Appraisal = () => {
   const confirmBulkDelete = async () => {
     try {
       const payload = { ids: selectedIds };
-      const response = await axios.post(`${SERVER_URL}appr/del/data`, payload);
+      await axios.post(`${SERVER_URL}appr/del/data`, payload);
       const updatedData = await axios.get(`${SERVER_URL}pyr-appr/`);
       setData(updatedData.data);
       setShowModal(false);

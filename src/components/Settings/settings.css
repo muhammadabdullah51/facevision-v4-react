@@ -19,6 +19,7 @@
     color: grey;
     transition: 0.3s ease;
     font-size: 0.7vw;
+    margin-left: 5px;
   }
 
   .tabs button:hover,

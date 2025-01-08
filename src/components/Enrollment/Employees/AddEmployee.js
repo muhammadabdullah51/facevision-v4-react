@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Department from "../Department/department";
 import ShiftManagement from "../../Shift_Managment/shift_managment";
 // import "../../AddVisitors/addvisitors.css";
@@ -9,8 +9,6 @@ import WebcamModal from "./webcam"; // Import the WebcamModal component
 import OvertimeTable from "../../Settings/Setting_Tabs/OvertimeSettings";
 import Location from "../Location/location";
 import LeaveTable from "../../Settings/Setting_Tabs/LeaveSettings";
-import LocationTable from "../Location/LocationTable";
-import { useLocation } from "react-router-dom";
 import { SERVER_URL } from "../../../config";
 import Designation from "../Designation/designation";
 
@@ -29,20 +27,14 @@ const AddEmployee = ({
   // data,
   isEditMode,
   setIsEditMode,
-  employeeToEdit,
+  // employeeToEdit,
   editData,
 }) => {
   const [selectedPage, setSelectedPage] = useState("");
   const [isWebcamOpen, setIsWebcamOpen] = useState(false);
-
-  const [data, setData] = useState(false);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [showEditForm, setShowEditForm] = useState(false);
-
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
-  const [loading, setLoading] = useState(false); // Loading state
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
 
@@ -223,7 +215,7 @@ const AddEmployee = ({
     }
 
     try {
-      const response = await axios.post(`${SERVER_URL}pr-emp/`, formData);
+      await axios.post(`${SERVER_URL}pr-emp/`, formData);
       setShowModal(false);
       setSuccessModal(true)
     } catch (error) {
@@ -259,7 +251,7 @@ const AddEmployee = ({
     });
 
     try {
-      const response = await axios.post(`${SERVER_URL}pr-emp-up/`, formData);
+      await axios.post(`${SERVER_URL}pr-emp-up/`, formData);
       setShowModal(false);
       setSuccessModal(true)
 
@@ -303,14 +295,7 @@ const AddEmployee = ({
 
 
 
-  // const handleChange = (e) => {
-  //   const { name, value } = e.target;
-  //   setNewEmployee((prevData) => {
-  //     const updatedData = { ...prevData, [name]: value };
-  //     dispatch(setEmployeeData(updatedData));
-  //     return updatedData;
-  //   });
-  // };
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -392,8 +377,6 @@ const AddEmployee = ({
     setIsEditMode(false);
     setActiveTab("Employees");
 
-    // Optionally log the reset state to confirm it's been reset
-    // console.log("Employee state has been reset in Redux.");
   };
 
   // Log newEmployee state after it updates
@@ -571,7 +554,7 @@ const AddEmployee = ({
                   <button
                     type="button"
                     onClick={() => setIsWebcamOpen(true)}
-                    className="webcam-button"
+                    className="webcam-button submit-button"
                   >
                     Capture Picture with Webcam
                   </button>

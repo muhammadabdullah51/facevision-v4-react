@@ -1,33 +1,8 @@
-import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
-import { SERVER_URL } from '../../config';
 
-// const data = [
-//     {
-//         day: 'Jun', Present: 10, Absent: 5, Late: 2,
-//     },
-//     {
-//         day: 'Jul', Present: 15, Absent: 8, Late: 4,
-//     },
-//     {
-//         day: 'Aug', Present: 18, Absent: 12, Late: 2,
-//     },
-//     {
-//         day: 'Sep', Present: 25, Absent: 10, Late: 5,
-//     },
-//     {
-//         day: 'Oct', Present: 15, Absent: 9, Late: 3,
-//     },
-//     {
-//         day: 'Nov', Present: 20, Absent: 11, Late: 4,
-//     },
-//     {
-//         day: 'Dec', Present: 22, Absent: 13, Late: 6,
-//     },
-// ];
 
 const PerformanceChart = ({data}) => {
 

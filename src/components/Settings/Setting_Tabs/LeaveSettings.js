@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import "./leave.css";
 import axios from "axios";
@@ -26,22 +25,18 @@ const LeaveTable = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
-  const [loading, setLoading] = useState(false); // Loading state
 
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
 
   const fetchLvs = useCallback(async () => {
-    setLoading(true);
     try {
       const response = await axios.get(`${SERVER_URL}pyr-lvf/`);
       console.log(response.data);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching shift data:", error);
-    } finally {
-      setLoading(false);
-    }
+    } 
   }, [setData]);
 
   useEffect(() => {
@@ -164,13 +159,7 @@ const LeaveTable = () => {
     setShowModal(false);
     setSuccessModal(true);
   }
-  const resetForm = () => {
-    setFormData({
-      cutCode: "",
-      cutRate: "",
-    });
-    handleCancel();
-  };
+ 
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
@@ -235,7 +224,7 @@ const LeaveTable = () => {
   const confirmBulkDelete = async () => {
     try {
       const payload = { ids: selectedIds };
-      const response = await axios.post(`${SERVER_URL}lvformula/del/data`, payload);
+      await axios.post(`${SERVER_URL}lvformula/del/data`, payload);
       const updatedData = await axios.get(`${SERVER_URL}pyr-lvf/`);
       setData(updatedData.data);
       setShowModal(false);
@@ -353,6 +342,7 @@ const LeaveTable = () => {
       {showAddForm && !showEditForm && (
         <div className="add-leave-form">
           <h4>Add New Leave</h4>
+          <label>Cut Code</label>
           <input
             type="text"
             placeholder="Cut Code"
@@ -361,6 +351,8 @@ const LeaveTable = () => {
               setFormData({ ...formData, cutCode: e.target.value })
             }
           />
+          <br />
+          <label>Cut Per Hour</label>
           <input
             type="number"
             placeholder="Cut Per Hour"
@@ -381,6 +373,7 @@ const LeaveTable = () => {
       {!showAddForm && showEditForm && (
         <div className="add-leave-form">
           <h4>Edit Leave Formula</h4>
+          <label>Cut Code</label>
           <input
             type="text"
             placeholder="Cut Code"
@@ -389,6 +382,8 @@ const LeaveTable = () => {
               setFormData({ ...formData, cutCode: e.target.value })
             }
           />
+          <br />
+          <label>Cut Per Hour</label>
           <input
             type="number"
             placeholder="Cut Per Hour"

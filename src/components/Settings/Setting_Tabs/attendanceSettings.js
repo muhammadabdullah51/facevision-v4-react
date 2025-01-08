@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEdit, faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 
 import axios from "axios";
@@ -32,7 +30,6 @@ const AttendanceSettings = () => {
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
 
-  const [loading, setLoading] = useState(false); // Loading state
 
   const fetchBouneses = useCallback(async () => {
     try {
@@ -192,9 +189,9 @@ const AttendanceSettings = () => {
     }
   };
 
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-  };
+  // const handleSearchChange = (e) => {
+  //   setSearchQuery(e.target.value);
+  // };
 
   const filteredData = data.filter((item) =>
     item.holidayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -259,7 +256,7 @@ const AttendanceSettings = () => {
   const confirmBulkDelete = async () => {
     try {
       const payload = { ids: selectedIds };
-      const response = await axios.post(`${SERVER_URL}holiday/del/data`, payload);
+      await axios.post(`${SERVER_URL}holiday/del/data`, payload);
       const updatedData = await axios.get(`${SERVER_URL}sett-adv-att/`);
       setData(updatedData.data);
       setShowModal(false);

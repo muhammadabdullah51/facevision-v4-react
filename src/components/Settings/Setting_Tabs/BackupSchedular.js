@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import "./leave.css";
 import axios from "axios";
@@ -40,21 +39,16 @@ const BackupSchedular = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
-  const [loading, setLoading] = useState(false); // Loading state
-
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
 
   const fetchLvs = useCallback(async () => {
-    setLoading(true);
     try {
       const response = await axios.get(`${SERVER_URL}sett-edtr-sch/`);
       console.log(response.data);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching shift data:", error);
-    } finally {
-      setLoading(false);
     }
   }, [setData]);
 
@@ -124,7 +118,7 @@ const BackupSchedular = () => {
       setWarningModal(true);
       return;
     }
-    if (formData.sch == "Weekly") {
+    if (formData.sch === "Weekly") {
       if (selectedItems.length < 1) {
         console.log("asdas");
         setResMsg("Please select at least one day for weekly schedule.");
@@ -189,7 +183,7 @@ const BackupSchedular = () => {
       setWarningModal(true);
       return;
     }
-    if (formData.sch == "Weekly") {
+    if (formData.sch === "Weekly") {
       if (selectedItems.length < 1) {
         console.log("asdas");
         setResMsg("Please select at least one day for weekly schedule.");
@@ -237,18 +231,7 @@ const BackupSchedular = () => {
     setShowModal(false);
     setSuccessModal(true);
   };
-  const resetForm = () => {
-    setFormData({
-      name: "",
-      email: "",
-      sch: "",
-      time: "",
-      day: [],
-      status: "",
-    });
-    handleCancel();
-  };
-
+ 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
@@ -316,7 +299,7 @@ const BackupSchedular = () => {
   const confirmBulkDelete = async () => {
     try {
       const payload = { ids: selectedIds };
-      const response = await axios.post(`${SERVER_URL}editor/del/data`, payload);
+      await axios.post(`${SERVER_URL}editor/del/data`, payload);
       const updatedData = await axios.get(`${SERVER_URL}sett-edtr-sch/`);
       setData(updatedData.data);
       setShowModal(false);
@@ -718,7 +701,7 @@ const BackupSchedular = () => {
                         {day}
                       </span>
                     ))
-                    : item.sch == "Monthly"
+                    : item.sch === "Monthly"
                       ? item.date
                       : "All Working days"}
                 </td>

@@ -1,17 +1,9 @@
 import React, { useState } from 'react'
 import CheckInOutTable from './CheckInOutTable';
 import AttendanceTable from './AttendanceTable';
-import Attendance from './attendence';
 import BreackInOutTable from './BreackInOutTable';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-    faTachometerAlt, faUserPlus, faMobileAlt, faCalendarCheck,
-    faCalendarAlt, faCogs, faMoneyCheckAlt, faChartBar,
-    faUsers, faBan, faCog, faUser, faBuilding, faTag,
-    faMapMarkerAlt, faIdBadge, faPersonWalkingDashedLineArrowRight, faChevronDown,
-    faChevronUp, faHandHoldingUsd, faClipboardCheck, faAward, faFileInvoiceDollar,
-    faTabletAlt, faDollarSign, faInfoCircle, faCheckCircle, faFileInvoice, faMoneyBillWave, faBed, faCoffee 
-} from '@fortawesome/free-solid-svg-icons';
+import { faInfoCircle, faCheckCircle, faCoffee } from '@fortawesome/free-solid-svg-icons';
 
 
 const Breakinout = () => {

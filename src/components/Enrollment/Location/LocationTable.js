@@ -39,16 +39,14 @@ const LocationTable = ({ data, setData }) => {
   const [resMsg, setResMsg] = useState("");
 
   const fetchLocation = useCallback(async () => {
-    setLoading(true);
+    
     try {
       const response = await axios.get(`${SERVER_URL}pr-loc/`);
       const location = response.data.context;
       setData(location);
 
     } catch (error) {
-    } finally {
-      setLoading(false);
-    }
+    } 
   }, [setData]);
 
   // Call fetchDepartments when component mounts
@@ -186,7 +184,7 @@ const LocationTable = ({ data, setData }) => {
   const confirmBulkDelete = async () => {
     try {
       const payload = { ids: selectedIds };
-      const response = await axios.post(`${SERVER_URL}loc/del/data`, payload);
+      await axios.post(`${SERVER_URL}loc/del/data`, payload);
       const updatedData = await axios.get(`${SERVER_URL}pr-loc/`);
       setData(updatedData.data.context);
       setShowModal(false);
@@ -499,6 +497,7 @@ const LocationTable = ({ data, setData }) => {
       {showAddForm && !showEditForm && (
         <div className="add-department-form">
           <h3>Add New Location</h3>
+          <label>Location Code</label>
           <input
             type="text"
             placeholder="Location Code"
@@ -507,12 +506,14 @@ const LocationTable = ({ data, setData }) => {
               setFormData({ ...formData, locCode: e.target.value })
             }
           />
+          <label>Location Name</label>
           <input
             type="text"
             placeholder="Location Name"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           />
+          <label>Device Quantity</label>
           <input
             type="number"
             placeholder="Device Quantity"
@@ -521,6 +522,7 @@ const LocationTable = ({ data, setData }) => {
               setFormData({ ...formData, deviceQty: e.target.value })
             }
           />
+          <label>Employee Quantity</label>
           <input
             type="number"
             placeholder="Employee Quantity"
@@ -529,6 +531,7 @@ const LocationTable = ({ data, setData }) => {
               setFormData({ ...formData, empQty: e.target.value })
             }
           />
+          <label>Resigned Quantity</label>
           <input
             type="number"
             placeholder="Resigned Quantity"
@@ -551,6 +554,7 @@ const LocationTable = ({ data, setData }) => {
       {showEditForm && (
         <div className="add-department-form">
           <h3>Edit Location</h3>
+          <label>Location Code</label>
           <input
             type="text"
             placeholder="Location Code"
@@ -559,12 +563,14 @@ const LocationTable = ({ data, setData }) => {
               setFormData({ ...formData, locCode: e.target.value })
             }
           />
+          <label>Location Name</label>
           <input
             type="text"
             placeholder="Location Name"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           />
+          <label>Device Quantity</label>
           <input
             type="number"
             placeholder="Device Quantity"
@@ -573,6 +579,7 @@ const LocationTable = ({ data, setData }) => {
               setFormData({ ...formData, deviceQty: e.target.value })
             }
           />
+          <label>Employee Quantity</label>
           <input
             type="number"
             placeholder="Employee Quantity"
@@ -581,6 +588,7 @@ const LocationTable = ({ data, setData }) => {
               setFormData({ ...formData, empQty: e.target.value })
             }
           />
+          <label>Resigned Quantity</label>
           <input
             type="number"
             placeholder="Resigned Quantity"

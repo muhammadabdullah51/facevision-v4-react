@@ -11,7 +11,7 @@ import warningAnimation from "../../assets/Lottie/warningAnim.json";
 import { SERVER_URL } from "../../config";
 import BreakManagementTable from "./BreakManagementTable";
 import { useDispatch, useSelector } from "react-redux";
-import { resetFormState, saveFormState, saveSelectedItems } from "../../redux/ShiftSlice";
+import { saveFormState, saveSelectedItems } from "../../redux/ShiftSlice";
 
 const ShiftManagementTable = () => {
   const [data, setData] = useState([]);
@@ -88,34 +88,21 @@ const ShiftManagementTable = () => {
     }
   }, [selectedItems, dispatch]);
 
-  // Example of updating selectedItems
-  const handleItemChange = (item) => {
-    setSelectedItems((prevItems) => [...prevItems, item]);
-  };
-  // Resetting form state and selected items
-  const handleReset = () => {
-    dispatch(resetFormState({ formName: "shifts" }));
-  };
 
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
-  const [loading, setLoading] = useState(false); // Loading state
-
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
 
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
 
   const fetchShift = useCallback(async () => {
-    setLoading(true);
     try {
       const response = await axios.get(`${SERVER_URL}shft/`);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching shift data:", error);
-    } finally {
-      setLoading(false);
     }
   }, [setData]);
 
@@ -354,9 +341,9 @@ const ShiftManagementTable = () => {
     }
   };
 
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-  };
+  // const handleSearchChange = (e) => {
+  //   setSearchQuery(e.target.value);
+  // };
 
   const filteredData = data.filter(
     (item) =>
@@ -427,7 +414,7 @@ const ShiftManagementTable = () => {
   const confirmBulkDelete = async () => {
     try {
       const payload = { ids: selectedIds };
-      const response = await axios.post(`${SERVER_URL}shft/del/data`, payload);
+      await axios.post(`${SERVER_URL}shft/del/data`, payload);
       const updatedData = await axios.get(`${SERVER_URL}shft/`);
       setData(updatedData.data);
       setShowModal(false);

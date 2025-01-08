@@ -29,20 +29,17 @@ const DesignationTable = ({ data, setData }) => {
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
 
 
   const fetchDesignation = useCallback(async () => {
-    setLoading(true);
     try {
       const response = await axios.get(`${SERVER_URL}pr-dsg/`);
       const designation = await response.data.context;
       setData(designation);
     } catch (error) {
     } finally {
-      setLoading(false);
     }
   }, [setData]);
 
@@ -247,7 +244,7 @@ const DesignationTable = ({ data, setData }) => {
   const confirmBulkDelete = async () => {
     try {
       const payload = { ids: selectedIds };
-      const response = await axios.post(`${SERVER_URL}dsg/del/data`, payload);
+      await axios.post(`${SERVER_URL}dsg/del/data`, payload);
       const updatedData = await axios.get(`${SERVER_URL}pr-dsg/`);
       setData(updatedData.data.context);
       setShowModal(false);
@@ -367,7 +364,7 @@ const DesignationTable = ({ data, setData }) => {
       {showAddForm && !showEditForm && (
         <div className="add-department-form">
           <h3>Add New Designation</h3>
-
+          <label>Designation Code</label>
           <input
             type="text"
             placeholder="Designation Code"
@@ -376,6 +373,7 @@ const DesignationTable = ({ data, setData }) => {
               setFormData({ ...formData, dsgCode: e.target.value })
             }
           />
+          <label>Designation Name</label>
           <input
             type="text"
             placeholder="Designation Name"
@@ -396,7 +394,7 @@ const DesignationTable = ({ data, setData }) => {
       {showEditForm && (
         <div className="add-department-form">
           <h3>Edit Designation</h3>
-
+          <label>Designation Code</label>
           <input
             type="text"
             placeholder="Designation Code"
@@ -405,6 +403,7 @@ const DesignationTable = ({ data, setData }) => {
               setFormData({ ...formData, dsgCode: e.target.value })
             }
           />
+          <label>Designation Name</label>
           <input
             type="text"
             placeholder="Designation Name"

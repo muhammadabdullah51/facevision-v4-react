@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEdit, faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import axios from "axios";
 import "../../Dashboard/dashboard.css";
@@ -15,9 +13,6 @@ import { SERVER_URL } from "../../../config";
 
 const AssignAllowance = () => {
   const [data, setData] = useState([]);
-  const [showForm, setShowForm] = useState(false);
-  const [formMode, setFormMode] = useState("add");
-  const [currentItemId, setCurrentItemId] = useState(null);
   const [employees, setEmployees] = useState([]);
   const [allowances, setAllowances] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -34,7 +29,6 @@ const AssignAllowance = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
-  const [loading, setLoading] = useState(false); // Loading state
 
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
@@ -162,17 +156,7 @@ const AssignAllowance = () => {
     }
   };
 
-  const resetForm = () => {
-    setFormData({
-      id: "",
-      empId: "",
-      awlcId: "",
-      date: "",
-    });
-    setCurrentItemId(null);
-    setFormMode("add");
-    setShowForm(false);
-  };
+
 
   const handleSearchChange = (e) => setSearchQuery(e.target.value);
 
@@ -244,7 +228,7 @@ const AssignAllowance = () => {
   const confirmBulkDelete = async () => {
     try {
       const payload = { ids: selectedIds };
-      const response = await axios.post(`${SERVER_URL}asgnawlc/del/data`, payload);
+      await axios.post(`${SERVER_URL}asgnawlc/del/data`, payload);
       const updatedData = await axios.get(`${SERVER_URL}assign-allowances/`);
       setData(updatedData.data);
       setShowModal(false);
@@ -364,7 +348,7 @@ const AssignAllowance = () => {
       {showAddForm && !showEditForm && (
         <div className="add-leave-form">
           <h3>Assign Allowance to Employee</h3>
-
+          <label>Select Employee</label>
           <input
             type="text"
             list="employeesList" // Link to the datalist by id
@@ -402,7 +386,7 @@ const AssignAllowance = () => {
               />
             ))}
           </datalist>
-
+          <label>Select Allowance</label>
           <select
             value={formData.awlcId}
             onChange={(e) =>
@@ -416,6 +400,7 @@ const AssignAllowance = () => {
               </option>
             ))}
           </select>
+          <label>Date</label>
           <input
             type="date"
             value={formData.date}
@@ -432,7 +417,7 @@ const AssignAllowance = () => {
       {showEditForm && (
         <div className="add-leave-form">
           <h3>Update Assigned Allowance</h3>
-
+          <label>Selected Employee</label>
           <input
             disabled
             type="text"
@@ -472,7 +457,7 @@ const AssignAllowance = () => {
               />
             ))}
           </datalist>
-
+          <label>Selected Allowance</label>
           <select
             value={formData.awlcId}
             onChange={(e) =>
@@ -486,6 +471,7 @@ const AssignAllowance = () => {
               </option>
             ))}
           </select>
+          <label>Date</label>
           <input
             type="date"
             value={formData.date}

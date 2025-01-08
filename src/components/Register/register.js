@@ -4,9 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { login } from '../../redux/authSlice';
 import axios from 'axios';
 import Logo from '../../assets/faceVisionLogo.png';
-import Google from '../../assets/google.png';
-import Facebook from '../../assets/facebook.png';
-import X from '../../assets/x.png';
 import {SERVER_URL} from "../../config"
 
 const Register = () => {

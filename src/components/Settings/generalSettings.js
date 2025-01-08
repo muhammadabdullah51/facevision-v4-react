@@ -1,12 +1,8 @@
 import React, { useState } from 'react';
 import './settings.css';
-
 import AttendancePolicy from './Setting_Tabs/AttendancePolicy';
-import Users from './Setting_Tabs/Users/users';
 import LeaveSettings from './Setting_Tabs/LeaveSettings';
 import OvertimeSettings from './Setting_Tabs/OvertimeSettings';
-import ShiftSettings from './Setting_Tabs/ShiftSettings';
-import User from './Setting_Tabs/User';
 import TaxSettings from './Setting_Tabs/taxSettings';
 import AllowanceSettings from './Setting_Tabs/allowanceSettings';
 

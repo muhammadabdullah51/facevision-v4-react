@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEdit, faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import axios from "axios";
 import "../../Dashboard/dashboard.css";
@@ -15,9 +13,6 @@ import { SERVER_URL } from "../../../config";
 
 const AssignBonus = () => {
   const [data, setData] = useState([]);
-  const [showForm, setShowForm] = useState(false);
-  const [formMode, setFormMode] = useState("add");
-  const [currentItemId, setCurrentItemId] = useState(null);
   const [employees, setEmployees] = useState([]);
   const [bonuses, setBonuses] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -34,7 +29,6 @@ const AssignBonus = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
-  const [loading, setLoading] = useState(false); // Loading state
 
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
@@ -153,30 +147,9 @@ const AssignBonus = () => {
     setShowEditForm(false);
     fetchEmployeesBonus();
   };
-  const handleSaveItem = async () => {
-    try {
-      if (formMode === "add") {
-        await axios.post(`${SERVER_URL}pyr-asg-bns/`, formData);
-      } else {
-        await axios.post(`${SERVER_URL}pyr-asg-bns/`, formData);
-      }
-      await fetchEmployeesBonus(); // Refresh data after add/update
-      resetForm();
-    } catch (error) {
-    }
-  };
+ 
 
-  const resetForm = () => {
-    setFormData({
-      id: "",
-      empId: "",
-      bonusId: "",
-      bonusAssignDate: "",
-    });
-    setCurrentItemId(null);
-    setFormMode("add");
-    setShowForm(false);
-  };
+
 
   const handleSearchChange = (e) => setSearchQuery(e.target.value);
 
@@ -249,7 +222,7 @@ const AssignBonus = () => {
   const confirmBulkDelete = async () => {
     try {
       const payload = { ids: selectedIds };
-      const response = await axios.post(`${SERVER_URL}asgnbonus/del/data`, payload);
+      await axios.post(`${SERVER_URL}asgnbonus/del/data`, payload);
       const updatedData = await axios.get(`${SERVER_URL}pyr-asg-bns/`);
       setData(updatedData.data);
       setShowModal(false);

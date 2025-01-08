@@ -13,11 +13,9 @@ import { SERVER_URL } from "../../../config";
 
 const AdvanceSalary = () => {
   const [data, setData] = useState([]);
-  const [currentItemId, setCurrentItemId] = useState(null);
   const [employees, setEmployees] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
-  const date = Date();
   const [formData, setFormData] = useState({
     empId: "",
     amount: "",
@@ -28,7 +26,6 @@ const AdvanceSalary = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
-  const [loading, setLoading] = useState(false); // Loading state
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
 
@@ -247,7 +244,7 @@ const AdvanceSalary = () => {
   const confirmBulkDelete = async () => {
     try {
       const payload = { ids: selectedIds };
-      const response = await axios.post(`${SERVER_URL}advsal/del/data`, payload);
+      await axios.post(`${SERVER_URL}advsal/del/data`, payload);
       const updatedData = await axios.get(`${SERVER_URL}pyr-adv/`);
       setData(updatedData.data);
       setShowModal(false);

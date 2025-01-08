@@ -13,7 +13,7 @@ import successAnimation from "../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../assets/Lottie/warningAnim.json";
 
 import { useDispatch, useSelector } from "react-redux";
-import { setAttendanceData, resetAttendanceData } from "../../redux/attendanceSlice";
+import { setAttendanceData } from "../../redux/attendanceSlice";
 
 const AttendanceTable = ({ data, setData }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -24,10 +24,8 @@ const AttendanceTable = ({ data, setData }) => {
 
   const dispatch = useDispatch();
   const savedFormState = useSelector((state) => {
-    // console.log('Redux state:', state.attendance.formStates.attendance);
     return state.attendance.formStates.attendance || {};
   });
-  // console.log('savedFormState', savedFormState);
 
   const [formData, setFormData] = useState(
     savedFormState || {
@@ -60,7 +58,6 @@ const AttendanceTable = ({ data, setData }) => {
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
@@ -175,7 +172,7 @@ const AttendanceTable = ({ data, setData }) => {
   const confirmBulkDelete = async () => {
     try {
       const payload = { ids: selectedIds };
-      const response = await axios.post(`${SERVER_URL}allatt/del/data`, payload);
+      await axios.post(`${SERVER_URL}allatt/del/data`, payload);
       const updatedData = await axios.get(`${SERVER_URL}all-attendance/`);
       setData(updatedData.data);
       setShowModal(false);
@@ -359,7 +356,7 @@ const AttendanceTable = ({ data, setData }) => {
       location: editFormData.location,
     };
     try {
-      const res = await axios.post(`${SERVER_URL}all-attendance/`, attPayload);
+      await axios.post(`${SERVER_URL}all-attendance/`, attPayload);
       const updatedData = await axios.get(`${SERVER_URL}all-attendance/`);
       setData(updatedData.data);
       fetchAtt();
@@ -395,7 +392,7 @@ const AttendanceTable = ({ data, setData }) => {
   };
 
   const confirmDelete = async () => {
-    const response = await axios.post(`${SERVER_URL}del-att/`, {
+    await axios.post(`${SERVER_URL}del-att/`, {
       allAttendanceId: formData.allAttendanceId,
     });
     const updatedData = await axios.get(`${SERVER_URL}all-attendance/`);

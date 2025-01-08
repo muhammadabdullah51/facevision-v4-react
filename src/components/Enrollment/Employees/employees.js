@@ -8,14 +8,7 @@ import Location from "../Location/location";
 import Resign from "../Resign/resign";
 import { SERVER_URL } from "../../../config";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-    faTachometerAlt, faUserPlus, faMobileAlt, faCalendarCheck,
-    faCalendarAlt, faCogs, faMoneyCheckAlt, faChartBar,
-    faUsers, faBan, faCog, faUser, faBuilding, faTag,
-    faMapMarkerAlt, faIdBadge, faPersonWalkingDashedLineArrowRight, faChevronDown,
-    faChevronUp, faHandHoldingUsd, faClipboardCheck, faAward, faFileInvoiceDollar,
-    faTabletAlt, faDollarSign, faInfoCircle, faCheckCircle, faFileInvoice, faMoneyBillWave, faBed, faCoffee 
-} from '@fortawesome/free-solid-svg-icons';
+import {faUsers, faBuilding, faTag, faMapMarkerAlt, faPersonWalkingDashedLineArrowRight, } from '@fortawesome/free-solid-svg-icons';
 
 const Employees = () => {
   const [activeTab, setActiveTab] = useState("Employees");

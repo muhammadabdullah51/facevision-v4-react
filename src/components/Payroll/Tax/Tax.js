@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEdit, faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 
 import axios from "axios";
@@ -17,9 +15,6 @@ import AssignTax from "./assignTax";
 
 const Tax = () => {
   const [data, setData] = useState([]);
-  const [showForm, setShowForm] = useState(false);
-  const [formMode, setFormMode] = useState("add");
-  const [currentItemId, setCurrentItemId] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [formData, setFormData] = useState({
@@ -38,7 +33,6 @@ const Tax = () => {
   const [resMsg, setResMsg] = useState("");
   const [taxSettings, setTaxSettings] = useState("");
 
-  const [loading, setLoading] = useState(false); // Loading state
 
   const TaxSettings = async () => {
     try {
@@ -135,8 +129,8 @@ const Tax = () => {
     const bouneses = {
       type: formData.type,
       nature: formData.nature,
-      percent: formData.nature == 'fixedamount' ? 0 : formData.percent,
-      amount: formData.nature == 'percentage' ? 0 : formData.amount,
+      percent: formData.nature === 'fixedamount' ? 0 : formData.percent,
+      amount: formData.nature === 'percentage' ? 0 : formData.amount,
       date: formData.date,
     };
     try {
@@ -170,8 +164,8 @@ const Tax = () => {
       id: row.id,
       type: row.type,
       nature: row.nature,
-      percent: formData.nature == 'fixedamount' ? 0 : formData.percent,
-      amount: formData.nature == 'percentage' ? 0 : formData.amount,
+      percent: formData.nature === 'fixedamount' ? 0 : formData.percent,
+      amount: formData.nature === 'percentage' ? 0 : formData.amount,
       date: row.date,
     });
     setShowModal(true);
@@ -203,8 +197,8 @@ const Tax = () => {
       id: formData.id,
       type: formData.type,
       nature: formData.nature,
-      percent: formData.nature == 'fixedamount' ? 0 : formData.percent,
-      amount: formData.nature == 'percentage' ? 0 : formData.amount,
+      percent: formData.nature === 'fixedamount' ? 0 : formData.percent,
+      amount: formData.nature === 'percentage' ? 0 : formData.amount,
       date: formData.date,
     };
     try {
@@ -220,9 +214,7 @@ const Tax = () => {
     }
   };
 
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-  };
+
 
   const filteredData = data.filter((item) =>
     item.taxName.toLowerCase().includes(searchQuery.toLowerCase())
@@ -284,7 +276,7 @@ const Tax = () => {
   const confirmBulkDelete = async () => {
     try {
       const payload = { ids: selectedIds };
-      const response = await axios.post(`${SERVER_URL}tax/del/data`, payload);
+      await axios.post(`${SERVER_URL}tax/del/data`, payload);
       const updatedData = await axios.get(`${SERVER_URL}taxes/`);
       setData(updatedData.data);
       setShowModal(false);
@@ -603,7 +595,7 @@ const Tax = () => {
                 <td>{bonus.id}</td>
                 <td className="bold-fonts">{bonus.taxName}</td>
                 <td>{bonus.nature}</td>
-                <td>{bonus.amount == 0 ? bonus.percent : bonus.amount} {bonus.percent != 0 ? '%' : 'Rs'}</td>
+                <td>{bonus.amount === 0 ? bonus.percent : bonus.amount} {bonus.percent !== 0 ? '%' : 'Rs'}</td>
                 <td>{bonus.date}</td>
                 <td>
                   <button

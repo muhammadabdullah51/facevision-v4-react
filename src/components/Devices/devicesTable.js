@@ -25,21 +25,17 @@ const DeviceTable = ({ data, setData }) => {
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
 
   const fetchDevices = useCallback(async () => {
-    setLoading(true);
     try {
       const response = await axios.get(`${SERVER_URL}device/`);
       const devices = await response.data.context;
       setData(devices);
       console.log(devices);
     } catch (error) {
-    } finally {
-      setLoading(false);
-    }
+    } 
   }, [setData]);
 
   // Call fetchDepartments when component mounts
@@ -54,12 +50,12 @@ const DeviceTable = ({ data, setData }) => {
     return () => clearTimeout(timer);
   }, [fetchDevices, successModal]);
 
-  const handleStatusToggle = useCallback(() => {
-    setFormData((prevState) => ({
-      ...prevState,
-      status: prevState.status === "Active" ? "Inactive" : "Active",
-    }));
-  }, []);
+  // const handleStatusToggle = useCallback(() => {
+  //   setFormData((prevState) => ({
+  //     ...prevState,
+  //     status: prevState.status === "Active" ? "Inactive" : "Active",
+  //   }));
+  // }, []);
 
 
   const handleDownload = async (rowData) => {
@@ -69,9 +65,7 @@ const DeviceTable = ({ data, setData }) => {
     };
 
     try {
-      // Send the POST request
-      const response = await axios.post(`${SERVER_URL}fetch-data/`, requestData);
-      // }
+      await axios.post(`${SERVER_URL}fetch-data/`, requestData);
     } catch (error) {
     }
   };
@@ -146,7 +140,7 @@ const DeviceTable = ({ data, setData }) => {
   const confirmBulkDelete = async () => {
     try {
       const payload = { ids: selectedIds };
-      const response = await axios.post(`${SERVER_URL}device/del/data`, payload);
+      await axios.post(`${SERVER_URL}device/del/data`, payload);
       const updatedData = await axios.get(`${SERVER_URL}device/`);
       setData(updatedData.data.context);
       setShowModal(false);
@@ -528,7 +522,7 @@ const DeviceTable = ({ data, setData }) => {
       {showAddForm && (
         <div className="add-device-form">
           <h3>Add New Device</h3>
-
+          <label>Device Name</label>
           <input
             type="text"
             placeholder="Device Name"
@@ -537,6 +531,7 @@ const DeviceTable = ({ data, setData }) => {
               setFormData({ ...formData, cameraName: e.target.value })
             }
           />
+          <label>Device IP</label>
           <input
             type="text"
             placeholder="Device IP"
@@ -545,24 +540,13 @@ const DeviceTable = ({ data, setData }) => {
               setFormData({ ...formData, cameraIp: e.target.value })
             }
           />
+          <label>Device Port</label>
           <input
             type="text"
             placeholder="Device Port"
             value={formData.port}
             onChange={(e) => setFormData({ ...formData, port: e.target.value })}
           />
-          {/* <div className="status-toggle">
-            <label>Status: </label>
-            <label className="switch">
-              <input
-                type="checkbox"
-                checked={formData.status === "Active"}
-                onChange={handleStatusToggle}
-              />
-              <span className="slider round"></span>
-            </label>
-            {formData.status}
-          </div> */}
           <button className="submit-button" onClick={addDevice}>
             Add Device
           </button>
@@ -579,7 +563,7 @@ const DeviceTable = ({ data, setData }) => {
       {showEditForm && (
         <div className="add-device-form">
           <h3>Edit Device</h3>
-
+          <label>Device ID</label>
           <input
             type="text"
             placeholder="Device Name"
@@ -588,6 +572,7 @@ const DeviceTable = ({ data, setData }) => {
               setFormData({ ...formData, cameraName: e.target.value })
             }
           />
+          <label>Device IP</label>
           <input
             type="text"
             placeholder="Device IP"
@@ -596,24 +581,13 @@ const DeviceTable = ({ data, setData }) => {
               setFormData({ ...formData, cameraIp: e.target.value })
             }
           />
+          <label>Device Port</label>
           <input
             type="text"
             placeholder="Device Port"
             value={formData.port}
             onChange={(e) => setFormData({ ...formData, port: e.target.value })}
           />
-          {/* <div className="status-toggle">
-            <label>Status: </label>
-            <label className="switch">
-              <input
-                type="checkbox"
-                checked={formData.status === "Active"}
-                onChange={handleStatusToggle}
-              />
-              <span className="slider round"></span>
-            </label>
-            {formData.status}
-          </div> */}
           <button className="submit-button" onClick={handleUpdate}>
             Update Device
           </button>

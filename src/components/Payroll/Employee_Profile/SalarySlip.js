@@ -1,9 +1,5 @@
 import React from "react";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 import "./salarySlip.css";
-import { faXmark, faPrint } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { SERVER_URL } from "../../../config";
 
 const SalarySlip = ({ salaryDetails }) => {

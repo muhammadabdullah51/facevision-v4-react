@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import "./leave.css";
 import axios from "axios";
@@ -13,12 +12,6 @@ import warningAnimation from "../../../assets/Lottie/warningAnim.json";
 
 const OvertimeTable = () => {
   const [data, setData] = useState([]);
-  const [showForm, setShowForm] = useState(false);
-  const [formMode, setFormMode] = useState("add"); // "add" or "edit"
-  const [currentItemId, setCurrentItemId] = useState(null); // Store ID of item being edited
-  const [OTCode, setOTCode] = useState("");
-  const [ratePerHour, setRatePerHour] = useState("");
-  const [updateDate, setUpdateDate] = useState("");
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
 
   const [showAddForm, setShowAddForm] = useState(false);
@@ -178,15 +171,15 @@ const OvertimeTable = () => {
 
 
 
-  const resetForm = () => {
-    setFormData({
-      OTFormulaId: "",
-      OTCode: "",
-      ratePerHour: "",
-      updateDate: "",
-    });
-    handleCancel();
-  };
+  // const resetForm = () => {
+  //   setFormData({
+  //     OTFormulaId: "",
+  //     OTCode: "",
+  //     ratePerHour: "",
+  //     updateDate: "",
+  //   });
+  //   handleCancel();
+  // };
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
@@ -252,7 +245,7 @@ const OvertimeTable = () => {
   const confirmBulkDelete = async () => {
     try {
       const payload = { ids: selectedIds };
-      const response = await axios.post(`${SERVER_URL}otformula/del/data`, payload);
+      await axios.post(`${SERVER_URL}otformula/del/data`, payload);
       const updatedData = await axios.get(`${SERVER_URL}pyr-ot/`);
       setData(updatedData.data);
       setShowModal(false);
@@ -370,6 +363,7 @@ const OvertimeTable = () => {
       {showAddForm && !showEditForm && (
         <div className="add-leave-form">
           <h4>Add New Overtime</h4>
+          <label>Pay Code</label>
           <input
             type="text"
             placeholder="Pay Code"
@@ -378,6 +372,7 @@ const OvertimeTable = () => {
               setFormData({ ...formData, OTCode: e.target.value })
             }
           />
+          <label>Rate Per Hour</label>
           <input
             type="number"
             placeholder="Rate Per Hour"
@@ -386,6 +381,7 @@ const OvertimeTable = () => {
               setFormData({ ...formData, ratePerHour: e.target.value })
             }
           />
+          <label>Update Date</label>
           <input
             type="date"
             placeholder="Update Date"
@@ -405,6 +401,7 @@ const OvertimeTable = () => {
       {!showAddForm && showEditForm && (
         <div className="add-leave-form">
           <h4>Edit Overtime Formula</h4>
+          <label>Pay Code</label>
           <input
             type="text"
             placeholder="Pay Code"
@@ -413,6 +410,7 @@ const OvertimeTable = () => {
               setFormData({ ...formData, OTCode: e.target.value })
             }
           />
+          <label>Rate Per Hour</label>
           <input
             type="number"
             placeholder="Rate Per Hour"
@@ -421,6 +419,7 @@ const OvertimeTable = () => {
               setFormData({ ...formData, ratePerHour: e.target.value })
             }
           />
+          <label>Update Date</label>
           <input
             type="date"
             placeholder="Update Date"

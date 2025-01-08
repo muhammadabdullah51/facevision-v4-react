@@ -32,7 +32,6 @@ const ExtraFunds = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
-  const [loading, setLoading] = useState(false); // Loading state
 
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
@@ -279,7 +278,7 @@ const ExtraFunds = () => {
   const confirmBulkDelete = async () => {
     try {
       const payload = { ids: selectedIds };
-      const response = await axios.post(`${SERVER_URL}extfund/del/data`, payload);
+      await axios.post(`${SERVER_URL}extfund/del/data`, payload);
       const updatedData = await axios.get(`${SERVER_URL}pyr-ext/`);
       setData(updatedData.data);
       setShowModal(false);

@@ -32,7 +32,6 @@ const CheckInOutTable = ({ dash }) => {
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [employees, setEmployees] = useState([]);
 
   const [warningModal, setWarningModal] = useState(false);
@@ -138,7 +137,7 @@ const CheckInOutTable = ({ dash }) => {
   const confirmBulkDelete = async () => {
     try {
       const payload = { ids: selectedIds };
-      const response = await axios.post(`${SERVER_URL}chkinout/del/data`, payload);
+      await axios.post(`${SERVER_URL}chkinout/del/data`, payload);
       const updatedData = await axios.get(`${SERVER_URL}att-chkinout/`);
       setData(updatedData.data);
       setShowModal(false);
@@ -307,7 +306,7 @@ const CheckInOutTable = ({ dash }) => {
     };
     console.log(attPayload);
     try {
-      const res = await axios.put(
+      await axios.put(
         `${SERVER_URL}att-chkinout/${formData.id}/`,
         attPayload
       );
@@ -328,7 +327,7 @@ const CheckInOutTable = ({ dash }) => {
   };
 
   const confirmDelete = async () => {
-    const response = await axios.delete(`${SERVER_URL}att-chkinout/${formData.id}/`);
+    await axios.delete(`${SERVER_URL}att-chkinout/${formData.id}/`);
     const updatedData = await axios.get(`${SERVER_URL}att-chkinout/`);
     setData(updatedData.data);
     fetchAtt();
@@ -493,15 +492,15 @@ const CheckInOutTable = ({ dash }) => {
                 </svg>
               </button>
             </form>
-        <div className="add-delete-conainer" >
+            <div className="add-delete-conainer" >
 
-            <button className="add-button" onClick={handleAdd}>
-              <FaPlus className="add-icon" /> Add Manual Check In / Out
-            </button>
-            <button className="add-button submit-button" onClick={handleBulkDelete}>
-              <FaTrash className="add-icon" /> Delete Bulk
-            </button>
-        </div>
+              <button className="add-button" onClick={handleAdd}>
+                <FaPlus className="add-icon" /> Add Manual Check In / Out
+              </button>
+              <button className="add-button submit-button" onClick={handleBulkDelete}>
+                <FaTrash className="add-icon" /> Delete Bulk
+              </button>
+            </div>
           </div>
         </>
       )}

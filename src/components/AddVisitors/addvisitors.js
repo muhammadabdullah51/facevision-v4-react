@@ -13,23 +13,18 @@ import { SERVER_URL } from "../../config";
 import { useDispatch, useSelector } from "react-redux";
 import { setVisitorData, resetVisitorData } from "../../redux/visitorSlice";
 const AddVisitor = ({
-  setData,
+  // setData,
   setActiveTab,
-  data,
+  // data,
   isEditMode,
-  setIsEditMode,
-  employeeToEdit,
+  // setIsEditMode,
+  // employeeToEdit,
   editData,
 }) => {
   const [selectedPage, setSelectedPage] = useState(""); // State to control page view
   const [departments, setDepartments] = useState([]);
 
-  const formattedCreateTime = editData?.createTime
-    ? new Date(editData.createTime).toISOString().slice(0, 16)
-    : '';
-  const formattedExitTime = editData?.exitTime
-    ? new Date(editData.exitTime).toISOString().slice(0, 16)
-    : '';
+
 
   useEffect(() => {
     const fetchOptions = async () => {
@@ -54,7 +49,7 @@ const AddVisitor = ({
     };
 
     fetchOptions();
-  }, [isEditMode && editData]);
+  }, );
 
 
   const dispatch = useDispatch();
@@ -82,7 +77,6 @@ const AddVisitor = ({
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
-  const [loading, setLoading] = useState(false); // Loading state
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
 
@@ -116,30 +110,6 @@ const AddVisitor = ({
 
   
 
-  // Handle input changes
-  // const handleInputChange = (e) => {
-  //   const { name, value } = e.target;
-  //   // Update local state
-  //   setNewVisitor((prevState) => ({
-  //     ...prevState,
-  //     [name]: value,
-  //   }));
-  //   console.log(newVisitor);
-  // };
-
-  // const handleInputChange = (e) => {
-  //   const { name, value } = e.target;
-    
-  //   // Update local state
-  //   setNewVisitor((prevState) => {
-  //     const updatedVisitor = { ...prevState, [name]: value };
-  //     dispatch(setVisitorData({ [name]: value }));
-  //     return updatedVisitor;
-  //   });
-  
-  //   console.log(newVisitor);
-  // };
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewVisitor((prevState) => {
@@ -148,8 +118,7 @@ const AddVisitor = ({
       return updatedVisitor;
     });
   
-    // Log the state in Redux (optional)
-    // console.log("Updated visitor in Redux:", newVisitor); 
+   
   };
   const handleReset = () => {
     dispatch(resetVisitorData()); // Reset Redux state
@@ -180,7 +149,7 @@ const AddVisitor = ({
       setWarningModal(true);
       return;
     }
-    setLoading(true);
+    
     const visitorData = {
       visitorsId: newVisitor.visitorsId,
       fName: newVisitor.fName,
@@ -240,7 +209,7 @@ const AddVisitor = ({
       setWarningModal(true);
       return;
     }
-    setLoading(true);
+    
     const updateVisitorData = {
       visitorsId: newVisitor.visitorsId,
       fName: newVisitor.fName,

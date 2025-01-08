@@ -34,19 +34,16 @@ const TableComponent = ({ data, setData }) => {
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
-  const [loading, setLoading] = useState(false); // Loading state
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
 
   // Fetch departments data
   const fetchDepartments = useCallback(async () => {
-    setLoading(true);
     try {
       const response = await axios.get(`${SERVER_URL}pr-dpt/`);
       setData(response.data.context);
     } catch (error) {
     } finally {
-      setLoading(false);
     }
   }, [setData]);
 
@@ -268,7 +265,7 @@ const TableComponent = ({ data, setData }) => {
   const confirmBulkDelete = async () => {
     try {
       const payload = { ids: selectedIds };
-      const response = await axios.post(`${SERVER_URL}dpt/del/data`, payload);
+      await axios.post(`${SERVER_URL}dpt/del/data`, payload);
       const updatedData = await axios.get(`${SERVER_URL}pr-dpt/`);
       setData(updatedData.data.context);
       setShowModal(false);
@@ -386,12 +383,14 @@ const TableComponent = ({ data, setData }) => {
       {showAddForm && !showEditForm && (
         <div className="add-department-form">
           <h3>Add New Department</h3>
+          <label>Department Name</label>
           <input
             type="text"
             placeholder="Department Name"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          />
+            />
+            <label>Superior Name</label>
           <input
             type="text"
             placeholder="Superior"
@@ -399,7 +398,8 @@ const TableComponent = ({ data, setData }) => {
             onChange={(e) =>
               setFormData({ ...formData, superior: e.target.value })
             }
-          />
+            />
+            <label>Employee Quantity</label>
           <input
             type="number"
             placeholder="Employee Qty"
@@ -423,12 +423,14 @@ const TableComponent = ({ data, setData }) => {
       {showEditForm && (
         <div className="add-department-form">
           <h3>Edit Department</h3>
+          <label>Department Name</label>
           <input
             type="text"
             placeholder="Department Name"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           />
+          <label>Superior Name</label>
           <input
             type="text"
             placeholder="Superior"
@@ -437,6 +439,7 @@ const TableComponent = ({ data, setData }) => {
               setFormData({ ...formData, superior: e.target.value })
             }
           />
+          <label>Employee Quantity</label>
           <input
             type="number"
             placeholder="Employee Qty"

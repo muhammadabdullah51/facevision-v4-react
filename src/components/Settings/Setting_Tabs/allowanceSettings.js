@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import "./leave.css";
 import axios from "axios";
@@ -234,7 +233,7 @@ const AllowanceSettings = () => {
   const confirmBulkDelete = async () => {
     try {
       const payload = { ids: selectedIds };
-      const response = await axios.post(`${SERVER_URL}alwctype/del/data`, payload);
+      await axios.post(`${SERVER_URL}alwctype/del/data`, payload);
       const updatedData = await axios.get(`${SERVER_URL}allowance-types/`);
       setData(updatedData.data);
       setShowModal(false);

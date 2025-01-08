@@ -1,7 +1,7 @@
 import 'typeface-roboto-condensed';
 import './App.css';
 import React, { useEffect, useState } from 'react';
-import axios from 'axios'; 
+import axios from 'axios';
 import { Provider } from 'react-redux';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { PersistGate } from 'redux-persist/integration/react'; // Import PersistGate
@@ -17,9 +17,7 @@ function App() {
   // console.log(SERVER_URL);
   const [companyInfoCompleted, setCompanyInfoCompleted] = useState(false);
   const [authTrue, setAuthTrue] = useState(false);
-
   console.log(SERVER_URL);
-
   useEffect(() => {
     // Make API call to check company info status
     axios.get(`${SERVER_URL}auth-cmp-reg/`)
@@ -38,20 +36,16 @@ function App() {
         console.error("There was an error checking auth token status", error);
       })
   }, []);
-
   const renderHome = () => {
     if (!authTrue) {
       return <AuthToken />;
-    } else if (companyInfoCompleted) {
+    } else if (!companyInfoCompleted) {
       return <Information />;
     } else {
       return <Login />;
     }
   };
-
-  
   return (
-    
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
       <Router>
@@ -66,5 +60,15 @@ function App() {
     </Provider>
   );
 }
-
 export default App;
+
+
+
+
+
+
+
+
+
+
+

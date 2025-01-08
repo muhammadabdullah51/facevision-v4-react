@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 import { setAuthToken } from '../../redux/authSlice'; // Import the correct action
 import './login.css'; 
 import Logo from '../../assets/faceVisionLogo.png';
@@ -13,7 +12,6 @@ const AuthToken = () => {
     const [accessToken, setAccessToken] = useState('');
     const [loading, setLoading] = useState(false); // Loading state for UX
     const dispatch = useDispatch();
-    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();

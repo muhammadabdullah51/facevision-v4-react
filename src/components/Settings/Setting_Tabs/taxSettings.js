@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import "./leave.css";
 import axios from "axios";
@@ -25,22 +24,18 @@ const TaxSettings = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
-  const [loading, setLoading] = useState(false); // Loading state
 
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
 
   const fetchTax = useCallback(async () => {
-    setLoading(true);
     try {
       const response = await axios.get(`${SERVER_URL}tax-types/`);
       console.log(response.data);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching taxes data:", error);
-    } finally {
-      setLoading(false);
-    }
+    } 
   }, [setData]);
 
   useEffect(() => {
@@ -123,7 +118,7 @@ const TaxSettings = () => {
     };
 
     try {
-      const response = await axios.post(`${SERVER_URL}tax-types/`, newOTF);
+      await axios.post(`${SERVER_URL}tax-types/`, newOTF);
       setShowAddForm(false);
       setShowModal(false);
       setSuccessModal(true);
@@ -158,12 +153,7 @@ const TaxSettings = () => {
       setWarningModal(true);
     }
   };
-  const resetForm = () => {
-    setFormData({
-      type: "",
-    });
-    handleCancel();
-  };
+
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
@@ -229,7 +219,7 @@ const TaxSettings = () => {
   const confirmBulkDelete = async () => {
     try {
       const payload = { ids: selectedIds };
-      const response = await axios.post(`${SERVER_URL}taxtype/del/data`, payload);
+      await axios.post(`${SERVER_URL}taxtype/del/data`, payload);
       const updatedData = await axios.get(`${SERVER_URL}tax-types/`);
       setData(updatedData.data);
       setShowModal(false);

@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import axios from "axios";
 import { SERVER_URL } from "../../config";
@@ -26,22 +25,19 @@ const BreakManagementTable = ({ onDataUpdate }) => {
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
-  const [loading, setLoading] = useState(false); // Loading state
 
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
 
   const fetchBreaks = useCallback(async () => {
-    setLoading(true);
+ 
     try {
       const response = await axios.get(`${SERVER_URL}brk-sch/`);
       setData(response.data);
       onDataUpdate(response.data);
     } catch (error) {
       console.error("Error fetching shift data:", error);
-    } finally {
-      setLoading(false);
-    }
+    } 
   }, [setData]);
 
   useEffect(() => {
@@ -172,14 +168,7 @@ const BreakManagementTable = ({ onDataUpdate }) => {
     setShowModal(false);
     setSuccessModal(true);
   }
-  const resetForm = () => {
-    setFormData({
-      name: "",
-      start_time: "",
-      end_time: "",
-    });
-    handleCancel();
-  };
+
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
@@ -245,7 +234,7 @@ const BreakManagementTable = ({ onDataUpdate }) => {
   const confirmBulkDelete = async () => {
     try {
       const payload = { ids: selectedIds };
-      const response = await axios.post(`${SERVER_URL}break/del/data`, payload);
+      await axios.post(`${SERVER_URL}break/del/data`, payload);
       const updatedData = await axios.get(`${SERVER_URL}brk-sch/`);
       setData(updatedData.data);
       setShowModal(false);

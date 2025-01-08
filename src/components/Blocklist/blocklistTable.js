@@ -9,7 +9,6 @@ import deleteAnimation from "../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../assets/Lottie/warningAnim.json";
 import { SERVER_URL } from "../../config";
-import { Label } from "recharts";
 
 const BlockListTable = ({ data, setData }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -29,7 +28,6 @@ const BlockListTable = ({ data, setData }) => {
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
 
@@ -133,7 +131,7 @@ const BlockListTable = ({ data, setData }) => {
   const confirmBulkDelete = async () => {
     try {
       const payload = { ids: selectedIds };
-      const response = await axios.post(`${SERVER_URL}blocklist/del/data`, payload);
+      await axios.post(`${SERVER_URL}blocklist/del/data`, payload);
       const updatedData = await axios.get(`${SERVER_URL}blocklist/`);
       setData(updatedData.data);
       setShowModal(false);
@@ -279,7 +277,7 @@ const BlockListTable = ({ data, setData }) => {
     };
 
     try {
-      const response = await axios.put(
+      await axios.put(
         `${SERVER_URL}blocklist/${formData.blockId}/`,
         updateBlock
       );
@@ -299,7 +297,6 @@ const BlockListTable = ({ data, setData }) => {
 
   const confirmDelete = async () => {
     try {
-      const blockId = formData._id;
       await axios.delete(`${SERVER_URL}blocklist/${formData.blockId}/`);
       fetchBlock();
       setShowModal(false);

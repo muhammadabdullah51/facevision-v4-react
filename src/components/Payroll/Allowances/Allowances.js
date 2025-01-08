@@ -249,7 +249,7 @@ const Allowance = () => {
   const confirmBulkDelete = async () => {
     try {
       const payload = { ids: selectedIds };
-      const response = await axios.post(`${SERVER_URL}awlc/del/data`, payload);
+      await axios.post(`${SERVER_URL}awlc/del/data`, payload);
       const updatedData = await axios.get(`${SERVER_URL}allowances/`);
       setData(updatedData.data);
       setShowModal(false);

@@ -29,9 +29,6 @@ const PayrollLogs = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-  };
 
   const handleStartDateChange = (e) => {
     setStartDate(e.target.value);

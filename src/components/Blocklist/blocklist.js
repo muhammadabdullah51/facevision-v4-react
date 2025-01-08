@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState,  useEffect } from "react";
 import axios from "axios";
 import BlockListTable from "./blocklistTable.js";
 import { SERVER_URL } from "../../config.js";

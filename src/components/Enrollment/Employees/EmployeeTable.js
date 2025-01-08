@@ -4,11 +4,6 @@ import ReactPaginate from "react-paginate";
 import EmployeeReportModal from "./EmployeeReportModal";
 import Default_picture from "../../../assets/profile.jpg";
 import axios from "axios";
-import TableComponent from "../Department/departmentTable";
-import DesignationTable from "../Designation/designationTable";
-import LocationTable from "../Location/LocationTable";
-import ResignTable from "../Resign/ResignTable";
-import AddEmployee from "./AddEmployee";
 import { SERVER_URL } from "../../../config";
 import ConirmationModal from "../../Modal/conirmationModal";
 import addAnimation from "../../../assets/Lottie/addAnim.json";
@@ -21,8 +16,8 @@ import { Tooltip } from 'react-tooltip'
 const EmployeeTable = ({
   // data,
   // setData,
-  setActiveTab,
-  setSelectedEmployee,
+  // setActiveTab,
+  // setSelectedEmployee,
   onEdit,
   onAdd,
 }) => {
@@ -54,7 +49,6 @@ const EmployeeTable = ({
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
-  const [loading, setLoading] = useState(false); // Loading state
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
 

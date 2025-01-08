@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEdit, faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 
 import axios from "axios";
@@ -17,9 +15,6 @@ import { SERVER_URL } from "../../../config";
 
 const Bonuses = () => {
   const [data, setData] = useState([]);
-  const [showForm, setShowForm] = useState(false);
-  const [formMode, setFormMode] = useState("add");
-  const [currentItemId, setCurrentItemId] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [formData, setFormData] = useState({
@@ -35,8 +30,9 @@ const Bonuses = () => {
   const [successModal, setSuccessModal] = useState(false);
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
+  // const [child, setChild] = useState("");
 
-  const [loading, setLoading] = useState(false); // Loading state
+
 
   const fetchBouneses = useCallback(async () => {
     try {
@@ -189,9 +185,6 @@ const Bonuses = () => {
     }
   }
 
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-  };
 
   const filteredData = data.filter((item) =>
     item.bonusName.toLowerCase().includes(searchQuery.toLowerCase())
@@ -253,7 +246,7 @@ const Bonuses = () => {
   const confirmBulkDelete = async () => {
     try {
       const payload = { ids: selectedIds };
-      const response = await axios.post(`${SERVER_URL}bonus/del/data`, payload);
+      await axios.post(`${SERVER_URL}bonus/del/data`, payload);
       const updatedData = await axios.get(`${SERVER_URL}pyr-bns/`);
       setData(updatedData.data);
       setShowModal(false);

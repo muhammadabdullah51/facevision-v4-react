@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEdit, faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 import axios from "axios";
 import "../../Dashboard/dashboard.css";
@@ -15,9 +13,6 @@ import { SERVER_URL } from "../../../config";
 
 const WorkingHours = () => {
     const [data, setData] = useState([]);
-    const [showForm, setShowForm] = useState(false);
-    const [formMode, setFormMode] = useState("add");
-    const [currentItemId, setCurrentItemId] = useState(null);
     const [employees, setEmployees] = useState([]);
     const [showAddForm, setShowAddForm] = useState(false);
     const [showEditForm, setShowEditForm] = useState(false);
@@ -35,7 +30,6 @@ const WorkingHours = () => {
     const [showModal, setShowModal] = useState(false);
     const [modalType, setModalType] = useState("");
     const [successModal, setSuccessModal] = useState(false);
-    const [loading, setLoading] = useState(false); // Loading state
 
     const [warningModal, setWarningModal] = useState(false);
     const [resMsg, setResMsg] = useState("");
@@ -169,19 +163,7 @@ const WorkingHours = () => {
     };
 
 
-    const resetForm = () => {
-        setFormData({
-            id: "",
-            empId: "",
-            first_checkin: "",
-            last_checkout: "",
-            calcHours: '',
-            date: "",
-        });
-        setCurrentItemId(null);
-        setFormMode("add");
-        setShowForm(false);
-    };
+  
 
     const handleSearchChange = (e) => setSearchQuery(e.target.value);
 
@@ -254,7 +236,7 @@ const WorkingHours = () => {
     const confirmBulkDelete = async () => {
         try {
             const payload = { ids: selectedIds };
-            const response = await axios.post(`${SERVER_URL}empwh/del/data`, payload);
+            await axios.post(`${SERVER_URL}empwh/del/data`, payload);
             const updatedData = await axios.get(`${SERVER_URL}working-hours/`);
             setData(updatedData.data);
             setShowModal(false);

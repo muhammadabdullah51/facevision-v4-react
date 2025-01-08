@@ -34,8 +34,6 @@ const LeaveTable = ({ data, setData }) => {
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
-  const [loading, setLoading] = useState(false);
-
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
 
@@ -147,7 +145,7 @@ const LeaveTable = ({ data, setData }) => {
   const confirmBulkDelete = async () => {
     try {
       const payload = { ids: selectedIds };
-      const response = await axios.post(`${SERVER_URL}leaves/del/data`, payload);
+      await axios.post(`${SERVER_URL}leaves/del/data`, payload);
       const updatedData = await axios.get(`${SERVER_URL}att-lv-cr/`);
       setData(updatedData.data);
       setShowModal(false);
@@ -352,7 +350,7 @@ const LeaveTable = ({ data, setData }) => {
   };
 
   const confirmDelete = async () => {
-    const response = await axios.post(`${SERVER_URL}att-lv-del/`, {
+    await axios.post(`${SERVER_URL}att-lv-del/`, {
       id: formData.id,
     });
     const updatedData = await axios.get(`${SERVER_URL}att-lv-cr/`);

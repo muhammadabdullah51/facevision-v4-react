@@ -30,13 +30,12 @@ const Information = () => {
             }
 
             try {
-                const response = await axios.post(`${SERVER_URL}auth-cmp-reg/`, formData, {
+                await axios.post(`${SERVER_URL}auth-cmp-reg/`, formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     },
                 });
 
-                // Navigate to dashboard or another page after successful form submission
                 navigate('/Signup');
             } catch (error) {
             }

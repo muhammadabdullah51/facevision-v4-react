@@ -2,9 +2,7 @@ import React, { useEffect, useState } from "react";
 import Card from '../Cards/card';
 import { faIdBadge, faCalendarCheck, faCalendarAlt, faTabletAlt } from '@fortawesome/free-solid-svg-icons';
 import PrefomanceGraph from '../Graphs/prefomanceGraph';
-import Table from '../Tables/Dashboard_Table/dashboard_table';
 import ProjectGraph from '../Graphs/projectStatus';
-import CheckInOut from "../Attendence/checkinout";
 import { SERVER_URL } from "../../config";
 import axios from "axios";
 import Employees from "../Enrollment/Employees/employees";
@@ -91,10 +89,10 @@ const Dashboard = () => {
                                 </div>
                                 <div className="card-footer">
                                     <span className={`card-percentage negative `}>
-                                        {dashData?.total_absent > 0 ? `↑ ${dashData?.total_absent}` : dashData?.total_absent == 0 ? `${dashData?.total_absent}` : `↓ ${Math.abs(dashData?.total_absent)}`}
+                                        {dashData?.total_absent > 0 ? `↑ ${dashData?.total_absent}` : dashData?.total_absent === 0 ? `${dashData?.total_absent}` : `↓ ${Math.abs(dashData?.total_absent)}`}
                                     </span>
                                     <span className={`card-percentage neutral `}>
-                                        {dashData?.total_late > 0 ? `↑ ${dashData?.total_late}` : dashData?.total_late == 0 ? `${dashData?.total_late}` : `↓ ${Math.abs(dashData?.total_late)}`}
+                                        {dashData?.total_late > 0 ? `↑ ${dashData?.total_late}` : dashData?.total_late === 0 ? `${dashData?.total_late}` : `↓ ${Math.abs(dashData?.total_late)}`}
                                     </span>
                                     <span className="card-view-more" onClick={() => setActiveComponent("attendance")}>See Attendance</span>
                                 </div>
@@ -111,10 +109,10 @@ const Dashboard = () => {
                                 </div>
                                 <div className="card-footer">
                                     <span className={`card-percentage negative `}>
-                                        {/* {dashData?.total_absent > 0 ? `↑ ${dashData?.total_absent}` : dashData?.total_absent == 0 ? `${dashData?.total_absent}` : `↓ ${Math.abs(dashData?.total_absent)}`} */}
+                                        {/* {dashData?.total_absent > 0 ? `↑ ${dashData?.total_absent}` : dashData?.total_absent === 0 ? `${dashData?.total_absent}` : `↓ ${Math.abs(dashData?.total_absent)}`} */}
                                     </span>
                                     <span className={`card-percentage neutral `}>
-                                        {/* {dashData?.total_late > 0 ? `↑ ${dashData?.total_late}` : dashData?.total_late == 0 ? `${dashData?.total_late}` : `↓ ${Math.abs(dashData?.total_late)}`} */}
+                                        {/* {dashData?.total_late > 0 ? `↑ ${dashData?.total_late}` : dashData?.total_late === 0 ? `${dashData?.total_late}` : `↓ ${Math.abs(dashData?.total_late)}`} */}
                                     </span>
                                     <span className="card-view-more" onClick={() => setActiveComponent("payrolls")}>View Payrolls</span>
                                 </div>
@@ -130,11 +128,11 @@ const Dashboard = () => {
                                     <span className="card-amount">{dashData?.total_devices || 0}</span>
                                 </div>
                                 <div className="card-footer">
-                                    <span className={`card-percentage ${dashData?.connected_devices > 0 ? 'positive' : dashData?.connected_devices == 0 ? 'neutral' : 'negative'}`}>
-                                        {dashData?.connected_devices > 0 ? `↑ ${dashData?.connected_devices}` : dashData?.connected_devices == 0 ? `${dashData?.connected_devices}` : `↓ ${Math.abs(dashData?.connected_devices)}`}
+                                    <span className={`card-percentage ${dashData?.connected_devices > 0 ? 'positive' : dashData?.connected_devices === 0 ? 'neutral' : 'negative'}`}>
+                                        {dashData?.connected_devices > 0 ? `↑ ${dashData?.connected_devices}` : dashData?.connected_devices === 0 ? `${dashData?.connected_devices}` : `↓ ${Math.abs(dashData?.connected_devices)}`}
                                     </span>
                                     <span className={`card-percentage ${dashData?.disconnected_devices >= 0 ? 'negative' : 'positive'}`}>
-                                        {dashData?.disconnected_devices > 0 ? `↑ ${dashData?.disconnected_devices}` : dashData?.disconnected_devices == 0 ? `${dashData?.connected_devices}` : `↓ ${Math.abs(dashData?.connected_devices)}`}
+                                        {dashData?.disconnected_devices > 0 ? `↑ ${dashData?.disconnected_devices}` : dashData?.disconnected_devices === 0 ? `${dashData?.connected_devices}` : `↓ ${Math.abs(dashData?.connected_devices)}`}
                                     </span>
 
                                     <span className="card-view-more" onClick={() => setActiveComponent("devices")}>Check Devices</span>

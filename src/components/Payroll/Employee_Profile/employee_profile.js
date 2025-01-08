@@ -7,7 +7,6 @@ import "jspdf-autotable";
 import "../../Settings/Setting_Tabs/leave.css";
 import "../../Enrollment/Department/department.css";
 import { faFileCsv, faFilePdf } from "@fortawesome/free-solid-svg-icons";
-import PayrollLogs from "../Payroll_Logs/payroll_log";
 import AdvanceSalary from "../Advance_Salary/advance_salary";
 import Appraisal from "../Appraisal/appraisal";
 import Loan from "../Loan/loan";
@@ -22,15 +21,8 @@ import ReactDOMServer from "react-dom/server";
 
 import { SERVER_URL } from "../../../config";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { FaArrowDown, FaDownload, FaFolderOpen } from "react-icons/fa";
-import {
-    faTachometerAlt, faUserPlus, faMobileAlt, faCalendarCheck,
-    faCalendarAlt, faCogs, faMoneyCheckAlt, faChartBar,
-    faUsers, faBan, faCog, faUser, faBuilding, faTag,
-    faMapMarkerAlt, faIdBadge, faPersonWalkingDashedLineArrowRight, faChevronDown,
-    faChevronUp, faHandHoldingUsd, faClipboardCheck, faAward, faFileInvoiceDollar,
-    faTabletAlt, faDollarSign, faInfoCircle, faCheckCircle, faFileInvoice, faMoneyBillWave, faBed, faCoffee 
-} from '@fortawesome/free-solid-svg-icons';
+import { FaDownload, FaFolderOpen } from "react-icons/fa";
+
 import Allowance from "../Allowances/Allowances";
 import WorkingHours from "../Working_Hours/WorkingHours";
 
@@ -83,9 +75,7 @@ const EmplyeeProfile = () => {
     setActiveTab("table");
   }, [fetchPayrollEmpProfiles, changeTab]);
 
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-  };
+
 
   const filteredData = data.filter(
     (item) =>
