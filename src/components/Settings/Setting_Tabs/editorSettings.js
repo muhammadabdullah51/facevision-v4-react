@@ -9,10 +9,17 @@ import updateAnimation from "../../../assets/Lottie/updateAnim.json";
 import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../../assets/Lottie/warningAnim.json";
+import Select from 'react-select';
+
+import { useDispatch, useSelector } from "react-redux";
+import { setEditorSettingsData, resetEditorSettingsData } from "../../../redux/editorSettingsSlice";
+
 const EditorSettings = () => {
   const [data, setData] = useState([]);
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
   const [selectedItems, setSelectedItems] = useState([]);
+
+
 
   const days = [
     "monday",
@@ -26,7 +33,38 @@ const EditorSettings = () => {
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
-  const [formData, setFormData] = useState({
+
+
+  const dispatch = useDispatch();
+  const editorSettingData = useSelector((state) => state.editorSettings);
+
+  const [formData, setFormData] = useState(
+    editorSettingData || {
+      id: "",
+      name: "",
+      email: "",
+      sch: "",
+      time: "",
+      day: [],
+      status: "",
+    });
+
+  const handleReset = () => {
+    dispatch(resetEditorSettingsData());
+    setFormData({
+      id: "",
+      name: "",
+      email: "",
+      sch: "",
+      time: "",
+      day: [],
+      status: "",
+    });
+    setShowAddForm(false);
+    setShowEditForm(false);
+  };
+
+  const [editFormData, setEditFormData] = useState({
     id: "",
     name: "",
     email: "",
@@ -36,6 +74,17 @@ const EditorSettings = () => {
     status: "",
   });
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => {
+      const updatedFormData = { ...prevState, [name]: value };
+      dispatch(setEditorSettingsData(updatedFormData));
+      return updatedFormData;
+    });
+  };
+
+
+
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
@@ -44,14 +93,14 @@ const EditorSettings = () => {
   const [resMsg, setResMsg] = useState("");
 
   const fetchLvs = useCallback(async () => {
-    
+
     try {
       const response = await axios.get(`${SERVER_URL}sett-edtr-sch/`);
       console.log(response.data);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching shift data:", error);
-    } 
+    }
   }, [setData]);
 
   useEffect(() => {
@@ -65,13 +114,10 @@ const EditorSettings = () => {
     return () => clearTimeout(timer);
   }, [fetchLvs, successModal]);
 
-  const handleCancel = () => {
-    setShowAddForm(false);
-    setShowEditForm(false);
-  };
+
 
   const handleEdit = (row) => {
-    setFormData({
+    setEditFormData({
       id: row.id,
       name: row.name,
       email: row.email,
@@ -88,17 +134,9 @@ const EditorSettings = () => {
   };
   const updateOTF = async (row) => {
     setModalType("update");
-    setFormData({
-      id: row.id,
-      name: row.name,
-      email: row.email,
-      sch: row.sch,
-      time: row.timeobj,
-      date: row.date,
-      day: row.day || [],
-      status: row.status,
-    });
-    console.log(formData)
+
+    console.log(editFormData, row)
+    setEditFormData({ ...editFormData });
     setSelectedItems(row.day || []);
     setShowModal(true);
     console.log("asdasdaas")
@@ -106,21 +144,20 @@ const EditorSettings = () => {
     console.log(selectedItems)
   };
   const confirmUpdate = async () => {
-    console.log("confirmUpdate me agya hun me")
-    console.log(selectedItems)
+    console.log(editFormData)
     if (
-      !formData.name ||
-      !formData.email ||
-      !formData.sch ||
-      !formData.time ||
-      !formData.status
+      !editFormData.name ||
+      !editFormData.email ||
+      !editFormData.sch ||
+      !editFormData.timeobj ||
+      !editFormData.status
     ) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
       setWarningModal(true);
       return;
     }
-    if (formData.sch === "Weekly") {
+    if (editFormData.sch === "Weekly") {
       if (selectedItems.length < 1) {
         console.log("asdas");
         setResMsg("Please select at least one day for weekly schedule.");
@@ -130,17 +167,18 @@ const EditorSettings = () => {
       }
     }
 
-    setSelectedItems(formData.day || []);
+    setSelectedItems(editFormData.day || []);
     const updatedOTF = {
-      id: formData.id,
-      name: formData.name,
-      email: formData.email,
-      sch: formData.sch,
-      time: formData.time,
-      date: formData.date,
-      status: formData.status,
+      id: editFormData.id,
+      name: editFormData.name,
+      email: editFormData.email,
+      sch: editFormData.sch,
+      time: editFormData.timeobj,
+      date: editFormData.date,
+      status: editFormData.status,
       day: selectedItems,
     };
+    console.log(updatedOTF);
     try {
       const res = await axios.post(`${SERVER_URL}sett-edtr-sch-up/`, updatedOTF);
       setShowEditForm(false);
@@ -149,6 +187,7 @@ const EditorSettings = () => {
       setResMsg(res.data.msg);
       const updatedData = await axios.get(`${SERVER_URL}sett-edtr-sch/`);
       setData(updatedData.data);
+      handleReset()
     } catch (error) {
       console.error("Error updating Leave:", error);
       setShowModal(false);
@@ -157,16 +196,10 @@ const EditorSettings = () => {
   };
 
   const handleAdd = () => {
-    setFormData({
-      name: "",
-      email: "",
-      sch: "",
-      time: "",
-      day: [],
-      status: "",
-    });
+
     setSelectedItems([]);
     setShowAddForm(true);
+    setShowEditForm(false);
   };
   const addOTF = async () => {
     setModalType("create");
@@ -212,7 +245,7 @@ const EditorSettings = () => {
       setSuccessModal(true);
       const updatedData = await axios.get(`${SERVER_URL}sett-edtr-sch/`);
       setData(updatedData.data);
-      // setShowAddForm(false)
+      handleReset()
     } catch (error) {
       console.log(error);
       setShowModal(false);
@@ -223,7 +256,6 @@ const EditorSettings = () => {
     setShowModal(true);
     setModalType("delete");
     setFormData({ ...formData, id: id });
-    console.log(formData.id)
   };
   const confirmDelete = async () => {
     await axios.post(`${SERVER_URL}sett-edtr-sch-del/`, { id: formData.id });
@@ -233,7 +265,7 @@ const EditorSettings = () => {
     setShowModal(false);
     setSuccessModal(true);
   };
- 
+
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
@@ -315,6 +347,20 @@ const EditorSettings = () => {
       setShowModal(false);
     }
   };
+
+  const handleChange = (selectedOptions) => {
+    const selectedValues = selectedOptions.map((option) => option.value);
+    setSelectedItems(selectedValues);
+    setEditFormData((prevFormData) => ({
+      ...prevFormData,
+      day: selectedValues,
+    }));
+  };
+
+  const options = days.map((item) => ({
+    value: item,
+    label: item,
+  }));
 
 
   return (
@@ -424,23 +470,24 @@ const EditorSettings = () => {
           <label>Name</label>
           <input
             type="text"
+            name="name"
             placeholder="Name"
             value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            onChange={handleInputChange}
           />
           <label>Email</label>
           <input
             type="email"
+            name="email"
             placeholder="Email"
             value={formData.email}
-            onChange={(e) =>
-              setFormData({ ...formData, email: e.target.value })
-            }
+            onChange={handleInputChange}
           />
           <label>Schedule</label>
           <select
+            name="sch"
             value={formData.sch}
-            onChange={(e) => setFormData({ ...formData, sch: e.target.value })}
+            onChange={handleInputChange}
           >
             <option value="">Select Schedule</option>
             <option value="Daily">Daily</option>
@@ -453,11 +500,10 @@ const EditorSettings = () => {
               <label>Time</label>
               <input
                 type="time"
+                name="time"
                 placeholder="Time"
                 value={formData.time}
-                onChange={(e) =>
-                  setFormData({ ...formData, time: e.target.value })
-                }
+                onChange={handleInputChange}
               />
             </>
           )}
@@ -466,18 +512,18 @@ const EditorSettings = () => {
               <label>Time</label>
               <input
                 type="datetime-local"
+                name="time"
                 placeholder="Time"
                 value={formData.time}
-                onChange={(e) =>
-                  setFormData({ ...formData, time: e.target.value })
-                }
+                onChange={handleInputChange}
               />
             </>
           )}
           {formData.sch === "Weekly" && (
             <>
+            <label>Select Days</label>
               <div className="item-list-Selected">
-                {days.map((item) => (
+                {/* {days.map((item) => (
                   <div className="items" key={item}>
                     <label className="checkbox-container">
                       <input
@@ -497,26 +543,42 @@ const EditorSettings = () => {
                       {item}
                     </label>
                   </div>
-                ))}
+                ))} */}
+                <Select
+                  isMulti
+                  options={options}
+                  value={options.filter(option => selectedItems.includes(option.value))}
+                  onChange={handleChange}
+                  styles={{
+                    control: (provided) => ({
+                      ...provided,
+                      width: '100%',
+                    }),
+                    menu: (provided) => ({
+                      ...provided,
+                      zIndex: 9999, // Adjust z-index to make the dropdown appear on top
+                    }),
+                  }}
+                  placeholder="Select Days"
+                />
               </div>
+
               <label>Time</label>
               <input
                 type="time"
+                name="time"
                 placeholder="Time"
                 value={formData.time}
-                onChange={(e) =>
-                  setFormData({ ...formData, time: e.target.value })
-                }
+                onChange={handleInputChange}
               />
             </>
           )}
 
           <label>Status</label>
           <select
+            name="status"
             value={formData.status}
-            onChange={(e) =>
-              setFormData({ ...formData, status: e.target.value })
-            }
+            onChange={handleInputChange}
           >
             <option value="">Select Status</option>
             <option value="Active">Active</option>
@@ -526,7 +588,7 @@ const EditorSettings = () => {
           <button className="submit-button" onClick={addOTF}>
             Add Scheduler
           </button>
-          <button className="cancel-button" onClick={handleCancel}>
+          <button className="cancel-button" onClick={handleReset}>
             Cancel
           </button>
         </div>
@@ -538,23 +600,23 @@ const EditorSettings = () => {
           <input
             type="text"
             placeholder="Name"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            value={editFormData.name}
+            onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
           />
           <label>Email</label>
           <input
             type="email"
             placeholder="Email"
-            value={formData.email}
+            value={editFormData.email}
             onChange={(e) =>
-              setFormData({ ...formData, email: e.target.value })
+              setEditFormData({ ...editFormData, email: e.target.value })
             }
           />
           <label>Schedule</label>
           <select
             disabled
-            value={formData.sch}
-            onChange={(e) => setFormData({ ...formData, sch: e.target.value })}
+            value={editFormData.sch}
+            onChange={(e) => setEditFormData({ ...editFormData, sch: e.target.value })}
           >
             <option value="">Select Schedule</option>
             <option value="Daily">Daily</option>
@@ -562,45 +624,47 @@ const EditorSettings = () => {
             <option value="Monthly">Monthly</option>
           </select>
 
-          {formData.sch === "Daily" && (
+          {editFormData.sch === "Daily" && (
             <>
               <label>Time</label>
               <input
                 type="time"
                 placeholder="Time"
-                value={formData.timeobj}
+                value={editFormData.timeobj}
                 onChange={(e) =>
-                  setFormData({ ...formData, timeobj: e.target.value })
+                  setEditFormData({ ...editFormData, timeobj: e.target.value })
                 }
               />
             </>
           )}
-          {formData.sch === "Monthly" && (
+          {editFormData.sch === "Monthly" && (
             <>
               <label>Date</label>
               <input
                 type="date"
                 placeholder="Date"
-                value={formData.date}
+                value={editFormData.date}
                 onChange={(e) =>
-                  setFormData({ ...formData, date: e.target.value })
+                  setEditFormData({ ...editFormData, date: e.target.value })
                 }
               />
               <label>Time</label>
               <input
                 type="time"
                 placeholder="Time"
-                value={formData.timeobj}
+                value={editFormData.timeobj}
                 onChange={(e) =>
-                  setFormData({ ...formData, timeobj: e.target.value })
+                  setEditFormData({ ...editFormData, timeobj: e.target.value })
                 }
               />
             </>
           )}
-          {formData.sch === "Weekly" && (
+          {editFormData.sch === "Weekly" && (
             <>
+            <label>Selected Days</label>
+
               <div className="item-list-Selected">
-                {days.map((item) => (
+                {/* {days.map((item) => (
                   <div className="items" key={item}>
                     <label className="checkbox-container">
                       <input
@@ -614,7 +678,7 @@ const EditorSettings = () => {
                               ? [...prevItems, value]
                               : prevItems.filter((i) => i !== value)
                           );
-                          setFormData((prevFormData) => ({
+                          setEditFormData((prevFormData) => ({
                             ...prevFormData,
                             day: checked
                               ? [...(prevFormData.day || []), value] // Ensure 'days' is an array
@@ -626,15 +690,33 @@ const EditorSettings = () => {
                       {item}
                     </label>
                   </div>
-                ))}
+                ))} */}
+
+                <Select
+                  isMulti
+                  options={options}
+                  value={options.filter(option => selectedItems.includes(option.value))}
+                  onChange={handleChange}
+                  styles={{
+                    control: (provided) => ({
+                      ...provided,
+                      width: '100%',
+                    }),
+                    menu: (provided) => ({
+                      ...provided,
+                      zIndex: 9999, // Adjust z-index to make the dropdown appear on top
+                    }),
+                  }}
+                  placeholder="Select Days"
+                />
               </div>
               <label>Time</label>
               <input
                 type="time"
                 placeholder="Time"
-                value={formData.timeobj}
+                value={editFormData.timeobj}
                 onChange={(e) =>
-                  setFormData({ ...formData, timeobj: e.target.value })
+                  setEditFormData({ ...editFormData, timeobj: e.target.value })
                 }
               />
             </>
@@ -642,9 +724,9 @@ const EditorSettings = () => {
 
           <label>Status</label>
           <select
-            value={formData.status}
+            value={editFormData.status}
             onChange={(e) =>
-              setFormData({ ...formData, status: e.target.value })
+              setEditFormData({ ...editFormData, status: e.target.value })
             }
           >
             <option value="">Select Status</option>
@@ -652,10 +734,10 @@ const EditorSettings = () => {
             <option value="Inactive">Inactive</option>
           </select>
 
-          <button className="submit-button" onClick={() => updateOTF(formData)}>
+          <button className="submit-button" onClick={() => updateOTF(editFormData)}>
             Update Scheduler
           </button>
-          <button className="cancel-button" onClick={handleCancel}>
+          <button className="cancel-button" onClick={handleReset}>
             Cancel
           </button>
         </div>

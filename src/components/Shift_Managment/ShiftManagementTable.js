@@ -12,6 +12,7 @@ import { SERVER_URL } from "../../config";
 import BreakManagementTable from "./BreakManagementTable";
 import { useDispatch, useSelector } from "react-redux";
 import { saveFormState, saveSelectedItems } from "../../redux/ShiftSlice";
+import Select from "react-select";
 
 const ShiftManagementTable = () => {
   const [data, setData] = useState([]);
@@ -428,6 +429,21 @@ const ShiftManagementTable = () => {
     }
   };
 
+  const dayOptions = days.map((day) => ({ value: day, label: day }));
+  const handleSelectChange = (selectedOptions) => {
+    const selectedValues = selectedOptions.map((option) => option.value);
+
+    // Update selected items
+    setSelectedItems(selectedValues);
+
+    // Update editFormData
+    setEditFormData((prevFormData) => ({
+      ...prevFormData,
+      holidays: selectedValues,
+    }));
+    
+  };
+
   return (
     <div className="department-table">
       <ConirmationModal
@@ -436,7 +452,7 @@ const ShiftManagementTable = () => {
           modalType === "delete selected"
             ? "Are you sure you want to delete selected items?"
             : `Are you sure you want to ${modalType} this Shift?`
-        } 
+        }
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
           else if (modalType === "update") confirmUpdate();
@@ -522,13 +538,13 @@ const ShiftManagementTable = () => {
         </form>
         <div className="add-delete-conainer">
 
-        <button className="add-button" onClick={handleAdd}>
-          <FaPlus></FaPlus>
-          Add New Shift
-        </button>
-        <button className="add-button submit-button" onClick={handleBulkDelete}>
-          <FaTrash className="add-icon" /> Delete Bulk
-        </button>
+          <button className="add-button" onClick={handleAdd}>
+            <FaPlus></FaPlus>
+            Add New Shift
+          </button>
+          <button className="add-button submit-button" onClick={handleBulkDelete}>
+            <FaTrash className="add-icon" /> Delete Bulk
+          </button>
         </div>
       </div>
 
@@ -663,7 +679,9 @@ const ShiftManagementTable = () => {
 
           <h4>Select Holidays:</h4>
           <div className="item-list-Selected">
-            {days.map((item) => (
+
+
+            {/* {days.map((item) => (
               <div className="items" key={item}>
                 <label className="checkbox-container">
                   <input
@@ -683,7 +701,25 @@ const ShiftManagementTable = () => {
                   {item}
                 </label>
               </div>
-            ))}
+            ))} */}
+
+            <Select
+              isMulti
+              style={{paddd:'100%'}}
+              options={dayOptions}
+              value={selectedItems.map((item) => ({ value: item, label: item }))}
+              onChange={(selectedOptions) => {
+                setSelectedItems(selectedOptions.map((option) => option.value));
+              }}
+              placeholder="Select days"
+              styles={{
+                menu: (provided) => ({
+                  ...provided,
+                  zIndex: 1050, // Set a higher z-index for the dropdown
+                }),
+              }}
+            />
+          
           </div>
           <button className="submit-button" onClick={addShift}>
             Add Shift
@@ -842,7 +878,7 @@ const ShiftManagementTable = () => {
           </select>
           <h4>Select Holidays:</h4>
           <div className="item-list-Selected">
-            {days.map((item) => (
+            {/* {days.map((item) => (
               <div className="items" key={item}>
                 <label className="checkbox-container">
                   <input
@@ -868,7 +904,23 @@ const ShiftManagementTable = () => {
                   {item}
                 </label>
               </div>
-            ))}
+            ))} */}
+
+
+            <Select
+              isMulti
+              options={dayOptions}
+              value={selectedItems.map((item) => ({ value: item, label: item }))}
+              onChange={handleSelectChange}
+              placeholder="Select holidays"
+              styles={{
+                menu: (provided) => ({
+                  ...provided,
+                  zIndex: 1050, // Set a higher z-index for the dropdown
+                }),
+              }}
+            />
+          
           </div>
           <button
             className="submit-button"
@@ -905,7 +957,7 @@ const ShiftManagementTable = () => {
         <table className="table">
           <thead>
             <tr>
-            <th>
+              <th>
                 <input
                   id="delete-checkbox"
                   type="checkbox"

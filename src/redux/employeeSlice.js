@@ -7,7 +7,7 @@ const initialState = {
   lName: "",
   dptId: "",
   dsgId: "",
-  locId: "",
+  // locId: "",
   xid: "",
   otId: "",
   lvfId: "",
@@ -24,6 +24,7 @@ const initialState = {
   enableAttendance: false,
   enableOvertime: false,
   enableSchedule: false,
+  locIds: []
 };
 
 const employeeSlice = createSlice({

@@ -247,12 +247,12 @@ const AttendanceTable = ({ data, setData }) => {
         Cell: ({ value }) => (
           <span
             className={`status ${value === "Present"
-                ? "presentStatus"
-                : value === "Late"
-                  ? "lateStatus"
-                  : value === "Absent"
-                    ? "absentStatus"
-                    : "none"
+              ? "presentStatus"
+              : value === "Late"
+                ? "lateStatus"
+                : value === "Absent"
+                  ? "absentStatus"
+                  : "none"
               }`}
           >
             {value}
@@ -348,8 +348,8 @@ const AttendanceTable = ({ data, setData }) => {
     const attPayload = {
       allAttendanceId: editFormData.allAttendanceId,
       empId: editFormData.empId,
-      time_in: formatTime(editFormData.time_in) || "",
-      time_out: formatTime(editFormData.time_out),
+      time_in: editFormData.status === "Absent" ? "" : formatTime(editFormData.time_in),
+      time_out: editFormData.status === "Absent" ? "" : formatTime(editFormData.time_out),
       date: editFormData.date,
       attendance_marked: editFormData.attendance_marked,
       status: editFormData.status,
@@ -424,13 +424,15 @@ const AttendanceTable = ({ data, setData }) => {
     }
     const payload = {
       empId: formData.empId,
-      time_in: formatTime(formData.time_in),
-      time_out: formatTime(formData.time_out),
+      time_in: formData.status === "Absent" ? "" : formatTime(formData.time_in),
+      time_out: formData.status === "Absent" ? "" : formatTime(formData.time_out),
       date: formData.date,
       attendance_marked: "by Admin",
       status: formData.status,
       location: formData.location,
     };
+    console.log(payload);
+
     try {
       await axios.post(`${SERVER_URL}manual-att/`, payload);
       const updatedData = await axios.get(`${SERVER_URL}all-attendance/`);
@@ -463,7 +465,7 @@ const AttendanceTable = ({ data, setData }) => {
 
   const formatTime = (time) => {
     // If time already includes seconds, return as is.
-    if (time.split(':').length === 3) return time;
+    if (time.split(':').length === 3 || '') return time;
 
     // Otherwise, append ":00" for seconds.
     return `${time}:00`;
@@ -612,31 +614,34 @@ const AttendanceTable = ({ data, setData }) => {
               />
             ))}
           </datalist>
-
-          <div className="form-time">
-            <div>
-              <label>Time In</label>
-              <input
-                type="time"
-                placeholder="Time In"
-                value={formData.time_in}
-                onChange={(e) =>
-                  setFormData({ ...formData, time_in: e.target.value })
-                }
-              />
-            </div>
-            <div>
-              <label>Time Out</label>
-              <input
-                type="time"
-                placeholder="Time Out"
-                value={formData.time_out}
-                onChange={(e) =>
-                  setFormData({ ...formData, time_out: e.target.value })
-                }
-              />
-            </div>
-          </div>
+          {formData.status !== 'Absent' && (
+            <>
+              <div className="form-time">
+                <div>
+                  <label>Time In</label>
+                  <input
+                    type="time"
+                    placeholder="Time In"
+                    value={formData.time_in}
+                    onChange={(e) =>
+                      setFormData({ ...formData, time_in: e.target.value })
+                    }
+                  />
+                </div>
+                <div>
+                  <label>Time Out</label>
+                  <input
+                    type="time"
+                    placeholder="Time Out"
+                    value={formData.time_out}
+                    onChange={(e) =>
+                      setFormData({ ...formData, time_out: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
+            </>
+          )}
 
           <label>Date</label>
           <input

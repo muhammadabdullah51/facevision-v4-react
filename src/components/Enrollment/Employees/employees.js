@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import EmployeeTable from "./EmployeeTable";
 import AddEmployee from "./AddEmployee";
 import axios from "axios";
@@ -8,34 +8,55 @@ import Location from "../Location/location";
 import Resign from "../Resign/resign";
 import { SERVER_URL } from "../../../config";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {faUsers, faBuilding, faTag, faMapMarkerAlt, faPersonWalkingDashedLineArrowRight, } from '@fortawesome/free-solid-svg-icons';
+import { faUsers, faBuilding, faTag, faMapMarkerAlt, faPersonWalkingDashedLineArrowRight, } from '@fortawesome/free-solid-svg-icons';
 
 const Employees = () => {
   const [activeTab, setActiveTab] = useState("Employees");
   const [changeTab, setChangeTab] = useState("Employees");
-
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [editData, setEditData] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [data, setData] = useState([]);
 
-  const fetchEmployees = async () => {
+  // const fetchEmployees = async () => {
+  //   try {
+  //     const response = await axios.get(`${SERVER_URL}pr-emp/`);
+  //     setData(response.data);
+  //   } catch (error) {
+  //     console.error('Error fetching employees:', error);
+  //   }
+  // };
+
+  const fetchEmployees = useCallback(async () => {
     try {
       const response = await axios.get(`${SERVER_URL}pr-emp/`);
       setData(response.data);
+      console.log(response.data);
     } catch (error) {
+      console.error('Error fetching employees:', error);
     }
-  };
-  useEffect(() => {
-    fetchEmployees();
-    setActiveTab("Employees");
-  }, [changeTab]);
+  }, []); // No dependencies needed
 
-  const handleEdit = (row) => {
+  // Only fetch when the tab is "Employees"
+  useEffect(() => {
+    if (changeTab === "Employees") {
+      fetchEmployees();
+      setActiveTab("Employees");
+    }
+  }, [changeTab, fetchEmployees]);
+
+  // const handleEdit = (row) => {
+  //   setEditData(row);
+  //   setIsEditMode(true);
+  //   setActiveTab("Add Employee");
+  // };
+
+  const handleEdit = useCallback((row) => {
     setEditData(row);
     setIsEditMode(true);
     setActiveTab("Add Employee");
-  };
+  }, []);
+
   const handleAdd = () => {
     setIsEditMode(false);
     setEditData(null);
@@ -57,18 +78,30 @@ const Employees = () => {
         return (
           <div>
             {activeTab === "Employees" && (
-              <EmployeeTable  data={data} setActiveTab={setActiveTab} onEdit={handleEdit} onAdd={handleAdd} />
+              <EmployeeTable 
+                data={data} 
+                setActiveTab={setActiveTab} 
+                onEdit={handleEdit} 
+                onAdd={handleAdd} 
+              />
             )}
             {activeTab === "Add Employee" && (
-              <AddEmployee editData={editData}  isEditMode={isEditMode} setIsEditMode={setIsEditMode} setActiveTab={setActiveTab} />
+              <AddEmployee 
+                setEditData={setEditData} 
+                editData={editData} 
+                isEditMode={isEditMode} 
+                setIsEditMode={setIsEditMode} 
+                setActiveTab={setActiveTab} 
+                onUpdateSuccess={fetchEmployees} 
+              />
             )}
           </div>
         );
     }
   };
+
   return (
-    <>
-      <div className="settings-page">
+    <div className="settings-page">
       <div className="tabs">
         <button
           className={`${changeTab === "Employees" ? "active" : ""}`}
@@ -103,8 +136,7 @@ const Employees = () => {
       </div>
       <div className="tab-content">{renderTabContent()}</div>
     </div>
-    </>
   );
 };
 
-export default Employees;
+export default React.memo(Employees);

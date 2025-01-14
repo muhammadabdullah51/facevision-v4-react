@@ -31,6 +31,7 @@ import taxSettingReducer from './taxSettingSlice'
 import allowanceSettingReducer from './allowanceSettingSlice'
 import holidayReducer from './holidaySlice'
 import deviceReducer from './deviceSlice'
+import editorSettingsReducer from './editorSettingsSlice';
 
 
 const persistConfig = {
@@ -73,6 +74,7 @@ const store = configureStore({
         allowanceSetting : allowanceSettingReducer,
         holiday : holidayReducer,
         device : deviceReducer,
+        editorSettings: editorSettingsReducer,
 
 
     },

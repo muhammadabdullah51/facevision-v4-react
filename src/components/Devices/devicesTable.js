@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { useTable, usePagination } from "react-table";
 import { FaEdit, FaTrash, FaPlus, FaDownload } from "react-icons/fa";
 import ReactPaginate from "react-paginate";
-import "./devices.css"; // Custom CSS for styling
+import "./devices.css";
 import axios from "axios";
 import ConirmationModal from "../Modal/conirmationModal";
 import addAnimation from "../../assets/Lottie/addAnim.json";
@@ -20,6 +20,17 @@ const DeviceTable = ({ data, setData }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
+  const [locations, setLocations] = useState([]);
+
+  const fetchloc = async () => {
+    try {
+      const response = await axios.get(`${SERVER_URL}pr-loc/`);
+      const location = response.data.context;
+      setLocations(location);
+    } catch (error) {
+    }
+  };
+
 
   const dispatch = useDispatch();
   const deviceData = useSelector((state) => state.device);
@@ -30,6 +41,7 @@ const DeviceTable = ({ data, setData }) => {
       cameraName: "",
       cameraIp: "",
       port: "",
+      locId: "",
     });
 
   const handleReset = () => {
@@ -39,6 +51,8 @@ const DeviceTable = ({ data, setData }) => {
       cameraName: "",
       cameraIp: "",
       port: "",
+      locId: "",
+
     });
     setShowAddForm(false);
     setShowEditForm(false);
@@ -49,6 +63,8 @@ const DeviceTable = ({ data, setData }) => {
     cameraName: "",
     cameraIp: "",
     port: "",
+    locId: "",
+    
   });
 
   const handleInputChange = (e) => {
@@ -79,6 +95,7 @@ const DeviceTable = ({ data, setData }) => {
   // Call fetchDepartments when component mounts
   useEffect(() => {
     fetchDevices();
+    fetchloc();
     let timer;
     if (successModal) {
       timer = setTimeout(() => {
@@ -237,6 +254,10 @@ const DeviceTable = ({ data, setData }) => {
         accessor: "port",
       },
       {
+        Header: "Location",
+        accessor: "locName",
+      },
+      {
         Header: "Status",
         accessor: "status",
         Cell: ({ value }) => (
@@ -299,11 +320,13 @@ const DeviceTable = ({ data, setData }) => {
   );
 
   const handleEdit = (row) => {
+    console.log(row.locId);
     setEditFormData({
       cameraId: row.cameraId,
       cameraName: row.cameraName,
       cameraIp: row.cameraIp,
       port: row.port,
+      locId: row.locId,
     });
     setShowAddForm(false);
     setShowEditForm(true);
@@ -337,12 +360,14 @@ const DeviceTable = ({ data, setData }) => {
   const addDevice = async () => {
     setModalType("create");
     setShowModal(true);
+    console.log(formData);
   };
   const confirmAdd = async () => {
     if (
       formData.cameraName === "" ||
       formData.cameraIp === "" ||
-      formData.port === ""
+      formData.port === "" ||
+      formData.locId === ""
     ) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
@@ -353,6 +378,7 @@ const DeviceTable = ({ data, setData }) => {
       cameraName: formData.cameraName,
       cameraIp: formData.cameraIp,
       port: formData.port,
+      locId: formData.locId,
     };
 
     try {
@@ -372,7 +398,6 @@ const DeviceTable = ({ data, setData }) => {
       setShowAddForm(false);
       setShowEditForm(false);
       setShowModal(false);
-      setSuccessModal(true);
       fetchDevices();
       handleReset()
     } catch (error) {
@@ -392,7 +417,8 @@ const DeviceTable = ({ data, setData }) => {
     if (
       editFormData.cameraName === "" ||
       editFormData.cameraIp === "" ||
-      editFormData.port === ""
+      editFormData.port === "" ||
+      editFormData.locId === ""
     ) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
@@ -404,7 +430,7 @@ const DeviceTable = ({ data, setData }) => {
       cameraName: editFormData.cameraName,
       cameraIp: editFormData.cameraIp,
       port: editFormData.port,
-      // status: formData.status,
+      locId: editFormData.locId,
     };
 
     try {
@@ -421,7 +447,6 @@ const DeviceTable = ({ data, setData }) => {
         setShowModal(false);
         setWarningModal(true);
       }
-      setSuccessModal(true);
 
       const updatedData = await axios.get(`${SERVER_URL}device/`);
       setData(updatedData.data.context);
@@ -534,7 +559,7 @@ const DeviceTable = ({ data, setData }) => {
 
       {/* Add Device Form */}
       {showAddForm && (
-        <div className="add-device-form">
+        <div className="add-department-form add-leave-form">
           <h3>Add New Device</h3>
           <label>Device Name</label>
           <input
@@ -560,6 +585,20 @@ const DeviceTable = ({ data, setData }) => {
             value={formData.port}
             onChange={handleInputChange}
           />
+          <label>Select Location</label>
+          <select
+            value={formData.locId}
+            onChange={(e) =>
+              setFormData({ ...formData, locId: e.target.value })
+            }
+          >
+            <option value="">Select Location</option>
+            {locations.map((loc) => (
+              <option key={loc.locId} value={loc.locId}>
+                {loc.name}
+              </option>
+            ))}
+          </select>
           <button className="submit-button" onClick={addDevice}>
             Add Device
           </button>
@@ -574,7 +613,7 @@ const DeviceTable = ({ data, setData }) => {
 
       {/* Edit Device Form */}
       {showEditForm && (
-        <div className="add-device-form">
+        <div className="add-department-form add-leave-form">
           <h3>Edit Device</h3>
           <label>Device ID</label>
           <input
@@ -601,6 +640,19 @@ const DeviceTable = ({ data, setData }) => {
             value={editFormData.port}
             onChange={(e) => setEditFormData({ ...editFormData, port: e.target.value })}
           />
+          <select
+            value={editFormData.locId}
+            onChange={(e) =>
+              setEditFormData({ ...editFormData, locId: e.target.value })
+            }
+          >
+            <option value="">Select Location</option>
+            {locations.map((loc) => (
+              <option key={loc.locId} value={loc.locId}>
+                {loc.name}
+              </option>
+            ))}
+          </select>
           <button className="submit-button" onClick={() => handleUpdate(editFormData)}>
             Update Device
           </button>

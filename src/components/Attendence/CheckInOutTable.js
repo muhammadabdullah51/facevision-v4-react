@@ -194,113 +194,6 @@ const CheckInOutTable = ({ dash }) => {
   };
 
 
-  const columns = useMemo(
-    () => [
-      {
-        Header: (
-          <input
-            id="delete-checkbox"
-            type="checkbox"
-            checked={filteredData.length > 0 && selectedIds.length === filteredData.length}
-            onChange={handleSelectAllChange} // Function to handle "Select All"
-          />
-        ),
-        Cell: ({ row }) => (
-          <input
-            id="delete-checkbox"
-            type="checkbox"
-            checked={selectedIds.includes(row.original.id)} // Unique identifier (id)
-            onChange={(event) => handleRowCheckboxChange(event, row.original.id)} // Row selection handler
-          />
-        ),
-        id: "selection",
-      },
-      {
-        Header: "S.No",
-        accessor: "serial",
-        Cell: ({ row }) => row.index + 1,
-      },
-      {
-        Header: "Employee ID",
-        accessor: "empId",
-      },
-      {
-        Header: "Employee Name",
-        Cell: ({ row }) => (
-          <span className="bold-fonts">
-            {row.original.lName} {row.original.fName}
-          </span>
-        ),
-      },
-      {
-        Header: "Time",
-        accessor: "time",
-      },
-      {
-        Header: "Date",
-        accessor: "date",
-      },
-      {
-        Header: "Status",
-        accessor: "status",
-        Cell: ({ value }) => (
-          <span
-            className={`status ${value === "checkin"
-              ? "presentStatus"
-              : value === "checkout"
-                ? "lateStatus"
-                : "none"
-              }`}
-          >
-            {value}
-          </span>
-        ),
-      },
-      {
-        Header: "Action",
-        accessor: "action",
-        Cell: ({ row }) => (
-          <div>
-            <button
-              onClick={() => handleEdit(row.original)}
-              style={{ background: "none", border: "none" }}
-            >
-              <FaEdit className="table-edit" />
-            </button>
-            <button
-              onClick={() => handleDelete(row.original)}
-              style={{ background: "none", border: "none" }}
-            >
-              <FaTrash className="table-delete" />
-            </button>
-          </div>
-        ),
-      },
-    ],
-    [filteredData, selectedIds] // Update columns when filteredData or selectedIds changes
-  );
-
-
-
-
-
-
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    prepareRow,
-    page,
-    pageOptions,
-    gotoPage,
-  } = useTable(
-    {
-      columns,
-      data: filteredData,
-      initialState: { pageIndex: 0 },
-    },
-    usePagination
-  );
 
   const handleEdit = (row) => {
     setEditFormData({
@@ -423,6 +316,125 @@ const CheckInOutTable = ({ dash }) => {
     } catch (error) {
     }
   };
+
+
+  const columns = useMemo(
+    () =>
+      [
+        !dash && {
+          Header: (
+            <input
+              id="delete-checkbox"
+              type="checkbox"
+              checked={filteredData.length > 0 && selectedIds.length === filteredData.length}
+              onChange={handleSelectAllChange} // Function to handle "Select All"
+            />
+          ),
+          Cell: ({ row }) => (
+            <input
+              id="delete-checkbox"
+              type="checkbox"
+              checked={selectedIds.includes(row.original.id)} // Unique identifier (id)
+              onChange={(event) => handleRowCheckboxChange(event, row.original.id)} // Row selection handler
+            />
+          ),
+          id: "selection",
+          key: "selection", // Explicitly set the key
+        },
+        {
+          Header: "S.No",
+          accessor: "serial",
+          Cell: ({ row }) => row.index + 1,
+          key: "serial", // Explicitly set the key
+        },
+        {
+          Header: "Employee ID",
+          accessor: "empId",
+          key: "empId", // Explicitly set the key
+        },
+        {
+          Header: "Employee Name",
+          Cell: ({ row }) => (
+            <span className="bold-fonts">
+              {row.original.lName} {row.original.fName}
+            </span>
+          ),
+          key: "employeeName", // Explicitly set the key
+        },
+        {
+          Header: "Time",
+          accessor: "time",
+          key: "time", // Explicitly set the key
+        },
+        {
+          Header: "Date",
+          accessor: "date",
+          key: "date", // Explicitly set the key
+        },
+        {
+          Header: "Status",
+          accessor: "status",
+          Cell: ({ value }) => (
+            <span
+              className={`status ${
+                value === "checkin"
+                  ? "presentStatus"
+                  : value === "checkout"
+                  ? "lateStatus"
+                  : "none"
+              }`}
+            >
+              {value}
+            </span>
+          ),
+          key: "status", // Explicitly set the key
+        },
+        !dash && {
+          Header: "Action",
+          accessor: "action",
+          Cell: ({ row }) => (
+            <div>
+              <button
+                onClick={() => handleEdit(row.original)}
+                style={{ background: "none", border: "none" }}
+              >
+                <FaEdit className="table-edit" />
+              </button>
+              <button
+                onClick={() => handleDelete(row.original)}
+                style={{ background: "none", border: "none" }}
+              >
+                <FaTrash className="table-delete" />
+              </button>
+            </div>
+          ),
+          key: "action", // Explicitly set the key
+        },
+      ].filter(Boolean), // Remove falsy values (e.g., undefined) to clean up the array
+    [filteredData, selectedIds] // Dependencies for memoization
+  );
+  
+  
+
+
+  const {
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    prepareRow,
+    page,
+    pageOptions,
+    gotoPage,
+  } = useTable(
+    {
+      columns,
+      data: filteredData,
+      initialState: { pageIndex: 0 },
+    },
+    usePagination
+  );
+
+
   const formatTime = (time) => {
     if (time.split(':').length === 3) return time;
     return `${time}:00`;
@@ -444,7 +456,6 @@ const CheckInOutTable = ({ dash }) => {
               if (modalType === "create") confirmAdd();
               else if (modalType === "delete selected") confirmBulkDelete();
               else if (modalType === "update") confirmUpdate();
-              // if (modalType === "update") confirmUpdate();
               else confirmDelete();
             }}
             onCancel={() => setShowModal(false)}
@@ -533,8 +544,7 @@ const CheckInOutTable = ({ dash }) => {
               </button>
             </div>
           </div>
-        </>
-      )}
+       
       {showAddForm && !showEditForm && (
         <div className="add-department-form add-leave-form">
           <h3>Add Manual Check In / Out</h3>
@@ -721,7 +731,8 @@ const CheckInOutTable = ({ dash }) => {
           </button>
         </div>
       )}
-
+ </>
+      )}
       <div className="departments-table">
         <table {...getTableProps()} className="table">
           <thead>

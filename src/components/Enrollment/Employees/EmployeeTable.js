@@ -68,12 +68,14 @@ const EmployeeTable = ({
     setSelectedRow(row);
     setIsModalOpen(true);
   };
-  const handleEdit = (row) => {
-    // setEditData(row)
-    // setIsEditMode(true);
-    // setIsActiveTab("Add Employee");
+  // const handleEdit = (row) => {
+  //   onEdit(row);
+  // };
+  const handleEdit = useCallback((row) => {
+    setFormData(row); // Update form data before edit
+    setIsEditMode(true);
     onEdit(row);
-  };
+  }, [onEdit]);
 
   const closeModal = () => {
     setIsModalOpen(false);
@@ -85,10 +87,11 @@ const EmployeeTable = ({
     async () => {
       try {
         const response = await axios.get(`${SERVER_URL}pr-emp/`);
+        console.log(response.data);
         setData(response.data);
       } catch (error) {
       }
-    }, [setData]
+    }, []
   )
 
   // Call fetchDepartments when component mounts
@@ -107,10 +110,12 @@ const EmployeeTable = ({
   const handleDelete = async (id) => {
     setModalType("delete");
     setShowModal(true);
-    setFormData({ ...formData, id: id });
+    setFormData({ id: formData.id });
+    // console.log(formData);
 
   };
   const confirmDelete = async () => {
+    console.log(formData.id);
 
     try {
       await axios.post(`${SERVER_URL}pr-emp-del/`, { id: formData.id });
@@ -387,7 +392,16 @@ const EmployeeTable = ({
                     {row.fName} {row.lName}
                   </td>
                   <td>{row.department}</td>
-                  <td>{row.enrollSite}</td>
+                  <td className="accessible-items">
+                  {Array.isArray(row.enrollSite) && row.enrollSite.length > 0
+                    ? row.enrollSite.map((loc, index) => (
+                      <span key={index} style={{ marginRight: "5px" }}>
+                        {loc}
+                      </span>
+                    ))
+                    : "No Locaion"}
+                </td>
+                  {/* <td>{row.enrollSite}</td> */}
                   <td>{row.shift}</td>
                   <td>{row.salaryType}</td>
                   <td>{row.contactNo}</td>
@@ -398,7 +412,7 @@ const EmployeeTable = ({
                     <img
                       src={
                         row.image1
-                          ? `${SERVER_URL}${row.image1}`
+                          ? `${SERVER_URL}${row.image1}?${new Date().getTime()}` // Add timestamp to prevent caching
                           : Default_picture
                       }
                       alt={row.employeeName}
@@ -475,7 +489,16 @@ const EmployeeTable = ({
                     <p>{row.salaryType} / {row.salaryPeriod} / Rs. {row.basicSalary}</p>
                   </div>
                   <div className="card-body">
-                    <p>{row.enrollSite}</p>
+                    <p className="accessible-items">
+                  {Array.isArray(row.enrollSite) && row.enrollSite.length > 0
+                    ? row.enrollSite.map((loc, index) => (
+                      <span key={index} style={{ marginRight: "5px" }}>
+                        {loc}
+                      </span>
+                    ))
+                    : "No Locaion"}
+                
+                    </p>
                   </div>
                   <div className="card-body icons-box">
                     <button
@@ -519,4 +542,4 @@ const EmployeeTable = ({
   );
 };
 
-export default EmployeeTable;
+export default React.memo(EmployeeTable);;

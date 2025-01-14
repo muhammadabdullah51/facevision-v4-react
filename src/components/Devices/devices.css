@@ -292,6 +292,14 @@ input:checked+.slider:before {
     color: var(--text-color);
     background-color: var(--table-header-color);
 }
+.add-device-form select{
+    width: 98.4%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
 @media only screen and (min-width:1500px){
     .activeStatus, .inactiveStatus{
         width:3vw;

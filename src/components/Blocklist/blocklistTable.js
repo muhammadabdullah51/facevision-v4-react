@@ -379,10 +379,15 @@ const BlockListTable = ({ data, setData }) => {
     <div className="department-table">
       <ConirmationModal
         isOpen={showModal}
-        message={`Are you sure you want to ${modalType} this to Blocked Employees?`}
+        message={
+          modalType === "delete selected"
+            ? "Are you sure you want to delete selected items?"
+            : `Are you sure you want to ${modalType} this Blocked Employees?`
+        }
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
           else if (modalType === "update") confirmUpdate();
+          else if (modalType === "delete selected") confirmBulkDelete();
           else confirmDelete();
         }}
         onCancel={() => setShowModal(false)}
@@ -457,9 +462,14 @@ const BlockListTable = ({ data, setData }) => {
             </svg>
           </button>
         </form>
+        <div className="add-delete-conainer">
         <button className="add-button" onClick={handleAdd}>
           <FaPlus className="add-icon" /> Block New Employee
         </button>
+        <button className="add-button submit-button" onClick={handleBulkDelete}>
+            <FaTrash className="add-icon" /> Delete Bulk
+          </button>
+        </div>
       </div>
       {showAddForm && !showEditForm && (
         <div className="add-department-form add-leave-form">

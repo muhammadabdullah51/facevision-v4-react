@@ -26,31 +26,52 @@ const AddVisitor = ({
 
 
 
-  useEffect(() => {
-    const fetchOptions = async () => {
-      try {
-        const response = await axios.get(`${SERVER_URL}emp-fun/`);
+//  useEffect (() => {
+//     const fetchOptions = async () => {
+//       try {
+//         const response = await axios.get(`${SERVER_URL}emp-fun/`);
 
-        setDepartments(response.data.dpt_data);
-        if (isEditMode && editData) {
-          setNewVisitor({
-            ...editData,
-            createTime: editData.createTime
-              ? new Date(editData.createTime).toISOString().slice(0, 16)
-              : "",
-            exitTime: editData.exitTime
-              ? new Date(editData.exitTime).toISOString().slice(0, 16)
-              : "",
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching options:", error);
+//         setDepartments(response.data.dpt_data);
+//         if (isEditMode && editData) {
+//           setNewVisitor({
+//             ...editData,
+//             createTime: editData.createTime
+//               ? new Date(editData.createTime).toISOString().slice(0, 16)
+//               : "",
+//             exitTime: editData.exitTime
+//               ? new Date(editData.exitTime).toISOString().slice(0, 16)
+//               : "",
+//           });
+//         }
+//       } catch (error) {
+//         console.error("Error fetching options:", error);
+//       }
+//     };
+
+//     fetchOptions();
+//   }, );
+
+
+useEffect(() => {
+  const fetchOptions = async () => {
+    try {
+      const response = await axios.get(`${SERVER_URL}emp-fun/`);
+      setDepartments(response.data.dpt_data);
+      if (isEditMode && editData) {
+        const formattedData = {
+          ...editData,
+          createTime: editData.createTime ? new Date(editData.createTime).toISOString().slice(0, 16) : "",
+          exitTime: editData.exitTime ? new Date(editData.exitTime).toISOString().slice(0, 16) : "",
+        };
+        setNewVisitor(formattedData);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching options:", error);
+    }
+  };
 
-    fetchOptions();
-  }, );
-
+  fetchOptions();
+}, [isEditMode, editData]);
 
   const dispatch = useDispatch();
   const visitorReduxState  = useSelector((state) => state.visitor);
