@@ -110,8 +110,8 @@ const EmployeeTable = ({
   const handleDelete = async (id) => {
     setModalType("delete");
     setShowModal(true);
-    setFormData({ id: formData.id });
-    // console.log(formData);
+    setFormData({ ...formData, id: id });
+    console.log(formData);
 
   };
   const confirmDelete = async () => {
