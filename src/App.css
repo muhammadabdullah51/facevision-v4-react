@@ -158,6 +158,7 @@ table thead th {
 
 body {
   font-family: 'Roboto Condensed', sans-serif;
+  top: 0 !important;
 }
 
 .App-logo {
@@ -243,4 +244,83 @@ input[type="checkbox"]#delete-checkbox{
   accent-color: var(--button-hover-color);
   width: unset;
   height: unset;
+}
+
+
+#google_translate_element{
+  position: absolute;
+  bottom: 5%;
+  right: 2%;
+  /* background-color: #E3E3E3; */
+  border-radius: 50%;
+  color: transparent!important;
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+}
+#google_translate_element a{
+  display: none;
+}
+.goog-te-combo {
+  font-weight: 900;
+  padding: 0.5rem;
+  width: 2.2rem;
+  height: 2.2rem;
+  cursor: pointer;
+  border-radius: 50%;
+  appearance: none;
+  background-color: #fff;
+  background: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"%3E%3Cpath d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.22.21-1.8l3.79 3.79v.01c.32 1.25 1.5 2.17 2.88 2.2l.12.73zm6.9-6.01c.01.01.01.02.01.03 0 .9-.36 1.71-.93 2.29L13.3 9.7l3.6-3.6c.6.74.98 1.69.98 2.77 0 1.04-.3 2.01-.78 2.85zm-7.77-6.84c-.63-.63-.19-1.75.7-1.75H11v.99L9.13 7.08zm8.07.92l.7.7c1.16 1.19 1.82 2.81 1.82 4.6 0 3.2-2.56 5.79-5.74 5.97v-.99c.75-.01 1.47-.29 2.04-.78L10.58 6.41zm-.71 1.06c-.29.29-.77.29-1.06 0L11 7v1.05c.39.39 1.02.39 1.41 0l.88-.88zM4.05 11H2.03c.02-3.94 3.07-7.12 6.99-7.81V5.9l-2.07 2.07L4.05 11z" fill="%23000000"/%3E%3C/svg%3E') no-repeat center center;
+  background-size: 2.2rem;
+  border: none;
+}
+
+/* Adjust for tablet devices */
+@media (max-width: 768px) {
+  .goog-te-combo {
+    padding: 0.6rem;
+    width: 2.8rem;
+    height: 2.8rem;
+    background-size: 2.8rem;
+  }
+}
+
+/* Adjust for mobile devices */
+@media (max-width: 480px) {
+  .goog-te-combo {
+    padding: 0.7rem;
+    width: 3.2rem;
+    height: 3.2rem;
+    background-size: 3.2rem;
+  }
+}
+.goog-te-combo:focus{
+  border: 3px solid #7145DA !important;
+
+}
+.goog-te-combo:focus-visible{
+  border: 1px solid #7145DA !important;
+
+}
+
+#\:0\.targetLanguage{
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+}
+.goog-te-gadget{
+  color: transparent !important;
+}
+
+.VIpgJd-ZVi9od-aZ2wEe-wOHMyf.VIpgJd-ZVi9od-aZ2wEe-wOHMyf-ti6hGc {
+  display: none;
+}
+
+.goog-te-banner-frame.skiptranslate {
+  display: none !important;
+}
+iframe#\:1\.container {
+  display: none;
 }

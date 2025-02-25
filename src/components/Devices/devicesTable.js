@@ -116,6 +116,7 @@ const DeviceTable = ({ data, setData }) => {
     try {
       await axios.post(`${SERVER_URL}fetch-data/`, requestData);
     } catch (error) {
+      console.log(error);
     }
   };
 
