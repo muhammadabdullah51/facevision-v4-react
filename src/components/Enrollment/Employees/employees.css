@@ -254,8 +254,17 @@ button.toggle-button {
     padding: 0.5rem;
     padding-left: 1vw;
 }
-
+.add-delete-emp{
+    display: flex;
+    width: 60%;
+    justify-content: end;
+}
 @media only screen and (max-width:700px){
+    /* .add-delete-emp{
+        display: flex;
+        width: 100%;
+        justify-content: end;
+    } */
     .employee-add-button {
         width: 100%;
     }
@@ -313,6 +322,7 @@ button.toggle-button {
     #button-webcam{
         display: none;
     }
+  
 }
 
 .crop-container {
@@ -329,3 +339,65 @@ button.toggle-button {
 
 
 
+.bulk-upload-container {
+    margin: 20px;
+    border: 1px solid #ddd;
+    padding: 15px;
+  }
+  
+  .editable-table-container {
+    overflow-x: auto;
+    max-height: 60vh;
+  }
+  
+  .editable-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .editable-table th, .editable-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    min-width: 120px;
+  }
+  
+  .editable-table input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .bulk-upload-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+
+  .bulk-add-form input, .bulk-add-form select{
+    padding: 5px;
+    border-radius: 4px;
+    margin-bottom: 5px;
+    outline: none;
+    border: 1px solid #ddd;
+  }
+  /* .bulk-multi-select{
+    width: 100%;
+  } */
+
+@media only screen and (max-width:1000px){
+    .bulk-add-btns input{
+        border: 1px solid #333 ;
+        background-color: #935dff;
+        color: white;
+        padding: 5px;
+        border-radius: 5px;
+    }
+    .bulk-upload-header{
+        flex-direction: column;
+       } 
+    .bulk-add-btns{
+        display: flex;
+        gap: 5px;
+        flex-direction: column;
+    }
+}

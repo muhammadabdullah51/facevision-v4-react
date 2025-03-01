@@ -93,25 +93,6 @@ const AddEmployee = ({
         ? `${SERVER_URL}${newEmployee.image1}?${new Date().getTime()}`
         : "";
 
-  // When the crop is applied, generate the cropped image blob and update state.
-  // const onCropSave = useCallback(
-  //   async (croppedAreaPixels) => {
-  //     try {
-  //       const croppedDataUrl = await getCroppedImg(imageSrc, croppedAreaPixels);
-  //       setCroppedImageUrl(croppedDataUrl);
-
-  //       // Update your state with the Data URL instead of a Blob
-  //       setNewEmployee((prev) => ({ ...prev, image1: croppedDataUrl }));
-  //       // dispatch({ type: "SET_EMPLOYEE_DATA", payload: { image1: croppedDataUrl } });
-
-  //       // Close the cropper
-  //       setIsCropping(false);
-  //     } catch (error) {
-  //       console.error("Error cropping image:", error);
-  //     }
-  //   },
-  //   [imageSrc, setNewEmployee, dispatch]
-  // );
 
   const onCropSave = useCallback(
     async (croppedAreaPixels) => {
@@ -190,22 +171,22 @@ const AddEmployee = ({
   }, [newEmployee.image1]);
 
   // Handlers
-  const handleLocationChange = useCallback((selectedOptions) => {
-    if (!selectedOptions) return;
+  // const handleLocationChange = useCallback((selectedOptions) => {
+  //   if (!selectedOptions) return;
 
-    if (selectedOptions.some((option) => option.value === "Add-EnrollSite")) {
-      setSelectedPage("Enroll Site Management");
-    } else {
-      const selectedIds = selectedOptions.map((option) => option.value);
+  //   if (selectedOptions.some((option) => option.value === "Add-EnrollSite")) {
+  //     setSelectedPage("Enroll Site Management");
+  //   } else {
+  //     const selectedIds = selectedOptions.map((option) => option.value);
 
-      setNewEmployee((prevEmployee) => ({
-        ...prevEmployee,
-        locIds: selectedIds,
-      }));
+  //     setNewEmployee((prevEmployee) => ({
+  //       ...prevEmployee,
+  //       locIds: selectedIds,
+  //     }));
 
-      dispatch(setEmployeeData({ locIds: selectedIds }));
-    }
-  }, [dispatch]);
+  //     dispatch(setEmployeeData({ locIds: selectedIds }));
+  //   }
+  // }, [dispatch]);
 
   const handleDepartmentChange = (event) => {
     const { value } = event.target;
