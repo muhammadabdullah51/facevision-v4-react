@@ -94,10 +94,10 @@ const AttendanceSettings = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  const handleCancel = () => {
-    setShowAddForm(false);
-    setShowEditForm(false);
-  };
+  // const handleCancel = () => {
+  //   setShowAddForm(false);
+  //   setShowEditForm(false);
+  // };
 
   const handleDelete = async (id) => {
     setModalType("delete");

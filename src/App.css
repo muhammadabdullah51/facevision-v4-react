@@ -149,6 +149,7 @@ table thead th {
   position: sticky;
   top: 0;
   /* background-color: var(--table-header-color) !important; */
+  background-color: #f4f4f4;
   z-index: 1;
 }
 

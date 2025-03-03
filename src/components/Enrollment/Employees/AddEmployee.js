@@ -299,7 +299,8 @@ const AddEmployee = ({
   };
 
 
-  const API_KEY = 'Qc9472XGJioHSbKUbKyYjF2a'; // Replace with your actual API key
+  const API_KEY = process.env.REACT_APP_BG_REMOVE_API_KEY; 
+  // const API_KEY = 'Qc9472XGJioHSbKUbKyYjF2a'; 
 
 
 

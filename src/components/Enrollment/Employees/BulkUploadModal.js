@@ -1,6 +1,13 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Papa from 'papaparse';
-import * as XLSX from 'xlsx';
+import ConirmationModal from "../../Modal/conirmationModal";
+import addAnimation from "../../../assets/Lottie/addAnim.json";
+import updateAnimation from "../../../assets/Lottie/updateAnim.json";
+import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
+import successAnimation from "../../../assets/Lottie/successAnim.json";
+import warningAnimation from "../../../assets/Lottie/warningAnim.json";
+
+// import * as XLSX from 'xlsx';
 import axios from 'axios';
 import SERVER_URL from '../../../config';
 import Select from "react-select";
@@ -19,6 +26,22 @@ const BulkUploadView = ({ onClose, onSave }) => {
   const [overtime, setOvertime] = useState([]);
   const [lvf, setLvf] = useState([]);
   const [employees, setEmployees] = useState([]);
+
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState("");
+  const [successModal, setSuccessModal] = useState(false);
+  const [warningModal, setWarningModal] = useState(false);
+  const [resMsg, setResMsg] = useState("");
+
+  useEffect(() => {
+    let timer;
+    if (successModal) {
+      timer = setTimeout(() => {
+        setSuccessModal(false);
+      }, 2000);
+    }
+    return () => clearTimeout(timer);
+  }, [successModal]);
 
 
   const fetchOptions = useCallback(async () => {
@@ -96,12 +119,12 @@ const BulkUploadView = ({ onClose, onSave }) => {
   ];
 
   // Add validation function
-  const validateColumns = (headers) => {
-    const invalidColumns = headers.filter(header => !allowedColumns.includes(header));
-    if (invalidColumns.length > 0) {
-      throw new Error(`Invalid columns detected: ${invalidColumns.join(', ')}`);
-    }
-  };
+  // const validateColumns = (headers) => {
+  //   const invalidColumns = headers.filter(header => !allowedColumns.includes(header));
+  //   if (invalidColumns.length > 0) {
+  //     throw new Error(`Invalid columns detected: ${invalidColumns.join(', ')}`);
+  //   }
+  // };
 
   const validateEmpId = (index, value) => {
     const error = value.length > 9 ? "ID cannot exceed 9 characters" : "";
@@ -115,151 +138,323 @@ const BulkUploadView = ({ onClose, onSave }) => {
     });
   };
 
-  // const handleFileUpload = (e) => {
-  //   const file = e.target.files[0];
-  //   if (!file) return;
+  const [imageFolderMap, setImageFolderMap] = useState({});
+  const folderInputRef = useRef(null);
+  const handleFolderUpload = (e) => {
+    const files = Array.from(e.target.files);
+    if (!files || files.length === 0) return;
 
-  //   const reader = new FileReader();
-  //   const fileExtension = file.name.split('.').pop().toLowerCase();
+    const mapping = {};
+    files.forEach((file) => {
+      // Use the filename (without extension) as the key
+      const empID = file.name.split(".")[0];
+      mapping[empID] = URL.createObjectURL(file);
+    });
+    setImageFolderMap(mapping);
+  };
 
-  //   reader.onload = (event) => {
+  // Trigger the hidden folder input when button is clicked
+  const triggerFolderUpload = () => {
+    if (folderInputRef.current) {
+      folderInputRef.current.click();
+    }
+  };
 
+  const [companyCode, setCompanyCode] = useState("");
 
-  //     const result = event.target.result;
-  //     let parsedData = [];
-  //     let headers = [];
-  //     try {
+  useEffect(() => {
+    axios
+      .get(`${SERVER_URL}auth-cmp-reg/`)
+      .then((response) => {
+        // Assuming response.data.context is an array with at least one element.
+        const companyData = response.data.context[0];
+        // Extract the first two letters of companyName and convert to uppercase.
+        const code = companyData.companyName.slice(0, 2).toUpperCase();
+        setCompanyCode(code);
+      })
+      .catch((error) => {
+        console.error("There was an error checking company info status", error);
+      });
+  }, []);
 
-  //       if (fileExtension === 'csv') {
-  //         const csvResult = Papa.parse(result, {
-  //           header: true,
-  //           skipEmptyLines: true,
-  //           transformHeader: h => h.trim()
-  //         });
-  //         headers = csvResult.meta.fields || [];
-  //         validateColumns(headers);
-  //         parsedData = csvResult.data;
-  //       } else {
-  //         const workbook = XLSX.read(result, { type: 'array' });
-  //         const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-  //         headers = XLSX.utils.sheet_to_json(worksheet, { header: 1 })[0];
-  //         validateColumns(headers);
-  //         parsedData = XLSX.utils.sheet_to_json(worksheet);
-  //       }
-
-  //       // Rest of mapping logic...
-  //     } catch (error) {
-  //       alert(error.message);
-  //     }
-
-  //     // Map CSV/excel data to our structure with default values
-  //     const mappedData = parsedData.map(row => ({
-  //       ...emptyRow,
-  //       ...row,
-  //       // Handle special cases
-  //       enableAttendance: row.enableAttendance?.toLowerCase() === 'true',
-  //       enableOvertime: row.enableOvertime?.toLowerCase() === 'true',
-  //       enableSchedule: row.enableSchedule?.toLowerCase() === 'true',
-  //       locIds: row.locIds ? row.locIds.split(',').map(id => id.trim()) : [],
-  //       basicSalary: parseFloat(row.basicSalary) || 0,
-  //     }));
-
-  //     setBulkData(mappedData);
-  //   };
-
-  //   fileExtension === 'csv' ? reader.readAsText(file) : reader.readAsArrayBuffer(file);
-  // };
-
-
-  
-  const handleFileUpload = (e) => {
+  const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-  
-    const reader = new FileReader();
-    const fileExtension = file.name.split('.').pop().toLowerCase();
-  
-    reader.onload = (event) => {
-      try {
-        const result = event.target.result;
-        let parsedData = [];
-        let headers = [];
-  
-        if (fileExtension === 'csv') {
-          const csvResult = Papa.parse(result, {
+
+    try {
+      function formatDate(inputDate) {
+        const date = new Date(inputDate);
+        if (!isNaN(date)) {
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, "0");
+          const day = String(date.getDate()).padStart(2, "0");
+          return `${year}-${month}-${day}`;
+        }
+        return inputDate; // fallback if parsing fails.
+      }
+      // Common processing function for each row.
+      // const processData = (data) =>
+      //   data.map((row) => {
+      //     // Get the full name from either "name" or "Name"
+      //     const fullName = row.name || row.Name || "";
+
+      //     // If fname and lname are missing but fullName exists, split it.
+      //     if (!row.fName && !row.lName && fullName) {
+      //       const parts = String(fullName).trim().split(" ");
+      //       if (parts.length === 1) {
+      //         // Only one name found; use it for both fName and lname.
+      //         row.fName = parts[0];
+      //         row.lName = parts[0];
+      //       } else {
+      //         row.fName = parts[0] || "";
+      //         row.lName = parts.slice(1).join(" ") || "";
+      //       }
+      //     }
+
+      //     return {
+      //       ...emptyRow,
+      //       ...row,
+      //       enableAttendance: String(row.enableAttendance).toLowerCase() === "true",
+      //       enableOvertime: String(row.enableOvertime).toLowerCase() === "true",
+      //       enableSchedule: String(row.enableSchedule).toLowerCase() === "true",
+      //       // Convert locIds to string first so .split() always works.
+      //       locIds: row.locIds ? String(row.locIds).split(",").map((id) => id.trim()) : [],
+      //       basicSalary: parseFloat(row.basicSalary) || 0,
+      //       image1:
+      //         row.empId && imageFolderMap[row.empId]
+      //           ? imageFolderMap[row.empId]
+      //           : row.image1,
+      //     };
+      //   });
+      const processData = (data) =>
+        data.map((row) => {
+
+          // empId: if missing, assign a random number.
+          const empId = row.empId || `${companyCode}-${Math.floor(Math.random() * 10000)}`;
+          // Handle name: check for fName and lName, otherwise try splitting "name" or "Name".
+          let fName = row.fName || "";
+          let lName = row.lName || "";
+          const fullName = row.name || row.Name || "";
+          if (!fName && !lName && fullName) {
+            const parts = String(fullName).trim().split(" ");
+            if (parts.length === 1) {
+              fName = parts[0];
+              lName = parts[0];
+            } else if (parts.length > 1) {
+              fName = parts[0];
+              lName = parts.slice(1).join(" ");
+            }
+          }
+          // If still missing, assign default "none".
+          if (!fName) fName = "none";
+          if (!lName) lName = "none";
+
+          // For IDs, default to 1 if missing.
+          const dptId = row.dptId || 1;
+          const dsgId = row.dsgId || 3;
+          const xid = row.xid || 1;
+          const otId = row.otId || 1;
+          const lvfId = row.lvfId || 1;
+
+          // Other fields with defaults.
+          const gender = row.gender || "Male";
+          const email = row.email || "abc@gmail.com";
+          // For joiningDate, default to current date (YYYY-MM-DD).
+          const joiningDate = row.joiningDate
+            ? formatDate(row.joiningDate)
+            : new Date().toISOString().split("T")[0];
+          const contactNo = row.contactNo || "132";
+          const bankName = row.bankName || "132";
+          const basicSalary = row.basicSalary ? parseFloat(row.basicSalary) : 0;
+          const accountNo = row.accountNo || "123";
+          const salaryType = row.salaryType || "Fixed";
+          const salaryPeriod = row.salaryPeriod || "Monthly";
+          // For locIds, ensure it's a string, then split, or default to [1].
+          const locIds = row.locIds
+            ? String(row.locIds)
+              .split(",")
+              .map((id) => id.trim())
+            : [1];
+
+          // Process booleans.
+          const enableAttendance =
+            String(row.enableAttendance).toLowerCase() === "true";
+          const enableOvertime = String(row.enableOvertime).toLowerCase() === "true";
+          const enableSchedule = String(row.enableSchedule).toLowerCase() === "true";
+
+          // Image mapping: if there's an image for empId in imageFolderMap, use that.
+          const image1 = imageFolderMap[empId] ? imageFolderMap[empId] : (row.image1 || "");
+
+          return {
+            ...emptyRow,
+            ...row, // merge original row data (overridden by defaults below)
+            empId,
+            fName,
+            lName,
+            dptId,
+            dsgId,
+            xid,
+            otId,
+            lvfId,
+            gender,
+            email,
+            joiningDate,
+            contactNo,
+            image1,
+            bankName,
+            basicSalary,
+            accountNo,
+            salaryType,
+            salaryPeriod,
+            locIds,
+            enableAttendance,
+            enableOvertime,
+            enableSchedule,
+          };
+        });
+
+
+
+      if (file.name.endsWith(".csv")) {
+        // CSV file handling.
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const csvResult = Papa.parse(event.target.result, {
             header: true,
             skipEmptyLines: true,
-            transformHeader: h => h.trim()
+            transformHeader: (h) => h.trim(),
           });
-          
-          // Get original headers and filter allowed ones
-          headers = csvResult.meta.fields || [];
-          const filteredHeaders = headers.filter(header => 
-            allowedColumns.includes(header)
-          );
-          
-          // Map data with only allowed columns
-          parsedData = csvResult.data.map(row => {
+          const filteredHeaders =
+            csvResult.meta.fields?.filter((header) =>
+              allowedColumns.includes(header)
+            ) || [];
+          const parsedData = csvResult.data.map((row) => {
             const filteredRow = {};
-            filteredHeaders.forEach(header => {
-              filteredRow[header] = row[header] || '';
+            filteredHeaders.forEach((header) => {
+              filteredRow[header] = row[header] || "";
             });
             return filteredRow;
           });
-  
-        } else {
-          const workbook = XLSX.read(result, { type: 'array' });
-          const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-          headers = XLSX.utils.sheet_to_json(worksheet, { header: 1 })[0];
-          
-          // Filter allowed columns
-          const filteredHeaders = headers.filter(header => 
-            allowedColumns.includes(header)
-          );
-          
-          // Process data with only allowed columns
-          parsedData = XLSX.utils.sheet_to_json(worksheet)
-            .map(row => {
-              const filteredRow = {};
-              filteredHeaders.forEach(header => {
-                filteredRow[header] = row[header] || '';
-              });
-              return filteredRow;
-            });
+          setBulkData(processData(parsedData));
+        };
+        reader.readAsText(file);
+      } else if (file.name.endsWith(".xlsx") || file.name.endsWith(".xls")) {
+        // Process XLSX/XLS file.
+        const workbook = read(await file.arrayBuffer(), { type: "array" });
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        // Use defval: "" so that missing values are empty strings.
+        const jsonData = utils.sheet_to_json(worksheet, { defval: "" });
+
+        // Step 1: Trim header keys (to mimic CSV's transformHeader).
+        const trimmedData = jsonData.map((row) => {
+          const newRow = {};
+          Object.keys(row).forEach((key) => {
+            newRow[key.trim()] = row[key];
+          });
+          return newRow;
+        });
+
+        // Step 2: Filter to allowed columns (like CSV processing).
+        const filteredData = trimmedData.map((row) => {
+          const filteredRow = {};
+          allowedColumns.forEach((header) => {
+            filteredRow[header] = row[header] || "";
+          });
+          return filteredRow;
+        });
+
+        // Build a local mapping: use external mapping if available; 
+        // otherwise attempt to extract embedded images from the Excel file.
+        let localImageMap = { ...imageFolderMap };
+        if (Object.keys(localImageMap).length === 0) {
+          const zip = await JSZip.loadAsync(file);
+          const mediaFolder = zip.folder("xl/media");
+          if (mediaFolder) {
+            const mediaFiles = Object.keys(zip.files).filter((name) =>
+              name.startsWith("xl/media/")
+            );
+            const mappingEntries = await Promise.all(
+              mediaFiles.map(async (filePath) => {
+                const fileEntry = zip.files[filePath];
+                const blob = await fileEntry.async("blob");
+                const fileName = filePath.split("/").pop();
+                const empID = fileName.split(".")[0];
+                return [empID, URL.createObjectURL(blob)];
+              })
+            );
+            localImageMap = Object.fromEntries(mappingEntries);
+          }
         }
-  
-        // Map to your structure with default values
-        const mappedData = parsedData.map(row => ({
-          ...emptyRow,
-          ...row,
-          // Handle special cases
-          enableAttendance: String(row.enableAttendance).toLowerCase() === 'true',
-          enableOvertime: String(row.enableOvertime).toLowerCase() === 'true',
-          enableSchedule: String(row.enableSchedule).toLowerCase() === 'true',
-          locIds: row.locIds ? row.locIds.split(',').map(id => id.trim()) : [],
-          basicSalary: parseFloat(row.basicSalary) || 0,
-        }));
-  
-        setBulkData(mappedData);
-  
-      } catch (error) {
-        alert(`Error processing file: ${error.message}`);
+
+        // Process each row: if a matching image exists in the mapping, assign it.
+        const processedData = jsonData.map((row) => {
+          const processedRow = processData([row])[0];
+          if (processedRow.empId && localImageMap[processedRow.empId]) {
+            processedRow.image1 = localImageMap[processedRow.empId];
+          }
+          return processedRow;
+        });
+
+        setBulkData(processedData);
       }
-    };
-  
-    fileExtension === 'csv' ? reader.readAsText(file) : reader.readAsArrayBuffer(file);
+    } catch (error) {
+      alert(`Error processing file: ${error.message}`);
+    }
   };
+
+  useEffect(() => {
+    if (bulkData.length > 0) {
+      const updatedData = bulkData.map((row) => {
+        if (row.empId && imageFolderMap[row.empId]) {
+          return { ...row, image1: imageFolderMap[row.empId] };
+        }
+        return row;
+      });
+      setBulkData(updatedData);
+    }
+  }, [bulkData, imageFolderMap]);
+
+
 
 
   const addNewRow = () => {
     setBulkData([...bulkData, { ...emptyRow }]);
   };
 
+  // const handleSave = () => {
+  //   onSave(bulkData);
+  //   onClose();
+  // };
   const handleSave = () => {
+    setModalType("create");
+    setShowModal(true);
+  };
+  const confirmAdd = async () => {
+    // Validate every allowed column in each row.
+    for (const row of bulkData) {
+      for (const column of allowedColumns) {
+        if (
+          row[column] === undefined ||
+          row[column] === null ||
+          (typeof row[column] === "string" && row[column].trim() === "")
+        ) {
+          setResMsg(`Please fill in all required fields. Missing ${column}.`);
+          // Close the confirmation modal and show warning.
+          setShowModal(false);
+          setWarningModal(true);
+          return;
+        }
+      }
+    }
+
+    // If all rows pass validation, show the success modal.
+    // setShowModal(false);
+    // setSuccessModal(true);
+
+    // Proceed to save and close.
     onSave(bulkData);
     onClose();
   };
-
   const handleRemoveRow = (index) => {
     setBulkData(prev => prev.filter((_, i) => i !== index));
   };
@@ -325,7 +520,8 @@ const BulkUploadView = ({ onClose, onSave }) => {
 
 
   const [imagePreviews, setImagePreviews] = useState({});
-  const API_KEY = 'Qc9472XGJioHSbKUbKyYjF2a'; // Replace with your actual API key
+  const API_KEY = process.env.REACT_APP_BG_REMOVE_API_KEY;
+
 
   const handleImageUpload = async (file, index) => {
     try {
@@ -483,13 +679,13 @@ const BulkUploadView = ({ onClose, onSave }) => {
         const currentFile = bulkData[index].image1;
 
         return (
-          <div className="image-upload-container">
+          <div className="image-upload-container empImage">
             {previewUrl || currentFile ? (
               <div className="image-preview-wrapper">
                 <img
-                  src={previewUrl || URL.createObjectURL(currentFile)}
+                  src={previewUrl || (typeof currentFile === "string" ? currentFile : URL.createObjectURL(currentFile))}
                   alt="Employee preview"
-                  className="image-preview"
+                  className="employee-image"
                 />
                 <button
                   type="button"
@@ -596,7 +792,7 @@ const BulkUploadView = ({ onClose, onSave }) => {
               label: loc.name
             }))}
             value={value.map(id => {
-              const location = enrollSites.find(l => l.locId == id);
+              const location = enrollSites.find(l => l.locId === id);
               return {
                 value: id,
                 label: location ? location.name : `Unknown Location (ID: ${id})`
@@ -634,11 +830,63 @@ const BulkUploadView = ({ onClose, onSave }) => {
 
   return (
     <div className="departments-table">
+      <ConirmationModal
+        isOpen={showModal}
+        message={`Are you sure you want to add all these employees?`
+        }
+        onConfirm={() => {
+          if (modalType === "create") confirmAdd();
+        }}
+        onCancel={() => setShowModal(false)}
+        animationData={
+          modalType === "create"
+            ? addAnimation
+            : modalType === "update"
+              ? updateAnimation
+              : deleteAnimation
+        }
+      />
+      <ConirmationModal
+        isOpen={successModal}
+        message={ `Department ${modalType}d successfully!`}
+        onConfirm={() => setSuccessModal(false)}
+        onCancel={() => setSuccessModal(false)}
+        animationData={successAnimation}
+        successModal={successModal}
+      />
+      <ConirmationModal
+        isOpen={warningModal}
+        message={resMsg}
+        onConfirm={() => setWarningModal(false)}
+        onCancel={() => setWarningModal(false)}
+        animationData={warningAnimation}
+        warningModal={warningModal}
+      />
       <div className="bulk-upload-header">
         <h3>Bulk Employee Upload</h3>
         <div className='bulk-add-btns'>
+
           <input type="file" accept=".csv,.xlsx,.xls" onChange={handleFileUpload} />
+
+          {/* Hidden file input for folder selection */}
+          <input
+            type="file"
+            webkitdirectory="true"
+            ref={folderInputRef}
+            style={{ display: "none" }}
+            onChange={handleFolderUpload}
+          />
+
+          {/* Button to trigger folder upload */}
+          <button onClick={triggerFolderUpload} className="add-button">
+            <FaPlus className="add-icon" /> Add All Images
+          </button>
+          {/* <pre>{JSON.stringify(bulkData, null, 2)}</pre> */}
+
+
+
           <button onClick={addNewRow} className='add-button'><FaPlus className="add-icon" />Add New Row</button>
+
           <button onClick={handleSave} className="submit-button" style={{ marginLeft: '10px' }} disabled={!allEmpIdsValid()}>Save All</button>
           <button onClick={onClose} className="cancel-button">Cancel</button>
         </div>
