@@ -230,7 +230,77 @@ const EmployeeTable = ({
   const handleBulkUploadClose = () => {
     setShowBulkUpload(false);
   };
-   const [bulkEditData, setBulkEditData] = useState([]);
+  const [bulkEditData, setBulkEditData] = useState([]);
+  
+
+  const convertBlobUrlToFile = async (blobUrl, fileName, mimeType) => {
+    console.log("Fetching blob from URL:", blobUrl);
+    const response = await fetch(blobUrl);
+    const blob = await response.blob();
+    console.log("Blob fetched. Creating file:", fileName);
+    return new File([blob], fileName, { type: mimeType });
+  };
+
+  const handleBulkSave = async (data) => {
+    try {
+      const formData = new FormData();
+      const employeeData = [];
+  
+      console.log("Original employee data:", data);
+  
+      for (let employee of data) {
+        const employeeCopy = { ...employee };
+        if (employeeCopy.image1) {
+          if (typeof employeeCopy.image1 === "string" && employeeCopy.image1.startsWith("blob:")) {
+            const fileName = `${employee.empId}.png`;
+            console.log(`Converting blob image for employee ID ${employee.empId} with file name: ${fileName}`);
+            const imageFile = await convertBlobUrlToFile(employeeCopy.image1, fileName, "image/png");
+            console.log("Converted file object:", imageFile);
+            formData.append(fileName, imageFile);
+            employeeCopy.image1 = fileName;
+          }
+          else if (employeeCopy.image1 instanceof File) {
+            const fileName = employeeCopy.image1.name;
+            console.log(`Attaching existing File for employee ID ${employee.empId} with file name: ${fileName}`);
+            formData.append(fileName, employeeCopy.image1);
+            employeeCopy.image1 = fileName;
+          }
+        }
+  
+        employeeData.push(employeeCopy);
+      }
+      console.log("Employee data prepared for JSON (with file references):", employeeData);
+      // formData.append("employee", employeeData);  
+      formData.append("employee", JSON.stringify(employeeData));  
+      console.log("Final FormData entries:");
+      for (let [key, value] of formData.entries()) {
+        console.log(key, value);
+      }
+      console.log("Sending request...");
+      const response = await axios.post(
+        `${SERVER_URL}pr-bulk-add-emp/`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+      console.log("Bulk upload success:", response.data);
+      setShowModal(false)
+      setModalType('bulkAdd')
+      setSuccessModal(true)
+      
+    } catch (error) {
+      console.error("Error uploading bulk data:", error);
+    }
+  };
+
+
+  const handleSaveFromModal = (data) => {
+    setBulkEditData(data);
+    handleBulkSave(data);
+  };
+
+
 
   return (
     <div className="department-table">
@@ -259,6 +329,8 @@ const EmployeeTable = ({
         message={
           modalType === "delete selected"
             ? "Selected items deleted successfully!"
+            : modalType === "bulkAdd" ?
+            `Bulk data uploaded successfully!`
             : `Employee ${modalType}d successfully!`
         }
         onConfirm={() => setSuccessModal(false)}
@@ -375,12 +447,7 @@ const EmployeeTable = ({
         {showBulkUpload && !isTableView && !isCardView ? (
           <BulkUploadModal
             onClose={handleBulkUploadClose}
-            onSave={(data) => {
-              // Here you can access the complete edited data
-              console.log('Data to save:', data);
-              // Set to state or send directly to API
-              setBulkEditData(data);
-            }}
+            onSave={handleSaveFromModal}
           />
         ) : isTableView && !isCardView && !showBulkUpload ? (
 

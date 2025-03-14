@@ -157,10 +157,16 @@ table thead th {
   text-align: center;
 }
 
+*{
+  font-family: 'Roboto Condensed', sans-serif;
+}
+
 body {
   font-family: 'Roboto Condensed', sans-serif;
   top: 0 !important;
+  
 }
+
 
 .App-logo {
   height: 40vmin;

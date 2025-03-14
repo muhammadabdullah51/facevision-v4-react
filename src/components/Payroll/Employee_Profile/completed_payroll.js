@@ -25,9 +25,10 @@ import { FaDownload, FaFolderOpen } from "react-icons/fa";
 
 import Allowance from "../Allowances/Allowances";
 import WorkingHours from "../Working_Hours/WorkingHours";
+import "./employee_profile.css"
 
 
-const EmplyeeProfile = () => {
+const CompletedPayroll = () => {
   const [data, setData] = useState([
     {
       pysId: "",
@@ -56,7 +57,7 @@ const EmplyeeProfile = () => {
 
   const [employees, setEmployees] = useState([]);
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
-  const [changeTab, setChangeTab] = useState("Employee Profile");
+  const [changeTab, setChangeTab] = useState("Completed Payrolls");
 
   const [activeTab, setActiveTab] = useState("table"); // Default view is the table
   const [selectedEmployee, setSelectedEmployee] = useState(null); // Store the selected employee data
@@ -398,6 +399,8 @@ const EmplyeeProfile = () => {
 
   const renderTabContent = () => {
     switch (changeTab) {
+    //   case "Completed Payrolls":
+    //     return <CompletedPayroll />;
       case "Working Hours":
         return <WorkingHours />;
       case "Advance Salary":
@@ -616,11 +619,17 @@ const EmplyeeProfile = () => {
     <>
       <div className="settings-page">
         <div className="tabs" id="emp-profile-tabs">
-          <button
+          {/* <button
             className={`${changeTab === "Employee Profile" ? "active" : ""}`}
             onClick={() => setChangeTab("Employee Profile")}
           >
             Profile
+          </button> */}
+          <button
+            className={`${changeTab === "Completed Payrolls" ? "active" : ""}`}
+            onClick={() => setChangeTab("Completed Payrolls")}
+          >
+            Completed Payrolls
           </button>
           <button
             className={`${changeTab === "Working Hours" ? "active" : ""}`}
@@ -677,4 +686,4 @@ const EmplyeeProfile = () => {
   );
 };
 
-export default EmplyeeProfile;
+export default CompletedPayroll;

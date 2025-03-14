@@ -7,13 +7,14 @@ import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../../assets/Lottie/warningAnim.json";
 
-// import * as XLSX from 'xlsx';
 import axios from 'axios';
 import SERVER_URL from '../../../config';
 import Select from "react-select";
-import { FaPlus, FaTrash } from 'react-icons/fa';
+import { FaEdit, FaPlus, FaTrash } from 'react-icons/fa';
 import JSZip from 'jszip';
 import { read, utils } from 'xlsx';
+import ImageCropper from './ImageCropper';
+import getCroppedImg from './cropImage';
 
 
 const BulkUploadView = ({ onClose, onSave }) => {
@@ -32,6 +33,56 @@ const BulkUploadView = ({ onClose, onSave }) => {
   const [successModal, setSuccessModal] = useState(false);
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
+
+  const [imageFolderMap, setImageFolderMap] = useState({});
+  const [companyCode, setCompanyCode] = useState("");
+  const [imagePreviews, setImagePreviews] = useState({});
+  const [isFileUploaded, setIsFileUploaded] = useState(false);
+  const [isCropping, setIsCropping] = useState(false);
+  const [cropIndex, setCropIndex] = useState(null);
+  const [croppedImageUrl, setCroppedImageUrl] = useState("");
+
+
+  const API_KEY = process.env.REACT_APP_BG_REMOVE_API_KEY;
+  const folderInputRef = useRef(null);
+
+  const openCropModal = (index) => {
+    setCropIndex(index);
+    setIsCropping(true);
+  };
+
+  const onCropSave = useCallback(
+    async (croppedAreaPixels) => {
+      // Get the image source from the row being cropped
+      const currentRow = bulkData[cropIndex];
+      const imageSrc =
+        currentRow.image1 instanceof File || currentRow.image1 instanceof Blob
+          ? URL.createObjectURL(currentRow.image1)
+          : typeof currentRow.image1 === "string"
+            ? `${SERVER_URL}${currentRow.image1}?${new Date().getTime()}`
+            : "";
+      try {
+        const croppedDataUrl = await getCroppedImg(imageSrc, croppedAreaPixels);
+        // Convert the data URL to a File
+        const blob = await fetch(croppedDataUrl).then(res => res.blob());
+        const croppedFile = new File([blob], 'cropped-image.png', {
+          type: 'image/png'
+        });
+        // Update bulkData for the current row with the cropped File
+        setBulkData(prev => {
+          const newData = [...prev];
+          newData[cropIndex].image1 = croppedFile;
+          return newData;
+        });
+        setCroppedImageUrl(URL.createObjectURL(croppedFile));
+        setIsCropping(false);
+      } catch (error) {
+        console.error("Error cropping image:", error);
+      }
+    },
+    [bulkData, cropIndex]
+  );
+
 
   useEffect(() => {
     let timer;
@@ -74,7 +125,9 @@ const BulkUploadView = ({ onClose, onSave }) => {
     fetchOptions();
   }, [fetchEmployees, fetchOptions]);
 
+
   const [empIdValidations, setEmpIdValidations] = useState([]);
+
 
   // Update validation state when bulkData changes
   useEffect(() => {
@@ -84,6 +137,7 @@ const BulkUploadView = ({ onClose, onSave }) => {
       isEmpty: !row.empId
     })));
   }, [bulkData, employees]);
+
 
   // Initialize empty row template
   const emptyRow = {
@@ -111,6 +165,7 @@ const BulkUploadView = ({ onClose, onSave }) => {
     locIds: [],
   };
 
+
   const allowedColumns = [
     'empId', 'fName', 'lName', 'dptId', 'dsgId', 'xid', 'otId', 'lvfId',
     'gender', 'email', 'joiningDate', 'contactNo', 'image1', 'bankName',
@@ -118,13 +173,6 @@ const BulkUploadView = ({ onClose, onSave }) => {
     'enableOvertime', 'enableSchedule', 'locIds'
   ];
 
-  // Add validation function
-  // const validateColumns = (headers) => {
-  //   const invalidColumns = headers.filter(header => !allowedColumns.includes(header));
-  //   if (invalidColumns.length > 0) {
-  //     throw new Error(`Invalid columns detected: ${invalidColumns.join(', ')}`);
-  //   }
-  // };
 
   const validateEmpId = (index, value) => {
     const error = value.length > 9 ? "ID cannot exceed 9 characters" : "";
@@ -138,20 +186,97 @@ const BulkUploadView = ({ onClose, onSave }) => {
     });
   };
 
-  const [imageFolderMap, setImageFolderMap] = useState({});
-  const folderInputRef = useRef(null);
-  const handleFolderUpload = (e) => {
+  const validateEmail = (email) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(String(email).toLowerCase());
+  };
+
+  const removeBackgroundFromFile = async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append('image_file', file);
+
+      const response = await axios.post('https://api.remove.bg/v1.0/removebg', formData, {
+        headers: { 'X-Api-Key': API_KEY },
+        responseType: 'blob'
+      });
+
+      // Create a new File object using the response blob
+      const bgRemovedFile = new File([response.data], file.name, {
+        type: 'image/png',
+        lastModified: file.lastModified // preserves original timestamp
+      });
+      return bgRemovedFile;
+    } catch (error) {
+      console.error("Error removing background for file:", file.name, error);
+      // If an error occurs, return the original file
+      return file;
+    }
+  };
+
+
+
+  const handleFolderUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (!files || files.length === 0) return;
 
-    const mapping = {};
-    files.forEach((file) => {
-      // Use the filename (without extension) as the key
-      const empID = file.name.split(".")[0];
-      mapping[empID] = URL.createObjectURL(file);
-    });
-    setImageFolderMap(mapping);
+    // Process all files (with background removal if needed) and create a mapping from empId to File object.
+    const mappingEntries = await Promise.all(files.map(async (file) => {
+      const empID = file.name.split(".")[0].trim(); // trim empID for consistency
+      // Optionally process the file (e.g., remove background)
+      const processedFile = await removeBackgroundFromFile(file);
+      return [empID, processedFile];
+    }));
+
+    const newMapping = Object.fromEntries(mappingEntries);
+    setImageFolderMap(newMapping);
+
+    // Update bulkData rows that have an empId matching a file from the folder
+    setBulkData(prevData =>
+      prevData.map(row => {
+        const empId = row.empId ? row.empId.toString().trim() : "";
+        // Update only if there is a matching image and if the row's image1 is empty or a simple string
+        if (empId && newMapping[empId] && (!row.image1 || (typeof row.image1 === 'string' && row.image1.trim() === ""))) {
+          return { ...row, image1: newMapping[empId] };
+        }
+        setIsFileUploaded(true);
+        return row;
+      })
+    );
   };
+
+
+  // Updated folder upload handler that processes each file with background removal
+  // const handleFolderUpload = async (e) => {
+  //   const files = Array.from(e.target.files);
+  //   if (!files || files.length === 0) return;
+
+  //   // Process all files: remove background and map them by empID (derived from filename)
+  //   const mappingEntries = await Promise.all(files.map(async (file) => {
+  //     const empID = file.name.split(".")[0];
+  //     const processedFile = await removeBackgroundFromFile(file);
+  //     return [empID, processedFile];
+  //   }));
+
+  //   const mapping = Object.fromEntries(mappingEntries);
+  //   setImageFolderMap(mapping);
+  // };
+
+
+
+  // const handleFolderUpload = (e) => {
+  //   const files = Array.from(e.target.files);
+  //   if (!files || files.length === 0) return;
+
+  //   const mapping = {};
+  //   files.forEach((file) => {
+  //     // Use the filename (without extension) as the key
+  //     const empID = file.name.split(".")[0];
+  //     mapping[empID] = URL.createObjectURL(file);
+  //   });
+  //   setImageFolderMap(mapping);
+  // };
+
 
   // Trigger the hidden folder input when button is clicked
   const triggerFolderUpload = () => {
@@ -160,7 +285,9 @@ const BulkUploadView = ({ onClose, onSave }) => {
     }
   };
 
-  const [companyCode, setCompanyCode] = useState("");
+
+
+
 
   useEffect(() => {
     axios
@@ -176,6 +303,9 @@ const BulkUploadView = ({ onClose, onSave }) => {
         console.error("There was an error checking company info status", error);
       });
   }, []);
+
+
+
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
@@ -193,45 +323,10 @@ const BulkUploadView = ({ onClose, onSave }) => {
         return inputDate; // fallback if parsing fails.
       }
       // Common processing function for each row.
-      // const processData = (data) =>
-      //   data.map((row) => {
-      //     // Get the full name from either "name" or "Name"
-      //     const fullName = row.name || row.Name || "";
-
-      //     // If fname and lname are missing but fullName exists, split it.
-      //     if (!row.fName && !row.lName && fullName) {
-      //       const parts = String(fullName).trim().split(" ");
-      //       if (parts.length === 1) {
-      //         // Only one name found; use it for both fName and lname.
-      //         row.fName = parts[0];
-      //         row.lName = parts[0];
-      //       } else {
-      //         row.fName = parts[0] || "";
-      //         row.lName = parts.slice(1).join(" ") || "";
-      //       }
-      //     }
-
-      //     return {
-      //       ...emptyRow,
-      //       ...row,
-      //       enableAttendance: String(row.enableAttendance).toLowerCase() === "true",
-      //       enableOvertime: String(row.enableOvertime).toLowerCase() === "true",
-      //       enableSchedule: String(row.enableSchedule).toLowerCase() === "true",
-      //       // Convert locIds to string first so .split() always works.
-      //       locIds: row.locIds ? String(row.locIds).split(",").map((id) => id.trim()) : [],
-      //       basicSalary: parseFloat(row.basicSalary) || 0,
-      //       image1:
-      //         row.empId && imageFolderMap[row.empId]
-      //           ? imageFolderMap[row.empId]
-      //           : row.image1,
-      //     };
-      //   });
       const processData = (data) =>
         data.map((row) => {
 
-          // empId: if missing, assign a random number.
           const empId = row.empId || `${companyCode}-${Math.floor(Math.random() * 10000)}`;
-          // Handle name: check for fName and lName, otherwise try splitting "name" or "Name".
           let fName = row.fName || "";
           let lName = row.lName || "";
           const fullName = row.name || row.Name || "";
@@ -245,16 +340,14 @@ const BulkUploadView = ({ onClose, onSave }) => {
               lName = parts.slice(1).join(" ");
             }
           }
-          // If still missing, assign default "none".
           if (!fName) fName = "none";
           if (!lName) lName = "none";
 
-          // For IDs, default to 1 if missing.
-          const dptId = row.dptId || 1;
-          const dsgId = row.dsgId || 3;
-          const xid = row.xid || 1;
-          const otId = row.otId || 1;
-          const lvfId = row.lvfId || 1;
+          const dptId = row.dptId || departments[0].dptId;
+          const dsgId = row.dsgId || designations[0].dsgId;
+          const xid = row.xid || shifts[0].shiftId;
+          const otId = row.otId || overtime[0].OTFormulaId;
+          const lvfId = row.lvfId || lvf[0].leaveFormulaId;
 
           // Other fields with defaults.
           const gender = row.gender || "Male";
@@ -274,17 +367,20 @@ const BulkUploadView = ({ onClose, onSave }) => {
             ? String(row.locIds)
               .split(",")
               .map((id) => id.trim())
-            : [1];
+            : [enrollSites[0].locId];
 
           // Process booleans.
-          const enableAttendance =
-            String(row.enableAttendance).toLowerCase() === "true";
-          const enableOvertime = String(row.enableOvertime).toLowerCase() === "true";
-          const enableSchedule = String(row.enableSchedule).toLowerCase() === "true";
+          // const enableAttendance = String(row.enableAttendance).toLowerCase() === "true";
+          // const enableOvertime = String(row.enableOvertime).toLowerCase() === "true";
+          // const enableSchedule = String(row.enableSchedule).toLowerCase() === "true";
+          const enableAttendance = row.enableAttendance ? String(row.enableAttendance).toLowerCase() === "true" : true;
+          const enableOvertime = row.enableOvertime ? String(row.enableOvertime).toLowerCase() === "true" : true;
+          const enableSchedule = row.enableSchedule ? String(row.enableSchedule).toLowerCase() === "true" : true;
+
 
           // Image mapping: if there's an image for empId in imageFolderMap, use that.
           const image1 = imageFolderMap[empId] ? imageFolderMap[empId] : (row.image1 || "");
-
+          setIsFileUploaded(true);
           return {
             ...emptyRow,
             ...row, // merge original row data (overridden by defaults below)
@@ -373,13 +469,19 @@ const BulkUploadView = ({ onClose, onSave }) => {
             const mediaFiles = Object.keys(zip.files).filter((name) =>
               name.startsWith("xl/media/")
             );
+
             const mappingEntries = await Promise.all(
               mediaFiles.map(async (filePath) => {
                 const fileEntry = zip.files[filePath];
                 const blob = await fileEntry.async("blob");
                 const fileName = filePath.split("/").pop();
                 const empID = fileName.split(".")[0];
-                return [empID, URL.createObjectURL(blob)];
+                // Create a File instance from the blob, explicitly setting type to image/png.
+                const fileObj = new File([blob], fileName, {
+                  type: "image/png",
+                  lastModified: Date.now() // Use a proper timestamp if available.
+                });
+                return [empID, fileObj];
               })
             );
             localImageMap = Object.fromEntries(mappingEntries);
@@ -402,10 +504,24 @@ const BulkUploadView = ({ onClose, onSave }) => {
     }
   };
 
+
+  // useEffect(() => {
+  //   if (bulkData.length > 0) {
+  //     const updatedData = bulkData.map((row) => {
+  //       if (row.empId && imageFolderMap[row.empId]) {
+  //         return { ...row, image1: imageFolderMap[row.empId] };
+  //       }
+  //       return row;
+  //     });
+  //     setBulkData(updatedData);
+  //   }
+  // }, [bulkData, imageFolderMap]);
+
   useEffect(() => {
     if (bulkData.length > 0) {
       const updatedData = bulkData.map((row) => {
-        if (row.empId && imageFolderMap[row.empId]) {
+        // Only update if image1 is still a string (i.e., the auto-mapped URL)
+        if (row.empId && imageFolderMap[row.empId] && typeof row.image1 === 'string') {
           return { ...row, image1: imageFolderMap[row.empId] };
         }
         return row;
@@ -416,18 +532,19 @@ const BulkUploadView = ({ onClose, onSave }) => {
 
 
 
-
   const addNewRow = () => {
     setBulkData([...bulkData, { ...emptyRow }]);
   };
 
-  // const handleSave = () => {
-  //   onSave(bulkData);
-  //   onClose();
-  // };
+
   const handleSave = () => {
     setModalType("create");
+    console.log("this is all data ....");
+    
+    console.log(bulkData);
+    
     setShowModal(true);
+
   };
   const confirmAdd = async () => {
     // Validate every allowed column in each row.
@@ -436,7 +553,8 @@ const BulkUploadView = ({ onClose, onSave }) => {
         if (
           row[column] === undefined ||
           row[column] === null ||
-          (typeof row[column] === "string" && row[column].trim() === "")
+          (typeof row[column] === "string" && row[column].trim() === "") ||
+          (Array.isArray(row[column]) && row[column].length === 0)
         ) {
           setResMsg(`Please fill in all required fields. Missing ${column}.`);
           // Close the confirmation modal and show warning.
@@ -444,14 +562,10 @@ const BulkUploadView = ({ onClose, onSave }) => {
           setWarningModal(true);
           return;
         }
+
       }
     }
 
-    // If all rows pass validation, show the success modal.
-    // setShowModal(false);
-    // setSuccessModal(true);
-
-    // Proceed to save and close.
     onSave(bulkData);
     onClose();
   };
@@ -519,9 +633,6 @@ const BulkUploadView = ({ onClose, onSave }) => {
   };
 
 
-  const [imagePreviews, setImagePreviews] = useState({});
-  const API_KEY = process.env.REACT_APP_BG_REMOVE_API_KEY;
-
 
   const handleImageUpload = async (file, index) => {
     try {
@@ -533,14 +644,17 @@ const BulkUploadView = ({ onClose, onSave }) => {
         responseType: 'blob'
       });
 
+      // Create a new File object using the response blob,
+      // and pass in the original file's lastModified property.
       const bgRemovedFile = new File([response.data], 'bg-removed-image.png', {
-        type: 'image/png'
+        type: 'image/png',
+        lastModified: file.lastModified // use the original file's timestamp
       });
 
       // Create preview URL
       const previewUrl = URL.createObjectURL(bgRemovedFile);
 
-      // Update state
+      // Update state: store the File object (with proper properties) in bulkData.
       setBulkData(prev => {
         const newData = [...prev];
         newData[index].image1 = bgRemovedFile;
@@ -551,7 +665,7 @@ const BulkUploadView = ({ onClose, onSave }) => {
 
     } catch (error) {
       console.error("Error removing background:", error);
-      // Fallback to original file
+      // Fallback to original file if error occurs.
       const previewUrl = URL.createObjectURL(file);
       setImagePreviews(prev => ({ ...prev, [index]: previewUrl }));
       setBulkData(prev => {
@@ -655,13 +769,21 @@ const BulkUploadView = ({ onClose, onSave }) => {
 
       case 'email':
         return (
-          <input
-            type="email"
-            value={value}
-            onChange={(e) => handleFieldChange(index, field, e.target.value)}
-            className="bulk-input"
-            placeholder="Enter valid email"
-          />
+          <>
+            <input
+              type="email"
+              value={value}
+              onChange={(e) => handleFieldChange(index, field, e.target.value)}
+              className="bulk-input"
+              placeholder="Enter valid email"
+            />
+            {!validateEmail(value) && value.trim() !== "" && (
+              <p style={{ color: "red", fontSize: "0.9em", marginTop: "-5px" }}>
+                &#10006; Invalid email format.
+              </p>
+            )}
+          </>
+
         );
 
       case 'joiningDate':
@@ -672,6 +794,19 @@ const BulkUploadView = ({ onClose, onSave }) => {
             onChange={(e) => handleFieldChange(index, field, e.target.value)}
             className="bulk-input"
           />
+        );
+      case 'basicSalary':
+        return (
+          <div className="basicSalary-validation-container">
+            <input
+              type="number"
+              value={value}
+              onChange={(e) => handleFieldChange(index, field, e.target.value)}
+              className="bulk-input"
+              placeholder="Enter salary"
+            />
+            
+          </div>
         );
 
       case 'image1':
@@ -686,13 +821,28 @@ const BulkUploadView = ({ onClose, onSave }) => {
                   src={previewUrl || (typeof currentFile === "string" ? currentFile : URL.createObjectURL(currentFile))}
                   alt="Employee preview"
                   className="employee-image"
-                />
+                /> <br />
                 <button
                   type="button"
                   className="remove-image-button"
                   onClick={() => removeImage(index)}
+                  style={{ background: "none", border: "none" }}
+
                 >
-                  ×
+                  {/* × */}
+                  <FaTrash className="table-delete" />
+
+                </button>
+                <button
+                  type="button"
+                  className="edit-image-button"
+                  onClick={() => openCropModal(index)}
+                  style={{ background: "none", border: "none" }}
+
+                >
+                  <FaEdit className="table-edit" />
+
+                  {/* Edit */}
                 </button>
               </div>
             ) : (
@@ -829,7 +979,7 @@ const BulkUploadView = ({ onClose, onSave }) => {
 
 
   return (
-    <div className="departments-table">
+    <div className="departments-table" style={{ boxShadow: 'none' }}>
       <ConirmationModal
         isOpen={showModal}
         message={`Are you sure you want to add all these employees?`
@@ -848,7 +998,7 @@ const BulkUploadView = ({ onClose, onSave }) => {
       />
       <ConirmationModal
         isOpen={successModal}
-        message={ `Department ${modalType}d successfully!`}
+        message={`Department ${modalType}d successfully!`}
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
@@ -884,8 +1034,11 @@ const BulkUploadView = ({ onClose, onSave }) => {
           {/* <pre>{JSON.stringify(bulkData, null, 2)}</pre> */}
 
 
-
-          <button onClick={addNewRow} className='add-button'><FaPlus className="add-icon" />Add New Row</button>
+          {isFileUploaded && (
+            <button onClick={addNewRow} className='add-button'>
+              <FaPlus className="add-icon" /> Add New Row
+            </button>
+          )}
 
           <button onClick={handleSave} className="submit-button" style={{ marginLeft: '10px' }} disabled={!allEmpIdsValid()}>Save All</button>
           <button onClick={onClose} className="cancel-button">Cancel</button>
@@ -922,6 +1075,43 @@ const BulkUploadView = ({ onClose, onSave }) => {
             ))}
           </tbody>
         </table>
+
+        {isCropping && cropIndex !== null && (
+          <div className="modal-overlay" >
+            <div className="modal-content" style={{
+              position: "absolute",
+            }}>
+              <ImageCropper
+                imageSrc={
+                  bulkData[cropIndex].image1 instanceof File ||
+                    bulkData[cropIndex].image1 instanceof Blob
+                    ? URL.createObjectURL(bulkData[cropIndex].image1)
+                    : typeof bulkData[cropIndex].image1 === "string"
+                      ? `${SERVER_URL}${bulkData[cropIndex].image1}?${new Date().getTime()}`
+                      : ""
+                }
+                onCropSave={onCropSave}
+              />
+              <button
+                type="button"
+                className="cancel-crop-button"
+                onClick={() => setIsCropping(false)}
+                style={{
+                  position: "absolute",
+                  top: "10px",
+                  right: "10px",
+                  background: "transparent",
+                  border: "none",
+                  fontSize: "1.5rem",
+                  cursor: "pointer",
+                }}
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );

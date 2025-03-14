@@ -52,12 +52,13 @@ const Register = () => {
                     'profilePicture': profilePicture,
                 }
                 // Send a POST request to the register endpoint with form data
-                await axios.post(`${SERVER_URL}auth-rg/`, formData, {
+                const res = await axios.post(`${SERVER_URL}auth-rg/`, formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     }
                 });
-
+                console.log(res.data);
+                
                 dispatch(login({ email }));
                 navigate('/');
             } catch (error) {

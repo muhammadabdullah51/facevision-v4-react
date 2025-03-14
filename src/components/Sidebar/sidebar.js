@@ -22,7 +22,9 @@ const menuItems = [
             { label: 'Designation', icon: faTag },
             { label: 'Location', icon: faMapMarkerAlt },
             { label: 'Employee', icon: faIdBadge },
-            { label: 'Resign', icon: faPersonWalkingDashedLineArrowRight }
+            { label: 'Resign', icon: faPersonWalkingDashedLineArrowRight },
+            { label: 'Block Employee', icon: faBan },
+            { label: 'Visitors', icon: faUsers },
         ]
     },
     { label: 'Devices', icon: faTabletAlt },
@@ -39,6 +41,7 @@ const menuItems = [
         label: 'Payroll', icon: faMoneyCheckAlt, submenu: [
             { label: 'Employee Profile', icon: faUser },
             // { label: 'Payroll Log', icon: faCalendarAlt },
+            // { label: 'Completed Payrolls', icon: faCalendarAlt },
             { label: 'Working Hours', icon: faCalendarAlt },
             { label: 'Advance Salary', icon: faHandHoldingUsd },
             { label: 'Appraisal', icon: faClipboardCheck },
@@ -50,8 +53,6 @@ const menuItems = [
         ]
     },
     { label: 'Reports', icon: faChartBar },
-    { label: 'Visitors', icon: faUsers },
-    { label: 'Block Employee', icon: faBan }
 ];
 
 const Sidebar = ({ onMenuChange }) => {

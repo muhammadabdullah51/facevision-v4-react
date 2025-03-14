@@ -32,6 +32,7 @@ import Allowance from '../Payroll/Allowances/Allowances';
 import Tax from '../Payroll/Tax/Tax';
 import Breakinout from '../Attendence/breakinout';
 import WorkingHours from '../Payroll/Working_Hours/WorkingHours';
+import CompletedPayroll from '../Payroll/Employee_Profile/completed_payroll';
 
 const Home = () => {
 
@@ -84,6 +85,8 @@ const Home = () => {
                 return <Reports />;
             case 'Employee Profile':
                 return <EmployeeProfile />;
+            case 'Completed Payrolls':
+                return <CompletedPayroll />;
             case 'Working Hours':
                 return <WorkingHours />;
             case 'Payroll Log':
