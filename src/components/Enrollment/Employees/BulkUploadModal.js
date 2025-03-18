@@ -246,39 +246,7 @@ const BulkUploadView = ({ onClose, onSave }) => {
   };
 
 
-  // Updated folder upload handler that processes each file with background removal
-  // const handleFolderUpload = async (e) => {
-  //   const files = Array.from(e.target.files);
-  //   if (!files || files.length === 0) return;
 
-  //   // Process all files: remove background and map them by empID (derived from filename)
-  //   const mappingEntries = await Promise.all(files.map(async (file) => {
-  //     const empID = file.name.split(".")[0];
-  //     const processedFile = await removeBackgroundFromFile(file);
-  //     return [empID, processedFile];
-  //   }));
-
-  //   const mapping = Object.fromEntries(mappingEntries);
-  //   setImageFolderMap(mapping);
-  // };
-
-
-
-  // const handleFolderUpload = (e) => {
-  //   const files = Array.from(e.target.files);
-  //   if (!files || files.length === 0) return;
-
-  //   const mapping = {};
-  //   files.forEach((file) => {
-  //     // Use the filename (without extension) as the key
-  //     const empID = file.name.split(".")[0];
-  //     mapping[empID] = URL.createObjectURL(file);
-  //   });
-  //   setImageFolderMap(mapping);
-  // };
-
-
-  // Trigger the hidden folder input when button is clicked
   const triggerFolderUpload = () => {
     if (folderInputRef.current) {
       folderInputRef.current.click();
@@ -442,25 +410,23 @@ const BulkUploadView = ({ onClose, onSave }) => {
         const jsonData = utils.sheet_to_json(worksheet, { defval: "" });
 
         // Step 1: Trim header keys (to mimic CSV's transformHeader).
-        const trimmedData = jsonData.map((row) => {
-          const newRow = {};
-          Object.keys(row).forEach((key) => {
-            newRow[key.trim()] = row[key];
-          });
-          return newRow;
-        });
+        // const trimmedData = jsonData.map((row) => {
+        //   const newRow = {};
+        //   Object.keys(row).forEach((key) => {
+        //     newRow[key.trim()] = row[key];
+        //   });
+        //   return newRow;
+        // });
 
         // Step 2: Filter to allowed columns (like CSV processing).
-        const filteredData = trimmedData.map((row) => {
-          const filteredRow = {};
-          allowedColumns.forEach((header) => {
-            filteredRow[header] = row[header] || "";
-          });
-          return filteredRow;
-        });
+        // const filteredData = trimmedData.map((row) => {
+        //   const filteredRow = {};
+        //   allowedColumns.forEach((header) => {
+        //     filteredRow[header] = row[header] || "";
+        //   });
+        //   return filteredRow;
+        // });
 
-        // Build a local mapping: use external mapping if available; 
-        // otherwise attempt to extract embedded images from the Excel file.
         let localImageMap = { ...imageFolderMap };
         if (Object.keys(localImageMap).length === 0) {
           const zip = await JSZip.loadAsync(file);
@@ -499,23 +465,20 @@ const BulkUploadView = ({ onClose, onSave }) => {
 
         setBulkData(processedData);
       }
+
+      setModalType('excel-add')
+      setSuccessModal(true)
+
+
+
+
     } catch (error) {
       alert(`Error processing file: ${error.message}`);
     }
   };
 
 
-  // useEffect(() => {
-  //   if (bulkData.length > 0) {
-  //     const updatedData = bulkData.map((row) => {
-  //       if (row.empId && imageFolderMap[row.empId]) {
-  //         return { ...row, image1: imageFolderMap[row.empId] };
-  //       }
-  //       return row;
-  //     });
-  //     setBulkData(updatedData);
-  //   }
-  // }, [bulkData, imageFolderMap]);
+
 
   useEffect(() => {
     if (bulkData.length > 0) {
@@ -539,15 +502,10 @@ const BulkUploadView = ({ onClose, onSave }) => {
 
   const handleSave = () => {
     setModalType("create");
-    console.log("this is all data ....");
-    
-    console.log(bulkData);
-    
     setShowModal(true);
 
   };
   const confirmAdd = async () => {
-    // Validate every allowed column in each row.
     for (const row of bulkData) {
       for (const column of allowedColumns) {
         if (
@@ -557,7 +515,6 @@ const BulkUploadView = ({ onClose, onSave }) => {
           (Array.isArray(row[column]) && row[column].length === 0)
         ) {
           setResMsg(`Please fill in all required fields. Missing ${column}.`);
-          // Close the confirmation modal and show warning.
           setShowModal(false);
           setWarningModal(true);
           return;
@@ -805,7 +762,7 @@ const BulkUploadView = ({ onClose, onSave }) => {
               className="bulk-input"
               placeholder="Enter salary"
             />
-            
+
           </div>
         );
 
@@ -998,7 +955,7 @@ const BulkUploadView = ({ onClose, onSave }) => {
       />
       <ConirmationModal
         isOpen={successModal}
-        message={`Department ${modalType}d successfully!`}
+        message={modalType === 'create' ? "Employees added in bulk successfully!" : modalType === 'excel-add' ? 'Excel file uploaded successfully!' : 'Images are loaded and mapped successfully!'}
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
         animationData={successAnimation}
@@ -1028,10 +985,10 @@ const BulkUploadView = ({ onClose, onSave }) => {
           />
 
           {/* Button to trigger folder upload */}
+          
           <button onClick={triggerFolderUpload} className="add-button">
             <FaPlus className="add-icon" /> Add All Images
           </button>
-          {/* <pre>{JSON.stringify(bulkData, null, 2)}</pre> */}
 
 
           {isFileUploaded && (

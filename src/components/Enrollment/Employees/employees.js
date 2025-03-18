@@ -8,7 +8,9 @@ import Location from "../Location/location";
 import Resign from "../Resign/resign";
 import { SERVER_URL } from "../../../config";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUsers, faBuilding, faTag, faMapMarkerAlt, faPersonWalkingDashedLineArrowRight, } from '@fortawesome/free-solid-svg-icons';
+import { faUsers, faBuilding, faTag, faMapMarkerAlt, faPersonWalkingDashedLineArrowRight, faBan, } from '@fortawesome/free-solid-svg-icons';
+import BlockEmployeeTable from "../../Blocklist/blocklist";
+import Visitors from '../../Visitors/visitors'
 
 const Employees = () => {
   const [activeTab, setActiveTab] = useState("Employees");
@@ -18,14 +20,7 @@ const Employees = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [data, setData] = useState([]);
 
-  // const fetchEmployees = async () => {
-  //   try {
-  //     const response = await axios.get(`${SERVER_URL}pr-emp/`);
-  //     setData(response.data);
-  //   } catch (error) {
-  //     console.error('Error fetching employees:', error);
-  //   }
-  // };
+
 
   const fetchEmployees = useCallback(async () => {
     try {
@@ -74,6 +69,10 @@ const Employees = () => {
         return <Location />;
       case "Resign":
         return <Resign />;
+      case "Blocklist":
+        return <BlockEmployeeTable />;
+      case "Visitors":
+        return <Visitors/>;
       default:
         return (
           <div>
@@ -132,6 +131,18 @@ const Employees = () => {
           onClick={() => setChangeTab("Resign")}
         >
           <FontAwesomeIcon icon={faPersonWalkingDashedLineArrowRight} className="icon" /> Resign
+        </button>
+        <button
+          className={`${changeTab === "Blocklist" ? "active" : ""}`}
+          onClick={() => setChangeTab("Blocklist")}
+        >
+          <FontAwesomeIcon icon={faBan} className="icon" /> Blocklist
+        </button>
+        <button
+          className={`${changeTab === "Visitors" ? "active" : ""}`}
+          onClick={() => setChangeTab("Visitors")}
+        >
+          <FontAwesomeIcon icon={faUsers} className="icon" /> Visitors
         </button>
       </div>
       <div className="tab-content">{renderTabContent()}</div>

@@ -64,7 +64,7 @@ const DeviceTable = ({ data, setData }) => {
     cameraIp: "",
     port: "",
     locId: "",
-    
+
   });
 
   const handleInputChange = (e) => {
@@ -87,7 +87,8 @@ const DeviceTable = ({ data, setData }) => {
       const response = await axios.get(`${SERVER_URL}device/`);
       const devices = await response.data.context;
       setData(devices);
-      console.log(devices);
+      // console.log(devices);
+      // console.log(data);
     } catch (error) {
     }
   }, [setData]);
@@ -114,7 +115,20 @@ const DeviceTable = ({ data, setData }) => {
     };
 
     try {
-      await axios.post(`${SERVER_URL}fetch-data/`, requestData);
+      // await axios.post(`${SERVER_URL}fetch-data/`, requestData);
+      // console.log(data);
+      if (rowData.status === 'Disconnected') {
+        setResMsg("Please confirm that your API runner is running. Failed to fetch data!");
+        setWarningModal(true);
+      } else{
+        let res = await axios.post(`${SERVER_URL}fetch-data/`, requestData);
+        console.log(res);
+        if (res.status === 200) {
+          setResMsg("Data fetched successfully!");
+          setModalType('attendance')
+          setSuccessModal(true);
+        }
+      }
     } catch (error) {
       console.log(error);
     }
@@ -486,7 +500,9 @@ const DeviceTable = ({ data, setData }) => {
         message={
           modalType === "delete selected"
             ? "Selected items deleted successfully!"
-            : `Device ${modalType}d successfully!`
+            : modalType === "attendance"
+              ? `Attendance fetched successfully!`
+              : `Device ${modalType}d successfully!`
         }
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
