@@ -614,10 +614,9 @@ const AddEmployee = ({
                   <button
                     type="button"
                     onClick={() => setIsWebcamOpen(true)}
-                    className="webcam-button submit-button"
-                    id="button-webcam"
+                    className="webcam-button"
                   >
-                    Capture Picture with Webcam
+                    Capture with Webcam
                   </button>
 
 

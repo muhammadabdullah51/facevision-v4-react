@@ -65,7 +65,7 @@ const BulkUploadView = ({ onClose, onSave }) => {
         const croppedDataUrl = await getCroppedImg(imageSrc, croppedAreaPixels);
         // Convert the data URL to a File
         const blob = await fetch(croppedDataUrl).then(res => res.blob());
-        const croppedFile = new File([blob], 'cropped-image.png', {
+        const croppedFile = new File([blob], `${currentRow.empId}.cropped-image.png`, {
           type: 'image/png'
         });
         // Update bulkData for the current row with the cropped File
