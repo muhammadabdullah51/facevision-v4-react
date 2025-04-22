@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { CSVLink } from "react-csv";
 import jsPDF from "jspdf";
 import JSZip from "jszip";
@@ -35,12 +35,22 @@ import successAnimation from "../../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../../assets/Lottie/warningAnim.json";
 import MarkAsCompletedModal from "./MarkAsCompletedModal";
 import Select from 'react-select';
+import { useSelector, useDispatch } from 'react-redux';
+import { setActiveTab, setSelectedIds, setSelectedDeductions, resetState } from '../../../redux/empProfileSlice';
 
 // import SalarySlipPreview from "./SalarySlipPreview";
 
 
 
 const EmployeeProfile = () => {
+  const dispatch = useDispatch();
+  const { activeTab = 'table',
+    selectedIds = [],
+    selectedDeductions = {
+      allowances: [],
+      bonuses: [],
+      taxes: []
+    } } = useSelector(state => state.empProfile);
   const [data, setData] = useState([
     {
       pysId: "",
@@ -70,9 +80,9 @@ const EmployeeProfile = () => {
   const [employees, setEmployees] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [changeTab, setChangeTab] = useState("Employee Profile");
-  const [activeTab, setActiveTab] = useState("table");
+  // const [activeTab, setActiveTab] = useState("table");
   const [selectedEmployee, setSelectedEmployee] = useState(null);
-  const [selectedIds, setSelectedIds] = useState([]);
+  // const [selectedIds, setSelectedIds] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
@@ -86,7 +96,7 @@ const EmployeeProfile = () => {
 
   // Get selected employees data based on selectedIds
   const selectedEmployees = data.filter(employee =>
-    selectedIds.includes(employee.pysId)
+    selectedIds?.includes(employee.pysId)
   );
 
   const fetchPayrollEmpProfiles = useCallback(async () => {
@@ -150,24 +160,47 @@ const EmployeeProfile = () => {
 
     if (isChecked) {
       const allIds = currentPageData.map((row) => row.pysId);
-      setSelectedIds(allIds);
+      // setSelectedIds(allIds);
+      dispatch(setSelectedIds(allIds));
       console.log(allIds);
     } else {
-      setSelectedIds([]);
+      dispatch(setSelectedIds([]));
+      // setSelectedIds([]);
     }
   };
 
+  // const handleRowCheckboxChange = (event, rowId) => {
+  //   const isChecked = event.target.checked;
+
+  //   // dispatch(setSelectedIds((prevSelectedIds) => {
+  //   //   if (isChecked) {
+  //   //     return [...prevSelectedIds, rowId];
+  //   //   } else {
+  //   //     const updatedIds = prevSelectedIds.filter((id) => id !== rowId);
+  //   //     return updatedIds;
+  //   //   }
+  //   // }));
+  //   dispatch(setSelectedIds(prevIds => 
+  //     isChecked ? 
+  //     [...prevIds, rowId] : 
+  //     prevIds.filter(id => id !== rowId)
+  //   ));
+  // };
+
   const handleRowCheckboxChange = (event, rowId) => {
     const isChecked = event.target.checked;
-
-    setSelectedIds((prevSelectedIds) => {
-      if (isChecked) {
-        return [...prevSelectedIds, rowId];
-      } else {
-        const updatedIds = prevSelectedIds.filter((id) => id !== rowId);
-        return updatedIds;
+    const currentIds = [...selectedIds]; // Create a copy of current selected IDs
+    
+    if (isChecked) {
+      currentIds.push(rowId); // Add the row ID
+    } else {
+      const index = currentIds.indexOf(rowId);
+      if (index > -1) {
+        currentIds.splice(index, 1); // Remove the row ID
       }
-    });
+    }
+  
+    dispatch(setSelectedIds(currentIds)); // Dispatch the new array
   };
 
   useEffect(() => {
@@ -215,7 +248,7 @@ const EmployeeProfile = () => {
   // Modify the handleMarkAsCompleted function
   const handleMarkAsCompleted = () => {
     if (selectedIds.length > 0) {
-      setActiveTab("markCompleted"); // Switch to mark completed view
+      dispatch(setActiveTab("markCompleted")); // Switch to mark completed view
     } else {
       setResMsg("Please select at least one row to mark as completed.");
       setWarningModal(true);
@@ -370,11 +403,11 @@ const EmployeeProfile = () => {
 
   const handleOpenSalarySlip = (employee) => {
     setSelectedEmployee(employee);
-    setActiveTab("salarySlip");
+    dispatch(setActiveTab("salarySlip"));
   };
 
   const handleCloseSalarySlip = () => {
-    setActiveTab("table");
+    dispatch(setActiveTab("table"));
     setSelectedEmployee(null);
   };
 
@@ -536,9 +569,17 @@ const EmployeeProfile = () => {
 
 
   // Add these state variables at the top of your component
+  // With proper API-driven state:
   const [bonuses, setBonuses] = useState([]);
   const [taxes, setTaxes] = useState([]);
   const [allowances, setAllowances] = useState([]);
+
+  // And use the Redux-selected deductions directly:
+  // Memoize derived data
+  const { allowances: selectedAllowances, bonuses: selectedBonuses, taxes: selectedTaxes } = useMemo(
+    () => selectedDeductions,
+    [selectedDeductions]
+  );
 
   // Add this useEffect hook for fetching deductions
   useEffect(() => {
@@ -561,26 +602,26 @@ const EmployeeProfile = () => {
 
     fetchDeductions();
   }, []);
-  console.log(bonuses, allowances, taxes);
+  // console.log(bonuses, allowances, taxes);
 
   // Create options for Select components
-  const bonusOptions = bonuses.map(bonus => ({
+  // Memoize options
+  const bonusOptions = useMemo(() => bonuses.map(bonus => ({
     value: bonus.id,
-    label: `${bonus.bonusName} (${bonus.bonusAmount}Rs)`,
-    type: 'bonus'
-  }));
+    label: `${bonus.bonusName} (${bonus.bonusAmount}Rs)`
+  })), [bonuses]);
 
-  const taxOptions = taxes.map(tax => ({
+  const taxOptions = useMemo(() => taxes.map(tax => ({
     value: tax.id,
     label: `${tax.taxName} (${tax.nature === "fixedamount" ? tax.amount + "Rs" : tax.percent + "%"})`,
     type: 'tax'
-  }));
+  })), [bonuses]);
 
-  const allowanceOptions = allowances.map(allowance => ({
+  const allowanceOptions = useMemo(() => allowances.map(allowance => ({
     value: allowance.id,
     label: `${allowance.allowanceName} (${allowance.amount}Rs)`,
     type: 'allowance'
-  }));
+  })) , [bonuses]);
 
 
   const renderTabContent = () => {
@@ -782,28 +823,33 @@ const EmployeeProfile = () => {
                         <div className="deduction-filters">
                           <Select
                             isMulti
-                            options={allowanceOptions}
                             placeholder="Select Allowances..."
-                            onChange={(selected) => setSelectedDeductions(prev => ({
-                              ...prev,
+                            options={allowanceOptions}
+                            value={selectedAllowances}
+                            onChange={(selected) => dispatch(setSelectedDeductions({
+                              ...selectedDeductions,
                               allowances: selected || []
                             }))}
                           />
+
                           <Select
                             isMulti
-                            options={bonusOptions}
                             placeholder="Select Bonuses..."
-                            onChange={(selected) => setSelectedDeductions(prev => ({
-                              ...prev,
+                            options={bonusOptions}
+                            value={selectedBonuses}
+                            onChange={(selected) => dispatch(setSelectedDeductions({
+                              ...selectedDeductions,
                               bonuses: selected || []
                             }))}
                           />
+
                           <Select
                             isMulti
+                             placeholder="Select Taxes..."
                             options={taxOptions}
-                            placeholder="Select Taxes..."
-                            onChange={(selected) => setSelectedDeductions(prev => ({
-                              ...prev,
+                            value={selectedTaxes}
+                            onChange={(selected) => dispatch(setSelectedDeductions({
+                              ...selectedDeductions,
                               taxes: selected || []
                             }))}
                           />
@@ -819,7 +865,7 @@ const EmployeeProfile = () => {
                           </button>
                           <button
                             className="cancel-button"
-                            onClick={() => setActiveTab("table")}
+                            onClick={() => dispatch(resetState())}
                           >
                             Cancel
                           </button>
@@ -888,13 +934,21 @@ const EmployeeProfile = () => {
     }
   };
 
-  const [selectedDeductions, setSelectedDeductions] = useState({
-    allowances: [],
-    bonuses: [],
-    taxes: []
-  });
+  // const [selectedDeductions, setSelectedDeductions] = useState({
+  //   allowances: [],
+  //   bonuses: [],
+  //   taxes: []
+  // });
 
-
+const handleTableActiveTab = () =>{
+  dispatch(setActiveTab('table'))
+}
+const handleGalleryActiveTab = () =>{
+  dispatch(setActiveTab('gallery'))
+}
+const handleSalarySlipActiveTab = () =>{
+  dispatch(setActiveTab('salarySlip'))
+}
 
   return (
     <>
@@ -1062,13 +1116,13 @@ const EmployeeProfile = () => {
             <div className="tabs card-table-toggle">
               <button
                 className={`card-view-123 toggle- ${activeTab === 'table' ? 'active' : ''}`}
-                onClick={() => setActiveTab('table')}
+                onClick={handleTableActiveTab}
               >
                 <FaTable />
               </button>
               <button
                 className={`table-view-123 toggle-button ${activeTab === 'gallery' ? 'active' : ''}`}
-                onClick={() => setActiveTab('gallery')}
+                onClick={handleGalleryActiveTab}
               >
                 <FaThLarge />
               </button>

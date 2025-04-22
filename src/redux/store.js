@@ -32,6 +32,8 @@ import allowanceSettingReducer from './allowanceSettingSlice'
 import holidayReducer from './holidaySlice'
 import deviceReducer from './deviceSlice'
 import editorSettingsReducer from './editorSettingsSlice';
+import empProfileSliceReducer from './empProfileSlice';
+
 
 
 const persistConfig = {
@@ -75,6 +77,7 @@ const store = configureStore({
         holiday : holidayReducer,
         device : deviceReducer,
         editorSettings: editorSettingsReducer,
+        empProfile: empProfileSliceReducer
 
 
     },

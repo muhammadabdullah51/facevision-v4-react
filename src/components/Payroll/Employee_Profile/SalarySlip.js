@@ -12,7 +12,7 @@ const SalarySlip = ({ salaryDetails,preview  }) => {
         <header className="header-salary">
           <div className={`cmp-detail ${preview ? 'preview-header' : ''}`}>
             <div className="logo-controller">
-              <img src={`${SERVER_URL}${salaryDetails.companyLogo}`} alt="" />
+              <img src={`${SERVER_URL}${salaryDetails.companyLogo}`} alt="logo" />
             </div>
             <div className="logo-text">
               <h2>{salaryDetails.companyName}</h2>
