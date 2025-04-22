@@ -205,7 +205,7 @@ const EmployeeTable = ({
     try {
       const payload = { ids: selectedIds };
       console.log(payload);
-      const response = await axios.post(`${SERVER_URL}emp/del/data`, payload);
+      await axios.post(`${SERVER_URL}emp/del/data`, payload);
       const updatedData = await axios.get(`${SERVER_URL}pr-emp/`);
       setData(updatedData.data);
       setShowModal(false);

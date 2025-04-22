@@ -3,7 +3,7 @@ import './sidebar.css';
 import Logo from '../../assets/faceVisionLogo.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-    faTachometerAlt, faUserPlus, faMobileAlt, faCalendarCheck,
+    faTachometerAlt, faUserPlus,  faCalendarCheck,
     faCalendarAlt, faCogs, faMoneyCheckAlt, faChartBar,
     faUsers, faBan, faCog, faUser, faBuilding, faTag,
     faMapMarkerAlt, faIdBadge, faPersonWalkingDashedLineArrowRight, faChevronDown,
@@ -32,16 +32,16 @@ const menuItems = [
         label: 'Attendance', icon: faCalendarCheck, submenu: [
             { label: 'Details', icon: faInfoCircle },
             { label: 'Check In/Out', icon: faCheckCircle },
-            { label: 'Break In/Out', icon: faCoffee  }
+            { label: 'Break In/Out', icon: faCoffee  },
+            { label: 'Leaves', icon: faBed },
+            { label: 'Shift Management', icon: faCogs },
         ]
     },
-    { label: 'Leaves', icon: faBed },
-    { label: 'Shift Management', icon: faCogs },
     {
         label: 'Payroll', icon: faMoneyCheckAlt, submenu: [
             { label: 'Employee Profile', icon: faUser },
             // { label: 'Payroll Log', icon: faCalendarAlt },
-            // { label: 'Completed Payrolls', icon: faCalendarAlt },
+            { label: 'Completed Payrolls', icon: faCalendarAlt },
             { label: 'Working Hours', icon: faCalendarAlt },
             { label: 'Advance Salary', icon: faHandHoldingUsd },
             { label: 'Appraisal', icon: faClipboardCheck },

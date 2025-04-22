@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { CSVLink } from "react-csv";
 import jsPDF from "jspdf";
 import JSZip from "jszip";
@@ -21,13 +21,26 @@ import ReactDOMServer from "react-dom/server";
 
 import { SERVER_URL } from "../../../config";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { FaDownload, FaFolderOpen } from "react-icons/fa";
+import { FaCheck, FaChevronDown, FaDownload, FaFolderOpen, FaTable, FaThLarge, FaTrash } from "react-icons/fa";
 
 import Allowance from "../Allowances/Allowances";
 import WorkingHours from "../Working_Hours/WorkingHours";
+import "./employee_profile.css"
+import ReactPaginate from "react-paginate";
+import ConirmationModal from "../../Modal/conirmationModal";
+import addAnimation from "../../../assets/Lottie/addAnim.json";
+import updateAnimation from "../../../assets/Lottie/updateAnim.json";
+import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
+import successAnimation from "../../../assets/Lottie/successAnim.json";
+import warningAnimation from "../../../assets/Lottie/warningAnim.json";
+import MarkAsCompletedModal from "./MarkAsCompletedModal";
+import Select from 'react-select';
+
+// import SalarySlipPreview from "./SalarySlipPreview";
 
 
-const EmplyeeProfile = () => {
+
+const EmployeeProfile = () => {
   const [data, setData] = useState([
     {
       pysId: "",
@@ -55,28 +68,45 @@ const EmplyeeProfile = () => {
   ]);
 
   const [employees, setEmployees] = useState([]);
-  const [searchQuery, setSearchQuery] = useState(""); // State for search query
+  const [searchQuery, setSearchQuery] = useState("");
   const [changeTab, setChangeTab] = useState("Employee Profile");
+  const [activeTab, setActiveTab] = useState("table");
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState("");
+  const [successModal, setSuccessModal] = useState(false);
+  const [warningModal, setWarningModal] = useState(false);
+  const [resMsg, setResMsg] = useState("");
+  const [showMarkAsCompletedModal, setShowMarkAsCompletedModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
+  const rowsPerPage = 7;
 
-  const [activeTab, setActiveTab] = useState("table"); // Default view is the table
-  const [selectedEmployee, setSelectedEmployee] = useState(null); // Store the selected employee data
+  // Get selected employees data based on selectedIds
+  const selectedEmployees = data.filter(employee =>
+    selectedIds.includes(employee.pysId)
+  );
 
   const fetchPayrollEmpProfiles = useCallback(async () => {
     try {
       const response = await axios.get(`${SERVER_URL}pyr-emp-profile/`);
-      const fetchedData = response.data; // Assuming only one object is returned
-      setData(fetchedData); // Directly update the settings state
+      const fetchedData = response.data;
+      console.log(fetchedData);
+      setData(fetchedData);
       setEmployees(fetchedData);
     } catch (error) {
+      console.error("Error fetching payroll profiles:", error);
     }
   }, []);
+
   useEffect(() => {
     fetchPayrollEmpProfiles();
     setActiveTab("table");
   }, [fetchPayrollEmpProfiles, changeTab]);
 
-
-
+  // Filter data based on search query
   const filteredData = data.filter(
     (item) =>
       item.empId.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -100,12 +130,126 @@ const EmplyeeProfile = () => {
       item.attemptWorkingHours
         .toLowerCase()
         .includes(searchQuery.toLowerCase()) ||
-      item.dailySalary.toLowerCase().includes(searchQuery.toLowerCase()) 
+      item.dailySalary.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Get current page data
+  const currentPageData = filteredData.slice(
+    currentPage * rowsPerPage,
+    (currentPage + 1) * rowsPerPage
+  );
+
+  // Handle page change
+  const handlePageChange = ({ selected }) => {
+    setCurrentPage(selected);
+  };
+
+  const handleSelectAllChange = (event) => {
+    const isChecked = event.target.checked;
+    setSelectAll(isChecked);
+
+    if (isChecked) {
+      const allIds = currentPageData.map((row) => row.pysId);
+      setSelectedIds(allIds);
+      console.log(allIds);
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleRowCheckboxChange = (event, rowId) => {
+    const isChecked = event.target.checked;
+
+    setSelectedIds((prevSelectedIds) => {
+      if (isChecked) {
+        return [...prevSelectedIds, rowId];
+      } else {
+        const updatedIds = prevSelectedIds.filter((id) => id !== rowId);
+        return updatedIds;
+      }
+    });
+  };
+
+  useEffect(() => {
+    if (selectedIds.length === currentPageData.length && currentPageData.length > 0) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  }, [selectedIds, currentPageData]);
+
+  // Handle close payroll (deletes all existing payrolls)
+  const handleClosePayroll = () => {
+    setModalType("close all payrolls");
+    setShowModal(true);
+  };
+
+  // Confirm close all payrolls
+  const confirmCloseAllPayrolls = async () => {
+    try {
+      // In a real implementation, this would be an API call to close all payrolls
+      await axios.post(`${SERVER_URL}close-all-payrolls/`);
+
+      // Update the state after successful API call
+      setData([]);
+      setShowModal(false);
+      setResMsg("All payrolls have been closed successfully.");
+      setSuccessModal(true);
+    } catch (error) {
+      console.error("Error closing payrolls:", error);
+      setResMsg("Failed to close payrolls. Please try again.");
+      setShowModal(false);
+      setWarningModal(true);
+    }
+  };
+
+  // // Handle mark as completed button click
+  // const handleMarkAsCompleted = () => {
+  //   if (selectedIds.length > 0) {
+  //     setShowMarkAsCompletedModal(true);
+  //   } else {
+  //     setResMsg("Please select at least one row to mark as completed.");
+  //     setWarningModal(true);
+  //   }
+  // };
+  // Modify the handleMarkAsCompleted function
+  const handleMarkAsCompleted = () => {
+    if (selectedIds.length > 0) {
+      setActiveTab("markCompleted"); // Switch to mark completed view
+    } else {
+      setResMsg("Please select at least one row to mark as completed.");
+      setWarningModal(true);
+    }
+  };
+
+  // Handle confirm from MarkAsCompletedModal
+  const handleConfirmMarkAsCompleted = async (selectedDeductions) => {
+    try {
+      // In a real implementation, this would be an API call to mark items as completed with deductions
+      const payload = {
+        ids: selectedIds,
+        deductions: selectedDeductions
+      };
+      console.log(payload);
+
+      await axios.post(`${SERVER_URL}mark-payrolls-completed/`, payload);
+
+      // Refresh data after successful completion
+      await fetchPayrollEmpProfiles();
+
+      setResMsg("Selected items have been marked as completed successfully.");
+      setSuccessModal(true);
+      setSelectedIds([]);
+    } catch (error) {
+      console.error("Error marking items as completed:", error);
+      setResMsg("Failed to mark items as completed. Please try again.");
+      setWarningModal(true);
+    }
+  };
+
   const exportToPDF = () => {
-    const doc = new jsPDF('l', 'mm', 'legal'); // Set to 'landscape' and 'legal' size (216 x 356 mm)
-  
+    const doc = new jsPDF('l', 'mm', 'legal');
+
     doc.autoTable({
       head: [
         [
@@ -156,46 +300,30 @@ const EmplyeeProfile = () => {
         item.calcPay,
       ]),
       styles: {
-        overflow: 'linebreak', // Allow text to wrap
-        fontSize: 8, // Adjust font size to fit more content
-        cellPadding: 2, // Adjust padding for better spacing
-        lineWidth: 0.1, // Set the line width for borders
-        lineColor: [0, 0, 0], // Set the border color to black
+        overflow: 'linebreak',
+        fontSize: 8,
+        cellPadding: 2,
+        lineWidth: 0.1,
+        lineColor: [0, 0, 0],
       },
-      tableWidth: 'auto', // Automatically adjust column widths
+      tableWidth: 'auto',
       didDrawCell: (data) => {
-        const { row, column, cell } = data;
-  
-        // No background color or other styling applied, just basic borders
-        doc.setTextColor(0, 0, 0); // Set text color to black for all cells
-  
-        // Add border around each cell
-        doc.setLineWidth(0.1); // Border thickness
-        doc.setDrawColor(0, 0, 0); // Border color (black)
-        doc.rect(cell.x, cell.y, cell.width, cell.height); // Draw rectangle (border) around each cell
+        const { cell } = data;
+        doc.setTextColor(0, 0, 0);
+        doc.setLineWidth(0.1);
+        doc.setDrawColor(0, 0, 0);
+        doc.rect(cell.x, cell.y, cell.width, cell.height);
       },
       didDrawPage: (data) => {
-        // Add a title or additional content on the first page
         doc.text('Employee Salary Report', 20, 10);
       },
     });
-  
+
     doc.save("employee-profile.pdf");
   };
-  
-
-
-
-
-
-
-
-
 
   const handleExportPdf = async () => {
     const element = document.querySelector(".salary-slip");
-
-    // Ensure all images are loaded before rendering
     const images = element.querySelectorAll("img");
     const imagePromises = Array.from(images).map((img) => {
       return new Promise((resolve, reject) => {
@@ -207,21 +335,18 @@ const EmplyeeProfile = () => {
         }
       });
     });
-    await Promise.all(imagePromises); // Wait for images to load
+    await Promise.all(imagePromises);
 
-    // Generate canvas with html2canvas
     const canvas = await html2canvas(element, {
-      scale: 1.5, // Lower scale for faster rendering
-      useCORS: true, // Enable cross-origin images
+      scale: 1.5,
+      useCORS: true,
     });
 
-    const imgData = canvas.toDataURL("image/jpeg", 0.8); // Compress image (JPEG)
+    const imgData = canvas.toDataURL("image/jpeg", 0.8);
     const pdf = new jsPDF("p", "mm", "a4");
 
-    // Calculate dimensions to fit canvas into A4
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
-
     const canvasAspectRatio = canvas.width / canvas.height;
     const pdfAspectRatio = pageWidth / pageHeight;
 
@@ -244,33 +369,28 @@ const EmplyeeProfile = () => {
   };
 
   const handleOpenSalarySlip = (employee) => {
-    setSelectedEmployee(employee); // Set the selected employee's data
-    setActiveTab("salarySlip"); // Switch to the salary slip tab
+    setSelectedEmployee(employee);
+    setActiveTab("salarySlip");
   };
 
   const handleCloseSalarySlip = () => {
-    setActiveTab("table"); // Go back to the table view
-    setSelectedEmployee(null); // Clear the selected employee's data
+    setActiveTab("table");
+    setSelectedEmployee(null);
   };
 
   const generateSalarySlipPDF = (salaryDetails) => {
     return new Promise(async (resolve, reject) => {
       const tempContainer = document.createElement("div");
       try {
-        // Render the SalarySlip component to static HTML
         const salarySlipHTML = ReactDOMServer.renderToStaticMarkup(
           <SalarySlip salaryDetails={salaryDetails} />
         );
 
-        console.log("Generating Salary Slip HTML for:", salaryDetails.empName); // Debugging output
-
-        // Create a temporary container to hold the HTML for rendering
         tempContainer.innerHTML = salarySlipHTML;
         tempContainer.style.position = "absolute";
-        tempContainer.style.left = "-9999px"; // Hide the container
+        tempContainer.style.left = "-9999px";
         document.body.appendChild(tempContainer);
 
-        // Preload all images inside the container
         const images = tempContainer.querySelectorAll("img");
         const imagePromises = Array.from(images).map((img) => {
           return new Promise((resolve, reject) => {
@@ -283,19 +403,14 @@ const EmplyeeProfile = () => {
           });
         });
 
-        await Promise.all(imagePromises); // Wait for all images to load
+        await Promise.all(imagePromises);
 
-        // Generate canvas with html2canvas
         const canvas = await html2canvas(tempContainer, {
-          scale: 1.5, // Higher scale for better resolution
-          useCORS: true, // Handle cross-origin images
+          scale: 1.5,
+          useCORS: true,
         });
 
         if (!canvas || !canvas.width || !canvas.height) {
-          console.error(
-            "Error: html2canvas failed to render the canvas for",
-            salaryDetails.empName
-          );
           reject(new Error("Canvas rendering failed"));
           return;
         }
@@ -303,7 +418,6 @@ const EmplyeeProfile = () => {
         const imgData = canvas.toDataURL("image/jpeg", 0.8);
         const pdf = new jsPDF("p", "mm", "a4");
 
-        // Calculate the dimensions to fit the canvas into an A4 page
         const pageWidth = pdf.internal.pageSize.getWidth();
         const pageHeight = pdf.internal.pageSize.getHeight();
         const canvasAspectRatio = canvas.width / canvas.height;
@@ -323,32 +437,20 @@ const EmplyeeProfile = () => {
 
         pdf.addImage(imgData, "JPEG", x, y, imgWidth, imgHeight);
 
-        // Clean up by removing the temporary container
         document.body.removeChild(tempContainer);
 
-        console.log("Generated PDF for:", salaryDetails.empName); // Debugging output
-
-        // Resolve the Promise with the generated PDF as a Blob
         const pdfBlob = pdf.output("blob");
         resolve({
           pdfBlob,
           fileName: `${salaryDetails.empId}-${salaryDetails.empName}-SalarySlip.pdf`,
         });
       } catch (error) {
-        console.error(
-          "Error generating salary slip for:",
-          salaryDetails.empName,
-          error
-        );
-
-        // Ensure temporary container is cleaned up on error
-        document.body.removeChild(tempContainer); // Correctly removes the tempContainer
+        document.body.removeChild(tempContainer);
         reject(error);
       }
     });
   };
 
-  // Function to generate and download the ZIP with all salary slips
   const downloadAllSalarySlips = async () => {
     const zip = new JSZip();
 
@@ -357,19 +459,10 @@ const EmplyeeProfile = () => {
       return;
     }
 
-    console.log(
-      "Starting to generate salary slips for",
-      employees.length,
-      "employees..."
-    );
-
-    // Loop through all employees and generate salary slips
     for (const employee of employees) {
       try {
-        console.log("Processing salary slip for employee:", employee.empName); // Debugging output
         const { pdfBlob, fileName } = await generateSalarySlipPDF(employee);
-        console.log("Adding PDF to ZIP for:", fileName); // Debugging output
-        zip.file(fileName, pdfBlob); // Add the PDF Blob to the ZIP file
+        zip.file(fileName, pdfBlob);
       } catch (error) {
         console.error(
           "Error generating salary slip for",
@@ -379,22 +472,116 @@ const EmplyeeProfile = () => {
       }
     }
 
-    // Generate the ZIP file after all PDFs have been added
     zip
       .generateAsync({ type: "blob" })
       .then(function (content) {
-        console.log("ZIP file generated, preparing to download..."); // Debugging output
-
-        // Create a link to download the ZIP file
         const link = document.createElement("a");
         link.href = URL.createObjectURL(content);
-        link.download = "all_salary_slips.zip"; // Name of the ZIP file
-        link.click(); // Trigger the download
+        link.download = "all_salary_slips.zip";
+        link.click();
       })
       .catch((error) => {
         console.error("Error generating ZIP file:", error);
       });
   };
+
+  // Preview container component
+  const PreviewContainer = ({ employee }) => {
+    const [previewImage, setPreviewImage] = useState(null);
+    const previewRef = React.useRef();
+
+    useEffect(() => {
+      const generatePreview = async () => {
+        try {
+          const canvas = await html2canvas(previewRef.current, {
+            scale: 3,
+            useCORS: true,
+            logging: false,
+          });
+          setPreviewImage(canvas.toDataURL('image/jpeg', 2));
+        } catch (error) {
+          console.error('Error generating preview:', error);
+        }
+      };
+
+      generatePreview();
+    }, [employee]);
+
+    return (
+      <div className="preview-container">
+        {previewImage ? (
+          <img
+            src={previewImage}
+            alt={`${employee.empName} salary slip preview`}
+            className="preview-thumbnail"
+          />
+        ) : (
+          <div ref={previewRef} className="preview-viewport">
+            <SalarySlip salaryDetails={employee} preview />
+          </div>
+        )}
+      </div>
+    );
+  };
+
+
+
+  // State to track selected deductions for each employee
+
+
+
+  // const allowanceOptions = deductionOptions.filter((option) => option.type === 'allowance');
+  // const bonusOptions = deductionOptions.filter((option) => option.type === 'bonus');
+  // const taxOptions = deductionOptions.filter((option) => option.type === 'tax');
+
+
+  // Add these state variables at the top of your component
+  const [bonuses, setBonuses] = useState([]);
+  const [taxes, setTaxes] = useState([]);
+  const [allowances, setAllowances] = useState([]);
+
+  // Add this useEffect hook for fetching deductions
+  useEffect(() => {
+    const fetchDeductions = async () => {
+      try {
+        const [bonusesRes, taxesRes, allowancesRes] = await Promise.all([
+          axios.get(`${SERVER_URL}pyr-bns/`),
+          axios.get(`${SERVER_URL}taxes/`),
+          axios.get(`${SERVER_URL}allowances/`)
+        ]);
+
+        setBonuses(bonusesRes.data);
+        setTaxes(taxesRes.data);
+        setAllowances(allowancesRes.data);
+
+      } catch (error) {
+        console.error("Error fetching deduction data:", error);
+      }
+    };
+
+    fetchDeductions();
+  }, []);
+  console.log(bonuses, allowances, taxes);
+
+  // Create options for Select components
+  const bonusOptions = bonuses.map(bonus => ({
+    value: bonus.id,
+    label: `${bonus.bonusName} (${bonus.bonusAmount}Rs)`,
+    type: 'bonus'
+  }));
+
+  const taxOptions = taxes.map(tax => ({
+    value: tax.id,
+    label: `${tax.taxName} (${tax.nature === "fixedamount" ? tax.amount + "Rs" : tax.percent + "%"})`,
+    type: 'tax'
+  }));
+
+  const allowanceOptions = allowances.map(allowance => ({
+    value: allowance.id,
+    label: `${allowance.allowanceName} (${allowance.amount}Rs)`,
+    type: 'allowance'
+  }));
+
 
   const renderTabContent = () => {
     switch (changeTab) {
@@ -411,9 +598,10 @@ const EmplyeeProfile = () => {
       case "Bonuses":
         return <Bonuses />;
       case "Taxes":
-        return < Tax/>;
+        return <Tax />;
       case "Allowances":
-        return < Allowance/>;
+        return <Allowance />;
+
       default:
         return (
           <>
@@ -422,107 +610,18 @@ const EmplyeeProfile = () => {
                 case "table":
                   return (
                     <div className="department-table">
-                      <div
-                        className="table-header"
-                        style={{ paddingBottom: "none" }}
-                      >
-                        <form
-                          className="form"
-                          onSubmit={(e) => e.preventDefault()}
-                        >
-                          <button type="submit">
-                            <svg
-                              width="17"
-                              height="16"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                              aria-labelledby="search"
-                            >
-                              <path
-                                d="M7.667 12.667A5.333 5.333 0 107.667 2a5.333 5.333 0 000 10.667zM14.334 14l-2.9-2.9"
-                                stroke="currentColor"
-                                strokeWidth="1.333"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              ></path>
-                            </svg>
-                          </button>
-                          <input
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Search..."
-                            className="input"
-                            type="text"
-                          />
-                          <button
-                            className="reset"
-                            type="button" // Change to type="button" to prevent form reset
-                            onClick={() => setSearchQuery("")} // Clear the input on click
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-6 w-6"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M6 18L18 6M6 6l12 12"
-                              />
-                            </svg>
-                          </button>
-                        </form>
-                        <div className="export-buttons">
-                          <button
-                            className="button download-all"
-                            onClick={downloadAllSalarySlips}
-                          >
-                            <div className="icon-group">
-                              <FaFolderOpen className="folder-icon" />
-                            </div>
-                             Download All Sallary Slips
-                          </button>
-
-                          <button className="button  export-pdf">
-                            <CSVLink
-                              data={filteredData}
-                              filename="employee-profile.csv"
-                            >
-                              <div className="icon-group">
-                                <FontAwesomeIcon
-                                  icon={faFileCsv}
-                                  className="button-icon"
-                                />
-                            Export to CSV
-                              </div>
-                            </CSVLink>
-                          </button>
-
-                          <button
-                            className="button export-pdf"
-                            onClick={exportToPDF}
-                          >
-                            <div className="icon-group">
-                              <FontAwesomeIcon
-                                icon={faFilePdf}
-                                className="button-icon"
-                              />
-                            </div>
-                            Export to PDF
-                          </button>
-                        </div>
-
-
-
-                        
-                      </div>
                       <div className="departments-table">
                         <table className="table">
                           <thead>
                             <tr>
+                              <th>
+                                <input
+                                  id="delete-checkbox"
+                                  type="checkbox"
+                                  checked={selectAll}
+                                  onChange={handleSelectAllChange}
+                                />
+                              </th>
                               <th>Employee ID</th>
                               <th>Employee Name</th>
                               <th>Overtime Pay</th>
@@ -545,7 +644,15 @@ const EmplyeeProfile = () => {
                           </thead>
                           <tbody>
                             {filteredData.map((item, index) => (
-                              <tr key={item.id}>
+                              <tr key={item.pysId}>
+                                <td>
+                                  <input
+                                    type="checkbox"
+                                    id="delete-checkbox"
+                                    checked={selectedIds.includes(item.pysId)}
+                                    onChange={(event) => handleRowCheckboxChange(event, item.pysId)}
+                                  />
+                                </td>
                                 <td>{item.empId}</td>
                                 <td>{item.empName}</td>
                                 <td>{item.otHoursPay}</td>
@@ -560,9 +667,9 @@ const EmplyeeProfile = () => {
                                 <td>{item.salaryType}</td>
                                 <td>{item.totalWorkingDays}</td>
                                 <td>{item.totalWorkingHours}</td>
-                                <td>{item.attempt_working_hours}</td>
+                                <td>{item.attemptWorkingHours}</td>
                                 <td>{item.dailySalary}</td>
-                                <td>{item.calculate_pay}</td>
+                                <td>{item.calcPay}</td>
                                 <td>
                                   <button
                                     onClick={() => handleOpenSalarySlip(item)}
@@ -579,9 +686,178 @@ const EmplyeeProfile = () => {
                           </tbody>
                         </table>
                       </div>
+                      <div className="pagination">
+                        <ReactPaginate
+                          previousLabel={"Previous"}
+                          nextLabel={"Next"}
+                          breakLabel={"..."}
+                          pageCount={Math.ceil(filteredData.length / rowsPerPage)}
+                          marginPagesDisplayed={2}
+                          pageRangeDisplayed={5}
+                          onPageChange={handlePageChange}
+                          containerClassName={"pagination"}
+                          activeClassName={"active"}
+                        />
+                      </div>
                     </div>
                   );
+                case "gallery":
+                  // Group employees by month-year
+                  const groupedEmployees = currentPageData.reduce((acc, employee) => {
+                    // If there's no date property, use a default grouping
+                    let monthYear = "Current Period";
+                    if (employee.date) {
+                      const date = new Date(employee.date);
+                      monthYear = date.toLocaleString('default', {
+                        month: 'long',
+                        year: 'numeric'
+                      });
+                    }
+                    if (!acc[monthYear]) acc[monthYear] = [];
+                    acc[monthYear].push(employee);
+                    return acc;
+                  }, {});
 
+                  // Get groups in array format for easier rendering
+                  const sortedGroups = Object.entries(groupedEmployees);
+
+                  return (
+                    <div className="gallery-container">
+                      {sortedGroups.map(([monthYear, employees], groupIndex) => (
+                        <div key={monthYear}>
+                          <div className="month-group">
+                            <div className="month-header">
+                              <h3 className="month-title">{monthYear}</h3>
+                              <hr className="month-divider" />
+                            </div>
+                            <div className="salary-slips-grid">
+                              {employees.map((employee) => (
+                                <div
+                                  key={employee.pysId}
+                                  className="salary-slip-card"
+                                  onClick={() => handleOpenSalarySlip(employee)}
+                                >
+                                  <div className="preview-header">
+                                    <h4>{employee.empName}</h4>
+                                    <small>{employee.empId}</small>
+                                  </div>
+                                  <PreviewContainer employee={employee} />
+                                  <div className="preview-footer">
+                                    <span>Basic: Rs. {employee.basicSalary}</span>
+                                    <span>Net: Rs. {employee.calcPay || employee.calculate_pay}</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          {groupIndex < sortedGroups.length - 1 && <hr />}
+                        </div>
+                      ))}
+
+                    </div>
+                  );
+                case "markCompleted":
+                  // Get selected employees data
+                  const selectedEmployees = data.filter(employee =>
+                    selectedIds.includes(employee.pysId)
+                  );
+
+                  // Group selected employees by month-year
+                  const groupedSelected = selectedEmployees.reduce((acc, employee) => {
+                    const date = new Date(employee.date);
+                    const monthYear = date.toLocaleString('default', {
+                      month: 'long',
+                      year: 'numeric'
+                    });
+                    if (!acc[monthYear]) acc[monthYear] = [];
+                    acc[monthYear].push(employee);
+                    return acc;
+                  }, {});
+
+                  return (
+                    <div className="gallery-container">
+                      {/* Deduction Controls */}
+                      <div className="deduction-controls">
+                        <h2>Apply Deductions to All Selected</h2>
+                        <div className="deduction-filters">
+                          <Select
+                            isMulti
+                            options={allowanceOptions}
+                            placeholder="Select Allowances..."
+                            onChange={(selected) => setSelectedDeductions(prev => ({
+                              ...prev,
+                              allowances: selected || []
+                            }))}
+                          />
+                          <Select
+                            isMulti
+                            options={bonusOptions}
+                            placeholder="Select Bonuses..."
+                            onChange={(selected) => setSelectedDeductions(prev => ({
+                              ...prev,
+                              bonuses: selected || []
+                            }))}
+                          />
+                          <Select
+                            isMulti
+                            options={taxOptions}
+                            placeholder="Select Taxes..."
+                            onChange={(selected) => setSelectedDeductions(prev => ({
+                              ...prev,
+                              taxes: selected || []
+                            }))}
+                          />
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="modal-footer">
+                          <button
+                            className="submit-button"
+                            onClick={() => handleConfirmMarkAsCompleted(selectedDeductions)}
+                          >
+                            Confirm Mark as Completed
+                          </button>
+                          <button
+                            className="cancel-button"
+                            onClick={() => setActiveTab("table")}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Salary Slips Grid */}
+                      {Object.entries(groupedSelected).map(([monthYear, employees], groupIndex) => (
+                        <div key={monthYear}>
+                          <div className="month-group">
+                            <div className="month-header">
+                              <h3 className="month-title">{monthYear}</h3>
+                              <hr className="month-divider" />
+                            </div>
+                            <div className="salary-slips-grid">
+                              {employees.map((employee) => (
+                                <div
+                                  key={employee.pysId}
+                                  className="salary-slip-card"
+                                >
+                                  <div className="preview-header">
+                                    <h4>{employee.empName}</h4>
+                                    <small>{employee.empId}</small>
+                                  </div>
+                                  <PreviewContainer employee={employee} />
+                                  <div className="preview-footer">
+                                    <span>Basic: Rs. {employee.basicSalary}</span>
+                                    <span>Net: Rs. {employee.calcPay}</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          {groupIndex < Object.keys(groupedSelected).length - 1 && <hr />}
+                        </div>
+                      ))}
+                    </div>
+                  );
                 case "salarySlip":
                   return (
                     <div className="modal">
@@ -611,6 +887,14 @@ const EmplyeeProfile = () => {
         );
     }
   };
+
+  const [selectedDeductions, setSelectedDeductions] = useState({
+    allowances: [],
+    bonuses: [],
+    taxes: []
+  });
+
+
 
   return (
     <>
@@ -671,10 +955,196 @@ const EmplyeeProfile = () => {
             Allowances
           </button>
         </div>
-        <div className="tab-content">{renderTabContent()}</div>
+        <div className="tab-content">
+          {/* Regular confirmation modal for general actions */}
+          <ConirmationModal
+            isOpen={showModal}
+            message={
+              modalType === "close all payrolls"
+                ? "Are you sure you want to close all existing payrolls? This action cannot be undone."
+                : `Are you sure you want to ${modalType} this Employee?`
+            }
+            onConfirm={() => {
+              if (modalType === "close all payrolls") confirmCloseAllPayrolls();
+            }}
+            onCancel={() => setShowModal(false)}
+            animationData={
+              modalType === "create"
+                ? addAnimation
+                : modalType === "update"
+                  ? updateAnimation
+                  : deleteAnimation
+            }
+          />
+
+          {/* Success modal */}
+          <ConirmationModal
+            isOpen={successModal}
+            message={resMsg}
+            onConfirm={() => setSuccessModal(false)}
+            onCancel={() => setSuccessModal(false)}
+            animationData={successAnimation}
+            successModal={successModal}
+          />
+
+          {/* Warning modal */}
+          <ConirmationModal
+            isOpen={warningModal}
+            message={resMsg}
+            onConfirm={() => setWarningModal(false)}
+            onCancel={() => setWarningModal(false)}
+            animationData={warningAnimation}
+            warningModal={warningModal}
+          />
+
+          {/* Mark As Completed Modal */}
+          <MarkAsCompletedModal
+            isOpen={showMarkAsCompletedModal}
+            onClose={() => setShowMarkAsCompletedModal(false)}
+            selectedEmployees={selectedEmployees}
+            onConfirm={handleConfirmMarkAsCompleted}
+          />
+
+          <div
+            className="table-header"
+            style={{ paddingBottom: "none" }}
+          >
+            <form
+              className="form"
+              onSubmit={(e) => e.preventDefault()}
+            >
+              <button type="submit">
+                <svg
+                  width="17"
+                  height="16"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-labelledby="search"
+                >
+                  <path
+                    d="M7.667 12.667A5.333 5.333 0 107.667 2a5.333 5.333 0 000 10.667zM14.334 14l-2.9-2.9"
+                    stroke="currentColor"
+                    strokeWidth="1.333"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  ></path>
+                </svg>
+              </button>
+              <input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search..."
+                className="input"
+                type="text"
+              />
+              <button
+                className="reset"
+                type="button"
+                onClick={() => setSearchQuery("")}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </form>
+
+            <div className="tabs card-table-toggle">
+              <button
+                className={`card-view-123 toggle- ${activeTab === 'table' ? 'active' : ''}`}
+                onClick={() => setActiveTab('table')}
+              >
+                <FaTable />
+              </button>
+              <button
+                className={`table-view-123 toggle-button ${activeTab === 'gallery' ? 'active' : ''}`}
+                onClick={() => setActiveTab('gallery')}
+              >
+                <FaThLarge />
+              </button>
+            </div>
+
+            <div className="add-delete-container add-delete-emp">
+              <button
+                className="add-button submit-button"
+                onClick={handleClosePayroll}
+              >
+                <FaCheck className="add-icon" /> Close Payroll
+              </button>
+              <button
+                className="add-button"
+                onClick={handleMarkAsCompleted}
+              >
+                <FaCheck className="add-icon" /> Mark As Completed
+              </button>
+              <div className="export-dropdown-container ">
+                <button
+                  className="add-button export-button"
+                  onMouseEnter={() => setShowExportDropdown(true)}
+                  onMouseLeave={() => setShowExportDropdown(false)}
+                >
+                  <FaDownload className="button-icon" />
+                  Export Data
+                  <FaChevronDown className="dropdown-chevron" />
+
+                </button>
+                {showExportDropdown && (
+                  <div
+                    className="export-dropdown-menu"
+                    onMouseEnter={() => setShowExportDropdown(true)}
+                    onMouseLeave={() => setShowExportDropdown(false)}
+                  >
+                    <button
+                      className="dropdown-item"
+                      onClick={downloadAllSalarySlips}
+                    >
+                      <FaFolderOpen className="dropdown-icon" />
+                      All Salary Slips
+                    </button>
+
+                    <CSVLink
+                      data={filteredData}
+                      filename="employee-profile.csv"
+                      style={{ textDecoration: 'none' }}
+                    >
+                      <button
+                        className="dropdown-item"
+                      >
+                        <FontAwesomeIcon icon={faFileCsv} className="dropdown-icon" />
+                        Export to CSV
+                      </button>
+                    </CSVLink>
+
+                    <button
+                      className="dropdown-item"
+                      onClick={exportToPDF}
+                    >
+                      <FontAwesomeIcon icon={faFilePdf} className="dropdown-icon" />
+                      Export to PDF
+                    </button>
+
+                  </div>
+
+                )}
+              </div>
+            </div>
+          </div>
+          {renderTabContent()}
+        </div>
       </div>
     </>
   );
 };
 
-export default EmplyeeProfile;
+
+export default EmployeeProfile;

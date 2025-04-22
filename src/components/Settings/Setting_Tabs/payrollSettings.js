@@ -13,7 +13,8 @@ const PayrollSettings = () => {
     cutSalWhByDf: "No",
     lvPUnPByDf: "No",
     isEndDate: "No",
-    customeDate: "0"
+    customeDate: "0",
+    descNote: ""
   });
 
   // Fetch settings from the server
@@ -65,6 +66,7 @@ const PayrollSettings = () => {
     { key: "cutSalWhByDf", label: "Cut Salary on working hours" },
     { key: "lvPUnPByDf", label: "Leaves are paid or unpaid" },
     { key: "isEndDate", label: "Consider last day of the month for payroll closing date" },
+    // { key: "descNote", label: "Consider last day of the month for payroll closing date" },
   ];
 
   const handleSubmit = async () => {
@@ -117,6 +119,19 @@ const PayrollSettings = () => {
           />
         </div>
       )}
+      <div className="checkbox-item-textarea checkbox-item" style={{ padding: '25px 10px'}}>
+          <label>
+            Write a Description note for salary slip
+          </label>
+          <textarea
+          rows="4"
+            type="number"
+            placeholder="Write your note here"
+            id="descNote"
+            value={settings.descNote}
+            // onChange={handleDateChange}
+          />
+        </div>
       <button onClick={handleSubmit} className="submit-button">
         Save Settings
       </button>

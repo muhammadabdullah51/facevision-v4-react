@@ -10,7 +10,7 @@
   .salary-slip {
     width: 210mm; /* A4 width */
     min-height: 297mm; /* A4 height */
-    padding: 20mm; /* Add margins */
+    padding: 20mm; 
     box-sizing: border-box;
     background-color: #fff; /* White background for PDF */
     margin: auto;
@@ -310,3 +310,423 @@ th.th-component, td.th-component{
   }
 }
 
+
+/* Gallery View */
+/* .gallery-container {
+  padding: 20px;
+} */
+
+.salary-slips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.salary-slip-preview {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s;
+  background: white;
+}
+
+.salary-slip-preview:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.preview-header {
+  padding: 15px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #eee;
+}
+
+.preview-header h4 {
+  margin: 0;
+  color: #2c3e50;
+}
+
+.preview-header small {
+  color: #7f8c8d;
+}
+
+.preview-content {
+  padding: 15px;
+}
+
+.preview-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 8px 0;
+  font-size: 0.9em;
+}
+
+.preview-row span:first-child {
+  color: #7f8c8d;
+}
+
+.preview-row span:last-child {
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.gallery-controls {
+  padding: 10px 20px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 15px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #eee;
+}
+
+.view-switch {
+  padding: 8px 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.view-switch.active {
+  background: #7341da;
+  color: white;
+  border-color: #7341da;
+}
+
+/* Preview Mode Styles */
+.salary-slip.preview-mode {
+  transform: scale(0.32);
+  transform-origin: top left;
+  width: 310%;
+  height: 310%;
+  pointer-events: none;
+}
+
+.preview-container {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  overflow: hidden;
+  border: 1px solid #eee;
+}
+
+.preview-viewport {
+  position: absolute;
+  width: 300px;
+  height: 400px;
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.preview-mode .header-salary {
+  padding: 5px 0;
+  margin-bottom: 8px;
+}
+
+.preview-mode .logo-controller {
+  width: 15%;
+  padding: 3px;
+}
+
+.preview-mode .logo-text h2 {
+  font-size: 12px;
+}
+
+.preview-mode .logo-text p {
+  font-size: 10px;
+}
+
+.preview-mode .employee-details {
+  margin-top: 8px;
+}
+
+.preview-mode .employee-details p {
+  font-size: 8px;
+  margin: 2px 0;
+}
+
+.preview-mode table th,
+.preview-mode table td {
+  padding: 3px;
+  font-size: 8px;
+}
+
+.preview-mode .summary p {
+  font-size: 9px;
+  margin: 2px 0;
+}
+
+/* Thumbnail Preview Styles */
+.preview-thumbnail {
+  /* width: 100%;
+  height: 100%; */
+  object-fit: cover;
+  border-radius: 6px;
+
+}
+
+.salary-slip-card {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.2s;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.salary-slip-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+.preview-footer {
+  padding: 10px;
+  background: #f8f9fa;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85em;
+  color: #666;
+}
+
+.preview-footer span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Month Grouping Styles */
+.month-group {
+  margin-bottom: 2.5rem;
+}
+
+.month-header {
+  margin: 2rem 0 1rem;
+}
+
+.month-title {
+  color: #2c3e50;
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.month-divider {
+  border: 0;
+  border-top: 2px solid #e0e0e0;
+  margin: 0 0 1.5rem 0;
+}
+
+.salary-slips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  padding: 0.5rem 0;
+}
+
+.salary-slip-card {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease;
+}
+
+.salary-slip-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+}
+/* Month Grouping Styles */
+.month-group {
+  margin-bottom: 2.5rem;
+}
+
+.month-header {
+  margin: 2rem 0 1rem;
+}
+
+.month-title {
+  color: #2c3e50;
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.month-divider {
+  border: 0;
+  border-top: 2px solid #e0e0e0;
+  margin: 0 0 1.5rem 0;
+}
+
+
+
+/* Export Dropdown Styles */
+.export-dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+
+.export-main {
+  position: relative;
+  padding-right: 35px !important;
+  transition: all 0.2s ease;
+}
+
+.dropdown-chevron {
+  margin-left: 8px;
+  font-size: 0.9em;
+  transition: transform 0.2s ease;
+}
+
+.export-dropdown-menu {
+  position: absolute;
+  top: 30px;
+  right: 0;
+  z-index: 1000;
+  min-width: 200px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  margin-top: 8px;
+  padding: 8px 0;
+  animation: slideDown 0.2s ease;
+  overflow: hidden;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-item {
+  width: 100%;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #2c3e50;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background: #f8f9fa;
+  transform: translateX(4px);
+}
+
+.dropdown-item svg {
+  width: 18px;
+  height: 18px;
+}
+
+.dropdown-icon {
+  color: #7341da;
+}
+
+.export-button{
+  display: flex;
+  align-items: anchor-center;
+}
+
+.salary-slip-preview {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  width: 300px;
+  transition: transform 0.2s;
+}
+
+.salary-slip-preview:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.preview-header {
+  padding: 15px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #eee;
+}
+
+.preview-header h4 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1rem;
+}
+
+.preview-header small {
+  color: #7f8c8d;
+  font-size: 0.85rem;
+}
+
+.preview-content {
+  padding: 15px;
+}
+
+.preview-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 8px 0;
+  font-size: 0.9rem;
+}
+
+.preview-row span:first-child {
+  color: #7f8c8d;
+}
+
+.preview-row span:last-child {
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.slip-status {
+  margin-top: 15px;
+  display: flex;
+  justify-content: center;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.status-badge.pending {
+  background-color: #fff8e1;
+  color: #f9a825;
+  border: 1px solid #ffe082;
+}
+
+.status-badge.completed {
+  background-color: #e8f5e9;
+  color: #43a047;
+  border: 1px solid #a5d6a7;
+}
+
+@media (max-width: 767px) {
+  .salary-slip-preview {
+    width: 100%;
+  }
+}

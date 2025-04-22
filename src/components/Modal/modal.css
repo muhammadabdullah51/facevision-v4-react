@@ -28,7 +28,7 @@
   
   .modal-buttons-modal {
     display: flex;
-    justify-content: space-around;
+    justify-content: center;
   }
   
   .confirm-button,

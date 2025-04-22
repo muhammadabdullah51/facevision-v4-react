@@ -2,13 +2,15 @@ import React from "react";
 import "./salarySlip.css";
 import { SERVER_URL } from "../../../config";
 
-const SalarySlip = ({ salaryDetails }) => {
+const SalarySlip = ({ salaryDetails,preview  }) => {
   return (
     <>
-      <div className="salary-slip">
+      <div className={`salary-slip ${preview ? 'preview-mode' : ''}`}
+      style={preview ? { padding: '0' } : {}}
+>
         {/* Header */}
         <header className="header-salary">
-          <div className="cmp-detail">
+          <div className={`cmp-detail ${preview ? 'preview-header' : ''}`}>
             <div className="logo-controller">
               <img src={`${SERVER_URL}${salaryDetails.companyLogo}`} alt="" />
             </div>

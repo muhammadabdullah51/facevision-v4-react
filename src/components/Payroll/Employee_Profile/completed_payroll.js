@@ -26,6 +26,7 @@ import { FaDownload, FaFolderOpen } from "react-icons/fa";
 import Allowance from "../Allowances/Allowances";
 import WorkingHours from "../Working_Hours/WorkingHours";
 import "./employee_profile.css"
+import ReactPaginate from "react-paginate";
 
 
 const CompletedPayroll = () => {
@@ -61,11 +62,22 @@ const CompletedPayroll = () => {
 
   const [activeTab, setActiveTab] = useState("table"); // Default view is the table
   const [selectedEmployee, setSelectedEmployee] = useState(null); // Store the selected employee data
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+
+
+
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState("");
+  const [successModal, setSuccessModal] = useState(false);
+  const [warningModal, setWarningModal] = useState(false);
+  const [resMsg, setResMsg] = useState("");
 
   const fetchPayrollEmpProfiles = useCallback(async () => {
     try {
       const response = await axios.get(`${SERVER_URL}pyr-emp-profile/`);
       const fetchedData = response.data; // Assuming only one object is returned
+      console.log(fetchedData);
       setData(fetchedData); // Directly update the settings state
       setEmployees(fetchedData);
     } catch (error) {
@@ -101,12 +113,12 @@ const CompletedPayroll = () => {
       item.attemptWorkingHours
         .toLowerCase()
         .includes(searchQuery.toLowerCase()) ||
-      item.dailySalary.toLowerCase().includes(searchQuery.toLowerCase()) 
+      item.dailySalary.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const exportToPDF = () => {
     const doc = new jsPDF('l', 'mm', 'legal'); // Set to 'landscape' and 'legal' size (216 x 356 mm)
-  
+
     doc.autoTable({
       head: [
         [
@@ -166,10 +178,10 @@ const CompletedPayroll = () => {
       tableWidth: 'auto', // Automatically adjust column widths
       didDrawCell: (data) => {
         const { row, column, cell } = data;
-  
+
         // No background color or other styling applied, just basic borders
         doc.setTextColor(0, 0, 0); // Set text color to black for all cells
-  
+
         // Add border around each cell
         doc.setLineWidth(0.1); // Border thickness
         doc.setDrawColor(0, 0, 0); // Border color (black)
@@ -180,10 +192,10 @@ const CompletedPayroll = () => {
         doc.text('Employee Salary Report', 20, 10);
       },
     });
-  
+
     doc.save("employee-profile.pdf");
   };
-  
+
 
 
 
@@ -396,11 +408,90 @@ const CompletedPayroll = () => {
         console.error("Error generating ZIP file:", error);
       });
   };
+  const [currentPage, setCurrentPage] = useState(0);
+  const rowsPerPage = 7;
+
+  const currentPageData = filteredData.slice(
+    currentPage * rowsPerPage,
+    (currentPage + 1) * rowsPerPage
+  );
+  // Handle page change
+  const handlePageChange = ({ selected }) => {
+    setCurrentPage(selected);
+  };
+
+  const handleSelectAllChange = (event) => {
+    const isChecked = event.target.checked;
+    setSelectAll(isChecked);
+
+    if (isChecked) {
+      const allIds = currentPageData.map((row) => row.pysId);
+      setSelectedIds(allIds);
+      console.log(allIds);
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleRowCheckboxChange = (event, rowId) => {
+    const isChecked = event.target.checked;
+
+    setSelectedIds((prevSelectedIds) => {
+      if (isChecked) {
+        return [...prevSelectedIds, rowId];
+      } else {
+        const updatedIds = prevSelectedIds.filter((id) => id !== rowId);
+        if (updatedIds.length !== currentPageData.length) {
+          setSelectAll(false);
+        }
+        return updatedIds;
+      }
+    });
+    console.log(selectedIds);
+  };
+  useEffect(() => {
+    if (selectedIds.length === currentPageData.length && currentPageData.length > 0) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  }, [selectedIds, currentPageData]);
+
+
+  const handleBulkDelete = () => {
+    if (selectedIds.length > 0) {
+      setModalType("delete selected");
+      setShowModal(true);
+    } else {
+      setResMsg("No rows selected for deletion.");
+      setShowModal(false);
+      setWarningModal(true);
+    }
+  };
+
+
+  const confirmBulkDelete = async () => {
+    try {
+      const payload = { ids: selectedIds };
+      console.log(payload);
+      const response = await axios.post(`${SERVER_URL}emp/del/data`, payload);
+      const updatedData = await axios.get(`${SERVER_URL}pr-emp/`);
+      setData(updatedData.data);
+      setShowModal(false);
+      setSelectedIds([]);
+      setSuccessModal(true);
+    } catch (error) {
+      console.error("Error deleting rows:", error);
+    } finally {
+      setShowModal(false);
+    }
+  };
+
 
   const renderTabContent = () => {
     switch (changeTab) {
-    //   case "Completed Payrolls":
-    //     return <CompletedPayroll />;
+      //   case "Completed Payrolls":
+      //     return <CompletedPayroll />;
       case "Working Hours":
         return <WorkingHours />;
       case "Advance Salary":
@@ -414,9 +505,9 @@ const CompletedPayroll = () => {
       case "Bonuses":
         return <Bonuses />;
       case "Taxes":
-        return < Tax/>;
+        return < Tax />;
       case "Allowances":
-        return < Allowance/>;
+        return < Allowance />;
       default:
         return (
           <>
@@ -486,7 +577,7 @@ const CompletedPayroll = () => {
                             <div className="icon-group">
                               <FaFolderOpen className="folder-icon" />
                             </div>
-                             Download All Sallary Slips
+                            Download All Sallary Slips
                           </button>
 
                           <button className="button  export-pdf">
@@ -499,7 +590,7 @@ const CompletedPayroll = () => {
                                   icon={faFileCsv}
                                   className="button-icon"
                                 />
-                            Export to CSV
+                                Export to CSV
                               </div>
                             </CSVLink>
                           </button>
@@ -520,12 +611,20 @@ const CompletedPayroll = () => {
 
 
 
-                        
+
                       </div>
                       <div className="departments-table">
                         <table className="table">
                           <thead>
                             <tr>
+                              <th>
+                                <input
+                                  id="delete-checkbox"
+                                  type="checkbox"
+                                  checked={selectAll}
+                                  onChange={handleSelectAllChange}
+                                />
+                              </th>
                               <th>Employee ID</th>
                               <th>Employee Name</th>
                               <th>Overtime Pay</th>
@@ -548,7 +647,15 @@ const CompletedPayroll = () => {
                           </thead>
                           <tbody>
                             {filteredData.map((item, index) => (
-                              <tr key={item.id}>
+                              <tr key={item.pysId}>
+                                <td>
+                                  <input
+                                    type="checkbox"
+                                    id="delete-checkbox"
+                                    checked={selectedIds.includes(item.pysId)}
+                                    onChange={(event) => handleRowCheckboxChange(event, item.pysId)}
+                                  />
+                                </td>
                                 <td>{item.empId}</td>
                                 <td>{item.empName}</td>
                                 <td>{item.otHoursPay}</td>
@@ -581,6 +688,19 @@ const CompletedPayroll = () => {
                             ))}
                           </tbody>
                         </table>
+                      </div>
+                      <div className="pagination">
+                        <ReactPaginate
+                          previousLabel={"Previous"}
+                          nextLabel={"Next"}
+                          breakLabel={"..."}
+                          pageCount={Math.ceil(filteredData.length / rowsPerPage)}
+                          marginPagesDisplayed={2}
+                          pageRangeDisplayed={5}
+                          onPageChange={handlePageChange}
+                          containerClassName={"pagination"}
+                          activeClassName={"active"}
+                        />
                       </div>
                     </div>
                   );

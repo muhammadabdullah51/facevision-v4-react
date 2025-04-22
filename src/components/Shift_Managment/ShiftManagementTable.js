@@ -314,7 +314,7 @@ const ShiftManagementTable = () => {
       holidays: selectedItems,
     };
     try {
-      const res = await axios.post(`${SERVER_URL}shft-up/`, updatedShift);
+      await axios.post(`${SERVER_URL}shft-up/`, updatedShift);
       setShowEditForm(false);
       setShowModal(false);
       setSuccessModal(true);
