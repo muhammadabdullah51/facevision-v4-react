@@ -21,7 +21,7 @@ import ReactDOMServer from "react-dom/server";
 
 import { SERVER_URL } from "../../../config";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { FaCheck, FaChevronDown, FaDownload, FaFolderOpen, FaTable, FaThLarge, FaTrash } from "react-icons/fa";
+import { FaCheck, FaChevronDown, FaDownload, FaFolderOpen, FaTable, FaThLarge } from "react-icons/fa";
 
 import Allowance from "../Allowances/Allowances";
 import WorkingHours from "../Working_Hours/WorkingHours";
@@ -49,7 +49,10 @@ const EmployeeProfile = () => {
     selectedDeductions = {
       allowances: [],
       bonuses: [],
-      taxes: []
+      taxes: [],
+      appraisals: [],
+      extraFunds: [],
+      loans: []
     } } = useSelector(state => state.empProfile);
   const [data, setData] = useState([
     {
@@ -190,7 +193,7 @@ const EmployeeProfile = () => {
   const handleRowCheckboxChange = (event, rowId) => {
     const isChecked = event.target.checked;
     const currentIds = [...selectedIds]; // Create a copy of current selected IDs
-    
+
     if (isChecked) {
       currentIds.push(rowId); // Add the row ID
     } else {
@@ -199,7 +202,7 @@ const EmployeeProfile = () => {
         currentIds.splice(index, 1); // Remove the row ID
       }
     }
-  
+
     dispatch(setSelectedIds(currentIds)); // Dispatch the new array
   };
 
@@ -573,10 +576,13 @@ const EmployeeProfile = () => {
   const [bonuses, setBonuses] = useState([]);
   const [taxes, setTaxes] = useState([]);
   const [allowances, setAllowances] = useState([]);
+  const [appraisals, setAppraisals] = useState([]);
+  const [extraFunds, setExtraFunds] = useState([]);
+  const [loans, setLoans] = useState([]);
 
   // And use the Redux-selected deductions directly:
   // Memoize derived data
-  const { allowances: selectedAllowances, bonuses: selectedBonuses, taxes: selectedTaxes } = useMemo(
+  const { allowances: selectedAllowances, bonuses: selectedBonuses, taxes: selectedTaxes, appraisals: selectedAppraisals, extraFunds: selectedExtraFunds, loans: selectedLoans } = useMemo(
     () => selectedDeductions,
     [selectedDeductions]
   );
@@ -585,15 +591,23 @@ const EmployeeProfile = () => {
   useEffect(() => {
     const fetchDeductions = async () => {
       try {
-        const [bonusesRes, taxesRes, allowancesRes] = await Promise.all([
+        const [bonusesRes, taxesRes, allowancesRes, appraisalsRes, extraFundsRes, loansRes] = await Promise.all([
           axios.get(`${SERVER_URL}pyr-bns/`),
           axios.get(`${SERVER_URL}taxes/`),
-          axios.get(`${SERVER_URL}allowances/`)
+          axios.get(`${SERVER_URL}allowances/`),
+          axios.get(`${SERVER_URL}pyr-appr/`),
+          axios.get(`${SERVER_URL}pyr-ext/`),
+          axios.get(`${SERVER_URL}pyr-loan/`)
+
         ]);
 
         setBonuses(bonusesRes.data);
         setTaxes(taxesRes.data);
         setAllowances(allowancesRes.data);
+        setAppraisals(appraisalsRes.data);
+        setExtraFunds(extraFundsRes.data);
+        setLoans(loansRes.data);
+
 
       } catch (error) {
         console.error("Error fetching deduction data:", error);
@@ -615,13 +629,30 @@ const EmployeeProfile = () => {
     value: tax.id,
     label: `${tax.taxName} (${tax.nature === "fixedamount" ? tax.amount + "Rs" : tax.percent + "%"})`,
     type: 'tax'
-  })), [bonuses]);
+  })), [taxes]);
 
   const allowanceOptions = useMemo(() => allowances.map(allowance => ({
     value: allowance.id,
     label: `${allowance.allowanceName} (${allowance.amount}Rs)`,
     type: 'allowance'
-  })) , [bonuses]);
+  })), [allowances]);
+
+  const appraisalOptions = useMemo(() => appraisals.map(appr => ({
+    value: appr.id,
+    label: `${appr.apprName} (${appr.appraisal}Rs)`,
+    type: 'appraisal'
+  })), [appraisals]);
+
+  const extraFundOptions = useMemo(() => extraFunds.map(extraFund => ({
+    value: extraFund.id,
+    label: `${extraFund.extraFundName} (${extraFund.extraFundAmount}Rs)`,
+    type: 'extraFund'
+  })), [extraFunds]);
+  const loanOptions = useMemo(() => loans.map(loan => ({
+    value: loan.id,
+    label: `${loan.loanName} (${loan.givenLoan}Rs)`,
+    type: 'loan'
+  })), [loans]);
 
 
   const renderTabContent = () => {
@@ -710,7 +741,7 @@ const EmployeeProfile = () => {
                                 <td>{item.totalWorkingHours}</td>
                                 <td>{item.attemptWorkingHours}</td>
                                 <td>{item.dailySalary}</td>
-                                <td>{item.calcPay}</td>
+                                <td>{item.calcPay || item.calculate_pay}</td>
                                 <td>
                                   <button
                                     onClick={() => handleOpenSalarySlip(item)}
@@ -742,6 +773,9 @@ const EmployeeProfile = () => {
                       </div>
                     </div>
                   );
+
+
+
                 case "gallery":
                   // Group employees by month-year
                   const groupedEmployees = currentPageData.reduce((acc, employee) => {
@@ -797,6 +831,8 @@ const EmployeeProfile = () => {
 
                     </div>
                   );
+
+
                 case "markCompleted":
                   // Get selected employees data
                   const selectedEmployees = data.filter(employee =>
@@ -845,12 +881,42 @@ const EmployeeProfile = () => {
 
                           <Select
                             isMulti
-                             placeholder="Select Taxes..."
+                            placeholder="Select Taxes..."
                             options={taxOptions}
                             value={selectedTaxes}
                             onChange={(selected) => dispatch(setSelectedDeductions({
                               ...selectedDeductions,
                               taxes: selected || []
+                            }))}
+                          />
+                          <Select
+                            isMulti
+                            placeholder="Select Appraisals..."
+                            options={appraisalOptions}
+                            value={selectedAppraisals}
+                            onChange={(selected) => dispatch(setSelectedDeductions({
+                              ...selectedDeductions,
+                              appraisals: selected || []
+                            }))}
+                          />
+                          <Select
+                            isMulti
+                            placeholder="Select Extra Funds..."
+                            options={extraFundOptions}
+                            value={selectedExtraFunds}
+                            onChange={(selected) => dispatch(setSelectedDeductions({
+                              ...selectedDeductions,
+                              extraFunds: selected || []
+                            }))}
+                          />
+                          <Select
+                            isMulti
+                            placeholder="Select Loans..."
+                            options={loanOptions}
+                            value={selectedLoans}
+                            onChange={(selected) => dispatch(setSelectedDeductions({
+                              ...selectedDeductions,
+                              loans: selected || []
                             }))}
                           />
                         </div>
@@ -893,7 +959,7 @@ const EmployeeProfile = () => {
                                   <PreviewContainer employee={employee} />
                                   <div className="preview-footer">
                                     <span>Basic: Rs. {employee.basicSalary}</span>
-                                    <span>Net: Rs. {employee.calcPay}</span>
+                                    <span>Net: Rs. {employee.calcPay || employee.calculate_pay}</span>
                                   </div>
                                 </div>
                               ))}
@@ -904,6 +970,8 @@ const EmployeeProfile = () => {
                       ))}
                     </div>
                   );
+
+
                 case "salarySlip":
                   return (
                     <div className="modal">
@@ -940,15 +1008,15 @@ const EmployeeProfile = () => {
   //   taxes: []
   // });
 
-const handleTableActiveTab = () =>{
-  dispatch(setActiveTab('table'))
-}
-const handleGalleryActiveTab = () =>{
-  dispatch(setActiveTab('gallery'))
-}
-const handleSalarySlipActiveTab = () =>{
-  dispatch(setActiveTab('salarySlip'))
-}
+  const handleTableActiveTab = () => {
+    dispatch(setActiveTab('table'))
+  }
+  const handleGalleryActiveTab = () => {
+    dispatch(setActiveTab('gallery'))
+  }
+  const handleSalarySlipActiveTab = () => {
+    dispatch(setActiveTab('salarySlip'))
+  }
 
   return (
     <>

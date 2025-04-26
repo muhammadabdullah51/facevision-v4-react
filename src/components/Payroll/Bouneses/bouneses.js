@@ -541,7 +541,7 @@ const Bonuses = () => {
       </div>
       <div className="break-table">
 
-        <AssignBonus />
+        <AssignBonus bonuses={data}/>
       </div>
     </div>
   );

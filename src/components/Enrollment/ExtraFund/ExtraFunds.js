@@ -14,6 +14,7 @@ import { SERVER_URL } from "../../../config";
 
 import { useDispatch, useSelector } from "react-redux";
 import { setExtraFundsData, resetExtraFundsData } from "../../../redux/extraFundsSlice";
+import AssignExtrFunds from "./assignExtraFunds";
 
 
 
@@ -45,11 +46,14 @@ const ExtraFunds = () => {
     setFormData({
       id: "",
       empId: "",
-      appraisal: "",
+      extraFundAmount: "",
+      returnInMonths: "",
+      paidAmount: "",
+      pendingAmount: "",
+      nextMonthPayable: "",
       reason: "",
       date: "",
-      status: "Pending",
-      desc: "",
+      type: "Pending",
     });
     setShowAddForm(false);
     setShowEditForm(false);
@@ -58,11 +62,14 @@ const ExtraFunds = () => {
   const [editFormData, setEditFormData] = useState({
     id: "",
     empId: "",
-    appraisal: "",
+    extraFundAmount: "",
+    returnInMonths: "",
+    paidAmount: "",
+    pendingAmount: "",
+    nextMonthPayable: "",
     reason: "",
     date: "",
-    status: "Pending",
-    desc: "",
+    type: "Pending",
   });
 
   const handleInputChange = (e) => {
@@ -735,6 +742,9 @@ const ExtraFunds = () => {
             ))}
           </tbody>
         </table>
+      </div>
+      <div className="break-table">
+        <AssignExtrFunds extraFunds={data} />
       </div>
     </div>
   );

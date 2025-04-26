@@ -7,7 +7,10 @@ const initialState = {
   selectedDeductions: {
     allowances: [],
     bonuses: [],
-    taxes: []
+    taxes: [],
+    appraisalsRes: [],
+    extraFundsRes: [],
+    loansRes: [],
   }
 };
 
@@ -19,11 +22,11 @@ const empProfileSlice = createSlice({
       state.activeTab = action.payload;
     },
     setSelectedIds(state, action) {
-    //   state.selectedIds = action.payload;
-    // Ensure payload is always array
-    state.selectedIds = Array.isArray(action.payload) 
-    ? [...new Set(action.payload)] 
-    : [];
+      //   state.selectedIds = action.payload;
+      // Ensure payload is always array
+      state.selectedIds = Array.isArray(action.payload)
+        ? [...new Set(action.payload)]
+        : [];
     },
     setSelectedDeductions(state, action) {
       state.selectedDeductions = action.payload;

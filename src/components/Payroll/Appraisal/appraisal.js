@@ -13,6 +13,7 @@ import warningAnimation from "../../../assets/Lottie/warningAnim.json";
 import { SERVER_URL } from "../../../config";
 import { useDispatch, useSelector } from "react-redux";
 import { setAppraisalsData, resetAppraisalsData } from "../../../redux/appraisalsSlice";
+import AssignAppraisal from "./assignAppraisal";
 
 
 const Appraisal = () => {
@@ -689,6 +690,9 @@ const Appraisal = () => {
             ))}
           </tbody>
         </table>
+      </div>
+      <div className="break-table">
+        <AssignAppraisal appraisals={data} />
       </div>
     </div>
   );

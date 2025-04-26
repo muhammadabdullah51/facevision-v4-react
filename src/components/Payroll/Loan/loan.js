@@ -14,6 +14,7 @@ import { SERVER_URL } from "../../../config";
 
 import { useDispatch, useSelector } from "react-redux";
 import { setLoanData, resetLoanData } from "../../../redux/loanSlice";
+import AssignLoan from "./assignLoan.js";
 
 
 const Loan = () => {
@@ -725,6 +726,9 @@ const Loan = () => {
             ))}
           </tbody>
         </table>
+      </div>
+      <div className="break-table">
+        <AssignLoan loans={data} />
       </div>
     </div>
   );

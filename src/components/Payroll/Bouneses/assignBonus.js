@@ -16,10 +16,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { setAssignBonusData, resetAssignBonusData } from "../../../redux/assignBonusSlice";
 
 
-const AssignBonus = () => {
+const AssignBonus = ({ bonuses }) => {
   const [data, setData] = useState([]);
   const [employees, setEmployees] = useState([]);
-  const [bonuses, setBonuses] = useState([]);
+  // const [bonuses, setBonuses] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -85,18 +85,18 @@ const AssignBonus = () => {
     }
   };
 
-  const fetchBonuses = async () => {
-    try {
-      const response = await axios.get(`${SERVER_URL}pyr-bns/`);
-      setBonuses(response.data);
-    } catch (error) {
-    }
-  };
+  // const fetchBonuses = async () => {
+  //   try {
+  //     const response = await axios.get(`${SERVER_URL}pyr-bns/`);
+  //     setBonuses(response.data);
+  //   } catch (error) {
+  //   }
+  // };
 
   useEffect(() => {
     fetchEmployeesBonus();
     fetchEmployees();
-    fetchBonuses();
+    // fetchBonuses();
     let timer;
     if (successModal) {
       timer = setTimeout(() => {
