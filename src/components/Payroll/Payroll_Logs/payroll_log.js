@@ -5,9 +5,10 @@ import "jspdf-autotable";
 import "../../Settings/Setting_Tabs/leave.css";
 import "../../Dashboard/dashboard.css"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFileCsv, faFilePdf } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import { SERVER_URL } from "../../../config";
+import { FaChevronDown, FaDownload } from "react-icons/fa";
+import { faFileCsv, faFilePdf } from "@fortawesome/free-solid-svg-icons";
 
 const PayrollLogs = () => {
   const [data, setData] = useState([]);
@@ -40,11 +41,11 @@ const PayrollLogs = () => {
 
   const filteredData = data
     .filter((item) => {
-      const itemDate = new Date(item.date);
+      const itemDate = new Date(item.closing_date);
       const start = new Date(startDate);
       const end = new Date(endDate);
       return (
-        item.fname.toLowerCase().includes(searchQuery.toLowerCase()) &&
+        item.empName.toLowerCase().includes(searchQuery.toLowerCase()) &&
         (!startDate || itemDate >= start) &&
         (!endDate || itemDate <= end)
       );
@@ -52,7 +53,7 @@ const PayrollLogs = () => {
     .slice(0, 10);
 
   const exportToPDF = () => {
-    const doc = new jsPDF('l', 'mm', 'legal'); // Set to 'landscape' and 'legal' size (216 x 356 mm)
+    const doc = new jsPDF('l', 'mm', 'legal');
 
     doc.autoTable({
       head: [
@@ -60,63 +61,81 @@ const PayrollLogs = () => {
           "Serial No",
           "Employee ID",
           "Name",
-          "Allotted Hours",
-          "Basic Salary",
-          "Date",
-          "Hours Worked",
+          "Department",
+          "Bank Name",
           "Salary Type",
+          "Account No",
           "Salary Period",
+          "Overtime Hours Pay",
           "Overtime Hours",
           "Extra Fund",
           "Advance Salary",
-          "Bank Name",
-          "Account No",
-          "Pay",
+          "Appraisals",
+          "Loans",
+          "Bonus",
+          "Basic Salary",
+          "Total Working Days",
+          "Total Working Hours",
+          "Total Working Minutes",
+          "Attempt Working Hours",
+          "Daily Salary",
+          "Allowances",
+          "Taxes",
+          "Calculate Pay",
+          "Closing Date"
         ],
       ],
       body: filteredData.map((item, index) => [
         index + 1,
         item.empId,
-        item.fname + " " + item.lname,
-        item.allotedWorkingHours,
-        item.basicSalary,
-        item.date,
-        item.total_hrs_worked,
+        item.empName,
+        item.department,
         item.bankName,
         item.salaryType,
-        item.salaryPeriod,
-        item.overtime_hrs,
-        item.extra_fund,
-        item.advance_salary,
         item.accountNo,
-        item.pay,
+        item.salaryPeriod,
+        item.otHoursPay,
+        item.otHours,
+        item.extraFund,
+        item.advSalary,
+        item.app,
+        item.loan,
+        item.bonus,
+        item.basicSalary,
+        item.totalWorkingDays,
+        item.totalWorkingHours,
+        item.totalWorkingMinutes,
+        item.attemptWorkingHours,
+        item.dailySalary,
+        item.allowances,
+        item.taxes,
+        item.calculate_pay,
+        item.closing_date,
       ]),
       styles: {
-        overflow: 'linebreak', // Allow text to wrap
-        fontSize: 8, // Adjust font size to fit more content
-        cellPadding: 2, // Adjust padding for better spacing
-        lineWidth: 0.1, // Set the line width for borders
-        lineColor: [0, 0, 0], // Set the border color to black
+        overflow: 'linebreak',
+        fontSize: 8,
+        cellPadding: 2,
+        lineWidth: 0.1,
+        lineColor: [0, 0, 0],
       },
-      tableWidth: 'auto', // Automatically adjust column widths
+      tableWidth: 'auto',
       didDrawCell: (data) => {
         const { row, column, cell } = data;
-
-        // No background color or other styling applied, just basic borders
-        doc.setTextColor(0, 0, 0); // Set text color to black for all cells
-
-        // Add border around each cell
-        doc.setLineWidth(0.1); // Border thickness
-        doc.setDrawColor(0, 0, 0); // Border color (black)
-        doc.rect(cell.x, cell.y, cell.width, cell.height); // Draw rectangle (border) around each cell
+        doc.setTextColor(0, 0, 0);
+        doc.setLineWidth(0.1);
+        doc.setDrawColor(0, 0, 0);
+        doc.rect(cell.x, cell.y, cell.width, cell.height);
       },
       didDrawPage: (data) => {
-        // Add a title or additional content on the first page
-        doc.text('Employee Salary Report', 20, 10);
+        doc.text('Employee Payroll Logs', 20, 10);
       },
     });
     doc.save("payroll-logs.pdf");
   };
+
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
+
 
   return (
     <div className="department-table">
@@ -138,76 +157,110 @@ const PayrollLogs = () => {
             className="input"
           />
         </div>
-        <div className="export-buttons">
-          <button className="button export-csv">
-            <CSVLink
-              data={filteredData}
-              filename="employee-profile.csv"
-            >
-              <div className="icon-group">
-                <FontAwesomeIcon
-                  icon={faFileCsv}
-                  className="button-icon"
-                />
-                Export to CSV
-              </div>
-            </CSVLink>
-          </button>
-
+        <div className="export-dropdown-container ">
           <button
-            className="button export-pdf"
-            onClick={exportToPDF}
+            className="add-button export-button"
+            onMouseEnter={() => setShowExportDropdown(true)}
+            onMouseLeave={() => setShowExportDropdown(false)}
           >
-            <div className="icon-group">
-              <FontAwesomeIcon
-                icon={faFilePdf}
-                className="button-icon"
-              />
-            </div>
-            Export to PDF
+            <FaDownload className="button-icon" />
+            Export Data
+            <FaChevronDown className="dropdown-chevron" />
+
           </button>
+          {showExportDropdown && (
+            <div
+              className="export-dropdown-menu"
+              onMouseEnter={() => setShowExportDropdown(true)}
+              onMouseLeave={() => setShowExportDropdown(false)}
+            >
+
+              <CSVLink
+                data={filteredData}
+                filename="payroll-logs.csv"
+                style={{ textDecoration: 'none' }}
+              >
+                <button
+                  className="dropdown-item"
+                >
+                  <FontAwesomeIcon icon={faFileCsv} className="dropdown-icon" />
+                  Export to CSV
+                </button>
+              </CSVLink>
+
+              <button
+                className="dropdown-item"
+                onClick={exportToPDF}
+              >
+                <FontAwesomeIcon icon={faFilePdf} className="dropdown-icon" />
+                Export to PDF
+              </button>
+
+            </div>
+
+          )}
         </div>
       </div>
 
       <div className="departments-table">
-        <table className="table">
+        <table className="table pyr-table">
           <thead>
             <tr>
               <th>Serial No</th>
               <th>Employee ID</th>
               <th>Name</th>
-              <th>Allotted Hours</th>
-              <th>Basic Salary</th>
-              <th>Date</th>
-              <th>Hours Worked</th>
+              <th>Department</th>
+              <th>Bank Name</th>
               <th>Salary Type</th>
+              <th>Account No</th>
               <th>Salary Period</th>
+              <th>Overtime Hours Pay</th>
               <th>Overtime Hours</th>
               <th>Extra Fund</th>
               <th>Advance Salary</th>
-              <th>Bank Name</th>
-              <th>Account No</th>
-              <th>Pay</th>
+              <th>Appraisals</th>
+              <th>Loans</th>
+              <th>Bonus</th>
+              <th>Basic Salary</th>
+              <th>Total Working Days</th>
+              <th>Total Working Hours</th>
+              <th>Total Working Minutes</th>
+              <th>Attempt Working Hours</th>
+              <th>Daily Salary</th>
+              <th>Allowances</th>
+              <th>Taxes</th>
+              <th>Calculate Pay</th>
+              <th>Closing Date</th>
             </tr>
           </thead>
           <tbody>
             {filteredData.map((item, index) => (
-              <tr key={item.id}>
+              <tr key={item.pyId}>
                 <td>{index + 1}</td>
                 <td>{item.empId}</td>
-                <td className="bold-fonts">{item.fname} {item.lname}</td>
-                <td>{item.allotedWorkingHours}</td>
-                <td>{item.basicSalary}</td>
-                <td>{item.date}</td>
-                <td className="bold-fonts">{item.total_hrs_worked}</td>
-                <td>{item.salaryType}</td>
-                <td>{item.salaryPeriod}</td>
-                <td className="bold-fonts">{item.overtime_hrs}</td>
-                <td>{item.extra_fund}</td>
-                <td>{item.advance_salary}</td>
+                <td className="bold-fonts">{item.empName}</td>
+                <td>{item.department}</td>
                 <td>{item.bankName}</td>
+                <td>{item.salaryType}</td>
                 <td>{item.accountNo}</td>
-                <td className="bold-fonts">{item.pay}</td>
+                <td>{item.salaryPeriod}</td>
+                <td>{item.otHoursPay}</td>
+                <td className="bold-fonts">{item.otHours}</td>
+                <td>{item.extraFund}</td>
+                <td>{item.advSalary}</td>
+                <td>{item.app}</td>
+                <td>{item.loan}</td>
+                <td>{item.bonus}</td>
+                <td>{item.basicSalary}</td>
+                <td>{item.totalWorkingDays}</td>
+                <td className="bold-fonts">{item.totalWorkingHours}</td>
+                <td>{item.totalWorkingMinutes}</td>
+                <td>{item.attemptWorkingHours}</td>
+                <td>{item.dailySalary}</td>
+                <td>{item.allowances}</td>
+                <td>{item.taxes}</td>
+                <td className="bold-fonts">{item.calculate_pay}</td>
+                <td>{item.closing_date}</td>
               </tr>
             ))}
           </tbody>

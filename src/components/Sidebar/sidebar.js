@@ -40,7 +40,7 @@ const menuItems = [
     {
         label: 'Payroll', icon: faMoneyCheckAlt, submenu: [
             { label: 'Employee Profile', icon: faUser },
-            // { label: 'Payroll Log', icon: faCalendarAlt },
+            { label: 'Payroll Log', icon: faCalendarAlt },
             { label: 'Completed Payrolls', icon: faCalendarAlt },
             { label: 'Working Hours', icon: faCalendarAlt },
             { label: 'Advance Salary', icon: faHandHoldingUsd },

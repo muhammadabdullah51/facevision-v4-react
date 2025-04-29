@@ -41,6 +41,42 @@ import { setActiveTab, setSelectedIds, setSelectedDeductions, resetState } from 
 // import SalarySlipPreview from "./SalarySlipPreview";
 
 
+// Add this utility function outside the component
+// Add this inside the EmployeeProfile component
+const calculateNetPay = (employee, deductions, options) => {
+  const { allowances, bonuses, taxes, loans } = options;
+  let netPay = parseFloat(employee.basicSalary) || 0;
+
+  // Allowances
+  deductions.allowances?.forEach(allowance => {
+    const found = allowances.find(a => a.id === allowance.value);
+    netPay += parseFloat(found?.amount) || 0;
+  });
+
+  // Bonuses
+  deductions.bonuses?.forEach(bonus => {
+    const found = bonuses.find(b => b.id === bonus.value);
+    netPay += parseFloat(found?.bonusAmount) || 0;
+  });
+
+  // Taxes
+  deductions.taxes?.forEach(tax => {
+    const found = taxes.find(t => t.id === tax.value);
+    if (found?.nature === "fixedamount") {
+      netPay -= parseFloat(found.amount) || 0;
+    } else {
+      netPay -= netPay * (parseFloat(found?.percent) / 100) || 0;
+    }
+  });
+
+  // Loans
+  deductions.loans?.forEach(loan => {
+    const found = loans.find(l => l.id === loan.value);
+    netPay -= parseFloat(found?.givenLoan) || 0;
+  });
+
+  return netPay.toFixed(2);
+};
 
 const EmployeeProfile = () => {
   const dispatch = useDispatch();
@@ -522,12 +558,52 @@ const EmployeeProfile = () => {
   };
 
   // Preview container component
-  const PreviewContainer = ({ employee }) => {
+  // const PreviewContainer = ({ employee }) => {
+  //   const [previewImage, setPreviewImage] = useState(null);
+  //   const previewRef = React.useRef();
+
+  //   useEffect(() => {
+  //     const generatePreview = async () => {
+  //       try {
+  //         const canvas = await html2canvas(previewRef.current, {
+  //           scale: 3,
+  //           useCORS: true,
+  //           logging: false,
+  //         });
+  //         setPreviewImage(canvas.toDataURL('image/jpeg', 2));
+  //       } catch (error) {
+  //         console.error('Error generating preview:', error);
+  //       }
+  //     };
+
+  //     generatePreview();
+  //   }, [employee]);
+
+  //   return (
+  //     <div className="preview-container">
+  //       {previewImage ? (
+  //         <img
+  //           src={previewImage}
+  //           alt={`${employee.empName} salary slip preview`}
+  //           className="preview-thumbnail"
+  //         />
+  //       ) : (
+  //         <div ref={previewRef} className="preview-viewport">
+  //           <SalarySlip salaryDetails={employee} preview />
+  //         </div>
+  //       )}
+  //     </div>
+  //   );
+  // };
+
+  const PreviewContainer = ({ employee, deductions, allowances, bonuses, taxes, loans }) => {
     const [previewImage, setPreviewImage] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
     const previewRef = React.useRef();
 
     useEffect(() => {
       const generatePreview = async () => {
+        setIsLoading(true);
         try {
           const canvas = await html2canvas(previewRef.current, {
             scale: 3,
@@ -537,15 +613,22 @@ const EmployeeProfile = () => {
           setPreviewImage(canvas.toDataURL('image/jpeg', 2));
         } catch (error) {
           console.error('Error generating preview:', error);
+        } finally {
+          setIsLoading(false);
         }
       };
 
       generatePreview();
-    }, [employee]);
+    }, [employee, deductions]); // Add deductions as dependency
 
     return (
       <div className="preview-container">
-        {previewImage ? (
+        {isLoading ? (
+          <div className="loading-spinner">
+            {/* Add your loading spinner component here */}
+            <div className="spinner"></div>
+          </div>
+        ) : previewImage ? (
           <img
             src={previewImage}
             alt={`${employee.empName} salary slip preview`}
@@ -553,7 +636,18 @@ const EmployeeProfile = () => {
           />
         ) : (
           <div ref={previewRef} className="preview-viewport">
-            <SalarySlip salaryDetails={employee} preview />
+            {/* <SalarySlip salaryDetails={employee} preview deductions={deductions} /> */}
+            <SalarySlip
+              salaryDetails={employee}
+              preview
+              deductions={{
+                ...deductions,
+                allowances,
+                bonuses,
+                taxes,
+                loans
+              }}
+            />
           </div>
         )}
       </div>
@@ -681,97 +775,234 @@ const EmployeeProfile = () => {
               switch (activeTab) {
                 case "table":
                   return (
-                    <div className="department-table">
-                      <div className="departments-table">
-                        <table className="table">
-                          <thead>
-                            <tr>
-                              <th>
-                                <input
-                                  id="delete-checkbox"
-                                  type="checkbox"
-                                  checked={selectAll}
-                                  onChange={handleSelectAllChange}
-                                />
-                              </th>
-                              <th>Employee ID</th>
-                              <th>Employee Name</th>
-                              <th>Overtime Pay</th>
-                              <th>Overtime Hours</th>
-                              <th>Extra Fund</th>
-                              <th>Advance Salary</th>
-                              <th>Appraisals</th>
-                              <th>Loan</th>
-                              <th>Bonus</th>
-                              <th>Period</th>
-                              <th>Basic</th>
-                              <th>Type</th>
-                              <th>Total Working Days</th>
-                              <th>Total Working Hours</th>
-                              <th>Attempt Working Hours</th>
-                              <th>Daily Salary</th>
-                              <th>Pay</th>
-                              <th>Salary Slip</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {filteredData.map((item, index) => (
-                              <tr key={item.pysId}>
-                                <td>
-                                  <input
-                                    type="checkbox"
-                                    id="delete-checkbox"
-                                    checked={selectedIds.includes(item.pysId)}
-                                    onChange={(event) => handleRowCheckboxChange(event, item.pysId)}
-                                  />
-                                </td>
-                                <td>{item.empId}</td>
-                                <td>{item.empName}</td>
-                                <td>{item.otHoursPay}</td>
-                                <td>{item.otHours}</td>
-                                <td>{item.extraFund}</td>
-                                <td>{item.advSalary}</td>
-                                <td>{item.app}</td>
-                                <td>{item.loan}</td>
-                                <td>{item.bonus}</td>
-                                <td>{item.salaryPeriod}</td>
-                                <td>{item.basicSalary}</td>
-                                <td>{item.salaryType}</td>
-                                <td>{item.totalWorkingDays}</td>
-                                <td>{item.totalWorkingHours}</td>
-                                <td>{item.attemptWorkingHours}</td>
-                                <td>{item.dailySalary}</td>
-                                <td>{item.calcPay || item.calculate_pay}</td>
-                                <td>
+                    <>
+                      <div
+                        className="table-header"
+                        style={{ paddingBottom: "none" }}
+                      >
+                        <form
+                          className="form"
+                          onSubmit={(e) => e.preventDefault()}
+                        >
+                          <button type="submit">
+                            <svg
+                              width="17"
+                              height="16"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                              aria-labelledby="search"
+                            >
+                              <path
+                                d="M7.667 12.667A5.333 5.333 0 107.667 2a5.333 5.333 0 000 10.667zM14.334 14l-2.9-2.9"
+                                stroke="currentColor"
+                                strokeWidth="1.333"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              ></path>
+                            </svg>
+                          </button>
+                          <input
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search..."
+                            className="input"
+                            type="text"
+                          />
+                          <button
+                            className="reset"
+                            type="button"
+                            onClick={() => setSearchQuery("")}
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-6 w-6"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </button>
+                        </form>
+
+                        <div className="tabs card-table-toggle">
+                          <button
+                            className={`card-view-123 toggle- ${activeTab === 'table' ? 'active' : ''}`}
+                            onClick={handleTableActiveTab}
+                          >
+                            <FaTable />
+                          </button>
+                          <button
+                            className={`table-view-123 toggle-button ${activeTab === 'gallery' ? 'active' : ''}`}
+                            onClick={handleGalleryActiveTab}
+                          >
+                            <FaThLarge />
+                          </button>
+                        </div>
+
+                        <div className="add-delete-container add-delete-emp">
+                          <button
+                            className="add-button submit-button"
+                            onClick={handleClosePayroll}
+                          >
+                            <FaCheck className="add-icon" /> Close Payroll
+                          </button>
+                          <button
+                            className="add-button"
+                            onClick={handleMarkAsCompleted}
+                          >
+                            <FaCheck className="add-icon" /> Mark As Completed
+                          </button>
+                          <div className="export-dropdown-container ">
+                            <button
+                              className="add-button export-button"
+                              onMouseEnter={() => setShowExportDropdown(true)}
+                              onMouseLeave={() => setShowExportDropdown(false)}
+                            >
+                              <FaDownload className="button-icon" />
+                              Export Data
+                              <FaChevronDown className="dropdown-chevron" />
+
+                            </button>
+                            {showExportDropdown && (
+                              <div
+                                className="export-dropdown-menu"
+                                onMouseEnter={() => setShowExportDropdown(true)}
+                                onMouseLeave={() => setShowExportDropdown(false)}
+                              >
+                                <button
+                                  className="dropdown-item"
+                                  onClick={downloadAllSalarySlips}
+                                >
+                                  <FaFolderOpen className="dropdown-icon" />
+                                  All Salary Slips
+                                </button>
+
+                                <CSVLink
+                                  data={filteredData}
+                                  filename="employee-profile.csv"
+                                  style={{ textDecoration: 'none' }}
+                                >
                                   <button
-                                    onClick={() => handleOpenSalarySlip(item)}
-                                    style={{
-                                      background: "none",
-                                      border: "none",
-                                    }}
+                                    className="dropdown-item"
                                   >
-                                    <FaDownload className="salary-slip-button" />
+                                    <FontAwesomeIcon icon={faFileCsv} className="dropdown-icon" />
+                                    Export to CSV
                                   </button>
-                                </td>
+                                </CSVLink>
+
+                                <button
+                                  className="dropdown-item"
+                                  onClick={exportToPDF}
+                                >
+                                  <FontAwesomeIcon icon={faFilePdf} className="dropdown-icon" />
+                                  Export to PDF
+                                </button>
+
+                              </div>
+
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="department-table">
+                        <div className="departments-table">
+                          <table className="table">
+                            <thead>
+                              <tr>
+                                <th>
+                                  <input
+                                    id="delete-checkbox"
+                                    type="checkbox"
+                                    checked={selectAll}
+                                    onChange={handleSelectAllChange}
+                                  />
+                                </th>
+                                <th>Employee ID</th>
+                                <th>Employee Name</th>
+                                <th>Overtime Pay</th>
+                                <th>Overtime Hours</th>
+                                <th>Extra Fund</th>
+                                <th>Advance Salary</th>
+                                <th>Appraisals</th>
+                                <th>Loan</th>
+                                <th>Bonus</th>
+                                <th>Period</th>
+                                <th>Basic</th>
+                                <th>Type</th>
+                                <th>Total Working Days</th>
+                                <th>Total Working Hours</th>
+                                <th>Attempt Working Hours</th>
+                                <th>Daily Salary</th>
+                                <th>Pay</th>
+                                <th>Salary Slip</th>
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                            </thead>
+                            <tbody>
+                              {filteredData.map((item, index) => (
+                                <tr key={item.pysId}>
+                                  <td>
+                                    <input
+                                      type="checkbox"
+                                      id="delete-checkbox"
+                                      checked={selectedIds.includes(item.pysId)}
+                                      onChange={(event) => handleRowCheckboxChange(event, item.pysId)}
+                                    />
+                                  </td>
+                                  <td>{item.empId}</td>
+                                  <td>{item.empName}</td>
+                                  <td>{item.otHoursPay}</td>
+                                  <td>{item.otHours}</td>
+                                  <td>{item.extraFund}</td>
+                                  <td>{item.advSalary}</td>
+                                  <td>{item.app}</td>
+                                  <td>{item.loan}</td>
+                                  <td>{item.bonus}</td>
+                                  <td>{item.salaryPeriod}</td>
+                                  <td>{item.basicSalary}</td>
+                                  <td>{item.salaryType}</td>
+                                  <td>{item.totalWorkingDays}</td>
+                                  <td>{item.totalWorkingHours}</td>
+                                  <td>{item.attempt_working_hours}</td>
+                                  <td>{item.dailySalary}</td>
+                                  <td>{item.calcPay || item.calculate_pay}</td>
+                                  <td>
+                                    <button
+                                      onClick={() => handleOpenSalarySlip(item)}
+                                      style={{
+                                        background: "none",
+                                        border: "none",
+                                      }}
+                                    >
+                                      <FaDownload className="salary-slip-button" />
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                        <div className="pagination">
+                          <ReactPaginate
+                            previousLabel={"Previous"}
+                            nextLabel={"Next"}
+                            breakLabel={"..."}
+                            pageCount={Math.ceil(filteredData.length / rowsPerPage)}
+                            marginPagesDisplayed={2}
+                            pageRangeDisplayed={5}
+                            onPageChange={handlePageChange}
+                            containerClassName={"pagination"}
+                            activeClassName={"active"}
+                          />
+                        </div>
                       </div>
-                      <div className="pagination">
-                        <ReactPaginate
-                          previousLabel={"Previous"}
-                          nextLabel={"Next"}
-                          breakLabel={"..."}
-                          pageCount={Math.ceil(filteredData.length / rowsPerPage)}
-                          marginPagesDisplayed={2}
-                          pageRangeDisplayed={5}
-                          onPageChange={handlePageChange}
-                          containerClassName={"pagination"}
-                          activeClassName={"active"}
-                        />
-                      </div>
-                    </div>
+                    </>
                   );
 
 
@@ -797,41 +1028,346 @@ const EmployeeProfile = () => {
                   const sortedGroups = Object.entries(groupedEmployees);
 
                   return (
-                    <div className="gallery-container">
-                      {sortedGroups.map(([monthYear, employees], groupIndex) => (
-                        <div key={monthYear}>
-                          <div className="month-group">
-                            <div className="month-header">
-                              <h3 className="month-title">{monthYear}</h3>
-                              <hr className="month-divider" />
-                            </div>
-                            <div className="salary-slips-grid">
-                              {employees.map((employee) => (
-                                <div
-                                  key={employee.pysId}
-                                  className="salary-slip-card"
-                                  onClick={() => handleOpenSalarySlip(employee)}
-                                >
-                                  <div className="preview-header">
-                                    <h4>{employee.empName}</h4>
-                                    <small>{employee.empId}</small>
-                                  </div>
-                                  <PreviewContainer employee={employee} />
-                                  <div className="preview-footer">
-                                    <span>Basic: Rs. {employee.basicSalary}</span>
-                                    <span>Net: Rs. {employee.calcPay || employee.calculate_pay}</span>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                          {groupIndex < sortedGroups.length - 1 && <hr />}
-                        </div>
-                      ))}
+                    <>
+                      <div
+                        className="table-header"
+                        style={{ paddingBottom: "none" }}
+                      >
+                        <form
+                          className="form"
+                          onSubmit={(e) => e.preventDefault()}
+                        >
+                          <button type="submit">
+                            <svg
+                              width="17"
+                              height="16"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                              aria-labelledby="search"
+                            >
+                              <path
+                                d="M7.667 12.667A5.333 5.333 0 107.667 2a5.333 5.333 0 000 10.667zM14.334 14l-2.9-2.9"
+                                stroke="currentColor"
+                                strokeWidth="1.333"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              ></path>
+                            </svg>
+                          </button>
+                          <input
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search..."
+                            className="input"
+                            type="text"
+                          />
+                          <button
+                            className="reset"
+                            type="button"
+                            onClick={() => setSearchQuery("")}
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-6 w-6"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </button>
+                        </form>
 
-                    </div>
+                        <div className="tabs card-table-toggle">
+                          <button
+                            className={`card-view-123 toggle- ${activeTab === 'table' ? 'active' : ''}`}
+                            onClick={handleTableActiveTab}
+                          >
+                            <FaTable />
+                          </button>
+                          <button
+                            className={`table-view-123 toggle-button ${activeTab === 'gallery' ? 'active' : ''}`}
+                            onClick={handleGalleryActiveTab}
+                          >
+                            <FaThLarge />
+                          </button>
+                        </div>
+
+                        <div className="add-delete-container add-delete-emp">
+                          <button
+                            className="add-button submit-button"
+                            onClick={handleClosePayroll}
+                          >
+                            <FaCheck className="add-icon" /> Close Payroll
+                          </button>
+                          <button
+                            className="add-button"
+                            onClick={handleMarkAsCompleted}
+                          >
+                            <FaCheck className="add-icon" /> Mark As Completed
+                          </button>
+                          <div className="export-dropdown-container ">
+                            <button
+                              className="add-button export-button"
+                              onMouseEnter={() => setShowExportDropdown(true)}
+                              onMouseLeave={() => setShowExportDropdown(false)}
+                            >
+                              <FaDownload className="button-icon" />
+                              Export Data
+                              <FaChevronDown className="dropdown-chevron" />
+
+                            </button>
+                            {showExportDropdown && (
+                              <div
+                                className="export-dropdown-menu"
+                                onMouseEnter={() => setShowExportDropdown(true)}
+                                onMouseLeave={() => setShowExportDropdown(false)}
+                              >
+                                <button
+                                  className="dropdown-item"
+                                  onClick={downloadAllSalarySlips}
+                                >
+                                  <FaFolderOpen className="dropdown-icon" />
+                                  All Salary Slips
+                                </button>
+
+                                <CSVLink
+                                  data={filteredData}
+                                  filename="employee-profile.csv"
+                                  style={{ textDecoration: 'none' }}
+                                >
+                                  <button
+                                    className="dropdown-item"
+                                  >
+                                    <FontAwesomeIcon icon={faFileCsv} className="dropdown-icon" />
+                                    Export to CSV
+                                  </button>
+                                </CSVLink>
+
+                                <button
+                                  className="dropdown-item"
+                                  onClick={exportToPDF}
+                                >
+                                  <FontAwesomeIcon icon={faFilePdf} className="dropdown-icon" />
+                                  Export to PDF
+                                </button>
+
+                              </div>
+
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="gallery-container">
+                        {sortedGroups.map(([monthYear, employees], groupIndex) => (
+                          <div key={monthYear}>
+                            <div className="month-group">
+                              <div className="month-header">
+                                <h3 className="month-title">{monthYear}</h3>
+                                <hr className="month-divider" />
+                              </div>
+                              <div className="salary-slips-grid">
+                                {employees.map((employee) => (
+                                  <div
+                                    key={employee.pysId}
+                                    className="salary-slip-card"
+                                    onClick={() => handleOpenSalarySlip(employee)}
+                                  >
+                                    <div className="preview-header">
+                                      <h4>{employee.empName}</h4>
+                                      <small>{employee.empId}</small>
+                                    </div>
+                                    <PreviewContainer employee={employee} />
+                                    <div className="preview-footer">
+                                      <span>Basic: Rs. {employee.basicSalary}</span>
+                                      <span>Net: Rs. {employee.calculate_pay}</span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                            {groupIndex < sortedGroups.length - 1 && <hr />}
+                          </div>
+                        ))}
+
+                      </div>
+                    </>
                   );
 
+
+                // case "markCompleted":
+                //   // Get selected employees data
+                //   const selectedEmployees = data.filter(employee =>
+                //     selectedIds.includes(employee.pysId)
+                //   );
+
+                //   // Group selected employees by month-year
+                //   const groupedSelected = selectedEmployees.reduce((acc, employee) => {
+                //     const date = new Date(employee.date);
+                //     const monthYear = date.toLocaleString('default', {
+                //       month: 'long',
+                //       year: 'numeric'
+                //     });
+                //     if (!acc[monthYear]) acc[monthYear] = [];
+                //     acc[monthYear].push(employee);
+                //     return acc;
+                //   }, {});
+
+                //   return (
+                //     <div className="gallery-container">
+                //       {/* Deduction Controls */}
+                //       <div className="deduction-controls">
+                //         <h2>Apply Deductions to All Selected</h2>
+                //         <div className="deduction-filters">
+                //           <Select
+                //             isMulti
+                //             placeholder="Select Allowances..."
+                //             options={allowanceOptions}
+                //             value={selectedAllowances}
+                //             onChange={(selected) => dispatch(setSelectedDeductions({
+                //               ...selectedDeductions,
+                //               allowances: selected || []
+                //             }))}
+                //           />
+
+                //           <Select
+                //             isMulti
+                //             placeholder="Select Bonuses..."
+                //             options={bonusOptions}
+                //             value={selectedBonuses}
+                //             onChange={(selected) => dispatch(setSelectedDeductions({
+                //               ...selectedDeductions,
+                //               bonuses: selected || []
+                //             }))}
+                //           />
+
+                //           <Select
+                //             isMulti
+                //             placeholder="Select Taxes..."
+                //             options={taxOptions}
+                //             value={selectedTaxes}
+                //             onChange={(selected) => dispatch(setSelectedDeductions({
+                //               ...selectedDeductions,
+                //               taxes: selected || []
+                //             }))}
+                //           />
+                //           <Select
+                //             isMulti
+                //             placeholder="Select Appraisals..."
+                //             options={appraisalOptions}
+                //             value={selectedAppraisals}
+                //             onChange={(selected) => dispatch(setSelectedDeductions({
+                //               ...selectedDeductions,
+                //               appraisals: selected || []
+                //             }))}
+                //           />
+                //           <Select
+                //             isMulti
+                //             placeholder="Select Extra Funds..."
+                //             options={extraFundOptions}
+                //             value={selectedExtraFunds}
+                //             onChange={(selected) => dispatch(setSelectedDeductions({
+                //               ...selectedDeductions,
+                //               extraFunds: selected || []
+                //             }))}
+                //           />
+                //           <Select
+                //             isMulti
+                //             placeholder="Select Loans..."
+                //             options={loanOptions}
+                //             value={selectedLoans}
+                //             onChange={(selected) => dispatch(setSelectedDeductions({
+                //               ...selectedDeductions,
+                //               loans: selected || []
+                //             }))}
+                //           />
+                //         </div>
+
+                //         {/* Action Buttons */}
+                //         <div className="modal-footer">
+                //           <button
+                //             className="submit-button"
+                //             onClick={() => handleConfirmMarkAsCompleted(selectedDeductions)}
+                //           >
+                //             Confirm Mark as Completed
+                //           </button>
+                //           <button
+                //             className="cancel-button"
+                //             onClick={() => dispatch(resetState())}
+                //           >
+                //             Cancel
+                //           </button>
+                //         </div>
+                //       </div>
+
+                //       {/* Salary Slips Grid */}
+                //       {Object.entries(groupedSelected).map(([monthYear, employees], groupIndex) => (
+                //         <div key={monthYear}>
+                //           <div className="month-group">
+                //             <div className="month-header">
+                //               <h3 className="month-title">{monthYear}</h3>
+                //               <hr className="month-divider" />
+                //             </div>
+                //             <div className="salary-slips-grid">
+                //               {/* {employees.map((employee) => (
+                //                 <div
+                //                   key={employee.pysId}
+                //                   className="salary-slip-card"
+                //                 >
+                //                   <div className="preview-header">
+                //                     <h4>{employee.empName}</h4>
+                //                     <small>{employee.empId}</small>
+                //                   </div>
+                //                   <PreviewContainer employee={employee} />
+                //                   <div className="preview-footer">
+                //                     <span>Basic: Rs. {employee.basicSalary}</span>
+                //                     <span>Net: Rs. {employee.calcPay || employee.calculate_pay}</span>
+                //                   </div>
+                //                 </div>
+                //               ))} */}
+                //               {/* // In the markCompleted case render: */}
+                //               {employees.map((employee) => (
+                //                 <div
+                //                   key={employee.pysId}
+                //                   className="salary-slip-card"
+                //                 >
+                //                   <div className="preview-header">
+                //                     <h4>{employee.empName}</h4>
+                //                     <small>{employee.empId}</small>
+                //                   </div>
+                //                   <PreviewContainer
+                //                     employee={employee}
+                //                     deductions={selectedDeductions}
+                //                     allowances={allowances}
+                //                     bonuses={bonuses}
+                //                     taxes={taxes}
+                //                     loans={loans}
+                //                   />
+                //                   {/* // In the markCompleted case render */}
+                //                   <div className="preview-footer">
+                //                     <span>Basic: Rs. {employee.basicSalary}</span>
+                //                     <span>Net: Rs. {calculateNetPay(employee, selectedDeductions, {
+                //                       allowances,
+                //                       bonuses,
+                //                       taxes,
+                //                       loans
+                //                     })}</span>
+                //                   </div>
+                //                 </div>
+                //               ))}
+
+                //             </div>
+                //           </div>
+                //           {groupIndex < Object.keys(groupedSelected).length - 1 && <hr />}
+                //         </div>
+                //       ))}
+                //     </div>
+                //   );
 
                 case "markCompleted":
                   // Get selected employees data
@@ -938,7 +1474,7 @@ const EmployeeProfile = () => {
                         </div>
                       </div>
 
-                      {/* Salary Slips Grid */}
+                      {/* Table Structure */}
                       {Object.entries(groupedSelected).map(([monthYear, employees], groupIndex) => (
                         <div key={monthYear}>
                           <div className="month-group">
@@ -946,23 +1482,85 @@ const EmployeeProfile = () => {
                               <h3 className="month-title">{monthYear}</h3>
                               <hr className="month-divider" />
                             </div>
-                            <div className="salary-slips-grid">
-                              {employees.map((employee) => (
-                                <div
-                                  key={employee.pysId}
-                                  className="salary-slip-card"
-                                >
-                                  <div className="preview-header">
-                                    <h4>{employee.empName}</h4>
-                                    <small>{employee.empId}</small>
-                                  </div>
-                                  <PreviewContainer employee={employee} />
-                                  <div className="preview-footer">
-                                    <span>Basic: Rs. {employee.basicSalary}</span>
-                                    <span>Net: Rs. {employee.calcPay || employee.calculate_pay}</span>
-                                  </div>
-                                </div>
-                              ))}
+                            <div className="department-table">
+                              <div className="departments-table">
+                                <table className="table">
+                                  <thead>
+                                    <tr>
+
+                                      <th>Employee ID</th>
+                                      <th>Employee Name</th>
+                                      <th>Overtime Pay</th>
+                                      <th>Overtime Hours</th>
+                                      <th>Extra Fund</th>
+                                      <th>Advance Salary</th>
+                                      <th>Appraisals</th>
+                                      <th>Loan</th>
+                                      <th>Bonus</th>
+                                      <th>Period</th>
+                                      <th>Basic</th>
+                                      <th>Type</th>
+                                      <th>Total Working Days</th>
+                                      <th>Total Working Hours</th>
+                                      <th>Attempt Working Hours</th>
+                                      <th>Daily Salary</th>
+                                      <th>Original Pay</th>
+                                      <th>Additional Amount</th>
+                                      <th>Total</th>
+                                      <th>Salary Slip</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {employees.map((employee) => {
+                                      const originalPay = parseFloat(employee.calcPay || employee.calculate_pay) || 0;
+                                      const additionalAmount = parseFloat(calculateNetPay(employee, selectedDeductions, {
+                                        allowances,
+                                        bonuses,
+                                        taxes,
+                                        loans
+                                      })) || 0;
+
+
+                                      return (
+
+                                        <tr key={employee.pysId}>
+                                          <td>{employee.empId}</td>
+                                          <td>{employee.empName}</td>
+                                          <td>{employee.otHoursPay}</td>
+                                          <td>{employee.otHours}</td>
+                                          <td>{employee.extraFund}</td>
+                                          <td>{employee.advSalary}</td>
+                                          <td>{employee.app}</td>
+                                          <td>{employee.loan}</td>
+                                          <td>{employee.bonus}</td>
+                                          <td>{employee.salaryPeriod}</td>
+                                          <td>{employee.basicSalary}</td>
+                                          <td>{employee.salaryType}</td>
+                                          <td>{employee.totalWorkingDays}</td>
+                                          <td>{employee.totalWorkingHours}</td>
+                                          <td>{employee.attempt_working_hours}</td>
+                                          <td>{employee.dailySalary}</td>
+                                          <td>Rs. {originalPay.toFixed(2)}</td>
+                                          <td>Rs. {additionalAmount.toFixed(2)}</td>
+                                          <td>Rs. {(originalPay + additionalAmount).toFixed(2)}</td>
+                                          <td>
+                                            <button
+                                              onClick={() => handleOpenSalarySlip(employee)}
+                                              style={{
+                                                background: "none",
+                                                border: "none",
+                                              }}
+                                            >
+                                              <FaDownload className="salary-slip-button" />
+                                            </button>
+                                          </td>
+                                        </tr>
+
+                                      )
+                                    })}
+                                  </tbody>
+                                </table>
+                              </div>
                             </div>
                           </div>
                           {groupIndex < Object.keys(groupedSelected).length - 1 && <hr />}
@@ -970,7 +1568,6 @@ const EmployeeProfile = () => {
                       ))}
                     </div>
                   );
-
 
                 case "salarySlip":
                   return (
@@ -1127,140 +1724,7 @@ const EmployeeProfile = () => {
             onConfirm={handleConfirmMarkAsCompleted}
           />
 
-          <div
-            className="table-header"
-            style={{ paddingBottom: "none" }}
-          >
-            <form
-              className="form"
-              onSubmit={(e) => e.preventDefault()}
-            >
-              <button type="submit">
-                <svg
-                  width="17"
-                  height="16"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-labelledby="search"
-                >
-                  <path
-                    d="M7.667 12.667A5.333 5.333 0 107.667 2a5.333 5.333 0 000 10.667zM14.334 14l-2.9-2.9"
-                    stroke="currentColor"
-                    strokeWidth="1.333"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  ></path>
-                </svg>
-              </button>
-              <input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search..."
-                className="input"
-                type="text"
-              />
-              <button
-                className="reset"
-                type="button"
-                onClick={() => setSearchQuery("")}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </form>
 
-            <div className="tabs card-table-toggle">
-              <button
-                className={`card-view-123 toggle- ${activeTab === 'table' ? 'active' : ''}`}
-                onClick={handleTableActiveTab}
-              >
-                <FaTable />
-              </button>
-              <button
-                className={`table-view-123 toggle-button ${activeTab === 'gallery' ? 'active' : ''}`}
-                onClick={handleGalleryActiveTab}
-              >
-                <FaThLarge />
-              </button>
-            </div>
-
-            <div className="add-delete-container add-delete-emp">
-              <button
-                className="add-button submit-button"
-                onClick={handleClosePayroll}
-              >
-                <FaCheck className="add-icon" /> Close Payroll
-              </button>
-              <button
-                className="add-button"
-                onClick={handleMarkAsCompleted}
-              >
-                <FaCheck className="add-icon" /> Mark As Completed
-              </button>
-              <div className="export-dropdown-container ">
-                <button
-                  className="add-button export-button"
-                  onMouseEnter={() => setShowExportDropdown(true)}
-                  onMouseLeave={() => setShowExportDropdown(false)}
-                >
-                  <FaDownload className="button-icon" />
-                  Export Data
-                  <FaChevronDown className="dropdown-chevron" />
-
-                </button>
-                {showExportDropdown && (
-                  <div
-                    className="export-dropdown-menu"
-                    onMouseEnter={() => setShowExportDropdown(true)}
-                    onMouseLeave={() => setShowExportDropdown(false)}
-                  >
-                    <button
-                      className="dropdown-item"
-                      onClick={downloadAllSalarySlips}
-                    >
-                      <FaFolderOpen className="dropdown-icon" />
-                      All Salary Slips
-                    </button>
-
-                    <CSVLink
-                      data={filteredData}
-                      filename="employee-profile.csv"
-                      style={{ textDecoration: 'none' }}
-                    >
-                      <button
-                        className="dropdown-item"
-                      >
-                        <FontAwesomeIcon icon={faFileCsv} className="dropdown-icon" />
-                        Export to CSV
-                      </button>
-                    </CSVLink>
-
-                    <button
-                      className="dropdown-item"
-                      onClick={exportToPDF}
-                    >
-                      <FontAwesomeIcon icon={faFilePdf} className="dropdown-icon" />
-                      Export to PDF
-                    </button>
-
-                  </div>
-
-                )}
-              </div>
-            </div>
-          </div>
           {renderTabContent()}
         </div>
       </div>

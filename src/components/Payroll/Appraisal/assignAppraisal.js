@@ -16,32 +16,36 @@ import { useDispatch, useSelector } from "react-redux";
 import { setAssignBonusData, resetAssignBonusData } from "../../../redux/assignBonusSlice";
 
 
-const AssignAppraisal = ({ appraisal  }) => {
+const AssignAppraisal = () => {
     const [data, setData] = useState([]);
     const [employees, setEmployees] = useState([]);
-    // const [bonuses, setBonuses] = useState([]);
+    const [appraisal, setAppraisal] = useState([]);
     const [showAddForm, setShowAddForm] = useState(false);
     const [showEditForm, setShowEditForm] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
 
-      const dispatch = useDispatch();
-      const assignAppraisalData = useSelector((state) => state.assignAppraisal);
+    const dispatch = useDispatch();
+    const assignAppraisalData = useSelector((state) => state.assignAppraisal);
 
     const [formData, setFormData] = useState(
         assignAppraisalData || {
             id: "",
+            appr_id: "",
             empId: "",
-            appraisalId: "",
-            appraisalDate: "",
+            assign_date: "",
+            status: "",
+            desc: "",
         });
 
     const handleReset = () => {
         dispatch(resetAssignBonusData());
         setFormData({
             id: "",
+            appr_id: "",
             empId: "",
-            appraisalId: "",
-            appraisalDate: "",
+            assign_date: "",
+            status: "",
+            desc: "",
         });
         setShowAddForm(false);
         setShowEditForm(false);
@@ -49,9 +53,11 @@ const AssignAppraisal = ({ appraisal  }) => {
 
     const [editFormData, setEditFormData] = useState({
         id: "",
+        appr_id: "",
         empId: "",
-        appraisalId: "",
-        appraisalDate: "",
+        assign_date: "",
+        status: "",
+        desc: "",
     });
 
     const handleInputChange = (e) => {
@@ -85,18 +91,18 @@ const AssignAppraisal = ({ appraisal  }) => {
         }
     };
 
-    // const fetchBonuses = async () => {
-    //   try {
-    //     const response = await axios.get(`${SERVER_URL}pyr-bns/`);
-    //     setBonuses(response.data);
-    //   } catch (error) {
-    //   }
-    // };
+    const fetchAppraisals = async () => {
+        try {
+            const response = await axios.get(`${SERVER_URL}pyr-bns/`);
+            setAppraisal(response.data);
+        } catch (error) {
+        }
+    };
 
     useEffect(() => {
         fetchEmployeesExtraFund();
         fetchEmployees();
-        // fetchBonuses();
+        fetchAppraisals();
         let timer;
         if (successModal) {
             timer = setTimeout(() => {
@@ -133,7 +139,13 @@ const AssignAppraisal = ({ appraisal  }) => {
     };
 
     const confirmAdd = async () => {
-        if (!formData.empId || !formData.bonusId || !formData.bonusAssignDate) {
+        if (
+            !formData.empId ||
+            !formData.appr_id ||
+            !formData.assign_date ||
+            !formData.status ||
+            !formData.desc
+        ) {
             setResMsg("Please fill in all required fields.");
             setShowModal(false);
             setWarningModal(true);
@@ -150,9 +162,11 @@ const AssignAppraisal = ({ appraisal  }) => {
     const handleEdit = (item) => {
         setEditFormData({
             id: item.id,
+            appr_id: item.appr_id,
             empId: item.empId,
-            bonusId: item.bonusId,
-            bonusAssignDate: item.bonusAssignDate,
+            assign_date: item.assign_date,
+            status: item.status,
+            desc: item.desc,
         });
         setShowAddForm(false);
         setShowEditForm(true);
@@ -163,7 +177,13 @@ const AssignAppraisal = ({ appraisal  }) => {
         setShowModal(true);
     };
     const confirmUpdate = async () => {
-        if (!editFormData.empId || !editFormData.bonusId || !editFormData.bonusAssignDate) {
+        if (
+            !formData.empId ||
+            !formData.appr_id ||
+            !formData.assign_date ||
+            !formData.status ||
+            !formData.desc
+        ) {
             setResMsg("Please fill in all required fields.");
             setShowModal(false);
             setWarningModal(true);
@@ -183,11 +203,13 @@ const AssignAppraisal = ({ appraisal  }) => {
     const handleSearchChange = (e) => setSearchQuery(e.target.value);
 
     const filteredData = data.filter((item) =>
-        item.bonusName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.empId.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.empName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.bonusAssignDate.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.bonusAmount.toLowerCase().includes(searchQuery.toLowerCase())
+        item.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.assign_date?.toString().includes(searchQuery) ||
+        item.appr_id?.toString().includes(searchQuery) ||
+        item.name?.toString().includes(searchQuery) ||
+        item.desc.toLowerCase().includes(searchQuery.toLowerCase())
 
     );
 
@@ -358,7 +380,7 @@ const AssignAppraisal = ({ appraisal  }) => {
                 </form>
                 <div className="add-delete-conainer">
                     <button className="add-button" onClick={handleAddNew}>
-                        <FaPlus /> Assign New Extra Funds
+                        <FaPlus /> Assign New Appraisals
                     </button>
                     <button className="add-button submit-button" onClick={handleBulkDelete}>
                         <FaTrash className="add-icon" /> Delete Bulk
@@ -367,7 +389,7 @@ const AssignAppraisal = ({ appraisal  }) => {
             </div>
             {showAddForm && !showEditForm && (
                 <div className="add-leave-form">
-                    <h3>Assign Bonus to Employee</h3>
+                    <h3>Assign Appraisals to Employee</h3>
                     <label>Select Employee</label>
                     <input
                         list="employeesList"
@@ -405,28 +427,48 @@ const AssignAppraisal = ({ appraisal  }) => {
                             </option>
                         ))}
                     </datalist>
-                    <label>Select Bonus</label>
+                    <label>Select Appraisals</label>
                     <select
-                        name="bonusId"
-                        value={formData.bonusId}
+                        name="appr_id"
+                        value={formData.appr_id}
                         onChange={handleInputChange}
                     >
-                        <option value="">Select Bonus</option>
+                        <option value="">Select Appraisals</option>
                         {appraisal.map((bonus) => (
                             <option key={bonus.id} value={bonus.id}>
-                                {bonus.bonusName}
+                                {bonus.name}
                             </option>
                         ))}
                     </select>
-                    <label>Date</label>
+                    <label>Assign Date</label>
                     <input
                         type="date"
-                        name="bonusAssignDate"
-                        value={formData.bonusAssignDate}
+                        name="assign_date"
+                        value={formData.assign_date}
+                        onChange={handleInputChange}
+                    />
+                    <label>Select Status</label>
+
+                    <select
+                        name="status"
+                        value={formData.status}
+                        onChange={handleInputChange}
+                    >
+                        <option value="">Select Status</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+
+                    <label>Description</label>
+                    <textarea
+                        placeholder="Write Description"
+                        name="desc"
+                        value={formData.desc}
                         onChange={handleInputChange}
                     />
                     <button className="submit-button" onClick={addAssign}>
-                        Assign Bonus
+                        Assign Appraisals
                     </button>
                     <button className="cancel-button" onClick={handleReset}>
                         Cancel
@@ -435,7 +477,7 @@ const AssignAppraisal = ({ appraisal  }) => {
             )}
             {showEditForm && (
                 <div className="add-leave-form">
-                    <h3>Update Assigned Bonus</h3>
+                    <h3>Update Assigned Appraisals</h3>
                     <label>Selected Employee</label>
                     <input
                         list="employeesList"
@@ -474,33 +516,61 @@ const AssignAppraisal = ({ appraisal  }) => {
                             </option>
                         ))}
                     </datalist>
-                    <label>Select Bonus</label>
+
+
+                    <label>Select Appraisals</label>
                     <select
-                        value={editFormData.bonusId}
+                        name="appr_id"
+                        value={formData.appr_id}
                         onChange={(e) =>
-                            setEditFormData({ ...editFormData, bonusId: e.target.value })
+                            setEditFormData({ ...editFormData, appr_id: e.target.value })
                         }
                     >
-                        <option value="">Select Bonus</option>
+                        <option value="">Select Appraisals</option>
                         {appraisal.map((bonus) => (
                             <option key={bonus.id} value={bonus.id}>
-                                {bonus.bonusName}
+                                {bonus.name}
                             </option>
                         ))}
                     </select>
-                    <label>Date</label>
+                    <label>Assign Date</label>
                     <input
                         type="date"
-                        value={editFormData.bonusAssignDate}
+                        name="assign_date"
+                        value={formData.assign_date}
                         onChange={(e) =>
-                            setEditFormData({ ...editFormData, bonusAssignDate: e.target.value })
+                            setEditFormData({ ...editFormData, assign_date: e.target.value })
+                        }
+                    />
+                    <label>Select Status</label>
+
+                    <select
+                        name="status"
+                        value={formData.status}
+                        onChange={(e) =>
+                            setEditFormData({ ...editFormData, status: e.target.value })
+                        }
+                    >
+                        <option value="">Select Status</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+
+                    <label>Description</label>
+                    <textarea
+                        placeholder="Write Description"
+                        name="desc"
+                        value={formData.desc}
+                        onChange={(e) =>
+                            setEditFormData({ ...editFormData, desc: e.target.value })
                         }
                     />
                     <button
                         className="submit-button"
                         onClick={() => updateAssign(editFormData)}
                     >
-                        Update Assigned Bonus
+                        Update Assigned Appraisals
                     </button>
                     <button className="cancel-button" onClick={handleReset}>
                         Cancel

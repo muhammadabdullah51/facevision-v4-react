@@ -2,12 +2,43 @@ import React from "react";
 import "./salarySlip.css";
 import { SERVER_URL } from "../../../config";
 
-const SalarySlip = ({ salaryDetails,preview  }) => {
+const SalarySlip = ({ salaryDetails, preview, deductions }) => {
+  // const calculateNetPay = () => {
+  //   let netPay = parseFloat(salaryDetails.basicSalary) || 0;
+
+  //   // Add allowances
+  //   deductions?.allowances?.forEach(allowance => {
+  //     netPay += parseFloat(allowance.amount) || 0;
+  //   });
+
+  //   // Add bonuses
+  //   deductions?.bonuses?.forEach(bonus => {
+  //     netPay += parseFloat(bonus.bonusAmount) || 0;
+  //   });
+
+  //   // Subtract taxes
+  //   deductions?.taxes?.forEach(tax => {
+  //     if (tax.nature === "fixedamount") {
+  //       netPay -= parseFloat(tax.amount) || 0;
+  //     } else {
+  //       netPay -= netPay * (parseFloat(tax.percent) / 100) || 0;
+  //     }
+  //   });
+
+  //   // Subtract loans
+  //   deductions?.loans?.forEach(loan => {
+  //     netPay -= parseFloat(loan.givenLoan) || 0;
+  //   });
+
+  //   // Add other components as needed...
+
+  //   return netPay.toFixed(2);
+  // };
   return (
     <>
       <div className={`salary-slip ${preview ? 'preview-mode' : ''}`}
-      style={preview ? { padding: '0' } : {}}
->
+        style={preview ? { padding: '0' } : {}}
+      >
         {/* Header */}
         <header className="header-salary">
           <div className={`cmp-detail ${preview ? 'preview-header' : ''}`}>
@@ -26,6 +57,7 @@ const SalarySlip = ({ salaryDetails,preview  }) => {
             </h3>
           </div>
         </header>
+
 
         {/* Employee Details */}
         <section className="employee-details">
@@ -163,6 +195,7 @@ const SalarySlip = ({ salaryDetails,preview  }) => {
           </p>
           <p>
             <strong>Total Net Pay:</strong> Rs. {salaryDetails.calculate_pay}
+            {/* <strong>Total Net Pay:</strong> Rs. {calculateNetPay()} */}
           </p>
         </section>
       </div>

@@ -14,7 +14,8 @@ const PayrollSettings = () => {
     lvPUnPByDf: "No",
     isEndDate: "No",
     customeDate: "0",
-    descNote: ""
+    endingNote: "",
+    isPerDay: ""
   });
 
   // Fetch settings from the server
@@ -42,9 +43,17 @@ const PayrollSettings = () => {
       [key]: prevState[key] === "Yes" ? "No" : "Yes",
     }));
   };
+  const handleEndNote = (event) => {
+    const value = event.target.value;
+    setSettings((prevState) => ({
+      ...prevState,
+      endingNote: value,
+    }));
+
+  }
   const handleDateChange = (event) => {
     const value = event.target.value;
-  
+
     // Ensure the value is within the valid range
     if (value >= 1 && value <= 31) {
       setSettings((prevState) => ({
@@ -65,8 +74,8 @@ const PayrollSettings = () => {
     { key: "pyOtByDf", label: "Pay for Overtime" },
     { key: "cutSalWhByDf", label: "Cut Salary on working hours" },
     { key: "lvPUnPByDf", label: "Leaves are paid or unpaid" },
+    { key: "isPerDay", label: "Consider salary per day" },
     { key: "isEndDate", label: "Consider last day of the month for payroll closing date" },
-    // { key: "descNote", label: "Consider last day of the month for payroll closing date" },
   ];
 
   const handleSubmit = async () => {
@@ -119,19 +128,20 @@ const PayrollSettings = () => {
           />
         </div>
       )}
-      <div className="checkbox-item-textarea checkbox-item" style={{ padding: '25px 10px'}}>
-          <label>
-            Write a Description note for salary slip
-          </label>
-          <textarea
+      <div className="checkbox-item-textarea checkbox-item" style={{ padding: '25px 10px' }}>
+        <label>
+          Write a Description note for salary slip
+        </label>
+        <textarea
           rows="4"
-            type="number"
-            placeholder="Write your note here"
-            id="descNote"
-            value={settings.descNote}
-            // onChange={handleDateChange}
-          />
-        </div>
+          type="number"
+          placeholder="Write your note here"
+          id="endingNote"
+          value={settings.endingNote}
+        onChange={handleEndNote}
+        />
+      </div>
+      
       <button onClick={handleSubmit} className="submit-button">
         Save Settings
       </button>

@@ -39,6 +39,7 @@
   
   thead {
     background-color: #f4f4f4;
+    font-size: var(--table-text-font);
   }
   
   .table-edit, .table-delete {

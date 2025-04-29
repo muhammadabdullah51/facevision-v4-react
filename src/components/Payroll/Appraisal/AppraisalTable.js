@@ -1,47 +1,46 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+
 import axios from "axios";
 import "../../Dashboard/dashboard.css";
-
 import ConirmationModal from "../../Modal/conirmationModal";
 import addAnimation from "../../../assets/Lottie/addAnim.json";
 import updateAnimation from "../../../assets/Lottie/updateAnim.json";
 import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../../assets/Lottie/warningAnim.json";
+
 import { SERVER_URL } from "../../../config";
-
-
 import { useDispatch, useSelector } from "react-redux";
-import { setAssignBonusData, resetAssignBonusData } from "../../../redux/assignBonusSlice";
+import { setAppraisalsData, resetAppraisalsData } from "../../../redux/appraisalsSlice";
 
 
-const AssignBonus = ({  }) => {
+const AppraisalTable = () => {
   const [data, setData] = useState([]);
   const [employees, setEmployees] = useState([]);
-  const [bonuses, setBonuses] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+
 
   const dispatch = useDispatch();
-  const assignBonusData = useSelector((state) => state.assignBonus);
+  const appr = useSelector((state) => state.appraisals);
 
   const [formData, setFormData] = useState(
-    assignBonusData || {
+    appr || {
       id: "",
-      empId: "",
-      bonusId: "",
-      bonusAssignDate: "",
+      name: "",
+      created_date: "",
+      appraisal_amount: "",
+      desc: "",
     });
-
   const handleReset = () => {
-    dispatch(resetAssignBonusData());
+    dispatch(resetAppraisalsData());
     setFormData({
       id: "",
-      empId: "",
-      bonusId: "",
-      bonusAssignDate: "",
+      name: "",
+      created_date: "",
+      appraisal_amount: "",
+      desc: "",
     });
     setShowAddForm(false);
     setShowEditForm(false);
@@ -49,16 +48,17 @@ const AssignBonus = ({  }) => {
 
   const [editFormData, setEditFormData] = useState({
     id: "",
-    empId: "",
-    bonusId: "",
-    bonusAssignDate: "",
+    name: "",
+    created_date: "",
+    appraisal_amount: "",
+    desc: "",
   });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevState) => {
       const updatedFormData = { ...prevState, [name]: value };
-      dispatch(setAssignBonusData(updatedFormData));
+      dispatch(setAppraisalsData(updatedFormData));
       return updatedFormData;
     });
   };
@@ -66,13 +66,12 @@ const AssignBonus = ({  }) => {
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
-
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
 
-  const fetchEmployeesBonus = useCallback(async () => {
+  const fetchAppraisals = useCallback(async () => {
     try {
-      const response = await axios.get(`${SERVER_URL}pyr-asg-bns/`);
+      const response = await axios.get(`${SERVER_URL}pyr-appr/`);
       setData(response.data);
     } catch (error) {
     }
@@ -85,38 +84,27 @@ const AssignBonus = ({  }) => {
     }
   };
 
-  const fetchBonuses = async () => {
-    try {
-      const response = await axios.get(`${SERVER_URL}pyr-bns/`);
-      setBonuses(response.data);
-    } catch (error) {
-    }
-  };
-
+  // Fetch the data when the component mounts
   useEffect(() => {
-    fetchEmployeesBonus();
-    fetchEmployees();
-    fetchBonuses();
-    let timer;
-    if (successModal) {
-      timer = setTimeout(() => {
-        setSuccessModal(false);
-      }, 2000);
-    }
-    return () => clearTimeout(timer);
-  }, [fetchEmployeesBonus, successModal]);
+    fetchAppraisals();
+  }, [fetchAppraisals]);
 
+  const [searchQuery, setSearchQuery] = useState("");
+
+
+
+  // Delete an appraisal
   const handleDelete = async (id) => {
     setModalType("delete");
     setShowModal(true);
     setFormData({ ...formData, id: id });
+
   };
-  const confirmDelete = async (id) => {
+  const confirmDelete = async () => {
     try {
-      await axios.post(`${SERVER_URL}pyr-asg-bns-del/`, {
-        id: formData.id,
-      });
-      await fetchEmployeesBonus(); // Refresh data after deletion
+      await axios.post(`${SERVER_URL}pyr-appr-del/`, { id: formData.id });
+
+      fetchAppraisals();
       setShowModal(false);
       setSuccessModal(true);
     } catch (error) {
@@ -124,71 +112,115 @@ const AssignBonus = ({  }) => {
   };
 
   const handleAddNew = () => {
+
     setShowAddForm(true);
     setShowEditForm(false);
   };
-  const addAssign = () => {
+  const addAppraisal = () => {
     setModalType("create");
     setShowModal(true);
   };
-
   const confirmAdd = async () => {
-    if (!formData.empId || !formData.bonusId || !formData.bonusAssignDate) {
+    if (
+      formData.name === "" ||
+      formData.created_date === "" ||
+      formData.appraisal_amount === "" ||
+      formData.desc === ""
+    ) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
       setWarningModal(true);
       return;
     }
-    await axios.post(`${SERVER_URL}pyr-asg-bns/`, formData);
-    setShowModal(false);
-    setSuccessModal(true);
-    setShowAddForm(false);
-    fetchEmployeesBonus();
-    handleReset();
+    if (formData.appraisal_amount < 1) {
+      setResMsg("Values Can't be Negative or zero");
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    }
+    const newAppraisal = {
+      name: formData.name,
+      created_date: formData.created_date,
+      appraisal_amount: formData.appraisal_amount,
+      desc: formData.desc,
+    };
+    try {
+      await axios.post(`${SERVER_URL}pyr-appr/`, newAppraisal);
+      const updatedData = await axios.get(`${SERVER_URL}pyr-appr/`);
+      setData(updatedData.data);
+      setShowAddForm(false);
+      setShowModal(false);
+      setSuccessModal(true);
+      fetchAppraisals();
+      handleReset()
+    } catch (error) {
+    }
   };
 
-  const handleEdit = (item) => {
+  // Handle form data changes
+  const handleEdit = (data) => {
     setEditFormData({
-      id: item.id,
-      empId: item.empId,
-      bonusId: item.bonusId,
-      bonusAssignDate: item.bonusAssignDate,
+      name: data.name,
+      created_date: data.created_date,
+      appraisal_amount: data.appraisal_amount,
+      desc: data.desc,
     });
     setShowAddForm(false);
     setShowEditForm(true);
   };
-  const updateAssign = (row) => {
+
+  const updateAppraisal = (row) => {
     setModalType("update");
     setEditFormData({ ...editFormData });
     setShowModal(true);
   };
   const confirmUpdate = async () => {
-    if (!editFormData.empId || !editFormData.bonusId || !editFormData.bonusAssignDate) {
+    if (
+      editFormData.name === "" ||
+      editFormData.created_date === "" ||
+      editFormData.appraisal_amount === "" ||
+      editFormData.desc === ""
+    ) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
       setWarningModal(true);
       return;
     }
-    await axios.post(`${SERVER_URL}pyr-asg-bns-up/`, editFormData);
-    setShowModal(false);
-    setSuccessModal(true);
-    setShowEditForm(false);
-    fetchEmployeesBonus();
-    handleReset();
+    if (editFormData.appraisal_amount < 1) {
+      setResMsg("Values Can't be Negative or zero");
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    }
+
+    try {
+      const updateAppraisal = {
+        id: editFormData.id,
+        name: editFormData.name,
+        created_date: editFormData.created_date,
+        appraisal_amount: editFormData.appraisal_amount,
+        desc: editFormData.desc,
+        
+      };
+
+      await axios.post(`${SERVER_URL}pyr-appr-up/`, updateAppraisal);
+      const updatedData = await axios.get(`${SERVER_URL}pyr-appr/`);
+      setData(updatedData.data);
+      setShowModal(false);
+      setSuccessModal(true);
+      setShowEditForm(false);
+      fetchAppraisals();
+      handleReset();
+    } catch (error) {
+    }
   };
 
-
-
-
-  const handleSearchChange = (e) => setSearchQuery(e.target.value);
-
-  const filteredData = data.filter((item) =>
-    item.bonusName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.empId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.empName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.bonusAssignDate.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.bonusAmount.toLowerCase().includes(searchQuery.toLowerCase())
-
+  const filteredData = data.filter(
+    (item) =>
+      item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.desc?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.created_date?.toString().includes(searchQuery) ||
+      item.appraisal_amount?.toLowerCase().includes(searchQuery)
   );
 
 
@@ -248,8 +280,8 @@ const AssignBonus = ({  }) => {
   const confirmBulkDelete = async () => {
     try {
       const payload = { ids: selectedIds };
-      await axios.post(`${SERVER_URL}asgnbonus/del/data`, payload);
-      const updatedData = await axios.get(`${SERVER_URL}pyr-asg-bns/`);
+      await axios.post(`${SERVER_URL}appr/del/data`, payload);
+      const updatedData = await axios.get(`${SERVER_URL}pyr-appr/`);
       setData(updatedData.data);
       setShowModal(false);
       setSelectedIds([]);
@@ -267,18 +299,14 @@ const AssignBonus = ({  }) => {
       <ConirmationModal
         isOpen={showModal}
         message={
-          modalType === "create"
-            ? `Are you sure you want to confirm Assign Bonus?`
-            : modalType === "update"
-              ? "Are you sure you want to update Assigned Bonus?"
-              : modalType === "delete selected"
-                ? "Are you sure you want to delete selected items?"
-                : `Are you sure you want to delete Assigned Bonus?`
+          modalType === "delete selected"
+            ? "Are you sure you want to delete selected items?"
+            : `Are you sure you want to ${modalType} this Appraisal?`
         }
         onConfirm={() => {
           if (modalType === "create") confirmAdd();
-          else if (modalType === "delete selected") confirmBulkDelete();
           else if (modalType === "update") confirmUpdate();
+          else if (modalType === "delete selected") confirmBulkDelete();
           else confirmDelete();
         }}
         onCancel={() => setShowModal(false)}
@@ -295,7 +323,7 @@ const AssignBonus = ({  }) => {
         message={
           modalType === "delete selected"
             ? "Selected items deleted successfully!"
-            : `Assign Bonus ${modalType}d successfully!`
+            : `Appraisals ${modalType}d successfully!`
         }
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}
@@ -311,14 +339,13 @@ const AssignBonus = ({  }) => {
         warningModal={warningModal}
       />
       <div className="table-header">
-        <form className="form">
-          <button>
+        <form className="form" onSubmit={(e) => e.preventDefault()}>
+          <button type="submit">
             <svg
               width="17"
               height="16"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              role="img"
               aria-labelledby="search"
             >
               <path
@@ -332,14 +359,16 @@ const AssignBonus = ({  }) => {
           </button>
           <input
             value={searchQuery}
-            onChange={handleSearchChange}
+            onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search..."
             className="input"
-            required
             type="text"
           />
-          <button className="reset" type="reset"
-            onClick={() => setSearchQuery("")}>
+          <button
+            className="reset"
+            type="button" // Change to type="button" to prevent form reset
+            onClick={() => setSearchQuery("")} // Clear the input on click
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-6 w-6"
@@ -352,22 +381,23 @@ const AssignBonus = ({  }) => {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 d="M6 18L18 6M6 6l12 12"
-              ></path>
+              />
             </svg>
           </button>
         </form>
         <div className="add-delete-conainer">
           <button className="add-button" onClick={handleAddNew}>
-            <FaPlus /> Assign New Bonus
+            <FaPlus /> Add New Appraisal
           </button>
           <button className="add-button submit-button" onClick={handleBulkDelete}>
             <FaTrash className="add-icon" /> Delete Bulk
           </button>
         </div>
       </div>
+
       {showAddForm && !showEditForm && (
         <div className="add-leave-form">
-          <h3>Assign Bonus to Employee</h3>
+          <h3>Add New Appraisal</h3>
           <label>Select Employee</label>
           <input
             list="employeesList"
@@ -405,28 +435,58 @@ const AssignBonus = ({  }) => {
               </option>
             ))}
           </datalist>
-          <label>Select Bonus</label>
-          <select
-            name="bonusId"
-            value={formData.bonusId}
-            onChange={handleInputChange}
-          >
-            <option value="">Select Bonus</option>
-            {bonuses.map((bonus) => (
-              <option key={bonus.id} value={bonus.id}>
-                {bonus.bonusName}
-              </option>
-            ))}
-          </select>
-          <label>Date</label>
+
+          <label>Appraisal Amount</label>
           <input
-            type="date"
-            name="bonusAssignDate"
-            value={formData.bonusAssignDate}
+            type="Number"
+            name="appraisal"
+            placeholder="Appraisal"
+            value={formData.appraisal}
             onChange={handleInputChange}
           />
-          <button className="submit-button" onClick={addAssign}>
-            Assign Bonus
+
+          <label>Reason</label>
+          <input
+            type="text"
+            name="reason"
+            placeholder="Reason"
+            value={formData.reason}
+            onChange={handleInputChange}
+          />
+
+          <label>Date</label>
+          <input
+            type="Date"
+            name="date"
+            placeholder="Date"
+            value={formData.date}
+            onChange={handleInputChange}
+          />
+
+          <label>Select Status</label>
+
+          <select
+            name="status"
+            value={formData.status}
+            onChange={handleInputChange}
+          >
+            <option value="">Select Status</option>
+            <option value="Pending">Pending</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+          </select>
+
+          <label>Description</label>
+
+          <textarea
+            name="desc"
+            placeholder="Description"
+            value={formData.desc}
+            onChange={handleInputChange}
+          />
+
+          <button className="submit-button" onClick={addAppraisal}>
+            Add Appraisal
           </button>
           <button className="cancel-button" onClick={handleReset}>
             Cancel
@@ -435,11 +495,11 @@ const AssignBonus = ({  }) => {
       )}
       {showEditForm && (
         <div className="add-leave-form">
-          <h3>Update Assigned Bonus</h3>
+          <h3>Update Appraisal</h3>
           <label>Selected Employee</label>
           <input
-            list="employeesList"
             disabled
+            list="employeesList"
             value={
               employees.find((emp) => emp.empId === editFormData.empId)
                 ? `${employees.find((emp) => emp.empId === editFormData.empId).empId
@@ -474,39 +534,66 @@ const AssignBonus = ({  }) => {
               </option>
             ))}
           </datalist>
-          <label>Select Bonus</label>
-          <select
-            value={editFormData.bonusId}
-            onChange={(e) =>
-              setEditFormData({ ...editFormData, bonusId: e.target.value })
-            }
-          >
-            <option value="">Select Bonus</option>
-            {bonuses.map((bonus) => (
-              <option key={bonus.id} value={bonus.id}>
-                {bonus.bonusName}
-              </option>
-            ))}
-          </select>
-          <label>Date</label>
+
+          <label>Appraisal Amount</label>
           <input
-            type="date"
-            value={editFormData.bonusAssignDate}
+            type="Number"
+            placeholder="Appraisal"
+            value={editFormData.appraisal}
             onChange={(e) =>
-              setEditFormData({ ...editFormData, bonusAssignDate: e.target.value })
+              setEditFormData({ ...editFormData, appraisal: e.target.value })
             }
           />
+          <label>Reason</label>
+          <input
+            type="text"
+            placeholder="Reason"
+            value={editFormData.reason}
+            onChange={(e) =>
+              setEditFormData({ ...editFormData, reason: e.target.value })
+            }
+          />
+          <label>Date</label>
+          <input
+            type="Date"
+            placeholder="Date"
+            value={editFormData.date}
+            onChange={(e) => setEditFormData({ ...editFormData, date: e.target.value })}
+          />
+          <label>Select Status</label>
+
+          <select
+            value={editFormData.status}
+            onChange={(e) =>
+              setEditFormData({ ...editFormData, status: e.target.value })
+            }
+          >
+            <option value="">Select Status</option>
+            <option value="Pending">Pending</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+          </select>
+
+          <label>Description</label>
+          <textarea
+            name="desc"
+            placeholder="Description"
+            value={editFormData.desc}
+            onChange={(e) => setEditFormData({ ...editFormData, desc: e.target.value })}
+          />
+
           <button
             className="submit-button"
-            onClick={() => updateAssign(editFormData)}
+            onClick={() => updateAppraisal(editFormData)}
           >
-            Update Assigned Bonus
+            Update Appraisal
           </button>
           <button className="cancel-button" onClick={handleReset}>
             Cancel
           </button>
         </div>
       )}
+
       <div className="departments-table">
         <table className="table">
           <thead>
@@ -519,42 +606,56 @@ const AssignBonus = ({  }) => {
                   onChange={handleSelectAllChange}
                 />
               </th>
-              <th>Bonus ID</th>
+              <th>ID</th>
               <th>Employee ID</th>
               <th>Employee Name</th>
-              <th>Bonus Name</th>
-              <th>Amount</th>
-              <th>Awarded Date</th>
-              <th>Action</th>
+              <th>Appraisal</th>
+              <th>Reason</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Description</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredData.map((bonus) => (
-              <tr key={bonus.id}>
+            {filteredData.map((adv) => (
+              <tr key={adv.id}>
                 <td>
                   <input
                     type="checkbox"
                     id="delete-checkbox"
-                    checked={selectedIds.includes(bonus.id)}
-                    onChange={(event) => handleRowCheckboxChange(event, bonus.id)}
+                    checked={selectedIds.includes(adv.id)}
+                    onChange={(event) => handleRowCheckboxChange(event, adv.id)}
                   />
                 </td>
-                <td>{bonus.id}</td>
-                <td>{bonus.empId}</td>
-                <td className="bold-fonts">{bonus.empName}</td>
-                <td>{bonus.bonusName}</td>
-                <td className="bold-fonts">{bonus.bonusAmount}</td>
-                <td>{bonus.bonusAssignDate}</td>
+                <td>{adv.id}</td>
+                <td>{adv.empId}</td>
+                <td className="bold-fonts">{adv.empName}</td>
+                <td>{adv.appraisal}</td>
+                <td>{adv.reason}</td>
+                <td>{adv.date}</td>
+                <td>
+                  <span
+                    className={`status ${adv.status === "Pending"
+                      ? "lateStatus"
+                      : adv.status === "Rejected"
+                        ? "absentStatus"
+                        : "presentStatus"
+                      }`}
+                  >
+                    {adv.status}
+                  </span>
+                </td>
+                <td>{adv.desc}</td>
                 <td>
                   <button
-                    // className="edit-button"
-                    onClick={() => handleEdit(bonus)}
+                    onClick={() => handleEdit(adv)}
                     style={{ background: "none", border: "none" }}
                   >
                     <FaEdit className="table-edit" />
                   </button>
                   <button
-                    onClick={() => handleDelete(bonus.id)}
+                    onClick={() => handleDelete(adv.id)}
                     style={{ background: "none", border: "none" }}
                   >
                     <FaTrash className="table-delete" />
@@ -565,8 +666,9 @@ const AssignBonus = ({  }) => {
           </tbody>
         </table>
       </div>
+
     </div>
   );
 };
 
-export default AssignBonus;
+export default AppraisalTable;

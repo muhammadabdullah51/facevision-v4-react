@@ -16,32 +16,44 @@ import { useDispatch, useSelector } from "react-redux";
 import { setAssignBonusData, resetAssignBonusData } from "../../../redux/assignBonusSlice";
 
 
-const AssignExtrFunds = ({ extraFunds  }) => {
+const AssignExtrFunds = () => {
     const [data, setData] = useState([]);
     const [employees, setEmployees] = useState([]);
-    // const [bonuses, setBonuses] = useState([]);
+    const [extraFunds, setExtraFunds] = useState([]);
     const [showAddForm, setShowAddForm] = useState(false);
     const [showEditForm, setShowEditForm] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
 
-      const dispatch = useDispatch();
-      const assignAppraisalData = useSelector((state) => state.assignAppraisal);
+    const dispatch = useDispatch();
+    const assignAppraisalData = useSelector((state) => state.assignAppraisal);
 
     const [formData, setFormData] = useState(
         assignAppraisalData || {
             id: "",
+            extfund_id: "",
+            returnInMonths: "",
+            pendingAmount: "",
+            nextPayable: "",
+            paidAmount: "",
             empId: "",
-            appraisalId: "",
-            appraisalDate: "",
+            assign_date: "",
+            status: "",
+            desc: "",
         });
 
     const handleReset = () => {
         dispatch(resetAssignBonusData());
         setFormData({
             id: "",
+            extfund_id: "",
+            returnInMonths: "",
+            pendingAmount: "",
+            nextPayable: "",
+            paidAmount: "",
             empId: "",
-            appraisalId: "",
-            appraisalDate: "",
+            assign_date: "",
+            status: "",
+            desc: "",
         });
         setShowAddForm(false);
         setShowEditForm(false);
@@ -49,9 +61,15 @@ const AssignExtrFunds = ({ extraFunds  }) => {
 
     const [editFormData, setEditFormData] = useState({
         id: "",
+        extfund_id: "",
+        returnInMonths: "",
+        pendingAmount: "",
+        nextPayable: "",
+        paidAmount: "",
         empId: "",
-        appraisalId: "",
-        appraisalDate: "",
+        assign_date: "",
+        status: "",
+        desc: "",
     });
 
     const handleInputChange = (e) => {
@@ -66,7 +84,6 @@ const AssignExtrFunds = ({ extraFunds  }) => {
     const [showModal, setShowModal] = useState(false);
     const [modalType, setModalType] = useState("");
     const [successModal, setSuccessModal] = useState(false);
-
     const [warningModal, setWarningModal] = useState(false);
     const [resMsg, setResMsg] = useState("");
 
@@ -85,18 +102,18 @@ const AssignExtrFunds = ({ extraFunds  }) => {
         }
     };
 
-    // const fetchBonuses = async () => {
-    //   try {
-    //     const response = await axios.get(`${SERVER_URL}pyr-bns/`);
-    //     setBonuses(response.data);
-    //   } catch (error) {
-    //   }
-    // };
+    const fetchExtraFunds = async () => {
+        try {
+            const response = await axios.get(`${SERVER_URL}pyr-ext/`);
+            setExtraFunds(response.data);
+        } catch (error) {
+        }
+    };
 
     useEffect(() => {
         fetchEmployeesExtraFund();
         fetchEmployees();
-        // fetchBonuses();
+        fetchExtraFunds();
         let timer;
         if (successModal) {
             timer = setTimeout(() => {
@@ -133,7 +150,16 @@ const AssignExtrFunds = ({ extraFunds  }) => {
     };
 
     const confirmAdd = async () => {
-        if (!formData.empId || !formData.bonusId || !formData.bonusAssignDate) {
+        if (!formData.extfund_id ||
+            !formData.returnInMonths ||
+            !formData.pendingAmount ||
+            !formData.nextPayable ||
+            !formData.paidAmount ||
+            !formData.empId ||
+            !formData.assign_date ||
+            !formData.status ||
+            !formData.desc
+        ) {
             setResMsg("Please fill in all required fields.");
             setShowModal(false);
             setWarningModal(true);
@@ -150,9 +176,15 @@ const AssignExtrFunds = ({ extraFunds  }) => {
     const handleEdit = (item) => {
         setEditFormData({
             id: item.id,
+            extfund_id: item.extfund_id,
+            returnInMonths: item.returnInMonths,
+            pendingAmount: item.pendingAmount,
+            nextPayable: item.nextPayable,
+            paidAmount: item.paidAmount,
             empId: item.empId,
-            bonusId: item.bonusId,
-            bonusAssignDate: item.bonusAssignDate,
+            assign_date: item.assign_date,
+            status: item.status,
+            desc: item.desc,
         });
         setShowAddForm(false);
         setShowEditForm(true);
@@ -163,7 +195,16 @@ const AssignExtrFunds = ({ extraFunds  }) => {
         setShowModal(true);
     };
     const confirmUpdate = async () => {
-        if (!editFormData.empId || !editFormData.bonusId || !editFormData.bonusAssignDate) {
+        if (!editFormData.id ||
+            !editFormData.extfund_id ||
+            !editFormData.returnInMonths ||
+            !editFormData.pendingAmount ||
+            !editFormData.nextPayable ||
+            !editFormData.paidAmount ||
+            !editFormData.empId ||
+            !editFormData.assign_date ||
+            !editFormData.status ||
+            !editFormData.desc) {
             setResMsg("Please fill in all required fields.");
             setShowModal(false);
             setWarningModal(true);
@@ -183,11 +224,13 @@ const AssignExtrFunds = ({ extraFunds  }) => {
     const handleSearchChange = (e) => setSearchQuery(e.target.value);
 
     const filteredData = data.filter((item) =>
-        item.bonusName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.empId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.empName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.bonusAssignDate.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.bonusAmount.toLowerCase().includes(searchQuery.toLowerCase())
+        // item.empName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        // item.type?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        // item.empId?.toString().includes(searchQuery)  ||
+        // item.paid?.toLowerCase().includes(searchQuery) ||
+        item.pendingAmount?.toLowerCase().includes(searchQuery) 
+        // ||
+        // item.extraFundAmount?.toLowerCase().includes(searchQuery)
 
     );
 
@@ -268,7 +311,7 @@ const AssignExtrFunds = ({ extraFunds  }) => {
                 isOpen={showModal}
                 message={
                     modalType === "create"
-                        ? `Are you sure you want to confirm Assign Bonus?`
+                        ? `Are you sure you want to confirm Assign Extra Funds?`
                         : modalType === "update"
                             ? "Are you sure you want to update Assigned Bonus?"
                             : modalType === "delete selected"
@@ -295,7 +338,7 @@ const AssignExtrFunds = ({ extraFunds  }) => {
                 message={
                     modalType === "delete selected"
                         ? "Selected items deleted successfully!"
-                        : `Assign Bonus ${modalType}d successfully!`
+                        : `Assign Extra Funds ${modalType}d successfully!`
                 }
                 onConfirm={() => setSuccessModal(false)}
                 onCancel={() => setSuccessModal(false)}
@@ -367,7 +410,7 @@ const AssignExtrFunds = ({ extraFunds  }) => {
             </div>
             {showAddForm && !showEditForm && (
                 <div className="add-leave-form">
-                    <h3>Assign Bonus to Employee</h3>
+                    <h3>Assign Extra Funds to Employee</h3>
                     <label>Select Employee</label>
                     <input
                         list="employeesList"
@@ -405,28 +448,58 @@ const AssignExtrFunds = ({ extraFunds  }) => {
                             </option>
                         ))}
                     </datalist>
-                    <label>Select Bonus</label>
+                    <label>Select Extra Funds</label>
                     <select
-                        name="bonusId"
-                        value={formData.bonusId}
+                        name="extfund_id"
+                        value={formData.extfund_id}
                         onChange={handleInputChange}
                     >
-                        <option value="">Select Bonus</option>
-                        {extraFunds.map((bonus) => (
-                            <option key={bonus.id} value={bonus.id}>
-                                {bonus.bonusName}
+                        <option value="">Select Extra Funds</option>
+                        {extraFunds.map((ext) => (
+                            <option key={ext.id} value={ext.id}>
+                                {ext.name}
                             </option>
                         ))}
                     </select>
-                    <label>Date</label>
+                    <label>Assign Date</label>
                     <input
                         type="date"
-                        name="bonusAssignDate"
-                        value={formData.bonusAssignDate}
+                        name="assign_date"
+                        value={formData.assign_date}
                         onChange={handleInputChange}
                     />
+                    {formData.type !== "NotPayable" && (
+                        <>
+                            <label>Return In Months</label>
+                            <input
+                                type="number"
+                                name="returnInMonths"
+                                placeholder="Return In Months"
+                                value={formData.returnInMonths}
+                                onChange={handleInputChange}
+
+                            />
+                        </>
+                    )}
+                    <label>Select Type</label>
+                    <select
+                        value={formData.type}
+                        onChange={(e) => {
+                            const selectedType = e.target.value;
+                            setFormData({
+                                ...formData,
+                                type: selectedType,
+                                returnInMonths:
+                                    selectedType === "NotPayable" ? "1" : formData.returnInMonths,
+                            });
+                        }}
+                    >
+                        <option value="">Select Type</option>
+                        <option value="payable">Payable</option>
+                        <option value="NotPayable">Not Payable</option>
+                    </select>
                     <button className="submit-button" onClick={addAssign}>
-                        Assign Bonus
+                        Assign Extra Funds
                     </button>
                     <button className="cancel-button" onClick={handleReset}>
                         Cancel
@@ -474,26 +547,65 @@ const AssignExtrFunds = ({ extraFunds  }) => {
                             </option>
                         ))}
                     </datalist>
-                    <label>Select Bonus</label>
+                    <label>Select Extra Funds</label>
                     <select
-                        value={editFormData.bonusId}
+                        value={editFormData.extfund_id}
                         onChange={(e) =>
-                            setEditFormData({ ...editFormData, bonusId: e.target.value })
+                            setEditFormData({ ...editFormData, extfund_id: e.target.value })
                         }
                     >
-                        <option value="">Select Bonus</option>
-                        {extraFunds.map((bonus) => (
-                            <option key={bonus.id} value={bonus.id}>
-                                {bonus.bonusName}
+                        <option value="">Select Extra Funds</option>
+                        {extraFunds.map((ext) => (
+                            <option key={ext.id} value={ext.id}>
+                                {ext.name}
                             </option>
                         ))}
                     </select>
+                    <label>Assign Date</label>
+                    <input
+                        type="date"
+                        value={editFormData.assign_date}
+                        onChange={(e) =>
+                            setEditFormData({ ...editFormData, assign_date: e.target.value })
+                        }
+                    />
+                    {editFormData.type !== "NotPayable" && (
+                        <>
+                            <label>Return In Months</label>
+                            <input
+                                type="number"
+                                placeholder="Return In Months"
+                                value={editFormData.returnInMonths}
+                                onChange={(e) =>
+                                    setEditFormData({ ...editFormData, returnInMonths: e.target.value })
+                                }
+                            />
+                        </>
+                    )}
+                    <label>Paid Amount</label>
+                    <input
+                        type="number"
+                        placeholder="Paid Amount"
+                        value={editFormData.paidAmount}
+                        onChange={(e) =>
+                            setEditFormData({ ...editFormData, paidAmount: e.target.value })
+                        }
+                    />
+
                     <label>Date</label>
                     <input
                         type="date"
-                        value={editFormData.bonusAssignDate}
+                        placeholder="Assign Date"
+                        value={editFormData.assign_date}
+                        onChange={(e) => setEditFormData({ ...editFormData, assign_date: e.target.value })}
+                    />
+                    <label>Reason</label>
+                    <input
+                        type="text"
+                        placeholder="Reason"
+                        value={editFormData.reason}
                         onChange={(e) =>
-                            setEditFormData({ ...editFormData, bonusAssignDate: e.target.value })
+                            setEditFormData({ ...editFormData, reason: e.target.value })
                         }
                     />
                     <button
@@ -519,42 +631,65 @@ const AssignExtrFunds = ({ extraFunds  }) => {
                                     onChange={handleSelectAllChange}
                                 />
                             </th>
-                            <th>Extra Funds ID</th>
+                            <th>ID</th>
                             <th>Employee ID</th>
                             <th>Employee Name</th>
-                            <th>Extra Funds Name</th>
-                            <th>Amount</th>
-                            <th>Awarded Date</th>
-                            <th>Action</th>
+                            <th>Extra Funds Amount</th>
+                            <th>Paid Amount</th>
+                            <th>Pending Amount</th>
+                            <th>Return In Months</th>
+                            <th>Next Month Payable</th>
+                            <th>Date</th>
+                            <th>Reason</th>
+                            <th>Type</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredData.map((bonus) => (
-                            <tr key={bonus.id}>
+                        {filteredData.map((adv) => (
+                            <tr key={adv.id}>
                                 <td>
                                     <input
                                         type="checkbox"
                                         id="delete-checkbox"
-                                        checked={selectedIds.includes(bonus.id)}
-                                        onChange={(event) => handleRowCheckboxChange(event, bonus.id)}
+                                        checked={selectedIds.includes(adv.id)}
+                                        onChange={(event) => handleRowCheckboxChange(event, adv.id)}
                                     />
                                 </td>
-                                <td>{bonus.id}</td>
-                                <td>{bonus.empId}</td>
-                                <td className="bold-fonts">{bonus.empName}</td>
-                                <td>{bonus.bonusName}</td>
-                                <td className="bold-fonts">{bonus.bonusAmount}</td>
-                                <td>{bonus.bonusAssignDate}</td>
+                                <td>{adv.id}</td>
+                                <td>{adv.empId}</td>
+                                <td className="bold-fonts">{adv.empName}</td>
+                                <td>{adv.extraFundAmount}</td>
+                                <td>{adv.paidAmount}</td>
+                                <td>{adv.pendingAmount}</td>
+                                <td>{adv.returnInMonths}</td>
+                                <td>{adv.nextPayable}</td>
+                                <td>{adv.assign_date}</td>
+                                <td>{adv.reason}</td>
                                 <td>
-                                    <button
-                                        // className="edit-button"
-                                        onClick={() => handleEdit(bonus)}
-                                        style={{ background: "none", border: "none" }}
+                                    <span
+                                        className={`status ${adv.type === "payable"
+                                            ? "absentStatus"
+                                            : adv.type === "Rejected"
+                                                ? "absentStatus"
+                                                : "presentStatus"
+                                            }`}
                                     >
-                                        <FaEdit className="table-edit" />
-                                    </button>
+                                        {adv.type}
+                                    </span>
+                                </td>
+                                <td>
+                                    {adv.type.toLowerCase() === "payable" && (
+                                        <button
+                                            onClick={() => handleEdit(adv)}
+                                            style={{ background: "none", border: "none" }}
+                                        >
+                                            <FaEdit className="table-edit" />
+                                        </button>
+                                    )}
+
                                     <button
-                                        onClick={() => handleDelete(bonus.id)}
+                                        onClick={() => handleDelete(adv.id)}
                                         style={{ background: "none", border: "none" }}
                                     >
                                         <FaTrash className="table-delete" />
