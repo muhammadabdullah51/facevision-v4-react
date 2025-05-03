@@ -160,9 +160,7 @@ const EmployeeProfile = () => {
     (item) =>
       item.empId.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.empName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.attemptWorkingHours
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
+      item.attemptWorkingHours.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.dailySalary.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.basicSalary.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.salaryType.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -170,15 +168,9 @@ const EmployeeProfile = () => {
       item.bankName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.accountNo.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.totalWorkingDays.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.totalWorkingHours
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      item.totalWorkingMinutes
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      item.attemptWorkingHours
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
+      item.totalWorkingHours.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.totalWorkingMinutes.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.attemptWorkingHours.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.dailySalary.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -208,23 +200,6 @@ const EmployeeProfile = () => {
     }
   };
 
-  // const handleRowCheckboxChange = (event, rowId) => {
-  //   const isChecked = event.target.checked;
-
-  //   // dispatch(setSelectedIds((prevSelectedIds) => {
-  //   //   if (isChecked) {
-  //   //     return [...prevSelectedIds, rowId];
-  //   //   } else {
-  //   //     const updatedIds = prevSelectedIds.filter((id) => id !== rowId);
-  //   //     return updatedIds;
-  //   //   }
-  //   // }));
-  //   dispatch(setSelectedIds(prevIds => 
-  //     isChecked ? 
-  //     [...prevIds, rowId] : 
-  //     prevIds.filter(id => id !== rowId)
-  //   ));
-  // };
 
   const handleRowCheckboxChange = (event, rowId) => {
     const isChecked = event.target.checked;

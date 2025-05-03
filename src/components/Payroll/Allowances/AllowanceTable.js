@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEdit, faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 
 import axios from "axios";
@@ -13,7 +11,6 @@ import successAnimation from "../../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../../assets/Lottie/warningAnim.json";
 
 import { SERVER_URL } from "../../../config";
-import AssignAllowance from "./AssignAllowance";
 import { useDispatch, useSelector } from "react-redux";
 import { setAllowanceData, resetAllowanceData } from "../../../redux/allowancesSlice";
 

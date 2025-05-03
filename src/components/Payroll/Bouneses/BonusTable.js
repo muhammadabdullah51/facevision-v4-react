@@ -101,7 +101,7 @@ const BonusTable = () => {
     setFormData({ ...formData, id: id });
   };
   const confirmDelete = async () => {
-    axios.post(`${SERVER_URL}pyr-bns-del/`, {
+    axios.post(`${SERVER_URL}pyr-bns-del/${formData.id}/`, {
       id: formData.id,
     });
     const updatedData = await axios.get(`${SERVER_URL}pyr-bns/`);

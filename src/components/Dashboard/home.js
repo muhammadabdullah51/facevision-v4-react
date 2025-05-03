@@ -89,7 +89,7 @@ const Home = () => {
                 return <CompletedPayroll />;
             case 'Working Hours':
                 return <WorkingHours />;
-            case 'Payroll Log':
+            case 'Payroll Logs':
                 return <PayRollLog />;
             case 'Advance Salary':
                 return <AdvanceSalary />;

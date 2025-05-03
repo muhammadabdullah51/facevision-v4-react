@@ -9,7 +9,6 @@ import updateAnimation from "../../../assets/Lottie/updateAnim.json";
 import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../../assets/Lottie/warningAnim.json";
-
 import { SERVER_URL } from "../../../config";
 import { useDispatch, useSelector } from "react-redux";
 import { setAppraisalsData, resetAppraisalsData } from "../../../redux/appraisalsSlice";
@@ -17,7 +16,7 @@ import { setAppraisalsData, resetAppraisalsData } from "../../../redux/appraisal
 
 const AppraisalTable = () => {
   const [data, setData] = useState([]);
-  const [employees, setEmployees] = useState([]);
+  // const [employees, setEmployees] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
 
@@ -76,18 +75,25 @@ const AppraisalTable = () => {
     } catch (error) {
     }
   }, [setData]);
-  const fetchEmployees = async () => {
-    try {
-      const response = await axios.get(`${SERVER_URL}pr-emp/`);
-      setEmployees(response.data);
-    } catch (error) {
-    }
-  };
+  // const fetchEmployees = async () => {
+  //   try {
+  //     const response = await axios.get(`${SERVER_URL}pr-emp/`);
+  //     setEmployees(response.data);
+  //   } catch (error) {
+  //   }
+  // };
 
   // Fetch the data when the component mounts
   useEffect(() => {
     fetchAppraisals();
-  }, [fetchAppraisals]);
+    let timer;
+    if (successModal) {
+      timer = setTimeout(() => {
+        setSuccessModal(false);
+      }, 2000);
+    }
+    return () => clearTimeout(timer);
+  }, [fetchAppraisals, successModal]);
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -102,7 +108,7 @@ const AppraisalTable = () => {
   };
   const confirmDelete = async () => {
     try {
-      await axios.post(`${SERVER_URL}pyr-appr-del/`, { id: formData.id });
+      await axios.delete(`${SERVER_URL}pyr-appr/${formData.id}/`);
 
       fetchAppraisals();
       setShowModal(false);
@@ -160,6 +166,7 @@ const AppraisalTable = () => {
   // Handle form data changes
   const handleEdit = (data) => {
     setEditFormData({
+      id: data.id,
       name: data.name,
       created_date: data.created_date,
       appraisal_amount: data.appraisal_amount,
@@ -172,10 +179,12 @@ const AppraisalTable = () => {
   const updateAppraisal = (row) => {
     setModalType("update");
     setEditFormData({ ...editFormData });
+    console.log(editFormData)
     setShowModal(true);
   };
   const confirmUpdate = async () => {
     if (
+      editFormData.id === "" ||
       editFormData.name === "" ||
       editFormData.created_date === "" ||
       editFormData.appraisal_amount === "" ||
@@ -195,15 +204,15 @@ const AppraisalTable = () => {
 
     try {
       const updateAppraisal = {
-        id: editFormData.id,
         name: editFormData.name,
         created_date: editFormData.created_date,
         appraisal_amount: editFormData.appraisal_amount,
         desc: editFormData.desc,
         
       };
+      console.log(updateAppraisal)
 
-      await axios.post(`${SERVER_URL}pyr-appr-up/`, updateAppraisal);
+      await axios.put(`${SERVER_URL}pyr-appr/${editFormData.id}/`, updateAppraisal);
       const updatedData = await axios.get(`${SERVER_URL}pyr-appr/`);
       setData(updatedData.data);
       setShowModal(false);
@@ -398,83 +407,34 @@ const AppraisalTable = () => {
       {showAddForm && !showEditForm && (
         <div className="add-leave-form">
           <h3>Add New Appraisal</h3>
-          <label>Select Employee</label>
+          
+          <label>Name</label>
           <input
-            list="employeesList"
-            value={
-              employees.find((emp) => emp.empId === formData.empId)
-                ? `${employees.find((emp) => emp.empId === formData.empId).empId
-                } ${employees.find((emp) => emp.empId === formData.empId).fName
-                } ${employees.find((emp) => emp.empId === formData.empId).lName
-                }`
-                : formData.empId || "" // Display empId, fName, and lName of selected employee or inputted empId
-            }
-            onChange={(e) => {
-              const value = e.target.value;
-              const selectedEmployee = employees.find(
-                (emp) =>
-                  `${emp.empId} ${emp.fName} ${emp.lName}` === value ||
-                  emp.empId === value
-              );
-
-              setFormData({
-                ...formData,
-                empId: selectedEmployee ? selectedEmployee.empId : value, // Store empId or raw input
-              });
-            }}
-            placeholder="Search or select an employee"
+            type="text"
+            name="name"
+            placeholder="Appraisal Name"
+            value={formData.name}
+            onChange={handleInputChange}
           />
-
-          <datalist id="employeesList">
-            {employees.map((emp) => (
-              <option
-                key={emp.empId}
-                value={`${emp.empId} ${emp.fName} ${emp.lName}`}
-              >
-                {emp.empId} {emp.fName} {emp.lName}
-              </option>
-            ))}
-          </datalist>
 
           <label>Appraisal Amount</label>
           <input
             type="Number"
-            name="appraisal"
-            placeholder="Appraisal"
-            value={formData.appraisal}
+            name="appraisal_amount"
+            placeholder="Amount"
+            value={formData.appraisal_amount}
             onChange={handleInputChange}
           />
 
-          <label>Reason</label>
-          <input
-            type="text"
-            name="reason"
-            placeholder="Reason"
-            value={formData.reason}
-            onChange={handleInputChange}
-          />
 
-          <label>Date</label>
+          <label>Created Date</label>
           <input
             type="Date"
-            name="date"
+            name="created_date"
             placeholder="Date"
-            value={formData.date}
+            value={formData.created_date}
             onChange={handleInputChange}
           />
-
-          <label>Select Status</label>
-
-          <select
-            name="status"
-            value={formData.status}
-            onChange={handleInputChange}
-          >
-            <option value="">Select Status</option>
-            <option value="Pending">Pending</option>
-            <option value="Approved">Approved</option>
-            <option value="Rejected">Rejected</option>
-          </select>
 
           <label>Description</label>
 
@@ -496,83 +456,35 @@ const AppraisalTable = () => {
       {showEditForm && (
         <div className="add-leave-form">
           <h3>Update Appraisal</h3>
-          <label>Selected Employee</label>
+
+          <label>Name</label>
           <input
-            disabled
-            list="employeesList"
-            value={
-              employees.find((emp) => emp.empId === editFormData.empId)
-                ? `${employees.find((emp) => emp.empId === editFormData.empId).empId
-                } ${employees.find((emp) => emp.empId === editFormData.empId).fName
-                } ${employees.find((emp) => emp.empId === editFormData.empId).lName
-                }`
-                : editFormData.empId || "" // Display empId, fName, and lName of selected employee or inputted empId
+            type="text"
+            name="name"
+            placeholder="Appraisal Name"
+            value={editFormData.name}
+            onChange={(e) =>
+              setEditFormData({ ...editFormData, name: e.target.value })
             }
-            onChange={(e) => {
-              const value = e.target.value;
-              const selectedEmployee = employees.find(
-                (emp) =>
-                  `${emp.empId} ${emp.fName} ${emp.lName}` === value ||
-                  emp.empId === value
-              );
-
-              setEditFormData({
-                ...editFormData,
-                empId: selectedEmployee ? selectedEmployee.empId : value, // Store empId or raw input
-              });
-            }}
-            placeholder="Search or select an employee"
           />
-
-          <datalist id="employeesList">
-            {employees.map((emp) => (
-              <option
-                key={emp.empId}
-                value={`${emp.empId} ${emp.fName} ${emp.lName}`}
-              >
-                {emp.empId} {emp.fName} {emp.lName}
-              </option>
-            ))}
-          </datalist>
 
           <label>Appraisal Amount</label>
           <input
             type="Number"
             placeholder="Appraisal"
-            value={editFormData.appraisal}
+            value={editFormData.appraisal_amount}
             onChange={(e) =>
-              setEditFormData({ ...editFormData, appraisal: e.target.value })
+              setEditFormData({ ...editFormData, appraisal_amount: e.target.value })
             }
           />
-          <label>Reason</label>
-          <input
-            type="text"
-            placeholder="Reason"
-            value={editFormData.reason}
-            onChange={(e) =>
-              setEditFormData({ ...editFormData, reason: e.target.value })
-            }
-          />
+         
           <label>Date</label>
           <input
             type="Date"
             placeholder="Date"
-            value={editFormData.date}
-            onChange={(e) => setEditFormData({ ...editFormData, date: e.target.value })}
+            value={editFormData.created_date}
+            onChange={(e) => setEditFormData({ ...editFormData, created_date: e.target.value })}
           />
-          <label>Select Status</label>
-
-          <select
-            value={editFormData.status}
-            onChange={(e) =>
-              setEditFormData({ ...editFormData, status: e.target.value })
-            }
-          >
-            <option value="">Select Status</option>
-            <option value="Pending">Pending</option>
-            <option value="Approved">Approved</option>
-            <option value="Rejected">Rejected</option>
-          </select>
 
           <label>Description</label>
           <textarea
@@ -607,12 +519,9 @@ const AppraisalTable = () => {
                 />
               </th>
               <th>ID</th>
-              <th>Employee ID</th>
-              <th>Employee Name</th>
-              <th>Appraisal</th>
-              <th>Reason</th>
-              <th>Date</th>
-              <th>Status</th>
+              <th>Appraisals Name</th>
+              <th>Amount</th>
+              <th>Created Date</th>
               <th>Description</th>
               <th>Actions</th>
             </tr>
@@ -629,24 +538,11 @@ const AppraisalTable = () => {
                   />
                 </td>
                 <td>{adv.id}</td>
-                <td>{adv.empId}</td>
-                <td className="bold-fonts">{adv.empName}</td>
-                <td>{adv.appraisal}</td>
-                <td>{adv.reason}</td>
-                <td>{adv.date}</td>
-                <td>
-                  <span
-                    className={`status ${adv.status === "Pending"
-                      ? "lateStatus"
-                      : adv.status === "Rejected"
-                        ? "absentStatus"
-                        : "presentStatus"
-                      }`}
-                  >
-                    {adv.status}
-                  </span>
-                </td>
+                <td className="bold-fonts">{adv.name}</td>
+                <td>{adv.appraisal_amount}</td>
+                <td>{adv.created_date}</td>
                 <td>{adv.desc}</td>
+               
                 <td>
                   <button
                     onClick={() => handleEdit(adv)}

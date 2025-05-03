@@ -75,7 +75,7 @@ const LoanTable = () => {
       console.error("Error fetching Loan data:", error);
     }
   }, [setData]);
-  
+
 
   // Fetch the data when the component mounts
   useEffect(() => {
@@ -101,9 +101,7 @@ const LoanTable = () => {
   };
   const confirmDelete = async () => {
     try {
-      await axios.post(`${SERVER_URL}pyr-loan-del/`, {
-        id: formData.id,
-      });
+      await axios.delete(`${SERVER_URL}pyr-loan/${formData.id}/`);
       fetchLoan();
       setShowModal(false);
       setSuccessModal(true);
@@ -184,7 +182,7 @@ const LoanTable = () => {
       setWarningModal(true);
       return;
     }
-    if (editFormData.givenLoan < 1 || editFormData.returnInMonths < 1) {
+    if (editFormData.givenLoan < 1) {
       setResMsg("Values Can't be Negative or zero");
       setShowModal(false);
       setWarningModal(true);
@@ -198,7 +196,7 @@ const LoanTable = () => {
         givenLoan: editFormData.givenLoan,
         created_date: editFormData.created_date,
       };
-      await axios.post(`${SERVER_URL}pyr-loan-up/`, updateLoan);
+      await axios.put(`${SERVER_URL}pyr-loan/${editFormData.id}/`, updateLoan);
       setShowModal(false);
       setSuccessModal(true);
       setShowEditForm(false);
@@ -393,9 +391,9 @@ const LoanTable = () => {
 
           <label>Loan Name</label>
           <input
-            type="number"
+            type="text"
             name="name"
-            placeholder="Given Loan"
+            placeholder="Name"
             value={formData.name}
             onChange={handleInputChange}
 
@@ -436,7 +434,7 @@ const LoanTable = () => {
 
           <label>Loan Name</label>
           <input
-            type="number"
+            type="text"
             name="name"
             placeholder="Given Loan"
             value={editFormData.name}

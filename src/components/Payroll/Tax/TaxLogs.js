@@ -108,7 +108,7 @@ const TaxLogs = () => {
                 <td>{adv.id}</td>
                 <td className="bold-fonts">{adv.name}</td>
                 <td>{adv.nature}</td>
-                <td>{adv.amount === 0 ? adv.percent : adv.amount} {adv.nature == 'percentage' ? '%' : 'Rs'}</td>
+                <td>{adv.amount === 0 ? adv.percent : adv.amount} {adv.nature === 'percentage' ? '%' : 'Rs'}</td>
                 <td>{adv.date}</td>
                 <td>{adv.empId}</td>
                 <td className="bold-fonts">{adv.emp_Name}</td>

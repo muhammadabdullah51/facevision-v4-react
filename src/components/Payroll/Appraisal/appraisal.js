@@ -31,7 +31,7 @@ const Appraisal = () => {
             onClick={() => setChangeTab("Appraisals Table")}
           >
             <FontAwesomeIcon icon={faTableCells} className="icon" />
-            Appraisals Table
+            Create Appraisals
           </button>
           <button
             className={`${changeTab === "Assign Appraisals" ? "active" : ""}`}

@@ -13,24 +13,24 @@ import { SERVER_URL } from "../../../config";
 
 
 import { useDispatch, useSelector } from "react-redux";
-import { setAssignBonusData, resetAssignBonusData } from "../../../redux/assignBonusSlice";
+import { setExtraFundsData, resetExtraFundsData } from "../../../redux/extraFundsSlice";
 
 
 const AssignExtrFunds = () => {
     const [data, setData] = useState([]);
     const [employees, setEmployees] = useState([]);
-    const [extraFunds, setExtraFunds] = useState([]);
     const [showAddForm, setShowAddForm] = useState(false);
     const [showEditForm, setShowEditForm] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
 
     const dispatch = useDispatch();
-    const assignAppraisalData = useSelector((state) => state.assignAppraisal);
+    const assignExtFundsData = useSelector((state) => state.extraFunds);
 
     const [formData, setFormData] = useState(
-        assignAppraisalData || {
+        assignExtFundsData || {
             id: "",
-            extfund_id: "",
+            name: "",
+            extrafund_amount: "",
             returnInMonths: "",
             pendingAmount: "",
             nextPayable: "",
@@ -42,10 +42,11 @@ const AssignExtrFunds = () => {
         });
 
     const handleReset = () => {
-        dispatch(resetAssignBonusData());
+        dispatch(resetExtraFundsData());
         setFormData({
             id: "",
-            extfund_id: "",
+            name: "",
+            extrafund_amount: "",
             returnInMonths: "",
             pendingAmount: "",
             nextPayable: "",
@@ -61,7 +62,8 @@ const AssignExtrFunds = () => {
 
     const [editFormData, setEditFormData] = useState({
         id: "",
-        extfund_id: "",
+        name: "",
+        extrafund_amount: "",
         returnInMonths: "",
         pendingAmount: "",
         nextPayable: "",
@@ -76,7 +78,7 @@ const AssignExtrFunds = () => {
         const { name, value } = e.target;
         setFormData((prevState) => {
             const updatedFormData = { ...prevState, [name]: value };
-            dispatch(setAssignBonusData(updatedFormData));
+            dispatch(setExtraFundsData(updatedFormData));
             return updatedFormData;
         });
     };
@@ -89,8 +91,9 @@ const AssignExtrFunds = () => {
 
     const fetchEmployeesExtraFund = useCallback(async () => {
         try {
-            const response = await axios.get(`${SERVER_URL}pyr-asg-bns/`);
+            const response = await axios.get(`${SERVER_URL}pyr-ext/`);
             setData(response.data);
+            console.log(data)
         } catch (error) {
         }
     }, [setData]);
@@ -102,18 +105,11 @@ const AssignExtrFunds = () => {
         }
     };
 
-    const fetchExtraFunds = async () => {
-        try {
-            const response = await axios.get(`${SERVER_URL}pyr-ext/`);
-            setExtraFunds(response.data);
-        } catch (error) {
-        }
-    };
+
 
     useEffect(() => {
         fetchEmployeesExtraFund();
         fetchEmployees();
-        fetchExtraFunds();
         let timer;
         if (successModal) {
             timer = setTimeout(() => {
@@ -128,11 +124,9 @@ const AssignExtrFunds = () => {
         setShowModal(true);
         setFormData({ ...formData, id: id });
     };
-    const confirmDelete = async (id) => {
+    const confirmDelete = async () => {
         try {
-            await axios.post(`${SERVER_URL}pyr-asg-bns-del/`, {
-                id: formData.id,
-            });
+            await axios.delete(`${SERVER_URL}pyr-ext/${formData.id}/`);
             await fetchEmployeesExtraFund(); // Refresh data after deletion
             setShowModal(false);
             setSuccessModal(true);
@@ -147,16 +141,17 @@ const AssignExtrFunds = () => {
     const addAssign = () => {
         setModalType("create");
         setShowModal(true);
+        console.log(formData)
     };
 
     const confirmAdd = async () => {
-        if (!formData.extfund_id ||
+        if (
+            !formData.name ||
+            !formData.extrafund_amount ||
             !formData.returnInMonths ||
-            !formData.pendingAmount ||
-            !formData.nextPayable ||
-            !formData.paidAmount ||
-            !formData.empId ||
             !formData.assign_date ||
+            !formData.empId ||
+            !formData.type ||
             !formData.status ||
             !formData.desc
         ) {
@@ -165,7 +160,31 @@ const AssignExtrFunds = () => {
             setWarningModal(true);
             return;
         }
-        await axios.post(`${SERVER_URL}pyr-asg-bns/`, formData);
+        if (formData.returnInMonths < 1 || formData.extrafund_amount < 1) {
+            setResMsg("Values Can't be Negative or zero");
+            setShowModal(false);
+            setWarningModal(true);
+            return;
+        }
+        if (formData.desc.length > 250) {
+            setResMsg("Reason Can't be Bigger than 250 characters");
+            setShowModal(false);
+            setWarningModal(true);
+            return;
+        }
+
+        const newExt = {
+            name: formData.name,
+            extrafund_amount: Number(formData.extrafund_amount),
+            returnInMonths: Number(formData.returnInMonths),
+            empId: formData.empId,
+            assign_date: formData.assign_date,
+            status: formData.status,
+            type: formData.type,
+            desc: formData.desc,
+        };
+        console.log(newExt)
+        await axios.post(`${SERVER_URL}pyr-ext/`, newExt);
         setShowModal(false);
         setSuccessModal(true);
         setShowAddForm(false);
@@ -176,14 +195,14 @@ const AssignExtrFunds = () => {
     const handleEdit = (item) => {
         setEditFormData({
             id: item.id,
-            extfund_id: item.extfund_id,
-            returnInMonths: item.returnInMonths,
-            pendingAmount: item.pendingAmount,
-            nextPayable: item.nextPayable,
-            paidAmount: item.paidAmount,
-            empId: item.empId,
+            name: item.name,
+            extrafund_amount: Number(item.extrafund_amount),
+            returnInMonths: Number(item.returnInMonths),
+            paidAmount: Number(item.paidAmount),
+            empId: item.empIdVal,
             assign_date: item.assign_date,
             status: item.status,
+            type: item.type,
             desc: item.desc,
         });
         setShowAddForm(false);
@@ -193,16 +212,15 @@ const AssignExtrFunds = () => {
         setModalType("update");
         setEditFormData({ ...editFormData });
         setShowModal(true);
+        console.log(editFormData)
     };
     const confirmUpdate = async () => {
-        if (!editFormData.id ||
-            !editFormData.extfund_id ||
-            !editFormData.returnInMonths ||
-            !editFormData.pendingAmount ||
-            !editFormData.nextPayable ||
-            !editFormData.paidAmount ||
-            !editFormData.empId ||
+        if (!editFormData.name ||
+            !editFormData.extrafund_amount ||
             !editFormData.assign_date ||
+            !editFormData.returnInMonths ||
+            !editFormData.empId ||
+            !editFormData.type ||
             !editFormData.status ||
             !editFormData.desc) {
             setResMsg("Please fill in all required fields.");
@@ -210,7 +228,31 @@ const AssignExtrFunds = () => {
             setWarningModal(true);
             return;
         }
-        await axios.post(`${SERVER_URL}pyr-asg-bns-up/`, editFormData);
+        if (editFormData.returnInMonths < 1 || editFormData.extrafund_amount < 1) {
+            setResMsg("Values Can't be Negative or zero");
+            setShowModal(false);
+            setWarningModal(true);
+            return;
+        }
+        if (editFormData.desc.length > 250) {
+            setResMsg("Reason Can't be Bigger than 250 characters");
+            setShowModal(false);
+            setWarningModal(true);
+            return;
+        }
+        const upExt = {
+            name: editFormData.name,
+            extrafund_amount: Number(editFormData.extrafund_amount),
+            assign_date: editFormData.assign_date,
+            returnInMonths: Number(editFormData.returnInMonths),
+            paidAmount: Number(editFormData.paidAmount),
+            type: editFormData.type,
+            empId: editFormData.empId,
+            status: editFormData.status,
+            desc: editFormData.desc,
+        };
+        console.log(upExt)
+        await axios.put(`${SERVER_URL}pyr-ext/${editFormData.id}/`, upExt);
         setShowModal(false);
         setSuccessModal(true);
         setShowEditForm(false);
@@ -224,13 +266,15 @@ const AssignExtrFunds = () => {
     const handleSearchChange = (e) => setSearchQuery(e.target.value);
 
     const filteredData = data.filter((item) =>
-        // item.empName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        // item.type?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        // item.empId?.toString().includes(searchQuery)  ||
-        // item.paid?.toLowerCase().includes(searchQuery) ||
-        item.pendingAmount?.toLowerCase().includes(searchQuery) 
-        // ||
-        // item.extraFundAmount?.toLowerCase().includes(searchQuery)
+        item.empName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.type?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.empIdVal?.toString().includes(searchQuery) ||
+        item.type?.toString().includes(searchQuery) ||
+        item.status?.toString().includes(searchQuery) ||
+        item.pendingAmount?.toString().includes(searchQuery) ||
+        item.paidAmount?.toString().includes(searchQuery) ||
+        item.nextPayable?.toString().includes(searchQuery) ||
+        item.extrafund_amount?.toString().includes(searchQuery)
 
     );
 
@@ -292,7 +336,7 @@ const AssignExtrFunds = () => {
         try {
             const payload = { ids: selectedIds };
             await axios.post(`${SERVER_URL}asgnbonus/del/data`, payload);
-            const updatedData = await axios.get(`${SERVER_URL}pyr-asg-bns/`);
+            const updatedData = await axios.get(`${SERVER_URL}pyr-ext/`);
             setData(updatedData.data);
             setShowModal(false);
             setSelectedIds([]);
@@ -448,19 +492,26 @@ const AssignExtrFunds = () => {
                             </option>
                         ))}
                     </datalist>
-                    <label>Select Extra Funds</label>
-                    <select
-                        name="extfund_id"
-                        value={formData.extfund_id}
+                    <label>Extra Funds Name</label>
+                    <input
+                        type="text"
+                        name="name"
+                        placeholder="Extra Funds Name"
+                        value={formData.name}
                         onChange={handleInputChange}
-                    >
-                        <option value="">Select Extra Funds</option>
-                        {extraFunds.map((ext) => (
-                            <option key={ext.id} value={ext.id}>
-                                {ext.name}
-                            </option>
-                        ))}
-                    </select>
+
+                    />
+                    <label>Extra Funds Amount</label>
+                    <input
+                        type="number"
+                        name="extrafund_amount"
+                        placeholder="Given Amount"
+                        value={formData.extrafund_amount}
+                        onChange={handleInputChange}
+
+                    />
+
+
                     <label>Assign Date</label>
                     <input
                         type="date"
@@ -498,6 +549,28 @@ const AssignExtrFunds = () => {
                         <option value="payable">Payable</option>
                         <option value="NotPayable">Not Payable</option>
                     </select>
+
+                    <label>Description</label>
+                    <textarea
+                        type="text"
+                        name="desc"
+                        placeholder="Description"
+                        value={formData.desc}
+                        onChange={handleInputChange}
+
+                    />
+                    <label>Select Status</label>
+                    <select
+                        value={formData.status}
+                        name="status"
+                        onChange={handleInputChange}
+
+                    >
+                        <option value="">Select Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
                     <button className="submit-button" onClick={addAssign}>
                         Assign Extra Funds
                     </button>
@@ -508,7 +581,7 @@ const AssignExtrFunds = () => {
             )}
             {showEditForm && (
                 <div className="add-leave-form">
-                    <h3>Update Assigned Bonus</h3>
+                    <h3>Update Assigned Extra Funds</h3>
                     <label>Selected Employee</label>
                     <input
                         list="employeesList"
@@ -547,20 +620,27 @@ const AssignExtrFunds = () => {
                             </option>
                         ))}
                     </datalist>
-                    <label>Select Extra Funds</label>
-                    <select
-                        value={editFormData.extfund_id}
+                    <label>Extra Funds Name</label>
+                    <input
+                        type="text"
+                        name="name"
+                        placeholder="Extra Funds Name"
+                        value={editFormData.name}
                         onChange={(e) =>
-                            setEditFormData({ ...editFormData, extfund_id: e.target.value })
+                            setEditFormData({ ...editFormData, name: e.target.value })}
+                    />
+
+
+
+                    <label>Extra Funds Amount</label>
+                    <input
+                        type="number"
+                        placeholder="Given Amount"
+                        value={editFormData.extrafund_amount}
+                        onChange={(e) =>
+                            setEditFormData({ ...editFormData, extrafund_amount: e.target.value })
                         }
-                    >
-                        <option value="">Select Extra Funds</option>
-                        {extraFunds.map((ext) => (
-                            <option key={ext.id} value={ext.id}>
-                                {ext.name}
-                            </option>
-                        ))}
-                    </select>
+                    />
                     <label>Assign Date</label>
                     <input
                         type="date"
@@ -591,28 +671,52 @@ const AssignExtrFunds = () => {
                             setEditFormData({ ...editFormData, paidAmount: e.target.value })
                         }
                     />
+                    <label>Select Type</label>
+                    <select
+                    disabled
+                        value={editFormData.type}
+                        onChange={(e) => {
+                            const selectedType = e.target.value;
+                            setEditFormData({
+                                ...editFormData,
+                                type: selectedType,
+                                returnInMonths:
+                                    selectedType === "NotPayable" ? "1" : editFormData.returnInMonths,
+                            });
+                        }}
+                    >
+                        <option value="">Select Type</option>
+                        <option value="payable">Payable</option>
+                        <option value="NotPayable">Not Payable</option>
+                    </select>
 
-                    <label>Date</label>
-                    <input
-                        type="date"
-                        placeholder="Assign Date"
-                        value={editFormData.assign_date}
-                        onChange={(e) => setEditFormData({ ...editFormData, assign_date: e.target.value })}
-                    />
-                    <label>Reason</label>
-                    <input
+                    <label>Description</label>
+                    <textarea
                         type="text"
-                        placeholder="Reason"
-                        value={editFormData.reason}
-                        onChange={(e) =>
-                            setEditFormData({ ...editFormData, reason: e.target.value })
-                        }
+                        name="desc"
+                        placeholder="Description"
+                        value={editFormData.desc}
+                        onChange={(e) => setEditFormData({ ...editFormData, desc: e.target.value })}
+
                     />
+                    <label>Select Status</label>
+                    <select
+                        value={editFormData.status}
+                        onChange={(e) =>
+                            setEditFormData({ ...editFormData, status: e.target.value })
+                        }
+                    >
+                        <option value="">Select Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+
                     <button
                         className="submit-button"
                         onClick={() => updateAssign(editFormData)}
                     >
-                        Update Assigned Bonus
+                        Update Assigned Extra Funds
                     </button>
                     <button className="cancel-button" onClick={handleReset}>
                         Cancel
@@ -634,14 +738,16 @@ const AssignExtrFunds = () => {
                             <th>ID</th>
                             <th>Employee ID</th>
                             <th>Employee Name</th>
+                            <th>Extra Funds Name</th>
                             <th>Extra Funds Amount</th>
                             <th>Paid Amount</th>
                             <th>Pending Amount</th>
                             <th>Return In Months</th>
                             <th>Next Month Payable</th>
                             <th>Date</th>
-                            <th>Reason</th>
                             <th>Type</th>
+                            <th>Status</th>
+                            <th>Reason</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -657,32 +763,45 @@ const AssignExtrFunds = () => {
                                     />
                                 </td>
                                 <td>{adv.id}</td>
-                                <td>{adv.empId}</td>
+                                <td>{adv.empIdVal}</td>
                                 <td className="bold-fonts">{adv.empName}</td>
-                                <td>{adv.extraFundAmount}</td>
+                                <td className="bold-fonts">{adv.name}</td>
+                                <td>{adv.extrafund_amount}</td>
                                 <td>{adv.paidAmount}</td>
                                 <td>{adv.pendingAmount}</td>
                                 <td>{adv.returnInMonths}</td>
                                 <td>{adv.nextPayable}</td>
                                 <td>{adv.assign_date}</td>
-                                <td>{adv.reason}</td>
+                                <td>
+                                    <span
+                                        className={`status ${adv.status === "rejected"
+                                            ? "absentStatus"
+                                            : adv.status === "pending"
+                                                ? "lateStatus"
+                                                : "presentStatus"
+                                            }`}
+                                    >
+                                        {adv.status}
+                                    </span>
+                                </td>
                                 <td>
                                     <span
                                         className={`status ${adv.type === "payable"
                                             ? "absentStatus"
                                             : adv.type === "Rejected"
-                                                ? "absentStatus"
-                                                : "presentStatus"
+                                            ? "absentStatus"
+                                            : "presentStatus"
                                             }`}
-                                    >
+                                            >
                                         {adv.type}
                                     </span>
                                 </td>
+                                    <td>{adv.desc}</td>
                                 <td>
                                     {adv.type.toLowerCase() === "payable" && (
                                         <button
-                                            onClick={() => handleEdit(adv)}
-                                            style={{ background: "none", border: "none" }}
+                                        onClick={() => handleEdit(adv)}
+                                        style={{ background: "none", border: "none" }}
                                         >
                                             <FaEdit className="table-edit" />
                                         </button>

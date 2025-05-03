@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
-
 import axios from "axios";
 import "../../Dashboard/dashboard.css";
-
 import ConirmationModal from "../../Modal/conirmationModal";
 import addAnimation from "../../../assets/Lottie/addAnim.json";
 import updateAnimation from "../../../assets/Lottie/updateAnim.json";
@@ -11,7 +9,6 @@ import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../../assets/Lottie/warningAnim.json";
 import { SERVER_URL } from "../../../config";
-
 import { useDispatch, useSelector } from "react-redux";
 import { setLoanData, resetLoanData } from "../../../redux/loanSlice";
 
@@ -22,22 +19,23 @@ const AssignLoan = () => {
     const [showAddForm, setShowAddForm] = useState(false);
     const [showEditForm, setShowEditForm] = useState(false);
 
+
     const dispatch = useDispatch();
     const loanData = useSelector((state) => state.loan);
     const [formData, setFormData] = useState(
         loanData || {
             id: "",
             empId: "",
+            name: "",
+            givenLoan: "",
             returnInMonths: "",
             paidAmount: "",
             pendingAmount: "",
             nextPayable: "",
             reason: "",
-            assign_date: "",
+            assign_date:  new Date().toISOString().split("T")[0],
             applied_on: "",
             status: "Pending",
-            loanId: "",
-            name: ""
         });
 
     const handleReset = () => {
@@ -45,16 +43,16 @@ const AssignLoan = () => {
         setFormData({
             id: "",
             empId: "",
+            name: "",
+            givenLoan: "",
             returnInMonths: "",
             paidAmount: "",
             pendingAmount: "",
             nextPayable: "",
             reason: "",
-            assign_date: "",
+            assign_date:  new Date().toISOString().split("T")[0],
             applied_on: "",
             status: "Pending",
-            loanId: "",
-            name: ""
         });
         setShowAddForm(false);
         setShowEditForm(false);
@@ -63,16 +61,16 @@ const AssignLoan = () => {
     const [editFormData, setEditFormData] = useState({
         id: "",
         empId: "",
+        name: "",
+        givenLoan: "",
         returnInMonths: "",
         paidAmount: "",
         pendingAmount: "",
         nextPayable: "",
         reason: "",
-        assign_date: "",
+        assign_date:  new Date().toISOString().split("T")[0],
         applied_on: "",
         status: "Pending",
-        loanId: "",
-        name: ""
     });
 
     const handleInputChange = (e) => {
@@ -92,12 +90,11 @@ const AssignLoan = () => {
     const [warningModal, setWarningModal] = useState(false);
     const [resMsg, setResMsg] = useState("");
 
-    const fetchLoan = useCallback(async () => {
+    const fetchEmployeesLoan = useCallback(async () => {
         try {
-            const response = await axios.get(`${SERVER_URL}pyr-loan/`);
+            const response = await axios.get(`${SERVER_URL}pyr-asg-loan/`);
             setData(response.data);
         } catch (error) {
-            console.error("Error fetching Loan data:", error);
         }
     }, [setData]);
     const fetchEmployees = async () => {
@@ -105,14 +102,14 @@ const AssignLoan = () => {
             const response = await axios.get(`${SERVER_URL}pr-emp/`);
             setEmployees(response.data);
         } catch (error) {
-            console.error("Error fetching employees:", error);
         }
     };
 
+
     // Fetch the data when the component mounts
     useEffect(() => {
-        fetchLoan();
         fetchEmployees();
+        fetchEmployeesLoan();
         let timer;
         if (successModal) {
             timer = setTimeout(() => {
@@ -120,7 +117,7 @@ const AssignLoan = () => {
             }, 2000);
         }
         return () => clearTimeout(timer);
-    }, [fetchLoan, successModal]);
+    }, [fetchEmployeesLoan, successModal]);
 
     const [searchQuery, setSearchQuery] = useState("");
 
@@ -134,10 +131,7 @@ const AssignLoan = () => {
     };
     const confirmDelete = async () => {
         try {
-            await axios.post(`${SERVER_URL}pyr-loan-del/`, {
-                id: formData.id,
-            });
-            fetchLoan();
+            await axios.delete(`${SERVER_URL}pyr-asg-loan/${formData.id}/`);
             setShowModal(false);
             setSuccessModal(true);
         } catch (error) {
@@ -158,15 +152,23 @@ const AssignLoan = () => {
         if (
             !formData.empId ||
             !formData.returnInMonths ||
-            !formData.paidAmount ||
-            !formData.pendingAmount ||
-            !formData.nextPayable ||
             !formData.reason ||
-            !formData.status ||
             !formData.name ||
-            !formData.loanId
+            !formData.givenLoan ||
+            !formData.status
         ) {
             setResMsg("Please fill in all required fields.");
+            setShowModal(false);
+            setWarningModal(true);
+            return;
+        } if (formData.returnInMonths < 1 || formData.givenLoan < 1) {
+            setResMsg("Values Can't be Negative or zero");
+            setShowModal(false);
+            setWarningModal(true);
+            return;
+        }
+        if (formData.reason.length > 250 ) {
+            setResMsg("Reason Can't be Bigger than 250 characters");
             setShowModal(false);
             setWarningModal(true);
             return;
@@ -174,23 +176,20 @@ const AssignLoan = () => {
 
         const newLoan = {
             empId: formData.empId,
-            returnInMonths: formData.returnInMonths,
-            paidAmount: formData.paidAmount,
-            pendingAmount: formData.pendingAmount,
-            nextPayable: formData.nextPayable,
+            name: formData.name,
+            givenLoan: Number(formData.givenLoan),
+            returnInMonths: Number(formData.returnInMonths),
             reason: formData.reason,
-            assign_date: formData.assign_date,
+            assign_date:  new Date().toISOString().split("T")[0],
             applied_on: formData.applied_on,
             status: formData.status,
-            loanId: formData.loanId,
-            name: formData.name,
         };
+
         try {
-            await axios.post(`${SERVER_URL}pyr-loan/`, newLoan);
+            await axios.post(`${SERVER_URL}pyr-asg-loan/`, newLoan);
             setShowModal(false);
             setSuccessModal(true);
             setShowAddForm(false);
-            fetchLoan();
             handleReset()
         } catch (error) {
             console.log(error);
@@ -200,16 +199,16 @@ const AssignLoan = () => {
     const handleEdit = (data) => {
         setEditFormData({
             id: data.id,
+            empId: data.empIdVal,
             returnInMonths: data.returnInMonths,
             paidAmount: data.paidAmount,
             pendingAmount: data.pendingAmount,
             nextPayable: data.nextPayable,
             reason: data.reason,
-            assign_date: data.assign_date,
             applied_on: data.applied_on,
             status: data.status,
-            loanId: data.loanId,
             name: data.name,
+            givenLoan: data.givenLoan,
         });
         setShowAddForm(false);
         setShowEditForm(true);
@@ -224,41 +223,51 @@ const AssignLoan = () => {
     const confirmUpdate = async () => {
         if (
             !editFormData.empId ||
+            !editFormData.name ||
+            !editFormData.givenLoan ||
             !editFormData.returnInMonths ||
             !editFormData.paidAmount ||
-            !editFormData.pendingAmount ||
-            !editFormData.nextPayable ||
             !editFormData.reason ||
-            !editFormData.status ||
-            !editFormData.name ||
-            !editFormData.loanId
+            !editFormData.status
         ) {
             setResMsg("Please fill in all required fields.");
             setShowModal(false);
             setWarningModal(true);
             return;
         }
+        if (editFormData.returnInMonths < 1 || editFormData.givenLoan < 1) {
+            setResMsg("Values Can't be Negative or zero");
+            setShowModal(false);
+            setWarningModal(true);
+            return;
+        }
+        if (editFormData.reason.length > 250) {
+            setResMsg("Reason can't exceed 250 characters.");
+            setShowModal(false);
+            setWarningModal(true);
+            return;
+        }
+
 
 
         try {
             const updateLoan = {
                 id: editFormData.id,
-                returnInMonths: editFormData.returnInMonths,
-                paidAmount: editFormData.paidAmount,
-                pendingAmount: editFormData.pendingAmount,
-                nextPayable: editFormData.nextPayable,
-                reason: editFormData.reason,
-                assign_date: editFormData.assign_date,
-                applied_on: editFormData.applied_on,
-                status: editFormData.status,
-                loanId: editFormData.loanId,
+                empId: editFormData.empId,
                 name: editFormData.name,
+                givenLoan: editFormData.givenLoan,
+                returnInMonths: Number(editFormData.returnInMonths),
+                paidAmount: Number(editFormData.paidAmount),
+                applied_on: editFormData.applied_on,
+                reason: editFormData.reason,
+                status: editFormData.status,
+
             };
-            await axios.post(`${SERVER_URL}pyr-loan-up/`, updateLoan);
+
+            await axios.put(`${SERVER_URL}pyr-asg-loan/${editFormData.id}/`, updateLoan);
             setShowModal(false);
             setSuccessModal(true);
             setShowEditForm(false);
-            fetchLoan();
             handleReset()
         } catch (error) {
             console.log(error);
@@ -267,17 +276,18 @@ const AssignLoan = () => {
 
     const filteredData = data.filter(
         (item) =>
-            item.empId?.toString().includes(searchQuery) ||
+            item.empIdVal?.toString().includes(searchQuery) ||
             item.empName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            item.loanName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            item.givenLoan?.toString().includes(searchQuery) ||
             item.returnInMonths?.toString().includes(searchQuery) ||
             item.paidAmount?.toString().includes(searchQuery) ||
             item.pendingAmount?.toString().includes(searchQuery) ||
             item.nextPayable?.toString().includes(searchQuery) ||
             item.assign_date?.toString().includes(searchQuery) ||
             item.applied_on?.toString().includes(searchQuery) ||
-            item.loanId?.toString().includes(searchQuery) ||
             item.reason?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            item.status?.toLowerCase().includes(searchQuery.toLowerCase()) 
+            item.status?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const [selectedIds, setSelectedIds] = useState([]);
@@ -354,9 +364,13 @@ const AssignLoan = () => {
             <ConirmationModal
                 isOpen={showModal}
                 message={
-                    modalType === "delete selected"
-                        ? "Are you sure you want to delete selected items?"
-                        : `Are you sure you want to ${modalType} this Loan?`
+                    modalType === "create"
+                        ? `Are you sure you want to confirm Assign Loan?`
+                        : modalType === "update"
+                            ? "Are you sure you want to update Assigned Loan?"
+                            : modalType === "delete selected"
+                                ? "Are you sure you want to delete selected items?"
+                                : `Are you sure you want to delete Assigned Loan?`
                 }
                 onConfirm={() => {
                     if (modalType === "create") confirmAdd();
@@ -378,7 +392,7 @@ const AssignLoan = () => {
                 message={
                     modalType === "delete selected"
                         ? "Selected items deleted successfully!"
-                        : `Loan ${modalType}d successfully!`
+                        : `Assign Loan ${modalType}d successfully!`
                 }
                 onConfirm={() => setSuccessModal(false)}
                 onCancel={() => setSuccessModal(false)}
@@ -443,7 +457,7 @@ const AssignLoan = () => {
                 </form>
                 <div className="add-delete-conainer">
                     <button className="add-button" onClick={handleAddNew}>
-                        <FaPlus /> Add New Loan
+                        <FaPlus /> Assign New Loan
                     </button>
                     <button className="add-button submit-button" onClick={handleBulkDelete}>
                         <FaTrash className="add-icon" /> Delete Bulk
@@ -453,7 +467,7 @@ const AssignLoan = () => {
 
             {showAddForm && !showEditForm && (
                 <div className="add-leave-form">
-                    <h3>Add New Loan</h3>
+                    <h3>Assign Loan to Employee</h3>
                     <label>Select Employee</label>
                     <input
                         list="employeesList"
@@ -492,6 +506,16 @@ const AssignLoan = () => {
                         ))}
                     </datalist>
 
+                    <label>Loan Name</label>
+                    <input
+                        type="text"
+                        name="name"
+                        placeholder="Name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+
+                    />
+
                     <label>Given Loan</label>
                     <input
                         type="number"
@@ -501,26 +525,26 @@ const AssignLoan = () => {
                         onChange={handleInputChange}
 
                     />
-                    {formData.type !== "NotPayable" && (
-                        <>
-                            <label>Return In Months</label>
-                            <input
-                                type="number"
-                                name="returnInMonths"
-                                placeholder="Return In Months"
-                                value={formData.returnInMonths}
-                                onChange={handleInputChange}
 
-                            />
-                        </>
-                    )}
 
-                    <label>Date</label>
+                    <label>Return In Months</label>
+                    <input
+                        type="number"
+                        name="returnInMonths"
+                        placeholder="Return In Months"
+                        value={formData.returnInMonths}
+                        onChange={handleInputChange}
+
+                    />
+
+
+                    
+                    <label>Applied On</label>
                     <input
                         type="date"
-                        name="date"
+                        name="applied_on"
                         placeholder="Date"
-                        value={formData.date}
+                        value={formData.applied_on}
                         onChange={handleInputChange}
 
                     />
@@ -541,9 +565,9 @@ const AssignLoan = () => {
 
                     >
                         <option value="">Select Status</option>
-                        <option value="Pending">Pending</option>
-                        <option value="Approved">Approved</option>
-                        <option value="Rejected">Rejected</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
                     </select>
 
                     <button className="submit-button" onClick={addLoan}>
@@ -556,7 +580,7 @@ const AssignLoan = () => {
             )}
             {showEditForm && (
                 <div className="add-leave-form">
-                    <h3>Update Loan</h3>
+                    <h3>Update Assigned Loan</h3>
                     <label>Selected Employee</label>
                     <input
                         disabled
@@ -596,6 +620,16 @@ const AssignLoan = () => {
                         ))}
                     </datalist>
 
+                    <label>Loan Name</label>
+                    <input
+                        type="text"
+                        name="name"
+                        placeholder="Given Loan"
+                        value={editFormData.name}
+                        onChange={(e) =>
+                            setEditFormData({ ...editFormData, name: e.target.value })
+                        }
+                    />
                     <label>Given Loan</label>
                     <input
                         type="number"
@@ -605,6 +639,7 @@ const AssignLoan = () => {
                             setEditFormData({ ...editFormData, givenLoan: e.target.value })
                         }
                     />
+
 
                     <label>Return In Months</label>
                     <input
@@ -626,12 +661,17 @@ const AssignLoan = () => {
                         }
                     />
 
-                    <label>Date</label>
+                  
+                    <label>Applied On</label>
                     <input
                         type="date"
+                        name="applied_on"
                         placeholder="Date"
-                        value={editFormData.date}
-                        onChange={(e) => setEditFormData({ ...editFormData, date: e.target.value })}
+                        value={editFormData.applied_on}
+                        onChange={(e) =>
+                            setEditFormData({ ...editFormData, applied_on: e.target.value })
+                        }
+
                     />
                     <label>Reason</label>
                     <input
@@ -650,14 +690,14 @@ const AssignLoan = () => {
                         }
                     >
                         <option value="">Select Status</option>
-                        <option value="Pending">Pending</option>
-                        <option value="Approved">Approved</option>
-                        <option value="Rejected">Rejected</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
                     </select>
 
                     <button
                         className="submit-button"
-                        onClick={() => updateLoan(formData)}
+                        onClick={() => updateLoan(editFormData)}
                     >
                         Update Loan
                     </button>
@@ -682,12 +722,14 @@ const AssignLoan = () => {
                             <th>ID</th>
                             <th>Employee ID</th>
                             <th>Employee Name</th>
+                            <th>Loan Name</th>
                             <th>Given Loan</th>
                             <th>Paid Amount</th>
                             <th>Pending Amount</th>
                             <th>Return In Months</th>
                             <th>Next Month Payable</th>
-                            <th>Date</th>
+                            <th>Assign Date</th>
+                            <th>Applied On</th>
                             <th>Reason</th>
                             <th>Status</th>
                             <th>Actions</th>
@@ -705,20 +747,22 @@ const AssignLoan = () => {
                                     />
                                 </td>
                                 <td>{adv.id}</td>
-                                <td>{adv.empId}</td>
+                                <td>{adv.empIdVal}</td>
                                 <td className="bold-fonts">{adv.empName}</td>
+                                <td className="bold-fonts">{adv.name}</td>
                                 <td>{adv.givenLoan}</td>
                                 <td>{adv.paidAmount}</td>
                                 <td>{adv.pendingAmount}</td>
                                 <td>{adv.returnInMonths}</td>
                                 <td>{adv.nextPayable}</td>
-                                <td>{adv.date}</td>
+                                <td>{adv.assign_date}</td>
+                                <td>{adv.applied_on}</td>
                                 <td>{adv.reason}</td>
                                 <td>
                                     <span
-                                        className={`status ${adv.status === "Rejected"
+                                        className={`status ${adv.status === "rejected"
                                             ? "absentStatus"
-                                            : adv.status === "Pending"
+                                            : adv.status === "pending"
                                                 ? "lateStatus"
                                                 : "presentStatus"
                                             }`}

@@ -1,22 +1,22 @@
 import React, { useState } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTableCells, faClipboardList, faFileAlt } from '@fortawesome/free-solid-svg-icons';
+import { faClipboardList, faFileAlt } from '@fortawesome/free-solid-svg-icons';
 import AssignLoan from "./assignLoan";
 import LoanLogs from "./LoanLogs";
-import LoanTable from "./LoanTable";
+// import LoanTable from "./LoanTable";
 
 const Loan = () => {
-  const [changeTab, setChangeTab] = useState("Loans Table");
+  const [changeTab, setChangeTab] = useState("Assign Loans");
   const renderTabContent = () => {
     switch (changeTab) {
-      case "Assign Loans":
-        return <AssignLoan/>
+      // case "Assign Loans":
+      //   return <AssignLoan/>
       case "Loans Logs":
         return <LoanLogs/>
       default:
         return (
           <div>
-            <LoanTable />
+            <AssignLoan />
           </div>
         );
     }
@@ -26,13 +26,13 @@ const Loan = () => {
     <>
       <div className="settings-page">
         <div className="tabs">
-          <button
+          {/* <button
             className={`${changeTab === "Loans Table" ? "active" : ""}`}
             onClick={() => setChangeTab("Loans Table")}
           >
             <FontAwesomeIcon icon={faTableCells} className="icon" />
             Loans Table
-          </button>
+          </button> */}
           <button
             className={`${changeTab === "Assign Loans" ? "active" : ""}`}
             onClick={() => setChangeTab("Assign Loans")}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import Card from '../Cards/card';
+// import Card from '../Cards/card';
 import { faIdBadge, faCalendarCheck, faCalendarAlt, faTabletAlt } from '@fortawesome/free-solid-svg-icons';
 import PrefomanceGraph from '../Graphs/prefomanceGraph';
 import ProjectGraph from '../Graphs/projectStatus';
@@ -17,7 +17,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 const Dashboard = () => {
 
     const [data, setData] = useState([])
-    const [dash, setDash] = useState(true)
+    const [dash, _setDash] = useState(true)
     const [dashData, setDashData] = useState([])
 
 

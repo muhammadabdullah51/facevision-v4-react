@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./reports.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFileAlt, faSitemap, faCog, faFileCsv, faFilePdf } from "@fortawesome/free-solid-svg-icons";
+import { faFileAlt, faSitemap,  faFileCsv, faFilePdf } from "@fortawesome/free-solid-svg-icons";
 import Advance_Salary_Reports from "../Tables/Advance_Salary_Reports/advance_salary_report";
 import All_Employees_Salary_Report from "../Tables/All_Employee_Salary_Report/all_employee_salary_report";
 import Daily_Absent_Report from "../Tables/Daily_Reports/daily_absent";
@@ -13,7 +13,7 @@ import Monthly_Absent_Report from "../Tables/Monthly_Reports/monthly_absent";
 import Monthly_Entry_Time_Report from "../Tables/Monthly_Reports/monthly_entry_time";
 import Monthly_Fulltime_Report from "../Tables/Monthly_Reports/monthly_fulltime";
 import Monthly_Overtime_Report from "../Tables/Monthly_Reports/monthly_overtime";
-import Monthly_Report from "../Tables/Monthly_Reports/monthly";
+// import Monthly_Report from "../Tables/Monthly_Reports/monthly";
 import Absent_Summary_Report from "../Tables/Summary_Report/absent_summary";
 import All_Attendance_Summary_Report from "../Tables/Summary_Report/all_attendance_summary";
 import Leave_Summary_Report from "../Tables/Summary_Report/leaves_summary";

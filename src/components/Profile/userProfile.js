@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"; // Import FontAwesomeIcon component
-import { faCamera, faTrash, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons"; // Import specific icons
+// import { faCamera, faTrash, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons"; // Import specific icons
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons"; // Import specific icons
 import "./profile.css";
-import Default_picture from "../../assets/profile.jpg";
+// import Default_picture from "../../assets/profile.jpg";
 import { useDispatch, useSelector } from "react-redux";
 import { SERVER_URL } from "../../config";
 import axios from "axios";
 import ConirmationModal from "../Modal/conirmationModal";
-import addAnimation from "../../assets/Lottie/addAnim.json";
+// import addAnimation from "../../assets/Lottie/addAnim.json";
 import updateAnimation from "../../assets/Lottie/updateAnim.json";
-import deleteAnimation from "../../assets/Lottie/deleteAnim.json";
+// import deleteAnimation from "../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../assets/Lottie/warningAnim.json";
 

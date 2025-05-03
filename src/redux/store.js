@@ -16,6 +16,7 @@ import breakReducer from './breakSlice';
 import workingHoursReducer from './workingHoursSlice';
 import advanceSalaryReducer from './advanceSalarySlice';
 import appraisalsReducer from './appraisalsSlice';
+import assignAppraisalsReducer from './assignAppraisalsSlice';
 import loanReducer from './loanSlice';
 import extraFundsReducer from './extraFundsSlice';
 import bonusReducer from './bonusSlice';
@@ -61,6 +62,7 @@ const store = configureStore({
         workingHours: workingHoursReducer,
         advanceSalary: advanceSalaryReducer,
         appraisals: appraisalsReducer,
+        assignAppraisals: assignAppraisalsReducer,
         loan: loanReducer,
         extraFunds: extraFundsReducer,
         bonus: bonusReducer,

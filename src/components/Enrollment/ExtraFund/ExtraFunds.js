@@ -1,22 +1,22 @@
 import React, { useState } from "react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTableCells, faClipboardList, faFileAlt } from '@fortawesome/free-solid-svg-icons';
-import ExtraFundsTable from "./ExtraFundsTable";
+import {  faClipboardList, faFileAlt } from '@fortawesome/free-solid-svg-icons';
+// import ExtraFundsTable from "./ExtraFundsTable";
 import AssignExtrFunds from "./assignExtraFunds";
 import ExtraFundsLogs from "./ExtraFundsLogs";
 
 const ExtraFunds = () => {
-  const [changeTab, setChangeTab] = useState("Extra Funds Table");
+  const [changeTab, setChangeTab] = useState("Assign Extra Funds");
   const renderTabContent = () => {
     switch (changeTab) {
-      case "Assign Extra Funds":
-        return <AssignExtrFunds/>
+      // case "Assign Extra Funds":
+      //   return <AssignExtrFunds/>
       case "Extra Funds Logs":
         return <ExtraFundsLogs/>
       default:
         return (
           <div>
-            <ExtraFundsTable/>
+            <AssignExtrFunds/>
           </div>
         );
     }
@@ -26,13 +26,13 @@ const ExtraFunds = () => {
     <>
       <div className="settings-page">
         <div className="tabs">
-          <button
+          {/* <button
             className={`${changeTab === "Extra Funds Table" ? "active" : ""}`}
             onClick={() => setChangeTab("Extra Funds Table")}
           >
             <FontAwesomeIcon icon={faTableCells} className="icon" />
             Extra Funds Table
-          </button>
+          </button> */}
           <button
             className={`${changeTab === "Assign Extra Funds" ? "active" : ""}`}
             onClick={() => setChangeTab("Assign Extra Funds")}

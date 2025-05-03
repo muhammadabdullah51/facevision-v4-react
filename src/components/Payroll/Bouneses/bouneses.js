@@ -31,7 +31,7 @@ const Bonuses = () => {
             onClick={() => setChangeTab("Bonuses Table")}
           >
             <FontAwesomeIcon icon={faTableCells} className="icon" />
-            Bonuses Table
+            Create Bonuses
           </button>
           <button
             className={`${changeTab === "Assign Bonuses" ? "active" : ""}`}

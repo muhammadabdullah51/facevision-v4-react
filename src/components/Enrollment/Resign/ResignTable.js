@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { useTable, usePagination, useRowSelect } from "react-table";
-import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+import {  FaTrash, FaPlus } from "react-icons/fa";
 import ReactPaginate from "react-paginate";
 import axios from "axios";
 import ConirmationModal from "../../Modal/conirmationModal";
@@ -33,14 +33,7 @@ const ResignTable = ({ data, setData }) => {
       date: "",
       reason: "",
     });
-  const [editFormData, setEditFormData] = useState(
-    {
-      resignId: "",
-      employee: "",
-      date: "",
-      reason: "",
-    });
-
+ 
   const handleReset = () => {
     dispatch(resetResignationData());
     setFormData({

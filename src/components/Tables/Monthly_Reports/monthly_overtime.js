@@ -17,7 +17,7 @@ const Monthly_Overtime_Report = ({ searchQuery, sendDataToParent }) => {
     } catch (error) {
       console.error("Error fetching Daily full time data:", error);
     }
-  }, [SERVER_URL]);
+  }, []);
 
   // Filter data based on search query and date range
   useEffect(() => {

@@ -3,11 +3,9 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   id: "",
-  empId: "",
-  appraisal: "",
-  reason: "",
-  date: "",
-  status: "Pending",
+  name: "",
+  created_date: "",
+  appraisal_amount: "",
   desc: "",
 };
 

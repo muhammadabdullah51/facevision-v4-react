@@ -18,7 +18,7 @@ import { setExtraFundsData, resetExtraFundsData } from "../../../redux/extraFund
 
 const ExtraFundsTable = () => {
   const [data, setData] = useState([]);
-  const [employees, setEmployees] = useState([]);
+  // const [employees, setEmployees] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
 
@@ -82,18 +82,18 @@ const ExtraFundsTable = () => {
     } catch (error) {
     }
   }, [setData]);
-  const fetchEmployees = async () => {
-    try {
-      const response = await axios.get(`${SERVER_URL}pr-emp/`);
-      setEmployees(response.data);
-    } catch (error) {
-    }
-  };
+  // const fetchEmployees = async () => {
+  //   try {
+  //     const response = await axios.get(`${SERVER_URL}pr-emp/`);
+  //     setEmployees(response.data);
+  //   } catch (error) {
+  //   }
+  // };
 
   // Fetch the data when the component mounts
   useEffect(() => {
     fetchLoan();
-    fetchEmployees();
+    // fetchEmployees();
     let timer;
     if (successModal) {
       timer = setTimeout(() => {
@@ -461,7 +461,7 @@ const ExtraFundsTable = () => {
           <textarea
             type="text"
             name="desc"
-            placeholder="Write description"
+            placeholder="Description"
             value={formData.desc}
             onChange={handleInputChange}
 
@@ -476,7 +476,7 @@ const ExtraFundsTable = () => {
       )}
       {showEditForm && (
         <div className="add-leave-form">
-          <h3>Update Loan</h3>
+          <h3>Update Extra Funds</h3>
           <label>Extra Funds Name</label>
           <input
             type="text"
@@ -523,7 +523,17 @@ const ExtraFundsTable = () => {
             <option value="NotPayable">Not Payable</option>
           </select>
 
+          <label>Description</label>
+          <textarea
+            type="text"
+            name="desc"
+            placeholder="Description"
+            value={editFormData.desc}
+            onChange={(e) =>
+              setEditFormData({ ...editFormData, desc: e.target.value })
+            }
 
+          />
 
           <button
             className="submit-button"

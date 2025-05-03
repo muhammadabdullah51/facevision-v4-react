@@ -13,7 +13,7 @@ import { SERVER_URL } from "../../../config";
 
 
 import { useDispatch, useSelector } from "react-redux";
-import { setAssignBonusData, resetAssignBonusData } from "../../../redux/assignBonusSlice";
+import { setAssignAppraisalsData, resetAssignAppraisalsData } from "../../../redux/assignAppraisalsSlice";
 
 
 const AssignAppraisal = () => {
@@ -25,7 +25,7 @@ const AssignAppraisal = () => {
     const [searchQuery, setSearchQuery] = useState("");
 
     const dispatch = useDispatch();
-    const assignAppraisalData = useSelector((state) => state.assignAppraisal);
+    const assignAppraisalData = useSelector((state) => state.assignAppraisals);
 
     const [formData, setFormData] = useState(
         assignAppraisalData || {
@@ -38,7 +38,7 @@ const AssignAppraisal = () => {
         });
 
     const handleReset = () => {
-        dispatch(resetAssignBonusData());
+        dispatch(resetAssignAppraisalsData());
         setFormData({
             id: "",
             appr_id: "",
@@ -64,7 +64,8 @@ const AssignAppraisal = () => {
         const { name, value } = e.target;
         setFormData((prevState) => {
             const updatedFormData = { ...prevState, [name]: value };
-            dispatch(setAssignBonusData(updatedFormData));
+            dispatch(setAssignAppraisalsData(updatedFormData));
+
             return updatedFormData;
         });
     };
@@ -78,7 +79,7 @@ const AssignAppraisal = () => {
 
     const fetchEmployeesExtraFund = useCallback(async () => {
         try {
-            const response = await axios.get(`${SERVER_URL}pyr-asg-bns/`);
+            const response = await axios.get(`${SERVER_URL}pyr-asg-appr/`);
             setData(response.data);
         } catch (error) {
         }
@@ -93,8 +94,9 @@ const AssignAppraisal = () => {
 
     const fetchAppraisals = async () => {
         try {
-            const response = await axios.get(`${SERVER_URL}pyr-bns/`);
+            const response = await axios.get(`${SERVER_URL}pyr-appr/`);
             setAppraisal(response.data);
+
         } catch (error) {
         }
     };
@@ -117,11 +119,9 @@ const AssignAppraisal = () => {
         setShowModal(true);
         setFormData({ ...formData, id: id });
     };
-    const confirmDelete = async (id) => {
+    const confirmDelete = async () => {
         try {
-            await axios.post(`${SERVER_URL}pyr-asg-bns-del/`, {
-                id: formData.id,
-            });
+            await axios.delete(`${SERVER_URL}pyr-asg-appr/${formData.id}/`);
             await fetchEmployeesExtraFund(); // Refresh data after deletion
             setShowModal(false);
             setSuccessModal(true);
@@ -151,7 +151,7 @@ const AssignAppraisal = () => {
             setWarningModal(true);
             return;
         }
-        await axios.post(`${SERVER_URL}pyr-asg-bns/`, formData);
+        await axios.post(`${SERVER_URL}pyr-asg-appr/`, formData);
         setShowModal(false);
         setSuccessModal(true);
         setShowAddForm(false);
@@ -162,12 +162,13 @@ const AssignAppraisal = () => {
     const handleEdit = (item) => {
         setEditFormData({
             id: item.id,
-            appr_id: item.appr_id,
-            empId: item.empId,
+            appr_id: Number(item.appr_id),
+            empId: item.empIdVal,
             assign_date: item.assign_date,
             status: item.status,
             desc: item.desc,
         });
+        console.log(editFormData)
         setShowAddForm(false);
         setShowEditForm(true);
     };
@@ -178,18 +179,20 @@ const AssignAppraisal = () => {
     };
     const confirmUpdate = async () => {
         if (
-            !formData.empId ||
-            !formData.appr_id ||
-            !formData.assign_date ||
-            !formData.status ||
-            !formData.desc
+            !editFormData.empId ||
+            !editFormData.appr_id ||
+            !editFormData.assign_date ||
+            !editFormData.status ||
+            !editFormData.desc
         ) {
             setResMsg("Please fill in all required fields.");
             setShowModal(false);
             setWarningModal(true);
             return;
         }
-        await axios.post(`${SERVER_URL}pyr-asg-bns-up/`, editFormData);
+        console.log(editFormData);
+
+        await axios.put(`${SERVER_URL}pyr-asg-appr/${editFormData.id}/`, editFormData);
         setShowModal(false);
         setSuccessModal(true);
         setShowEditForm(false);
@@ -203,12 +206,12 @@ const AssignAppraisal = () => {
     const handleSearchChange = (e) => setSearchQuery(e.target.value);
 
     const filteredData = data.filter((item) =>
-        item.empId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.empIdVal.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.empName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.appraisalName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.assign_date?.toString().includes(searchQuery) ||
         item.appr_id?.toString().includes(searchQuery) ||
-        item.name?.toString().includes(searchQuery) ||
         item.desc.toLowerCase().includes(searchQuery.toLowerCase())
 
     );
@@ -290,12 +293,12 @@ const AssignAppraisal = () => {
                 isOpen={showModal}
                 message={
                     modalType === "create"
-                        ? `Are you sure you want to confirm Assign Bonus?`
+                        ? `Are you sure you want to confirm Assign Appraisals?`
                         : modalType === "update"
-                            ? "Are you sure you want to update Assigned Bonus?"
+                            ? "Are you sure you want to update Assigned Appraisals?"
                             : modalType === "delete selected"
                                 ? "Are you sure you want to delete selected items?"
-                                : `Are you sure you want to delete Assigned Bonus?`
+                                : `Are you sure you want to delete Assigned Appraisals?`
                 }
                 onConfirm={() => {
                     if (modalType === "create") confirmAdd();
@@ -317,7 +320,7 @@ const AssignAppraisal = () => {
                 message={
                     modalType === "delete selected"
                         ? "Selected items deleted successfully!"
-                        : `Assign Bonus ${modalType}d successfully!`
+                        : `Assign Appraisals ${modalType}d successfully!`
                 }
                 onConfirm={() => setSuccessModal(false)}
                 onCancel={() => setSuccessModal(false)}
@@ -455,14 +458,14 @@ const AssignAppraisal = () => {
                         onChange={handleInputChange}
                     >
                         <option value="">Select Status</option>
-                        <option value="Pending">Pending</option>
-                        <option value="Approved">Approved</option>
-                        <option value="Rejected">Rejected</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
                     </select>
 
                     <label>Description</label>
                     <textarea
-                        placeholder="Write Description"
+                        placeholder="Description"
                         name="desc"
                         value={formData.desc}
                         onChange={handleInputChange}
@@ -520,8 +523,9 @@ const AssignAppraisal = () => {
 
                     <label>Select Appraisals</label>
                     <select
+                        // disabled
                         name="appr_id"
-                        value={formData.appr_id}
+                        value={editFormData.appr_id}
                         onChange={(e) =>
                             setEditFormData({ ...editFormData, appr_id: e.target.value })
                         }
@@ -537,7 +541,7 @@ const AssignAppraisal = () => {
                     <input
                         type="date"
                         name="assign_date"
-                        value={formData.assign_date}
+                        value={editFormData.assign_date}
                         onChange={(e) =>
                             setEditFormData({ ...editFormData, assign_date: e.target.value })
                         }
@@ -545,23 +549,22 @@ const AssignAppraisal = () => {
                     <label>Select Status</label>
 
                     <select
-                        name="status"
-                        value={formData.status}
+                        value={editFormData.status}
                         onChange={(e) =>
                             setEditFormData({ ...editFormData, status: e.target.value })
                         }
                     >
                         <option value="">Select Status</option>
-                        <option value="Pending">Pending</option>
-                        <option value="Approved">Approved</option>
-                        <option value="Rejected">Rejected</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
                     </select>
 
                     <label>Description</label>
                     <textarea
-                        placeholder="Write Description"
+                        placeholder="Description"
                         name="desc"
-                        value={formData.desc}
+                        value={editFormData.desc}
                         onChange={(e) =>
                             setEditFormData({ ...editFormData, desc: e.target.value })
                         }
@@ -594,7 +597,9 @@ const AssignAppraisal = () => {
                             <th>Employee Name</th>
                             <th>Appraisal Name</th>
                             <th>Amount</th>
-                            <th>Awarded Date</th>
+                            <th>Assign Date</th>
+                            <th>Status</th>
+                            <th>Description</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -609,12 +614,25 @@ const AssignAppraisal = () => {
                                         onChange={(event) => handleRowCheckboxChange(event, bonus.id)}
                                     />
                                 </td>
-                                <td>{bonus.id}</td>
-                                <td>{bonus.empId}</td>
+                                <td>{bonus.appr_id}</td>
+                                <td>{bonus.empIdVal}</td>
                                 <td className="bold-fonts">{bonus.empName}</td>
-                                <td>{bonus.bonusName}</td>
-                                <td className="bold-fonts">{bonus.bonusAmount}</td>
-                                <td>{bonus.bonusAssignDate}</td>
+                                <td className="bold-fonts">{bonus.appraisalName}</td>
+                                <td>{bonus.appraisalAmount}</td>
+                                <td>{bonus.assign_date}</td>
+                                <td>
+                                    <span
+                                        className={`status ${bonus.status === "Pending"
+                                            ? "lateStatus"
+                                            : bonus.status === "Rejected"
+                                                ? "absentStatus"
+                                                : "presentStatus"
+                                            }`}
+                                    >
+                                        {bonus.status}
+                                    </span>
+                                </td>
+                                <td>{bonus.desc}</td>
                                 <td>
                                     <button
                                         // className="edit-button"

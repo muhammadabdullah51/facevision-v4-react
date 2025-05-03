@@ -8,9 +8,9 @@ const initialState = {
   returnInMonths: "",
   paidAmount: "",
   pendingAmount: "",
-  nextMonthPayable: "",
+  nextPayable: "",
   reason: "",
-  date: "",
+  applied_on: "",
   status: "Pending",
 };
 

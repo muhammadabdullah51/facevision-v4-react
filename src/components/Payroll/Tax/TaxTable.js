@@ -86,6 +86,8 @@ const TaxTable = () => {
     try {
       const response = await axios.get(`${SERVER_URL}taxes/`);
       setData(response.data);
+      console.log(response.data)
+
     } catch (error) {
       console.error("Error fetching tax data:", error);
     }
@@ -617,7 +619,7 @@ const TaxTable = () => {
                 <td>{bonus.id}</td>
                 <td className="bold-fonts">{bonus.taxName}</td>
                 <td>{bonus.nature}</td>
-                <td>{bonus.amount === 0 ? bonus.percent : bonus.amount} {bonus.nature == 'percentage' ? '%' : 'Rs'}</td>
+                <td>{bonus.amount == 0 ? bonus.percent : bonus.amount} {bonus.nature == 'percentage' ? '%' : 'Rs'}</td>
                 <td>{bonus.date}</td>
                 <td>
                   <button
