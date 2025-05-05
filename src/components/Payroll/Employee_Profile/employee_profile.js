@@ -38,14 +38,10 @@ import Select from 'react-select';
 import { useSelector, useDispatch } from 'react-redux';
 import { setActiveTab, setSelectedIds, setSelectedDeductions, resetState } from '../../../redux/empProfileSlice';
 
-// import SalarySlipPreview from "./SalarySlipPreview";
 
-
-// Add this utility function outside the component
-// Add this inside the EmployeeProfile component
 const calculateNetPay = (employee, deductions, options) => {
-  const { allowances, bonuses, taxes, loans } = options;
-  let netPay = parseFloat(employee.basicSalary) || 0;
+  const { allowances, bonuses, taxes, appraisals } = options;
+  let netPay = parseFloat(employee.calculate_pay) || 0;
 
   // Allowances
   deductions.allowances?.forEach(allowance => {
@@ -69,11 +65,18 @@ const calculateNetPay = (employee, deductions, options) => {
     }
   });
 
+
   // Loans
-  deductions.loans?.forEach(loan => {
-    const found = loans.find(l => l.id === loan.value);
-    netPay -= parseFloat(found?.givenLoan) || 0;
+  deductions.appraisals?.forEach(app => {
+    const found = appraisals.find(a => a.id === app.value);
+    netPay += parseFloat(found?.appraisal_amount) || 0;
   });
+
+  // Loans
+  // deductions.loans?.forEach(loan => {
+  //   const found = loans.find(l => l.id === loan.value);
+  //   netPay -= parseFloat(found?.givenLoan) || 0;
+  // });
 
   return netPay.toFixed(2);
 };
@@ -87,9 +90,13 @@ const EmployeeProfile = () => {
       bonuses: [],
       taxes: [],
       appraisals: [],
-      extraFunds: [],
-      loans: []
+      // extraFunds: [],
+      // loans: []
     } } = useSelector(state => state.empProfile);
+
+  const activeTabRef = React.useRef(activeTab);
+
+
   const [data, setData] = useState([
     {
       pysId: "",
@@ -135,7 +142,7 @@ const EmployeeProfile = () => {
 
   // Get selected employees data based on selectedIds
   const selectedEmployees = data.filter(employee =>
-    selectedIds?.includes(employee.pysId)
+    selectedIds?.includes(employee.empId)
   );
 
   const fetchPayrollEmpProfiles = useCallback(async () => {
@@ -151,9 +158,30 @@ const EmployeeProfile = () => {
   }, []);
 
   useEffect(() => {
-    fetchPayrollEmpProfiles();
-    setActiveTab("table");
-  }, [fetchPayrollEmpProfiles, changeTab]);
+    activeTabRef.current = activeTab;
+  }, [activeTab]);
+
+  useEffect(() => {
+    const initializeComponent = async () => {
+      await fetchPayrollEmpProfiles();
+      
+      // Only set to table if not already in markCompleted
+      if (activeTabRef.current !== 'markCompleted') {
+        dispatch(setActiveTab("table"));
+      }
+    };
+
+    initializeComponent();
+
+    return () => {
+      // Cleanup when component unmounts
+      if (activeTabRef.current !== 'markCompleted') {
+        dispatch(resetState());
+      }
+      setSearchQuery("");
+      setCurrentPage(0);
+    };
+  }, [fetchPayrollEmpProfiles]);
 
   // Filter data based on search query
   const filteredData = data.filter(
@@ -190,7 +218,7 @@ const EmployeeProfile = () => {
     setSelectAll(isChecked);
 
     if (isChecked) {
-      const allIds = currentPageData.map((row) => row.pysId);
+      const allIds = currentPageData.map((row) => row.empId);
       // setSelectedIds(allIds);
       dispatch(setSelectedIds(allIds));
       console.log(allIds);
@@ -250,16 +278,7 @@ const EmployeeProfile = () => {
     }
   };
 
-  // // Handle mark as completed button click
-  // const handleMarkAsCompleted = () => {
-  //   if (selectedIds.length > 0) {
-  //     setShowMarkAsCompletedModal(true);
-  //   } else {
-  //     setResMsg("Please select at least one row to mark as completed.");
-  //     setWarningModal(true);
-  //   }
-  // };
-  // Modify the handleMarkAsCompleted function
+  // Handle mark as completed button click
   const handleMarkAsCompleted = () => {
     if (selectedIds.length > 0) {
       dispatch(setActiveTab("markCompleted")); // Switch to mark completed view
@@ -273,11 +292,45 @@ const EmployeeProfile = () => {
   const handleConfirmMarkAsCompleted = async (selectedDeductions) => {
     try {
       // In a real implementation, this would be an API call to mark items as completed with deductions
-      const payload = {
-        ids: selectedIds,
-        deductions: selectedDeductions
-      };
-      console.log(payload);
+
+      // const transformedDeductions = {
+      //   allowances: selectedDeductions.allowances?.map(a => a.value) || [],
+      //   bonuses: selectedDeductions.bonuses?.map(b => b.value) || [],
+      //   taxes: selectedDeductions.taxes?.map(t => t.value) || [],
+      //   appraisals: selectedDeductions.appraisals?.map(a => a.value) || []
+      // };
+
+      // const payload = {
+      //   ids: selectedIds,
+      //   deductions: Object.fromEntries(
+      //     Object.entries(transformedDeductions)
+      //       .filter(([_, v]) => v.length > 0)
+      //   )
+      // };
+      // console.log(payload);
+
+      const payload = selectedEmployees.map(employee => ({
+        empId: employee.empId,
+        allowance: selectedDeductions.allowances.map(a => ({
+          id: a.value,
+          amount: allowances.find(al => al.id === a.value)?.amount
+        })).filter(Boolean),
+        bonus: selectedDeductions.bonuses.map(b => ({
+          id: b.value,
+          amount: bonuses.find(bo => bo.id === b.value)?.bonusAmount
+        })).filter(Boolean),
+        tax: selectedDeductions.taxes.map(t => ({
+          id: t.value,
+          amount: taxes.find(ta => ta.id === t.value)?.amount ||
+            taxes.find(ta => ta.id === t.value)?.percent
+        })).filter(Boolean),
+        appraisals: selectedDeductions.appraisals.map(ap => ({
+          id: ap.value,
+          amount: appraisals.find(app => app.id === ap.value)?.appraisal_amount
+        })).filter(Boolean)
+      }));
+
+      console.log("Final Payload:", payload);
 
       await axios.post(`${SERVER_URL}mark-payrolls-completed/`, payload);
 
@@ -287,6 +340,7 @@ const EmployeeProfile = () => {
       setResMsg("Selected items have been marked as completed successfully.");
       setSuccessModal(true);
       setSelectedIds([]);
+      dispatch(resetState());
     } catch (error) {
       console.error("Error marking items as completed:", error);
       setResMsg("Failed to mark items as completed. Please try again.");
@@ -571,7 +625,7 @@ const EmployeeProfile = () => {
   //   );
   // };
 
-  const PreviewContainer = ({ employee, deductions, allowances, bonuses, taxes, loans }) => {
+  const PreviewContainer = ({ employee, deductions = {} }) => {
     const [previewImage, setPreviewImage] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const previewRef = React.useRef();
@@ -596,6 +650,13 @@ const EmployeeProfile = () => {
       generatePreview();
     }, [employee, deductions]); // Add deductions as dependency
 
+    const safeDeductions = {
+      allowances: deductions.allowances || [],
+      bonuses: deductions.bonuses || [],
+      taxes: deductions.taxes || [],
+      appraisals: deductions.appraisals || []
+    };
+
     return (
       <div className="preview-container">
         {isLoading ? (
@@ -615,13 +676,7 @@ const EmployeeProfile = () => {
             <SalarySlip
               salaryDetails={employee}
               preview
-              deductions={{
-                ...deductions,
-                allowances,
-                bonuses,
-                taxes,
-                loans
-              }}
+              deductions={safeDeductions}
             />
           </div>
         )}
@@ -635,9 +690,6 @@ const EmployeeProfile = () => {
 
 
 
-  // const allowanceOptions = deductionOptions.filter((option) => option.type === 'allowance');
-  // const bonusOptions = deductionOptions.filter((option) => option.type === 'bonus');
-  // const taxOptions = deductionOptions.filter((option) => option.type === 'tax');
 
 
   // Add these state variables at the top of your component
@@ -646,12 +698,12 @@ const EmployeeProfile = () => {
   const [taxes, setTaxes] = useState([]);
   const [allowances, setAllowances] = useState([]);
   const [appraisals, setAppraisals] = useState([]);
-  const [extraFunds, setExtraFunds] = useState([]);
-  const [loans, setLoans] = useState([]);
+  // const [extraFunds, setExtraFunds] = useState([]);
+  // const [loans, setLoans] = useState([]);
 
   // And use the Redux-selected deductions directly:
   // Memoize derived data
-  const { allowances: selectedAllowances, bonuses: selectedBonuses, taxes: selectedTaxes, appraisals: selectedAppraisals, extraFunds: selectedExtraFunds, loans: selectedLoans } = useMemo(
+  const { allowances: selectedAllowances, bonuses: selectedBonuses, taxes: selectedTaxes, appraisals: selectedAppraisals } = useMemo(
     () => selectedDeductions,
     [selectedDeductions]
   );
@@ -660,13 +712,14 @@ const EmployeeProfile = () => {
   useEffect(() => {
     const fetchDeductions = async () => {
       try {
-        const [bonusesRes, taxesRes, allowancesRes, appraisalsRes, extraFundsRes, loansRes] = await Promise.all([
+        const [bonusesRes, taxesRes, allowancesRes, appraisalsRes] = await Promise.all([
+
           axios.get(`${SERVER_URL}pyr-bns/`),
           axios.get(`${SERVER_URL}taxes/`),
           axios.get(`${SERVER_URL}allowances/`),
           axios.get(`${SERVER_URL}pyr-appr/`),
-          axios.get(`${SERVER_URL}pyr-ext/`),
-          axios.get(`${SERVER_URL}pyr-loan/`)
+          // axios.get(`${SERVER_URL}pyr-ext/`),
+          // axios.get(`${SERVER_URL}pyr-loan/`)
 
         ]);
 
@@ -674,9 +727,10 @@ const EmployeeProfile = () => {
         setTaxes(taxesRes.data);
         setAllowances(allowancesRes.data);
         setAppraisals(appraisalsRes.data);
-        setExtraFunds(extraFundsRes.data);
-        setLoans(loansRes.data);
+        // setExtraFunds(extraFundsRes.data);
+        // setLoans(loansRes.data);
 
+        console.log(bonuses, allowances, taxes, appraisals);
 
       } catch (error) {
         console.error("Error fetching deduction data:", error);
@@ -685,7 +739,7 @@ const EmployeeProfile = () => {
 
     fetchDeductions();
   }, []);
-  // console.log(bonuses, allowances, taxes);
+
 
   // Create options for Select components
   // Memoize options
@@ -708,20 +762,20 @@ const EmployeeProfile = () => {
 
   const appraisalOptions = useMemo(() => appraisals.map(appr => ({
     value: appr.id,
-    label: `${appr.apprName} (${appr.appraisal}Rs)`,
+    label: `${appr.name} (${appr.appraisal_amount}Rs)`,
     type: 'appraisal'
   })), [appraisals]);
 
-  const extraFundOptions = useMemo(() => extraFunds.map(extraFund => ({
-    value: extraFund.id,
-    label: `${extraFund.extraFundName} (${extraFund.extraFundAmount}Rs)`,
-    type: 'extraFund'
-  })), [extraFunds]);
-  const loanOptions = useMemo(() => loans.map(loan => ({
-    value: loan.id,
-    label: `${loan.loanName} (${loan.givenLoan}Rs)`,
-    type: 'loan'
-  })), [loans]);
+  // const extraFundOptions = useMemo(() => extraFunds.map(extraFund => ({
+  //   value: extraFund.id,
+  //   label: `${extraFund.extraFundName} (${extraFund.extraFundAmount}Rs)`,
+  //   type: 'extraFund'
+  // })), [extraFunds]);
+  // const loanOptions = useMemo(() => loans.map(loan => ({
+  //   value: loan.id,
+  //   label: `${loan.loanName} (${loan.givenLoan}Rs)`,
+  //   type: 'loan'
+  // })), [loans]);
 
 
   const renderTabContent = () => {
@@ -926,8 +980,8 @@ const EmployeeProfile = () => {
                                     <input
                                       type="checkbox"
                                       id="delete-checkbox"
-                                      checked={selectedIds.includes(item.pysId)}
-                                      onChange={(event) => handleRowCheckboxChange(event, item.pysId)}
+                                      checked={selectedIds.includes(item.empId)}
+                                      onChange={(event) => handleRowCheckboxChange(event, item.empId)}
                                     />
                                   </td>
                                   <td>{item.empId}</td>
@@ -1157,7 +1211,7 @@ const EmployeeProfile = () => {
                                       <h4>{employee.empName}</h4>
                                       <small>{employee.empId}</small>
                                     </div>
-                                    <PreviewContainer employee={employee} />
+                                    <PreviewContainer employee={employee} deductions={{}} />
                                     <div className="preview-footer">
                                       <span>Basic: Rs. {employee.basicSalary}</span>
                                       <span>Net: Rs. {employee.calculate_pay}</span>
@@ -1175,179 +1229,12 @@ const EmployeeProfile = () => {
                   );
 
 
-                // case "markCompleted":
-                //   // Get selected employees data
-                //   const selectedEmployees = data.filter(employee =>
-                //     selectedIds.includes(employee.pysId)
-                //   );
 
-                //   // Group selected employees by month-year
-                //   const groupedSelected = selectedEmployees.reduce((acc, employee) => {
-                //     const date = new Date(employee.date);
-                //     const monthYear = date.toLocaleString('default', {
-                //       month: 'long',
-                //       year: 'numeric'
-                //     });
-                //     if (!acc[monthYear]) acc[monthYear] = [];
-                //     acc[monthYear].push(employee);
-                //     return acc;
-                //   }, {});
-
-                //   return (
-                //     <div className="gallery-container">
-                //       {/* Deduction Controls */}
-                //       <div className="deduction-controls">
-                //         <h2>Apply Deductions to All Selected</h2>
-                //         <div className="deduction-filters">
-                //           <Select
-                //             isMulti
-                //             placeholder="Select Allowances..."
-                //             options={allowanceOptions}
-                //             value={selectedAllowances}
-                //             onChange={(selected) => dispatch(setSelectedDeductions({
-                //               ...selectedDeductions,
-                //               allowances: selected || []
-                //             }))}
-                //           />
-
-                //           <Select
-                //             isMulti
-                //             placeholder="Select Bonuses..."
-                //             options={bonusOptions}
-                //             value={selectedBonuses}
-                //             onChange={(selected) => dispatch(setSelectedDeductions({
-                //               ...selectedDeductions,
-                //               bonuses: selected || []
-                //             }))}
-                //           />
-
-                //           <Select
-                //             isMulti
-                //             placeholder="Select Taxes..."
-                //             options={taxOptions}
-                //             value={selectedTaxes}
-                //             onChange={(selected) => dispatch(setSelectedDeductions({
-                //               ...selectedDeductions,
-                //               taxes: selected || []
-                //             }))}
-                //           />
-                //           <Select
-                //             isMulti
-                //             placeholder="Select Appraisals..."
-                //             options={appraisalOptions}
-                //             value={selectedAppraisals}
-                //             onChange={(selected) => dispatch(setSelectedDeductions({
-                //               ...selectedDeductions,
-                //               appraisals: selected || []
-                //             }))}
-                //           />
-                //           <Select
-                //             isMulti
-                //             placeholder="Select Extra Funds..."
-                //             options={extraFundOptions}
-                //             value={selectedExtraFunds}
-                //             onChange={(selected) => dispatch(setSelectedDeductions({
-                //               ...selectedDeductions,
-                //               extraFunds: selected || []
-                //             }))}
-                //           />
-                //           <Select
-                //             isMulti
-                //             placeholder="Select Loans..."
-                //             options={loanOptions}
-                //             value={selectedLoans}
-                //             onChange={(selected) => dispatch(setSelectedDeductions({
-                //               ...selectedDeductions,
-                //               loans: selected || []
-                //             }))}
-                //           />
-                //         </div>
-
-                //         {/* Action Buttons */}
-                //         <div className="modal-footer">
-                //           <button
-                //             className="submit-button"
-                //             onClick={() => handleConfirmMarkAsCompleted(selectedDeductions)}
-                //           >
-                //             Confirm Mark as Completed
-                //           </button>
-                //           <button
-                //             className="cancel-button"
-                //             onClick={() => dispatch(resetState())}
-                //           >
-                //             Cancel
-                //           </button>
-                //         </div>
-                //       </div>
-
-                //       {/* Salary Slips Grid */}
-                //       {Object.entries(groupedSelected).map(([monthYear, employees], groupIndex) => (
-                //         <div key={monthYear}>
-                //           <div className="month-group">
-                //             <div className="month-header">
-                //               <h3 className="month-title">{monthYear}</h3>
-                //               <hr className="month-divider" />
-                //             </div>
-                //             <div className="salary-slips-grid">
-                //               {/* {employees.map((employee) => (
-                //                 <div
-                //                   key={employee.pysId}
-                //                   className="salary-slip-card"
-                //                 >
-                //                   <div className="preview-header">
-                //                     <h4>{employee.empName}</h4>
-                //                     <small>{employee.empId}</small>
-                //                   </div>
-                //                   <PreviewContainer employee={employee} />
-                //                   <div className="preview-footer">
-                //                     <span>Basic: Rs. {employee.basicSalary}</span>
-                //                     <span>Net: Rs. {employee.calcPay || employee.calculate_pay}</span>
-                //                   </div>
-                //                 </div>
-                //               ))} */}
-                //               {/* // In the markCompleted case render: */}
-                //               {employees.map((employee) => (
-                //                 <div
-                //                   key={employee.pysId}
-                //                   className="salary-slip-card"
-                //                 >
-                //                   <div className="preview-header">
-                //                     <h4>{employee.empName}</h4>
-                //                     <small>{employee.empId}</small>
-                //                   </div>
-                //                   <PreviewContainer
-                //                     employee={employee}
-                //                     deductions={selectedDeductions}
-                //                     allowances={allowances}
-                //                     bonuses={bonuses}
-                //                     taxes={taxes}
-                //                     loans={loans}
-                //                   />
-                //                   {/* // In the markCompleted case render */}
-                //                   <div className="preview-footer">
-                //                     <span>Basic: Rs. {employee.basicSalary}</span>
-                //                     <span>Net: Rs. {calculateNetPay(employee, selectedDeductions, {
-                //                       allowances,
-                //                       bonuses,
-                //                       taxes,
-                //                       loans
-                //                     })}</span>
-                //                   </div>
-                //                 </div>
-                //               ))}
-
-                //             </div>
-                //           </div>
-                //           {groupIndex < Object.keys(groupedSelected).length - 1 && <hr />}
-                //         </div>
-                //       ))}
-                //     </div>
-                //   );
 
                 case "markCompleted":
                   // Get selected employees data
                   const selectedEmployees = data.filter(employee =>
-                    selectedIds.includes(employee.pysId)
+                    selectedIds.includes(employee.empId)
                   );
 
                   // Group selected employees by month-year
@@ -1368,6 +1255,7 @@ const EmployeeProfile = () => {
                       <div className="deduction-controls">
                         <h2>Apply Deductions to All Selected</h2>
                         <div className="deduction-filters">
+                          <label>Select Allowances</label>
                           <Select
                             isMulti
                             placeholder="Select Allowances..."
@@ -1379,6 +1267,7 @@ const EmployeeProfile = () => {
                             }))}
                           />
 
+                          <label>Select Bonuses</label>
                           <Select
                             isMulti
                             placeholder="Select Bonuses..."
@@ -1390,6 +1279,7 @@ const EmployeeProfile = () => {
                             }))}
                           />
 
+                          <label>Select Taxes</label>
                           <Select
                             isMulti
                             placeholder="Select Taxes..."
@@ -1400,6 +1290,8 @@ const EmployeeProfile = () => {
                               taxes: selected || []
                             }))}
                           />
+
+                          <label>Select Appraisals</label>
                           <Select
                             isMulti
                             placeholder="Select Appraisals..."
@@ -1410,7 +1302,7 @@ const EmployeeProfile = () => {
                               appraisals: selected || []
                             }))}
                           />
-                          <Select
+                          {/* <Select
                             isMulti
                             placeholder="Select Extra Funds..."
                             options={extraFundOptions}
@@ -1429,7 +1321,7 @@ const EmployeeProfile = () => {
                               ...selectedDeductions,
                               loans: selected || []
                             }))}
-                          />
+                          /> */}
                         </div>
 
                         {/* Action Buttons */}
@@ -1480,7 +1372,7 @@ const EmployeeProfile = () => {
                                       <th>Attempt Working Hours</th>
                                       <th>Daily Salary</th>
                                       <th>Original Pay</th>
-                                      <th>Additional Amount</th>
+                                      {/* <th>Additional Amount</th> */}
                                       <th>Total</th>
                                       <th>Salary Slip</th>
                                     </tr>
@@ -1489,10 +1381,11 @@ const EmployeeProfile = () => {
                                     {employees.map((employee) => {
                                       const originalPay = parseFloat(employee.calcPay || employee.calculate_pay) || 0;
                                       const additionalAmount = parseFloat(calculateNetPay(employee, selectedDeductions, {
+                                        appraisals,
                                         allowances,
                                         bonuses,
                                         taxes,
-                                        loans
+                                        // loans
                                       })) || 0;
 
 
@@ -1516,7 +1409,7 @@ const EmployeeProfile = () => {
                                           <td>{employee.attempt_working_hours}</td>
                                           <td>{employee.dailySalary}</td>
                                           <td>Rs. {originalPay.toFixed(2)}</td>
-                                          <td>Rs. {additionalAmount.toFixed(2)}</td>
+                                          {/* <td>Rs. {additionalAmount.toFixed(2)}</td> */}
                                           <td>Rs. {(originalPay + additionalAmount).toFixed(2)}</td>
                                           <td>
                                             <button

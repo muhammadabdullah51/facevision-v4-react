@@ -421,7 +421,7 @@ const AssignAllowance = () => {
             <option value="">Select Allowance</option>
             {allowances.map((bonus) => (
               <option key={bonus.id} value={bonus.id}>
-                {bonus.allowanceName}
+                {bonus.allowanceName} (Rs. {bonus.amount})
               </option>
             ))}
           </select>

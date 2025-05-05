@@ -3,7 +3,6 @@ import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
 
 import axios from "axios";
 import "../../Dashboard/dashboard.css";
-import AssignBonus from "./assignBonus";
 import ConirmationModal from "../../Modal/conirmationModal";
 import addAnimation from "../../../assets/Lottie/addAnim.json";
 import updateAnimation from "../../../assets/Lottie/updateAnim.json";
@@ -69,7 +68,6 @@ const BonusTable = () => {
   const [successModal, setSuccessModal] = useState(false);
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
-  // const [child, setChild] = useState("");
 
 
 

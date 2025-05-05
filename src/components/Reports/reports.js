@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./reports.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFileAlt, faSitemap,  faFileCsv, faFilePdf } from "@fortawesome/free-solid-svg-icons";
+import { faFileAlt, faSitemap, faFileCsv, faFilePdf } from "@fortawesome/free-solid-svg-icons";
 import Advance_Salary_Reports from "../Tables/Advance_Salary_Reports/advance_salary_report";
 import All_Employees_Salary_Report from "../Tables/All_Employee_Salary_Report/all_employee_salary_report";
 import Daily_Absent_Report from "../Tables/Daily_Reports/daily_absent";
@@ -30,12 +30,17 @@ import BonusReport from "../Tables/Payroll_Components_report/BonusReport";
 import AllowanceReports from "../Tables/Payroll_Components_report/AllowanceReports";
 import TaxReport from "../Tables/Payroll_Components_report/TaxReport";
 
+import { FaChevronDown, FaDownload } from "react-icons/fa";
+
+
 const Reports = () => {
   const [reportType, setReportType] = useState("");
   const [reportSubtype, setReportSubtype] = useState("");
   const [activeTab, setActiveTab] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [data, setData] = useState([]);
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
+
 
   const reportOptions = {
     daily: [
@@ -74,7 +79,7 @@ const Reports = () => {
   const handleDataFromChild = (filteredData) => {
     setData(filteredData);
   };
-  
+
   const downloadCSV = () => {
     if (data.length === 0) {
       alert("No data available to download!");
@@ -281,10 +286,10 @@ const Reports = () => {
             return (
               <>
                 <All_Employees_Salary_Report
-                sendDataToParent={handleDataFromChild}
-                searchQuery={searchQuery}
+                  sendDataToParent={handleDataFromChild}
+                  searchQuery={searchQuery}
                 />
-                </>
+              </>
             );
           case "advance-salary-report":
             return (
@@ -344,7 +349,7 @@ const Reports = () => {
     }
   };
 
- 
+
 
   return (
     <div className="department-table">
@@ -389,23 +394,64 @@ const Reports = () => {
             </div>
           )}
 
-          <div className="dropdown">
+          {/* <div className="dropdown">
             <button className="button export-csv"
-            onClick={downloadCSV}
+              onClick={downloadCSV}
             >
               <FontAwesomeIcon icon={faFileCsv} className="button-icon" />
               Export as CSV
             </button>
             <button className="button export-csv"
-            onClick={downloadPDF}
+              onClick={downloadPDF}
             >
               <FontAwesomeIcon icon={faFilePdf} className="button-icon" />
               Export as PDF
             </button>
-            {/* <ul className="dropdown-menu">
+             <ul className="dropdown-menu">
               <li onClick={downloadCSV}>Export as CSV</li>
               <li onClick={downloadPDF}>Export as PDF</li>
-            </ul> */}
+            </ul> 
+          </div> */}
+
+          <div className="export-dropdown-container ">
+            <button
+              className="add-button export-button"
+              onMouseEnter={() => setShowExportDropdown(true)}
+              onMouseLeave={() => setShowExportDropdown(false)}
+            >
+              <FaDownload className="button-icon" />
+              Export Data
+              <FaChevronDown className="dropdown-chevron" />
+
+            </button>
+            {showExportDropdown && (
+              <div
+                className="export-dropdown-menu"
+                onMouseEnter={() => setShowExportDropdown(true)}
+                onMouseLeave={() => setShowExportDropdown(false)}
+              >
+
+
+               
+
+                <button
+                  className="dropdown-item"
+                  onClick={downloadCSV}
+                >
+                  <FontAwesomeIcon icon={faFileCsv} className="dropdown-icon" />
+                  Export to CSV
+                </button>
+                <button
+                  className="dropdown-item"
+                  onClick={downloadPDF}
+                >
+                  <FontAwesomeIcon icon={faFilePdf} className="dropdown-icon" />
+                  Export to PDF
+                </button>
+
+              </div>
+
+            )}
           </div>
         </div>
         <div>

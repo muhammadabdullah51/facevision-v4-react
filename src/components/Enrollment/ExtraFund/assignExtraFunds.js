@@ -357,10 +357,10 @@ const AssignExtrFunds = () => {
                     modalType === "create"
                         ? `Are you sure you want to confirm Assign Extra Funds?`
                         : modalType === "update"
-                            ? "Are you sure you want to update Assigned Bonus?"
+                            ? "Are you sure you want to update Assigned Extra Funds?"
                             : modalType === "delete selected"
                                 ? "Are you sure you want to delete selected items?"
-                                : `Are you sure you want to delete Assigned Bonus?`
+                                : `Are you sure you want to delete Assigned Extra Funds?`
                 }
                 onConfirm={() => {
                     if (modalType === "create") confirmAdd();

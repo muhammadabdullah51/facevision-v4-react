@@ -2,7 +2,7 @@ import React from "react";
 import "./salarySlip.css";
 import { SERVER_URL } from "../../../config";
 
-const SalarySlip = ({ salaryDetails, preview, deductions }) => {
+const SalarySlip = ({ salaryDetails, preview, deductions = {} }) => {
   // const calculateNetPay = () => {
   //   let netPay = parseFloat(salaryDetails.basicSalary) || 0;
 
