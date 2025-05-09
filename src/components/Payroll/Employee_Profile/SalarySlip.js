@@ -35,36 +35,7 @@ const SalarySlip = ({ salaryDetails, preview, deductions = {} }) => {
       }))
     ]
   }), [salaryDetails, deductions]);
-  //   let netPay = parseFloat(salaryDetails.basicSalary) || 0;
-
-  //   // Add allowances
-  //   deductions?.allowances?.forEach(allowance => {
-  //     netPay += parseFloat(allowance.amount) || 0;
-  //   });
-
-  //   // Add bonuses
-  //   deductions?.bonuses?.forEach(bonus => {
-  //     netPay += parseFloat(bonus.bonusAmount) || 0;
-  //   });
-
-  //   // Subtract taxes
-  //   deductions?.taxes?.forEach(tax => {
-  //     if (tax.nature === "fixedamount") {
-  //       netPay -= parseFloat(tax.amount) || 0;
-  //     } else {
-  //       netPay -= netPay * (parseFloat(tax.percent) / 100) || 0;
-  //     }
-  //   });
-
-  //   // Subtract loans
-  //   deductions?.loans?.forEach(loan => {
-  //     netPay -= parseFloat(loan.givenLoan) || 0;
-  //   });
-
-  //   // Add other components as needed...
-
-  //   return netPay.toFixed(2);
-  // };
+  
   const [data, setData] = useState([]);
 
 
