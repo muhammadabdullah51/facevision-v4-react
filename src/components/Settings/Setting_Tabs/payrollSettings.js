@@ -15,7 +15,10 @@ const PayrollSettings = () => {
     isEndDate: "No",
     customeDate: "0",
     endingNote: "",
-    isPerDay: ""
+    isPerDay: "No",
+    isOrigional: "Yes",
+    otCustomHours: "0",
+
   });
 
   // Fetch settings from the server
@@ -23,10 +26,12 @@ const PayrollSettings = () => {
     try {
       const response = await axios.get(`${SERVER_URL}sett-adv-pyr/`);
       const fetchedData = response.data[0]; // Assuming only one object is returned
+      console.log(fetchedData);
       setSettings((prevSettings) => ({
         ...prevSettings,
         ...fetchedData,
-        customeDate: fetchedData.customeDate || "",
+        isOrigional: fetchedData.isOrigional ?? "Yes",
+        otCustomHours: fetchedData.otCustomHours ?? "",
       }));
     } catch (error) {
       console.error('Error fetching payroll settings:', error);
@@ -64,6 +69,18 @@ const PayrollSettings = () => {
       alert("Please enter a valid date between 1 and 31.");
     }
   };
+  const handleModifiedOTHours = (event) => {
+    const value = event.target.value;
+    if (value >= 0 ) {
+      setSettings((prevState) => ({
+        ...prevState,
+        otCustomHours: value,
+      }));
+    } else {
+      alert("Please enter valid hours greater than 0.");
+    }
+  };
+
 
   const questions = [
     { key: "whForAdvSal", label: "Consider working hours for advance salaries" },
@@ -74,14 +91,26 @@ const PayrollSettings = () => {
     { key: "pyOtByDf", label: "Pay for Overtime" },
     { key: "cutSalWhByDf", label: "Cut Salary on working hours" },
     { key: "lvPUnPByDf", label: "Leaves are paid or unpaid" },
-    { key: "isPerDay", label: "Consider salary per day" },
-    { key: "isEndDate", label: "Consider last day of the month for payroll closing date" },
+    { key: "isPerDay", label: "Consider salary per day instead of working hours" },
+    { key: "isOrigional", label: "Consider Original Overtime" },
+    { key: "isEndDate", label: "Consider last day of the month for payroll closing date and first day of the month as starting date" },
   ];
 
   const handleSubmit = async () => {
     console.log(settings);
+    const payload = {
+      ...settings,
+      // if they’re “Yes”, zero them out
+      customeDate: settings.isEndDate === "Yes"
+        ? 0
+        : settings.customeDate,
+      otCustomHours: settings.isOrigional === "Yes"
+        ? 0
+        : settings.otCustomHours,
+    };
+    console.log("sending", payload);
     try {
-      const response = await axios.post(`${SERVER_URL}sett-adv-pyr/`, settings);
+      const response = await axios.post(`${SERVER_URL}sett-adv-pyr/`, payload);
       if (response.status === 200) {
         alert('Settings saved successfully!');
       } else {
@@ -114,10 +143,24 @@ const PayrollSettings = () => {
         ))}
       </ul>
 
+      {settings.isOrigional === "No" && (
+        <div className="checkbox-item" style={{ padding: '25px 10px' }}>
+          <label>
+            If not the original overtime then enter custom hours
+          </label>
+          <input
+            type="number"
+            placeholder="Enter Custom OT Hours"
+            id="closingDate"
+            value={settings.otCustomHours}
+            onChange={handleModifiedOTHours}
+          />
+        </div>
+      )}
       {settings.isEndDate === "No" && (
         <div className="checkbox-item" style={{ padding: '25px 10px' }}>
           <label>
-            If not the last day of the month then choose Closing Date
+            If not the last day of the month then Enter Closing Date
           </label>
           <input
             type="number"
@@ -138,10 +181,10 @@ const PayrollSettings = () => {
           placeholder="Write your note here"
           id="endingNote"
           value={settings.endingNote}
-        onChange={handleEndNote}
+          onChange={handleEndNote}
         />
       </div>
-      
+
       <button onClick={handleSubmit} className="submit-button">
         Save Settings
       </button>

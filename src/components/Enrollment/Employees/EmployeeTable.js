@@ -119,7 +119,7 @@ const EmployeeTable = ({
     console.log(formData.id);
 
     try {
-      await axios.post(`${SERVER_URL}pr-emp-del/`, { id: formData.id });
+      await axios.delete(`${SERVER_URL}pr-emp-del/${formData.id}/delete/`);
       const updatedData = await axios.get(`${SERVER_URL}pr-emp/`);
       setData(updatedData.data);
       fetchEmployees();

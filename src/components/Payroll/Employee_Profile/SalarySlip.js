@@ -1,9 +1,40 @@
-import React from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import "./salarySlip.css";
 import { SERVER_URL } from "../../../config";
+import axios from "axios";
 
 const SalarySlip = ({ salaryDetails, preview, deductions = {} }) => {
-  // const calculateNetPay = () => {
+  const mergedData = useMemo(() => ({
+    ...salaryDetails,
+    allowances: [
+      ...(salaryDetails.allowances || []),
+      ...(deductions.allowances || []).map(a => ({
+        allowanceName: a.label?.split(' (')[0] || 'Allowance',
+        amount: a.amount
+      }))
+    ],
+    bonuses: [
+      ...(salaryDetails.bonuses || []), 
+      ...(deductions.bonuses || []).map(b => ({
+        bonusName: b.label?.split(' (')[0] || 'Bonus',
+        bonusAmount: b.amount
+      }))
+    ],
+    taxes: [
+      ...(salaryDetails.taxes || []),
+      ...(deductions.taxes || []).map(t => ({
+        taxName: t.label?.split(' (')[0] || 'Tax',
+        ...t
+      }))
+    ],
+    appraisals: [
+      ...(salaryDetails.appraisals || []),
+      ...(deductions.appraisals || []).map(a => ({
+        appraisalName: a.label?.split(' (')[0] || 'Appraisal',
+        appraisalAmount: a.amount
+      }))
+    ]
+  }), [salaryDetails, deductions]);
   //   let netPay = parseFloat(salaryDetails.basicSalary) || 0;
 
   //   // Add allowances
@@ -34,10 +65,27 @@ const SalarySlip = ({ salaryDetails, preview, deductions = {} }) => {
 
   //   return netPay.toFixed(2);
   // };
+  const [data, setData] = useState([]);
+
+
+  const fetchPyrSett = useCallback(async () => {
+    try {
+      const response = await axios.get(`${SERVER_URL}sett-adv-pyr/`);
+      const fetchedData = response.data[0];
+      setData(fetchedData)
+      console.log(fetchedData);
+    } catch (error) {
+      console.error('Error fetching payroll settings:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchPyrSett();
+  }, [fetchPyrSett]);
   return (
     <>
       <div className={`salary-slip ${preview ? 'preview-mode' : ''}`}
-        style={preview ? { padding: '0' } : {}}
+        style={preview ? { padding: '0' } : {position : "relative"}}
       >
         {/* Header */}
         <header className="header-salary">
@@ -102,7 +150,7 @@ const SalarySlip = ({ salaryDetails, preview, deductions = {} }) => {
         </section>
 
         {/* Earnings and Deductions */}
-        <section className="earnings-deductions">
+          <section className="earnings-deductions">
           <div className="tableSalary">
             <h4>Earnings</h4>
             <table>
@@ -117,33 +165,47 @@ const SalarySlip = ({ salaryDetails, preview, deductions = {} }) => {
                 <tr>
                   <td>1</td>
                   <td>Basic Salary</td>
-                  <td className="th-amount">Rs. {salaryDetails.basicSalary}</td>
+                  <td>Rs. {salaryDetails.basicSalary}</td>
                 </tr>
                 <tr>
                   <td>2</td>
                   <td>Overtime Hours Pay</td>
-                  <td className="th-amount">Rs. {salaryDetails.otHoursPay}</td>
+                  <td>Rs. {salaryDetails.otHoursPay}</td>
                 </tr>
-                <tr>
-                  <td>3</td>
-                  <td>Bonus</td>
-                  <td className="th-amount">Rs. {salaryDetails.bonus}</td>
-                </tr>
-                <tr>
-                  <td>4</td>
-                  <td>Appraisal</td>
-                  <td className="th-amount">Rs. {salaryDetails.app}</td>
-                </tr>
-                {salaryDetails.allowances.map((allowance, index) => (
-                  <tr key={index}>
-                    <td>{index + 5}</td>
+                
+                {/* Mapped Bonuses */}
+                {(salaryDetails.bonuses || []).map((bonus, index) => (
+                  <tr key={`bonus-${index}`}>
+                    <td>{3 + index}</td>
+                    <td>{bonus.bonusName}</td>
+                    <td>Rs. {bonus.bonusAmount}</td>
+                  </tr>
+                ))}
+
+                {/* Mapped Appraisals */}
+                {(salaryDetails.appraisals || []).map((appraisal, index) => (
+                  <tr key={`appraisal-${index}`}>
+                    <td>{3 + (salaryDetails.bonuses?.length || 0) + index}</td>
+                    <td>{appraisal.appraisalName}</td>
+                    <td>Rs. {appraisal.appraisalAmount}</td>
+                  </tr>
+                ))}
+
+                {/* Mapped Allowances */}
+                {(salaryDetails.allowances || []).map((allowance, index) => (
+                  <tr key={`allowance-${index}`}>
+                    <td>{3 + 
+                         (salaryDetails.bonuses?.length || 0) + 
+                         (salaryDetails.appraisals?.length || 0) + 
+                         index}</td>
                     <td>{allowance.allowanceName}</td>
-                    <td className="th-amount">Rs. {allowance.amount}</td>
+                    <td>Rs. {allowance.amount}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+
           <div className="tableSalary">
             <h4>Deductions</h4>
             <table>
@@ -158,23 +220,29 @@ const SalarySlip = ({ salaryDetails, preview, deductions = {} }) => {
                 <tr>
                   <td>1</td>
                   <td>Advance Salary</td>
-                  <td className="th-amount">Rs. {salaryDetails.advSalary}</td>
+                  <td>Rs. {salaryDetails.advSalary}</td>
                 </tr>
                 <tr>
                   <td>2</td>
                   <td>Loan</td>
-                  <td className="th-amount">Rs. {salaryDetails.loan}</td>
+                  <td>Rs. {salaryDetails.loan}</td>
                 </tr>
                 <tr>
                   <td>3</td>
                   <td>Extra Fund</td>
-                  <td className="th-amount">Rs. {salaryDetails.extraFund}</td>
+                  <td>Rs. {salaryDetails.extraFund}</td>
                 </tr>
-                {salaryDetails.taxes.map((tax, index) => (
-                  <tr key={index}>
-                    <td>{index + 4}</td>
+
+                {/* Mapped Taxes */}
+                {(salaryDetails.taxes || []).map((tax, index) => (
+                  <tr key={`tax-${index}`}>
+                    <td>{4 + index}</td>
                     <td>{tax.taxName}</td>
-                    <td className="th-amount">Rs. {tax.deductedAmount}</td>
+                    <td>
+                      Rs. {tax.nature === "fixedamount" 
+                        ? tax.amount 
+                        : ((parseFloat(salaryDetails.basicSalary) * (tax.percent / 100)).toFixed(2))}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -198,6 +266,13 @@ const SalarySlip = ({ salaryDetails, preview, deductions = {} }) => {
             {/* <strong>Total Net Pay:</strong> Rs. {calculateNetPay()} */}
           </p>
         </section>
+
+        <footer className="footer-salary">
+          {data
+            ? <h4>{data.endingNote}</h4>
+            : <p>Loading note…</p>
+          }
+        </footer>
       </div>
     </>
   );

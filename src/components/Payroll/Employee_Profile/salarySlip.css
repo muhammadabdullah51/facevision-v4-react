@@ -44,9 +44,8 @@
   .earnings-deductions {
     display: flex;
     justify-content: space-evenly;
-    margin-top: 20px;
     width: 100%;
-    margin: auto;
+    margin: 20px auto;
   }
   
   .tableSalary {
@@ -77,6 +76,7 @@
     flex-direction: column;
     justify-content: end;
     align-items: end;
+    
   }
   
   .summary p {
@@ -796,4 +796,15 @@ th.th-component, td.th-component{
 .net-pay-row.new-net {
   background: #e3f2fd;
   font-weight: bold;
+}
+
+.footer-salary {
+  margin: auto;
+  text-align: center;
+  position: absolute;
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  color: gray;
 }
