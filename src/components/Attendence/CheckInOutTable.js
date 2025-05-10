@@ -84,7 +84,7 @@ const CheckInOutTable = ({ dash }) => {
     try {
       const response = await axios.get(`${SERVER_URL}att-chkinout/`);
       setData(response.data);
-      console.log(data);
+      console.log(response.data);
     } catch (error) {
     }
   }, [setData]);
@@ -304,6 +304,7 @@ const CheckInOutTable = ({ dash }) => {
       status: formData.status,
       ip: 'byAdmin',
     };
+    console.log(payload);
     try {
       await axios.post(`${SERVER_URL}att-chkinout/`, payload);
       const updatedData = await axios.get(`${SERVER_URL}att-chkinout/`);

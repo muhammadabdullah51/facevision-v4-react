@@ -3,39 +3,53 @@ import "./salarySlip.css";
 import { SERVER_URL } from "../../../config";
 import axios from "axios";
 
-const SalarySlip = ({ salaryDetails, preview, deductions = {} }) => {
-  const mergedData = useMemo(() => ({
-    ...salaryDetails,
-    allowances: [
-      ...(salaryDetails.allowances || []),
-      ...(deductions.allowances || []).map(a => ({
-        allowanceName: a.label?.split(' (')[0] || 'Allowance',
-        amount: a.amount
-      }))
-    ],
-    bonuses: [
-      ...(salaryDetails.bonuses || []), 
-      ...(deductions.bonuses || []).map(b => ({
-        bonusName: b.label?.split(' (')[0] || 'Bonus',
-        bonusAmount: b.amount
-      }))
-    ],
-    taxes: [
-      ...(salaryDetails.taxes || []),
-      ...(deductions.taxes || []).map(t => ({
-        taxName: t.label?.split(' (')[0] || 'Tax',
-        ...t
-      }))
-    ],
-    appraisals: [
-      ...(salaryDetails.appraisals || []),
-      ...(deductions.appraisals || []).map(a => ({
-        appraisalName: a.label?.split(' (')[0] || 'Appraisal',
-        appraisalAmount: a.amount
-      }))
-    ]
-  }), [salaryDetails, deductions]);
-  
+const SalarySlip = ({ salaryDetails, preview, deductions = {},  }) => {
+  const effectiveDeductions = deductions || salaryDetails.deductions || {};
+  const mergedData = useMemo(() => {
+    if (preview) {
+      // In preview mode, use only deductions (new selections)
+      return {
+        ...salaryDetails,
+        allowances: effectiveDeductions.allowances || [],
+        bonuses: effectiveDeductions.bonuses || [],
+        taxes: effectiveDeductions.taxes || [],
+        appraisals: effectiveDeductions.appraisals || []
+      };
+    } else {
+      // Original merge logic for non-preview
+      return {
+        ...salaryDetails,
+        allowances: [
+          ...(salaryDetails.allowances || []),
+          ...(deductions.allowances || []).map(a => ({
+            allowanceName: a.label?.split(' (')[0] || 'Allowance',
+            amount: a.amount
+          }))
+        ],
+        bonuses: [
+          ...(salaryDetails.bonuses || []),
+          ...(deductions.bonuses || []).map(b => ({
+            bonusName: b.label?.split(' (')[0] || 'Bonus',
+            bonusAmount: b.amount
+          }))
+        ],
+        taxes: [
+          ...(salaryDetails.taxes || []),
+          ...(deductions.taxes || []).map(t => ({
+            taxName: t.label?.split(' (')[0] || 'Tax',
+            ...t
+          }))
+        ],
+        appraisals: [
+          ...(salaryDetails.appraisals || []),
+          ...(deductions.appraisals || []).map(a => ({
+            appraisalName: a.label?.split(' (')[0] || 'Appraisal',
+            appraisalAmount: a.amount
+          }))
+        ]
+      };
+    }
+  }, [salaryDetails, effectiveDeductions]);
   const [data, setData] = useState([]);
 
 
@@ -53,10 +67,16 @@ const SalarySlip = ({ salaryDetails, preview, deductions = {} }) => {
   useEffect(() => {
     fetchPyrSett();
   }, [fetchPyrSett]);
+
+
+  // const totalNetPay = useMemo(() => {
+  //   return calculateNetPay(salaryDetails, effectiveDeductions);
+  // }, [salaryDetails, effectiveDeductions]);
+
   return (
     <>
       <div className={`salary-slip ${preview ? 'preview-mode' : ''}`}
-        style={preview ? { padding: '0' } : {position : "relative"}}
+        style={preview ? { padding: '0' } : { position: "relative" }}
       >
         {/* Header */}
         <header className="header-salary">
@@ -107,11 +127,11 @@ const SalarySlip = ({ salaryDetails, preview, deductions = {} }) => {
             </p>
             <p>
               <strong>Total Working Hours:</strong>{" "}
-              {salaryDetails.totalWorkingHours}
+              {salaryDetails.totalWorkingMinutes}
             </p>
             <p>
               <strong>Total Working Minutes:</strong>{" "}
-              {salaryDetails.totalWorkingMinutes}
+              {salaryDetails.totalWorkingHours}
             </p>
             <p>
               <strong>Attempted Working Hours:</strong>{" "}
@@ -121,7 +141,7 @@ const SalarySlip = ({ salaryDetails, preview, deductions = {} }) => {
         </section>
 
         {/* Earnings and Deductions */}
-          <section className="earnings-deductions">
+        <section className="earnings-deductions">
           <div className="tableSalary">
             <h4>Earnings</h4>
             <table>
@@ -143,34 +163,29 @@ const SalarySlip = ({ salaryDetails, preview, deductions = {} }) => {
                   <td>Overtime Hours Pay</td>
                   <td>Rs. {salaryDetails.otHoursPay}</td>
                 </tr>
-                
-                {/* Mapped Bonuses */}
-                {(salaryDetails.bonuses || []).map((bonus, index) => (
+
+                {/* Render all allowances */}
+                {mergedData.allowances?.map((allowance, index) => (
+                  <tr key={`allowance-${index}`}>
+                    <td>{index + 2}</td>
+                    <td>{allowance.allowanceName}</td>
+                    <td>Rs. {allowance.amount}</td>
+                  </tr>
+                ))}
+                {/* Render all bonuses */}
+                {mergedData.bonuses?.map((bonus, index) => (
                   <tr key={`bonus-${index}`}>
-                    <td>{3 + index}</td>
+                    <td>{mergedData.allowances?.length + index + 2}</td>
                     <td>{bonus.bonusName}</td>
                     <td>Rs. {bonus.bonusAmount}</td>
                   </tr>
                 ))}
-
-                {/* Mapped Appraisals */}
-                {(salaryDetails.appraisals || []).map((appraisal, index) => (
+                {/* Render all appraisals */}
+                {mergedData.appraisals?.map((appraisal, index) => (
                   <tr key={`appraisal-${index}`}>
-                    <td>{3 + (salaryDetails.bonuses?.length || 0) + index}</td>
+                    <td>{mergedData.allowances?.length + mergedData.bonuses?.length + index + 2}</td>
                     <td>{appraisal.appraisalName}</td>
                     <td>Rs. {appraisal.appraisalAmount}</td>
-                  </tr>
-                ))}
-
-                {/* Mapped Allowances */}
-                {(salaryDetails.allowances || []).map((allowance, index) => (
-                  <tr key={`allowance-${index}`}>
-                    <td>{3 + 
-                         (salaryDetails.bonuses?.length || 0) + 
-                         (salaryDetails.appraisals?.length || 0) + 
-                         index}</td>
-                    <td>{allowance.allowanceName}</td>
-                    <td>Rs. {allowance.amount}</td>
                   </tr>
                 ))}
               </tbody>
@@ -210,8 +225,8 @@ const SalarySlip = ({ salaryDetails, preview, deductions = {} }) => {
                     <td>{4 + index}</td>
                     <td>{tax.taxName}</td>
                     <td>
-                      Rs. {tax.nature === "fixedamount" 
-                        ? tax.amount 
+                      Rs. {tax.nature === "fixedamount"
+                        ? tax.amount
                         : ((parseFloat(salaryDetails.basicSalary) * (tax.percent / 100)).toFixed(2))}
                     </td>
                   </tr>
@@ -224,7 +239,7 @@ const SalarySlip = ({ salaryDetails, preview, deductions = {} }) => {
         {/* Summary */}
         <section className="summary">
           <p>
-            <strong>Basic Salary:</strong> Rs. {salaryDetails.basicSalary}
+            <strong>Basic Salary:</strong> Rs. {mergedData.basicSalary}
           </p>
           <p>
             <strong>Calculated Pay:</strong> Rs. {salaryDetails.calculate_pay}
@@ -233,8 +248,7 @@ const SalarySlip = ({ salaryDetails, preview, deductions = {} }) => {
             <strong>Total Overtime Hours:</strong> {salaryDetails.otHours}
           </p>
           <p>
-            <strong>Total Net Pay:</strong> Rs. {salaryDetails.calculate_pay}
-            {/* <strong>Total Net Pay:</strong> Rs. {calculateNetPay()} */}
+            {/* <strong>Total Net Pay:</strong> Rs. {totalNetPay} */}
           </p>
         </section>
 

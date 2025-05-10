@@ -8,9 +8,11 @@ const initialState = {
     allowances: [],
     bonuses: [],
     taxes: [],
+    appraisals: [],
+    allowancesRes: [],
+    bonusesRes: [],
+    taxesRes: [],
     appraisalsRes: [],
-    extraFundsRes: [],
-    loansRes: [],
   }
 };
 
