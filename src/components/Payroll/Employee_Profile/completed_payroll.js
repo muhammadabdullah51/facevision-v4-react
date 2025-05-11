@@ -21,14 +21,13 @@ import ReactDOMServer from "react-dom/server";
 
 import { SERVER_URL } from "../../../config";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { FaCheck, FaChevronDown, FaDownload, FaFolderOpen, FaTable, FaThLarge } from "react-icons/fa";
+import { FaChevronDown, FaDownload, FaEdit, FaFolderOpen, FaTable, FaThLarge } from "react-icons/fa";
 
 import Allowance from "../Allowances/Allowances";
 import WorkingHours from "../Working_Hours/WorkingHours";
 import "./employee_profile.css"
 import ReactPaginate from "react-paginate";
 import ConirmationModal from "../../Modal/conirmationModal";
-import addAnimation from "../../../assets/Lottie/addAnim.json";
 import updateAnimation from "../../../assets/Lottie/updateAnim.json";
 import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../../assets/Lottie/successAnim.json";
@@ -43,31 +42,118 @@ const CompletedPayroll = () => {
 
 
 
-  const [data, setData] = useState([
+  const [data, setData] = useState([]);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [callEmployees, setCallEmployees] = useState([]);
+
+
+  const [editFormData, setEditFormData] = useState(
     {
-      cPayId: "",
       empId: "",
+      from_date: "",
+      end_date: "",
       empName: "",
-      otHoursPay: "",
-      otHours: "",
-      extraFund: "",
-      advSalary: "",
-      app: "",
-      loan: "",
-      bonus: "",
-      salaryPeriod: "",
+      department: "",
       bankName: "",
       accountNo: "",
-      basicSalary: "",
       salaryType: "",
+      salaryPeriod: "",
+      basicSalary: "",
+      otHours: "",
+      otHoursPay: "",
+      advSalary: "",
+      loan: "",
+      bonus: "",
+      allowance: "",
+      taxes: "",
+      extraFund: "",
+      app: "",
+      dailySalary: "",
+      calculate_pay: "",
       totalWorkingDays: "",
       totalWorkingHours: "",
       totalWorkingMinutes: "",
       attemptWorkingHours: "",
+      attempt_working_hours: "",
+      filteredAllowance: [],
+      filteredBonus: [],
+      filteredTax: [],
+      filteredAppraisals: []
+    })
+
+  const handleEdit = (item) => {
+    setEditFormData({
+      empId: item.empId,
+      empName: item.empName,
+      calculate_pay: item.calculate_pay,
+      filteredAllowance: item.allowance_items?.map(a => ({ amount: parseFloat(a.amount) })) || [],
+      filteredBonus: item.bonus_items?.map(b => ({ amount: parseFloat(b.amount) })) || [],
+      filteredTax: item.tax_items?.map(t => ({ amount: parseFloat(t.amount) })) || [],
+      filteredAppraisals: item.appraisal_items?.map(app => ({ amount: parseFloat(app.amount) })) || []
+    });
+    setShowEditForm(true);
+  };
+  const updateAssign = () => {
+    setModalType("update");
+    setEditFormData({ ...editFormData });
+    setShowModal(true);
+  };
+  const confirmUpdate = async () => {
+    if (!editFormData.empId || !editFormData.from_date || !editFormData.end_date) {
+      setResMsg("Please fill in all required fields.");
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    }
+    console.log(editFormData);
+    await axios.put(`${SERVER_URL}pyr-emp-cmp/`, editFormData);
+
+    setShowModal(false);
+    setSuccessModal(true);
+    setShowEditForm(false);
+    fetchCompletedPayrolls(); // replace with your actual fetch function
+    handleReset();
+  };
+  const handleReset = () => {
+    setEditFormData({
+      empId: "",
+      from_date: "",
+      end_date: "",
+      empName: "",
+      department: "",
+      bankName: "",
+      accountNo: "",
+      salaryType: "",
+      salaryPeriod: "",
+      basicSalary: "",
+      otHours: "",
+      otHoursPay: "",
+      advSalary: "",
+      loan: "",
+      bonus: "",
+      allowance: "",
+      taxes: "",
+      extraFund: "",
+      app: "",
       dailySalary: "",
-      calcPay: "",
+      calculate_pay: "",
+      totalWorkingDays: "",
+      totalWorkingHours: "",
+      totalWorkingMinutes: "",
+      attemptWorkingHours: "",
+      attempt_working_hours: "",
+      filteredAllowance: [],
+      filteredBonus: [],
+      filteredTax: [],
+      filteredAppraisals: []
     },
-  ]);
+    );
+    setShowEditForm(false);
+  };
+
+
+
+
 
   const [employees, setEmployees] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -87,11 +173,6 @@ const CompletedPayroll = () => {
   const rowsPerPage = 7;
 
 
-  // Get selected employees data based on selectedIds
-  const selectedEmployees = data.filter(employee =>
-    selectedIds?.includes(employee.empId)
-  );
-
   const fetchCompletedPayrolls = useCallback(async () => {
     try {
       const response = await axios.get(`${SERVER_URL}pyr-emp-cmp/`);
@@ -109,9 +190,19 @@ const CompletedPayroll = () => {
   }, [activeTab]);
 
 
+  const fetchEmployees = useCallback(async () => {
+    try {
+      const response = await axios.get(`${SERVER_URL}pr-emp/`);
+      setCallEmployees(response.data);
+      console.log(callEmployees);
+    } catch (error) {
+      console.error("Error fetching employees:", error);
+    }
+  }, [])
 
   useEffect(() => {
-    fetchCompletedPayrolls()
+    fetchCompletedPayrolls();
+    fetchEmployees();
     let timer;
     if (successModal) {
       timer = setTimeout(() => {
@@ -119,28 +210,52 @@ const CompletedPayroll = () => {
       }, 2000);
     }
     return () => clearTimeout(timer);
-  }, [fetchCompletedPayrolls, successModal]);
+  }, [fetchCompletedPayrolls, fetchEmployees, successModal]);
 
 
   // Filter data based on search query
-  const filteredData = data.filter(
-    (item) =>
-      item.empId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.empName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.attemptWorkingHours.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.dailySalary.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.basicSalary.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.salaryType.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.salaryPeriod.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.bankName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.accountNo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.totalWorkingDays.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.totalWorkingHours.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.totalWorkingMinutes.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.attemptWorkingHours.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.calculate_pay.toString().includes(searchQuery) ||
-      item.dailySalary.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredData = data.filter((item) => {
+    const query = searchQuery.toLowerCase();
+
+    // Check top-level fields
+    const basicMatch =
+      String(item.empId).toLowerCase().includes(query) ||
+      String(item.empName).toLowerCase().includes(query) ||
+      String(item.attemptWorkingHours).toLowerCase().includes(query) ||
+      String(item.dailySalary).toLowerCase().includes(query) ||
+      String(item.basicSalary).toLowerCase().includes(query) ||
+      String(item.salaryType).toLowerCase().includes(query) ||
+      String(item.salaryPeriod).toLowerCase().includes(query) ||
+      String(item.bankName).toLowerCase().includes(query) ||
+      String(item.accountNo).toLowerCase().includes(query) ||
+      String(item.totalWorkingDays).toLowerCase().includes(query) ||
+      String(item.totalWorkingHours).toLowerCase().includes(query) ||
+      String(item.totalWorkingMinutes).toLowerCase().includes(query) ||
+      String(item.calculate_pay).toLowerCase().includes(query);
+
+    // Check nested arrays
+    const allowanceMatch = item.allowance_items?.some(a =>
+      String(a.name).toLowerCase().includes(query) ||
+      String(a.amount).includes(searchQuery) // Direct string comparison for amounts
+    );
+
+    const bonusMatch = item.bonus_items?.some(b =>
+      String(b.name).toLowerCase().includes(query) ||
+      String(b.amount).includes(searchQuery)
+    );
+
+    const taxMatch = item.tax_items?.some(t =>
+      String(t.name).toLowerCase().includes(query) ||
+      String(t.amount).includes(searchQuery)
+    );
+
+    const appraisalMatch = item.appraisal_items?.some(app =>
+      String(app.name).toLowerCase().includes(query) ||
+      String(app.amount).includes(searchQuery)
+    );
+
+    return basicMatch || allowanceMatch || bonusMatch || taxMatch || appraisalMatch;
+  });
 
   // Get current page data
   const currentPageData = filteredData.slice(
@@ -442,7 +557,7 @@ const CompletedPayroll = () => {
   };
 
 
-  const PreviewContainer = ({ employee, deductions = {}, bonuses, allowances, taxes, appraisals }) => {
+  const PreviewContainer = ({ employee, deductions = {} }) => {
     const [previewImage, setPreviewImage] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const previewRef = React.useRef();
@@ -467,30 +582,7 @@ const CompletedPayroll = () => {
       generatePreview();
     }, [employee, deductions]);
 
-    // Transform deduction items to match SalarySlip expectations
-    const transformDeductions = useMemo(() => ({
-      allowances: (deductions.allowances || []).map(item => ({
-        ...allowances.find(a => a.id === item.id),
-        amount: item.amount,
-        allowanceName: item.name
-      })),
-      bonuses: (deductions.bonuses || []).map(item => ({
-        ...bonuses.find(b => b.id === item.id),
-        bonusAmount: item.amount,
-        bonusName: item.name
-      })),
-      taxes: (deductions.taxes || []).map(item => ({
-        ...taxes.find(t => t.id === item.id),
-        amount: item.amount,
-        taxName: item.name,
-        nature: taxes.find(t => t.id === item.id)?.nature || "fixedamount"
-      })),
-      appraisals: (deductions.appraisals || []).map(item => ({
-        ...appraisals.find(a => a.id === item.id),
-        appraisalAmount: item.amount,
-        appraisalName: item.name
-      }))
-    }), [deductions, allowances, bonuses, taxes, appraisals]);
+
 
     return (
       <div className="preview-container">
@@ -499,18 +591,17 @@ const CompletedPayroll = () => {
             <div className="spinner"></div>
           </div>
         ) : previewImage ? (
-         <img
-          src={previewImage}
+          <img
+            src={previewImage}
+            alt={`${employee.empName} salary slip preview`}
+            className="preview-thumbnail"
           />
         ) : (
-         <div 
-          ref={previewRef} 
-          className="preview-viewport"
-        >
-          <SalarySlip
-            salaryDetails={transformDeductions}
-            preview // Add this
-          />
+          <div ref={previewRef} className="preview-viewport">
+            <CompletedSalarySlip
+              salaryDetails={employee}
+              preview
+            />
           </div>
         )}
       </div>
@@ -531,11 +622,7 @@ const CompletedPayroll = () => {
   const [taxes, setTaxes] = useState([]);
   const [allowances, setAllowances] = useState([]);
   const [appraisals, setAppraisals] = useState([]);
-  // const [extraFunds, setExtraFunds] = useState([]);
-  // const [loans, setLoans] = useState([]);
 
-  // And use the Redux-selected deductions directly:
-  // Memoize derived data
 
   // Add this useEffect hook for fetching deductions
   useEffect(() => {
@@ -547,8 +634,6 @@ const CompletedPayroll = () => {
           axios.get(`${SERVER_URL}taxes/`),
           axios.get(`${SERVER_URL}allowances/`),
           axios.get(`${SERVER_URL}pyr-appr/`),
-          // axios.get(`${SERVER_URL}pyr-ext/`),
-          // axios.get(`${SERVER_URL}pyr-loan/`)
 
         ]);
 
@@ -570,31 +655,26 @@ const CompletedPayroll = () => {
   }, []);
 
 
-  // Create options for Select components
-  // Memoize options
-  const bonusOptions = useMemo(() => bonuses.map(bonus => ({
-    value: bonus.id,
-    label: `${bonus.bonusName} (${bonus.bonusAmount}Rs)`
-  })), [bonuses]);
+const calculateNewTotal = (formData, allowances, bonuses, taxes, appraisals) => {
+  const currentAllowances = allowances || formData.filteredAllowance;
+  const currentBonuses = bonuses || formData.filteredBonus;
+  const currentTaxes = taxes || formData.filteredTax;
+  const currentAppraisals = appraisals || formData.filteredAppraisals;
 
-  const taxOptions = useMemo(() => taxes.map(tax => ({
-    value: tax.id,
-    label: `${tax.taxName} (${tax.nature === "fixedamount" ? tax.amount + "Rs" : tax.percent + "%"})`,
-    type: 'tax'
-  })), [taxes]);
+  const allowanceSum = currentAllowances.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
+  const bonusSum = currentBonuses.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
+  const appraisalSum = currentAppraisals.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
+  const taxSum = currentTaxes.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
 
-  const allowanceOptions = useMemo(() => allowances.map(allowance => ({
-    value: allowance.id,
-    label: `${allowance.allowanceName} (${allowance.amount}Rs)`,
-    type: 'allowance'
-  })), [allowances]);
-
-  const appraisalOptions = useMemo(() => appraisals.map(appr => ({
-    value: appr.id,
-    label: `${appr.name} (${appr.appraisal_amount}Rs)`,
-    type: 'appraisal'
-  })), [appraisals]);
-
+  return (
+    parseFloat(formData.basicSalary || 0) +
+    parseFloat(formData.otHoursPay || 0) +
+    allowanceSum +
+    bonusSum +
+    appraisalSum -
+    taxSum
+  ).toFixed(2);
+};
 
 
 
@@ -750,6 +830,130 @@ const CompletedPayroll = () => {
                       </div>
 
                       <div className="department-table">
+                        {showEditForm && (
+                          <div className="add-leave-form">
+                            <h3>Update Completed Payroll</h3>
+
+                            {/* Employee Information */}
+                            <div className="form-section">
+                              <div className="form-row">
+                                <label>Selected Employee</label>
+                                <input
+                                  type="text"
+                                  placeholder="Employee ID"
+                                  value={`${editFormData.empId} ${editFormData.empName}`}
+                                  onChange={(e) => setEditFormData({ ...editFormData, empId: e.target.value })}
+                                  required
+                                />
+
+                              </div>
+
+
+                            </div>
+
+                            {/* Salary Details */}
+
+
+
+                            {/* Allowances Section */}
+                            <div className="form-section">
+                              <label>Allowances</label>
+                              {editFormData.filteredAllowance.map((allowance, index) => (
+                                <div className="form-row" key={index}>
+                                  <input
+                                    type="number"
+                                    className="form-input"
+                                    placeholder={`Allowance #${index + 1}`}
+                                    value={allowance.amount}
+                                    onChange={(e) => {
+                                      const newAllowances = [...editFormData.filteredAllowance];
+                                      newAllowances[index].amount = e.target.value;
+                                      setEditFormData({ ...editFormData, filteredAllowance: newAllowances });
+                                    }}
+                                    step="0.01"
+                                  />
+
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Bonuses Section */}
+                            <div className="form-section">
+                              <label>Bonuses</label>
+                              {editFormData.filteredBonus.map((bonus, index) => (
+                                <div className="form-row" key={index}>
+                                  <input
+                                    type="number"
+                                    className="form-input"
+                                    placeholder={`Bonus #${index + 1}`}
+                                    value={bonus.amount}
+                                    onChange={(e) => {
+                                      const newBonuses = [...editFormData.filteredBonus];
+                                      newBonuses[index].amount = e.target.value;
+                                      setEditFormData({ ...editFormData, filteredBonus: newBonuses });
+                                    }}
+                                    step="0.01"
+                                  />
+
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Taxes Section */}
+                            <div className="form-section">
+                              <label>Taxes</label>
+                              {editFormData.filteredTax.map((tax, index) => (
+                                <div className="form-row" key={index}>
+                                  <input
+                                    type="number"
+                                    className="form-input"
+                                    placeholder={`Tax #${index + 1}`}
+                                    value={tax.amount}
+                                    onChange={(e) => {
+                                      const newTaxes = [...editFormData.filteredTax];
+                                      newTaxes[index].amount = e.target.value;
+                                      setEditFormData({ ...editFormData, filteredTax: newTaxes });
+                                    }}
+                                    step="0.01"
+                                  />
+
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Appraisals Section */}
+                            <div className="form-section">
+                              <label>Appraisals</label>
+                              {editFormData.filteredAppraisals.map((appraisal, index) => (
+                                <div className="form-row" key={index}>
+                                  <input
+                                    type="number"
+                                    className="form-input"
+                                    placeholder={`Appraisal #${index + 1}`}
+                                    value={appraisal.amount}
+                                    onChange={(e) => {
+                                      const newAppraisals = [...editFormData.filteredAppraisals];
+                                      newAppraisals[index].amount = e.target.value;
+                                      setEditFormData({ ...editFormData, filteredAppraisals: newAppraisals });
+                                    }}
+                                    step="0.01"
+                                  />
+
+                                </div>
+                              ))}
+                            </div>
+
+
+                            <div className="form-actions">
+                              <button className="submit-button" onClick={() => updateAssign(editFormData)}>
+                                Update Payroll
+                              </button>
+                              <button className="cancel-button" onClick={handleReset}>
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        )}
                         <div className="departments-table">
                           <table className="table">
                             <thead>
@@ -781,6 +985,7 @@ const CompletedPayroll = () => {
                                 <th>Attempt Working Hours</th>
                                 <th>Daily Salary</th>
                                 <th>Pay</th>
+                                <th>Action</th>
                                 <th>Salary Slip</th>
                               </tr>
                             </thead>
@@ -801,29 +1006,29 @@ const CompletedPayroll = () => {
                                   <td>{item.otHours}</td>
                                   <td>{item.extraFund}</td>
                                   <td>{item.advSalary}</td>
-                                  <td>{parseFloat(item.app || 0) +
-                                    (Array.isArray(item.appraisal_items)
-                                      ? item.appraisal_items.reduce((total, i) => total + parseFloat(i.amount || 0), 0)
-                                      : 0)
-                                  }
+                                  <td>
+                                    {`${item.app || '0'}${Array.isArray(item.appraisal_items) && item.appraisal_items.length > 0
+                                        ? ` + ${item.appraisal_items.map(i => i.amount).join(', ')}`
+                                        : ''
+                                      }`}
                                   </td>
                                   <td>
-                                    {parseFloat(item.bonus || 0) +
-                                      (Array.isArray(item.bonus_items)
-                                        ? item.bonus_items.reduce((total, i) => total + parseFloat(i.amount || 0), 0)
-                                        : 0)}
+                                    {`${item.bonus || '0'}${Array.isArray(item.bonus_items) && item.bonus_items.length > 0
+                                        ? ` + ${item.bonus_items.map(i => i.amount).join(', ')}`
+                                        : ''
+                                      }`}
                                   </td>
                                   <td>
-                                    {parseFloat(item.allowance || 0) +
-                                      (Array.isArray(item.allowance_items)
-                                        ? item.allowance_items.reduce((total, i) => total + parseFloat(i.amount || 0), 0)
-                                        : 0)}
+                                    {`${item.allowance || '0'}${Array.isArray(item.allowance_items) && item.allowance_items.length > 0
+                                        ? ` + ${item.allowance_items.map(i => i.amount).join(', ')}`
+                                        : ''
+                                      }`}
                                   </td>
                                   <td>
-                                    {parseFloat(item.taxes || 0) +
-                                      (Array.isArray(item.tax_items)
-                                        ? item.tax_items.reduce((total, i) => total + parseFloat(i.amount || 0), 0)
-                                        : 0)}
+                                    {`${item.taxes || '0'}${Array.isArray(item.tax_items) && item.tax_items.length > 0
+                                        ? ` + ${item.tax_items.map(i => i.amount).join(', ')}`
+                                        : ''
+                                      }`}
                                   </td>
                                   <td>{item.loan}</td>
                                   <td>{item.salaryPeriod}</td>
@@ -833,7 +1038,16 @@ const CompletedPayroll = () => {
                                   <td>{item.totalWorkingMinutes}</td>
                                   <td>{item.attempt_working_hours}</td>
                                   <td>{item.dailySalary}</td>
-                                  <td>{item.calcPay || item.calculate_pay}</td>
+                                  <td>{item.calculate_pay}</td>
+                                  <td>
+                                    <button
+                                      // className="edit-button"
+                                      onClick={() => handleEdit(item)}
+                                      style={{ background: "none", border: "none" }}
+                                    >
+                                      <FaEdit className="table-edit" />
+                                    </button>
+                                  </td>
                                   <td>
                                     <button
                                       onClick={() => handleOpenSalarySlip(item)}
@@ -1179,34 +1393,38 @@ const CompletedPayroll = () => {
           <ConirmationModal
             isOpen={showModal}
             message={
-              modalType === "close all payrolls"
-                ? "Are you sure you want to close all existing payrolls? This action cannot be undone."
-                : `Are you sure you want to ${modalType} this Employee?`
+              modalType === "create"
+                ? `Are you sure you want to confirm Assign Tax?`
+                : modalType === "update"
+                  ? "Are you sure you want to update Assigned Tax?"
+                  : modalType === "delete selected"
+                    ? "Are you sure you want to delete selected items?"
+                    : `Are you sure you want to delete Assigned Tax?`
             }
             onConfirm={() => {
-              // if (modalType === "close all payrolls") confirmCloseAllPayrolls();
+              if (modalType === "update") confirmUpdate();
+              // else confirmBulkDelete();
+
             }}
             onCancel={() => setShowModal(false)}
             animationData={
-              modalType === "create"
-                ? addAnimation
-                : modalType === "update"
-                  ? updateAnimation
-                  : deleteAnimation
+              modalType === "update"
+                ? updateAnimation
+                : deleteAnimation
             }
           />
-
-          {/* Success modal */}
           <ConirmationModal
             isOpen={successModal}
-            message={resMsg}
+            message={
+              modalType === "delete selected"
+                ? "Selected items deleted successfully!"
+                : `Assign Tax ${modalType}d successfully!`
+            }
             onConfirm={() => setSuccessModal(false)}
             onCancel={() => setSuccessModal(false)}
             animationData={successAnimation}
             successModal={successModal}
           />
-
-          {/* Warning modal */}
           <ConirmationModal
             isOpen={warningModal}
             message={resMsg}
@@ -1215,7 +1433,6 @@ const CompletedPayroll = () => {
             animationData={warningAnimation}
             warningModal={warningModal}
           />
-
 
 
           {renderTabContent()}

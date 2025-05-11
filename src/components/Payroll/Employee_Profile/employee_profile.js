@@ -796,13 +796,7 @@ const EmployeeProfile = () => {
       generatePreview();
     }, [employee, deductions]); // Add deductions as dependency
 
-    const safeDeductions = {
-      allowances: deductions.allowances || [],
-      bonuses: deductions.bonuses || [],
-      taxes: deductions.taxes || [],
-      appraisals: deductions.appraisals || []
-    };
-
+    
     const transformDeductions = useMemo(() => ({
       allowances: (deductions.allowances || []).map(a => ({
         ...allowances.find(al => al.id === a.value),

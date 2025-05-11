@@ -22,25 +22,10 @@ const CompletedSalarySlip = ({ salaryDetails, preview }) => {
     } = salaryDetails;
 
     const [data, setData] = useState([]);
-    const [companyLogo, setCompanyLogo] = useState(null);
-    const [companyName, setCompanyName] = useState(null);
 
     console.log(salaryDetails);
 
-    const fetchCompany = useCallback(async () => {
-        try {
-            const response = await axios.get(`${SERVER_URL}auth-cmp-reg/`);
-            if (response.data.context && response.data.context.length > 0) {
-                const logoPath = response.data.context[0].logo.replace(/\\/g, "/");
-                const companyName = response.data.context[0].companyName;
-                setCompanyLogo(logoPath);
-                setCompanyName(companyName);
-                console.log(response);
-            }
-        } catch (error) {
-            console.error('Error fetching company data:', error);
-        }
-    }, []);
+   
     const fetchPyrSett = useCallback(async () => {
         try {
             const response = await axios.get(`${SERVER_URL}sett-adv-pyr/`);
@@ -54,28 +39,27 @@ const CompletedSalarySlip = ({ salaryDetails, preview }) => {
 
     useEffect(() => {
         fetchPyrSett();
-        fetchCompany()
-    }, [fetchPyrSett, fetchCompany]);
+    }, [fetchPyrSett]);
 
 
 
 
     return (
-        <div className="salary-slip"
+        <div className={`salary-slip ${preview ? 'preview-mode' : ''}`}
             style={preview ? { padding: '0' } : { position: "relative" }}
         >
             {/* Header Section */}
             <header className="header-salary">
                 <div className={`cmp-detail ${preview ? 'preview-header' : ''}`}>
                     <div className="logo-controller">
-                        {companyLogo && (
                             <img
-                                src={`${SERVER_URL}${companyLogo}`}
+                                src={`${SERVER_URL}${salaryDetails.company_logo}`}
                                 alt="logo"
-                            />)}
+                            />
+                            
                     </div>
                     <div className="logo-text">
-                        <h2>{companyName}</h2>
+                        <h2>{salaryDetails.company_name}</h2>
                         <p>Salary Slip</p>
                     </div>
                 </div>
