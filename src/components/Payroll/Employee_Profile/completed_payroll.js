@@ -33,72 +33,19 @@ import updateAnimation from "../../../assets/Lottie/updateAnim.json";
 import deleteAnimation from "../../../assets/Lottie/deleteAnim.json";
 import successAnimation from "../../../assets/Lottie/successAnim.json";
 import warningAnimation from "../../../assets/Lottie/warningAnim.json";
-import MarkAsCompletedModal from "./MarkAsCompletedModal";
-import Select from 'react-select';
-import { useSelector, useDispatch } from 'react-redux';
-import { setActiveTab, setSelectedIds, setSelectedDeductions, resetState } from '../../../redux/empProfileSlice';
-import EditedSalarySlip from "./EditedSalarySlip";
+import CompletedSalarySlip from "./CompletedSalarySlip";
 
 
-const calculateNetPay = (employee, deductions, options) => {
-  const { allowances, bonuses, taxes, appraisals } = options;
-  let netPay = parseFloat(employee.calculate_pay) || 0;
 
-  // Allowances
-  deductions.allowances?.forEach(allowance => {
-    const found = allowances.find(a => a.id === allowance.value);
-    netPay += parseFloat(found?.amount) || 0;
-  });
-
-  // Bonuses
-  deductions.bonuses?.forEach(bonus => {
-    const found = bonuses.find(b => b.id === bonus.value);
-    netPay += parseFloat(found?.bonusAmount) || 0;
-  });
-
-  // Taxes
-  deductions.taxes?.forEach(tax => {
-    const found = taxes.find(t => t.id === tax.value);
-    if (found?.nature === "fixedamount") {
-      netPay -= parseFloat(found.amount) || 0;
-    } else {
-      netPay -= netPay * (parseFloat(found?.percent) / 100) || 0;
-    }
-  });
-
-
-  // Loans
-  deductions.appraisals?.forEach(app => {
-    const found = appraisals.find(a => a.id === app.value);
-    netPay += parseFloat(found?.appraisal_amount) || 0;
-  });
-
-  // Loans
-  // deductions.loans?.forEach(loan => {
-  //   const found = loans.find(l => l.id === loan.value);
-  //   netPay -= parseFloat(found?.givenLoan) || 0;
-  // });
-
-  return netPay.toFixed(2);
-};
 
 const CompletedPayroll = () => {
-  const dispatch = useDispatch();
-  const { activeTab = 'table',
-    selectedIds = [],
-    selectedDeductions = {
-      allowances: [],
-      bonuses: [],
-      taxes: [],
-      appraisals: [],
-    } } = useSelector(state => state.empProfile);
 
-  const activeTabRef = React.useRef(activeTab);
+
 
 
   const [data, setData] = useState([
     {
-      pysId: "",
+      cPayId: "",
       empId: "",
       empName: "",
       otHoursPay: "",
@@ -125,19 +72,20 @@ const CompletedPayroll = () => {
   const [employees, setEmployees] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [changeTab, setChangeTab] = useState("Completed Payrolls");
-  // const [activeTab, setActiveTab] = useState("table");
+  const [activeTab, setActiveTab] = useState("table");
+  const activeTabRef = React.useRef(activeTab);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
-  // const [selectedIds, setSelectedIds] = useState([]);
+  const [selectedIds, setSelectedIds] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [successModal, setSuccessModal] = useState(false);
   const [warningModal, setWarningModal] = useState(false);
   const [resMsg, setResMsg] = useState("");
-  const [showMarkAsCompletedModal, setShowMarkAsCompletedModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [showExportDropdown, setShowExportDropdown] = useState(false);
   const rowsPerPage = 7;
+
 
   // Get selected employees data based on selectedIds
   const selectedEmployees = data.filter(employee =>
@@ -160,29 +108,10 @@ const CompletedPayroll = () => {
     activeTabRef.current = activeTab;
   }, [activeTab]);
 
-  useEffect(() => {
-    const initializeComponent = async () => {
-      await fetchCompletedPayrolls();
 
-      // Only set to table if not already in markCompleted
-      if (activeTabRef.current !== 'markCompleted') {
-        dispatch(setActiveTab("table"));
-      }
-    };
-
-    initializeComponent();
-
-    return () => {
-      // Cleanup when component unmounts
-      if (activeTabRef.current !== 'markCompleted') {
-        dispatch(resetState());
-      }
-      setSearchQuery("");
-      setCurrentPage(0);
-    };
-  }, [fetchCompletedPayrolls]);
 
   useEffect(() => {
+    fetchCompletedPayrolls()
     let timer;
     if (successModal) {
       timer = setTimeout(() => {
@@ -190,7 +119,7 @@ const CompletedPayroll = () => {
       }, 2000);
     }
     return () => clearTimeout(timer);
-  }, [successModal]);
+  }, [fetchCompletedPayrolls, successModal]);
 
 
   // Filter data based on search query
@@ -230,12 +159,10 @@ const CompletedPayroll = () => {
 
     if (isChecked) {
       const allIds = currentPageData.map((row) => row.empId);
-      // setSelectedIds(allIds);
-      dispatch(setSelectedIds(allIds));
+      setSelectedIds(allIds);
       console.log(allIds);
     } else {
-      dispatch(setSelectedIds([]));
-      // setSelectedIds([]);
+      setSelectedIds([]);
     }
   };
 
@@ -253,7 +180,7 @@ const CompletedPayroll = () => {
       }
     }
 
-    dispatch(setSelectedIds(currentIds)); // Dispatch the new array
+    setSelectedIds(currentIds); // Dispatch the new array
   };
 
   useEffect(() => {
@@ -264,190 +191,10 @@ const CompletedPayroll = () => {
     }
   }, [selectedIds, currentPageData]);
 
-  // Handle close payroll (deletes all existing payrolls)
-  const handleClosePayroll = () => {
-    setModalType("close all payrolls");
-    setShowModal(true);
-    console.log(data);
-  };
-
-  // Confirm close all payrolls
-  const confirmCloseAllPayrolls = async () => {
-    try {
-      // Send all payroll data in the request payload
-      await axios.post(`${SERVER_URL}close-all-payrolls/`, {
-        payrolls: data  // Send the entire data array
-      });
-
-      // Update the state after successful API call
-      setData([]);
-      setShowModal(false);
-      setResMsg("All payrolls have been closed successfully.");
-      setSuccessModal(true);
-    } catch (error) {
-      console.error("Error closing payrolls:", error);
-      setResMsg("Failed to close payrolls. Please try again.");
-      setShowModal(false);
-      setWarningModal(true);
-    }
-  };
-
-  // Handle mark as completed button click
-  const handleMarkAsCompleted = () => {
-    if (selectedIds.length > 0) {
-      dispatch(setActiveTab("markCompleted")); // Switch to mark completed view
-    } else {
-      setResMsg("Please select at least one row to mark as completed.");
-      setWarningModal(true);
-    }
-  };
-
-  const handleConfirmMarkAsCompleted = async () => {
-    try {
-      const payload = selectedEmployees.map(employee => {
-        // 1️⃣ Compute the sums:
-        const appSum = Array.isArray(employee.app)
-          ? employee.app.reduce((sum, a) => sum + Number(a.appraisalAmount || 0), 0)
-          : 0;
-
-        const bonusSum = Array.isArray(employee.bonus)
-          ? employee.bonus.reduce((sum, b) => sum + Number(b.bonusAmount || 0), 0)
-          : 0;
-
-        const allowancesSum = Array.isArray(employee.allowances)
-          ? employee.allowances.reduce((sum, al) => sum + Number(al.amount || 0), 0)
-          : 0;
-
-        const taxesSum = Array.isArray(employee.taxes)
-          ? employee.taxes.reduce((sum, t) => sum + Number(t.amount || 0), 0)
-          : 0;
-
-        // 2️⃣ Build filtered arrays from the user’s selections:
-        const filteredAppraisals = selectedDeductions.appraisals
-          .map(ap => {
-            const found = appraisals.find(x => x.id === ap.value);
-            return found && { id: ap.value, amount: found.appraisal_amount, name: found.name };
-          })
-          .filter(Boolean);
-
-        const filteredBonus = selectedDeductions.bonuses
-          .map(b => {
-            const found = bonuses.find(x => x.id === b.value);
-            return found && { id: b.value, amount: found.bonusAmount, name: found.bonusName };
-          })
-          .filter(Boolean);
 
 
 
-        const filteredAllowance = selectedDeductions.allowances
-          .map(a => {
-            const found = allowances.find(al => al.id === a.value);
-            return found && { id: a.value, amount: found.amount, name: found.allowanceName };
-          })
-          .filter(Boolean);
-        // console.log('filteredAllowance', filteredAllowance);
 
-
-
-        const filteredTax = selectedDeductions.taxes
-          .map(t => {
-            const found = taxes.find(x => x.id === t.value);
-            if (!found) return null;
-
-            const originalPay = parseFloat(employee.calculate_pay) || 0;
-
-            // 1️⃣ Calculate total additions from selected deductions
-            const totalAdditions = 
-              filteredAllowance.reduce((sum, a) => sum + Number(a.amount || 0), 0) +
-              filteredBonus.reduce((sum, b) => sum + Number(b.amount || 0), 0) +
-              filteredAppraisals.reduce((sum, ap) => sum + Number(ap.amount || 0), 0);
-
-            // 2️⃣ Compute total before tax
-            const totalBeforeTax = originalPay + totalAdditions;
-
-            console.log('totalAdditions: ', totalAdditions);
-            console.log('totalBeforeTax: ', totalBeforeTax);
-
-            // 3️⃣ Calculate tax based on totalBeforeTax
-            let amount;
-            if (found.nature === "fixedamount") {
-              amount = parseFloat(found.amount) || 0;
-            } else {
-              const percent = parseFloat(found.percent) || 0;
-              amount = totalBeforeTax * (percent / 100); // Apply % to totalBeforeTax
-            }
-
-            return {
-              id: t.value,
-              amount: amount.toFixed(2),
-              name: found.taxName
-            };
-          })
-          .filter(Boolean);
-
-          // console.log(filteredTax);
-        // 3️⃣ Return the final shape:
-        return {
-          // preserve identifying fields
-          pysId: employee.pysId,
-          empId: employee.empId,
-          empName: employee.empName,
-          department: employee.department,
-          companyName: employee.companyName,
-          companyLogo: employee.companyLogo,
-
-          // original scalar fields
-          otHoursPay: employee.otHoursPay,
-          otHours: employee.otHours,
-          extraFund: employee.extraFund,
-          advSalary: employee.advSalary,
-          loan: employee.loan,
-          salaryPeriod: employee.salaryPeriod,
-          bankName: employee.bankName,
-          accountNo: employee.accountNo,
-          basicSalary: employee.basicSalary,
-          salaryType: employee.salaryType,
-          totalWorkingDays: employee.totalWorkingDays,
-          totalWorkingHours: employee.totalWorkingMinutes,
-          totalWorkingMinutes: employee.totalWorkingHours,
-          attemptWorkingHours: employee.attemptWorkingHours,
-          attempt_working_hours: employee.attempt_working_hours,
-          dailySalary: employee.dailySalary,
-          calculate_pay: employee.calculate_pay,
-          date: employee.date,
-          from_date: "",
-          end_date: "",
-
-          // 🔢 Top-level sums
-          app: appSum,
-          bonus: bonusSum,
-          allowances: allowancesSum,
-          taxes: taxesSum,
-
-          // 📑 Filtered selections
-          filteredAppraisals,
-          filteredBonus,
-          filteredAllowance,
-          filteredTax,
-        };
-      });
-
-      // console.log("selectedDeductions:", selectedDeductions);
-      console.log("Final Payload:", payload);
-
-      // await axios.post(`${SERVER_URL}pyr-emp-cmp/`, payload);
-      await fetchCompletedPayrolls();
-
-      setResMsg("Selected items have been marked as completed successfully.");
-      setSuccessModal(true);
-      dispatch(resetState());
-
-    } catch (error) {
-      console.error("Error marking items as completed:", error);
-      setResMsg("Failed to mark items as completed. Please try again.");
-      setWarningModal(true);
-    }
-  };
 
 
   const exportToPDF = () => {
@@ -574,87 +321,16 @@ const CompletedPayroll = () => {
   const handleOpenSalarySlip = (employee) => {
 
     setSelectedEmployee(employee);
-    dispatch(setActiveTab("salarySlip"));
+    setActiveTab("salarySlip");
   };
-  const handleOpenEditedSalarySlip = (employee) => {
-    if (!employee) return;
-    const originalPay = parseFloat(employee?.calculate_pay) || 0;
 
-
-    const existingAppraisals = Array.isArray(employee.app)
-      ? employee.app.reduce((total, i) => total + Number(i.appraisalAmount || 0), 0)
-      : 0;
-
-    const existingBonuses = Array.isArray(employee.bonus)
-      ? employee.bonus.reduce((total, i) => total + Number(i.bonusAmount || 0), 0)
-      : 0;
-
-    const existingAllowances = Array.isArray(employee.allowances)
-      ? employee.allowances.reduce((total, a) => total + Number(a.amount || 0), 0)
-      : 0;
-
-    const existingTaxes = Array.isArray(employee.taxes)
-      ? employee.taxes.reduce((total, t) => {
-        if (t.nature === "fixedamount") return total + Number(t.amount);
-        return total + (originalPay * (Number(t.percent) / 100));
-      }, 0)
-      : 0;
-
-    // Calculate new amounts from selections
-    const newAppraisals = (selectedDeductions.appraisals || []).reduce((sum, ap) => {
-      const appraisal = appraisals.find(a => a.id === ap?.value);
-      return sum + (appraisal ? Number(appraisal.appraisal_amount || 0) : 0);
-    }, 0);
-
-    const newBonuses = (selectedDeductions.bonuses || []).reduce((sum, b) => {
-      const bonus = bonuses.find(bo => bo.id === b?.value);
-      return sum + (bonus ? Number(bonus.bonusAmount || 0) : 0);
-    }, 0);
-
-    const newTaxes = (selectedDeductions.taxes || []).reduce((sum, t) => {
-      const tax = taxes.find(ta => ta.id === t?.value);
-      if (!tax) return sum;
-      if (tax.nature === "fixedamount") return sum + Number(tax.amount || 0);
-      return sum + (originalPay * (Number(tax.percent || 0) / 100));
-    }, 0);
-
-    // For allowances
-    const newAllowances = (selectedDeductions.allowances || []).reduce((sum, a) => {
-      const allowance = allowances.find(al => al.id === a?.value);
-      return sum + (allowance ? Number(allowance.amount || 0) : 0);
-    }, 0);
-
-    // Create processed data object
-    const processedData = {
-      employeeInfo: {
-        empId: employee.empId,
-        empName: employee.empName,
-        companyName: employee.companyName,
-      },
-      ...employee,
-      originalPay,
-      totalAllowances: newAllowances,
-      totalBonuses: newBonuses,
-      totalTaxes: newTaxes,
-      totalAppraisals: newAppraisals,
-      // totalAllowances: employee.existingAllowances + newAllowances,
-      // totalBonuses: employee.existingBonuses + newBonuses,
-      // totalTaxes: employee.existingTaxes + newTaxes,
-      // totalAppraisals: employee.existingAppraisals + newAppraisals,
-      finalNetPay: originalPay + newAllowances + newBonuses + newAppraisals - newTaxes,
-      deductions: selectedDeductions
-    };
-
-    setSelectedEmployee(processedData);
-    dispatch(setActiveTab("editedSalarySlip"));
-  };
 
   const handleCloseSalarySlip = () => {
-    dispatch(setActiveTab("table"));
+    setActiveTab("table");
     setSelectedEmployee(null);
   };
   const handleCloseEditedSalarySlip = () => {
-    dispatch(setActiveTab("markCompleted"));
+    setActiveTab("table");
     setSelectedEmployee(null);
   };
 
@@ -789,36 +465,32 @@ const CompletedPayroll = () => {
       };
 
       generatePreview();
-    }, [employee, deductions]); // Add deductions as dependency
+    }, [employee, deductions]);
 
-    const safeDeductions = {
-      allowances: deductions.allowances || [],
-      bonuses: deductions.bonuses || [],
-      taxes: deductions.taxes || [],
-      appraisals: deductions.appraisals || []
-    };
-
+    // Transform deduction items to match SalarySlip expectations
     const transformDeductions = useMemo(() => ({
-      allowances: (deductions.allowances || []).map(a => ({
-        ...allowances.find(al => al.id === a.value),
-        amount: allowances.find(al => al.id === a.value)?.amount
+      allowances: (deductions.allowances || []).map(item => ({
+        ...allowances.find(a => a.id === item.id),
+        amount: item.amount,
+        allowanceName: item.name
       })),
-      bonuses: (deductions.bonuses || []).map(b => ({
-        ...bonuses.find(bo => bo.id === b.value),
-        bonusAmount: bonuses.find(bo => bo.id === b.value)?.bonusAmount
+      bonuses: (deductions.bonuses || []).map(item => ({
+        ...bonuses.find(b => b.id === item.id),
+        bonusAmount: item.amount,
+        bonusName: item.name
       })),
-      taxes: (deductions.taxes || []).map(t => ({
-        ...taxes.find(ta => ta.id === t.value),
-        amount: taxes.find(ta => ta.id === t.value)?.amount,
-        percent: taxes.find(ta => ta.id === t.value)?.percent
+      taxes: (deductions.taxes || []).map(item => ({
+        ...taxes.find(t => t.id === item.id),
+        amount: item.amount,
+        taxName: item.name,
+        nature: taxes.find(t => t.id === item.id)?.nature || "fixedamount"
       })),
-      appraisals: (deductions.appraisals || []).map(a => ({
-        ...appraisals.find(ap => ap.id === a.value),
-        appraisalAmount: appraisals.find(ap => ap.id === a.value)?.appraisal_amount
+      appraisals: (deductions.appraisals || []).map(item => ({
+        ...appraisals.find(a => a.id === item.id),
+        appraisalAmount: item.amount,
+        appraisalName: item.name
       }))
-    }), [deductions, bonuses, allowances, taxes, appraisals]);
-
-
+    }), [deductions, allowances, bonuses, taxes, appraisals]);
 
     return (
       <div className="preview-container">
@@ -827,18 +499,18 @@ const CompletedPayroll = () => {
             <div className="spinner"></div>
           </div>
         ) : previewImage ? (
-          <img
-            src={previewImage}
-            alt={`${employee.empName} salary slip preview`}
-            className="preview-thumbnail"
+         <img
+          src={previewImage}
           />
         ) : (
-          <div ref={previewRef} className="preview-viewport">
-            <SalarySlip
-              salaryDetails={employee}
-              preview
-              deductions={transformDeductions}
-            />
+         <div 
+          ref={previewRef} 
+          className="preview-viewport"
+        >
+          <SalarySlip
+            salaryDetails={transformDeductions}
+            preview // Add this
+          />
           </div>
         )}
       </div>
@@ -864,10 +536,6 @@ const CompletedPayroll = () => {
 
   // And use the Redux-selected deductions directly:
   // Memoize derived data
-  const { allowances: selectedAllowances, bonuses: selectedBonuses, taxes: selectedTaxes, appraisals: selectedAppraisals } = useMemo(
-    () => selectedDeductions,
-    [selectedDeductions]
-  );
 
   // Add this useEffect hook for fetching deductions
   useEffect(() => {
@@ -1027,18 +695,7 @@ const CompletedPayroll = () => {
                         </div>
 
                         <div className="add-delete-container add-delete-emp">
-                          <button
-                            className="add-button submit-button"
-                            onClick={handleClosePayroll}
-                          >
-                            <FaCheck className="add-icon" /> Close Payroll
-                          </button>
-                          <button
-                            className="add-button"
-                            onClick={handleMarkAsCompleted}
-                          >
-                            <FaCheck className="add-icon" /> Mark As Completed
-                          </button>
+
                           <div className="export-dropdown-container ">
                             <button
                               className="add-button export-button"
@@ -1129,7 +786,7 @@ const CompletedPayroll = () => {
                             </thead>
                             <tbody>
                               {filteredData.map((item, index) => (
-                                <tr key={item.pysId}>
+                                <tr key={item.cPayId}>
                                   <td>
                                     <input
                                       type="checkbox"
@@ -1144,25 +801,29 @@ const CompletedPayroll = () => {
                                   <td>{item.otHours}</td>
                                   <td>{item.extraFund}</td>
                                   <td>{item.advSalary}</td>
-                                  <td>
-                                    {Array.isArray(item.app)
-                                      ? item.app.reduce((total, i) => total + i.appraisalAmount, 0)
-                                      : 0}
+                                  <td>{parseFloat(item.app || 0) +
+                                    (Array.isArray(item.appraisal_items)
+                                      ? item.appraisal_items.reduce((total, i) => total + parseFloat(i.amount || 0), 0)
+                                      : 0)
+                                  }
                                   </td>
                                   <td>
-                                    {Array.isArray(item.bonus)
-                                      ? item.bonus.reduce((total, i) => total + Number(i.bonusAmount), 0)
-                                      : 0}
+                                    {parseFloat(item.bonus || 0) +
+                                      (Array.isArray(item.bonus_items)
+                                        ? item.bonus_items.reduce((total, i) => total + parseFloat(i.amount || 0), 0)
+                                        : 0)}
                                   </td>
                                   <td>
-                                    {Array.isArray(item.allowances)
-                                      ? item.allowances.reduce((total, i) => total + Number(i.amount), 0)
-                                      : 0}
+                                    {parseFloat(item.allowance || 0) +
+                                      (Array.isArray(item.allowance_items)
+                                        ? item.allowance_items.reduce((total, i) => total + parseFloat(i.amount || 0), 0)
+                                        : 0)}
                                   </td>
                                   <td>
-                                    {Array.isArray(item.taxes)
-                                      ? item.taxes.reduce((total, i) => total + Number(i.amount), 0)
-                                      : 0}
+                                    {parseFloat(item.taxes || 0) +
+                                      (Array.isArray(item.tax_items)
+                                        ? item.tax_items.reduce((total, i) => total + parseFloat(i.amount || 0), 0)
+                                        : 0)}
                                   </td>
                                   <td>{item.loan}</td>
                                   <td>{item.salaryPeriod}</td>
@@ -1209,24 +870,27 @@ const CompletedPayroll = () => {
 
 
                 case "gallery":
-                  // Group employees by month-year
+                  // Group employees by month-year using from_date
                   const groupedEmployees = currentPageData.reduce((acc, employee) => {
-                    // If there's no date property, use a default grouping
-                    let monthYear = "Current Period";
-                    if (employee.date) {
-                      const date = new Date(employee.date);
-                      monthYear = date.toLocaleString('default', {
+                    const dateString = employee.from_date || employee.end_date; // Fallback to end_date if needed
+                    const monthYear = dateString
+                      ? new Date(dateString).toLocaleString('default', {
                         month: 'long',
                         year: 'numeric'
-                      });
-                    }
+                      })
+                      : "Current Period";
+
                     if (!acc[monthYear]) acc[monthYear] = [];
                     acc[monthYear].push(employee);
                     return acc;
                   }, {});
 
-                  // Get groups in array format for easier rendering
-                  const sortedGroups = Object.entries(groupedEmployees);
+                  // Sort groups chronologically
+                  const sortedGroups = Object.entries(groupedEmployees).sort((a, b) => {
+                    const dateA = new Date(a[0]);
+                    const dateB = new Date(b[0]);
+                    return dateB - dateA;
+                  });
 
                   return (
                     <>
@@ -1300,18 +964,7 @@ const CompletedPayroll = () => {
                         </div>
 
                         <div className="add-delete-container add-delete-emp">
-                          <button
-                            className="add-button submit-button"
-                            onClick={handleClosePayroll}
-                          >
-                            <FaCheck className="add-icon" /> Close Payroll
-                          </button>
-                          <button
-                            className="add-button"
-                            onClick={handleMarkAsCompleted}
-                          >
-                            <FaCheck className="add-icon" /> Mark As Completed
-                          </button>
+
                           <div className="export-dropdown-container ">
                             <button
                               className="add-button export-button"
@@ -1364,6 +1017,7 @@ const CompletedPayroll = () => {
                           </div>
                         </div>
                       </div>
+
                       <div className="gallery-container">
                         {sortedGroups.map(([monthYear, employees], groupIndex) => (
                           <div key={monthYear}>
@@ -1373,29 +1027,45 @@ const CompletedPayroll = () => {
                                 <hr className="month-divider" />
                               </div>
                               <div className="salary-slips-grid">
-                                {employees.map((employee) => (
-                                  <div
-                                    key={employee.pysId}
-                                    className="salary-slip-card"
-                                    onClick={() => handleOpenSalarySlip(employee)}
-                                  >
-                                    <div className="preview-header">
-                                      <h4>{employee.empName}</h4>
-                                      <small>{employee.empId}</small>
+                                {employees.map((employee) => {
+                                  // Prepare deductions data for PreviewContainer
+                                  const deductions = {
+                                    allowances: employee.allowance_items || [],
+                                    bonuses: employee.bonus_items || [],
+                                    taxes: employee.tax_items || [],
+                                    appraisals: employee.appraisal_items || []
+                                  };
+
+                                  return (
+                                    <div
+                                      key={employee.cPayId}
+                                      className="salary-slip-card"
+                                      onClick={() => handleOpenSalarySlip(employee)}
+                                    >
+                                      <div className="preview-header">
+                                        <h4>{employee.empName}</h4>
+                                        <small>{employee.empId}</small>
+                                      </div>
+                                      <PreviewContainer
+                                        employee={employee}
+                                        deductions={deductions}
+                                        allowances={allowances}
+                                        bonuses={bonuses}
+                                        taxes={taxes}
+                                        appraisals={appraisals}
+                                      />
+                                      <div className="preview-footer">
+                                        <span>Basic: Rs. {employee.basicSalary}</span>
+                                        <span>Net: Rs. {employee.calculate_pay}</span>
+                                      </div>
                                     </div>
-                                    <PreviewContainer employee={employee} deductions={{}} />
-                                    <div className="preview-footer">
-                                      <span>Basic: Rs. {employee.basicSalary}</span>
-                                      <span>Net: Rs. {employee.calculate_pay}</span>
-                                    </div>
-                                  </div>
-                                ))}
+                                  );
+                                })}
                               </div>
                             </div>
                             {groupIndex < sortedGroups.length - 1 && <hr />}
                           </div>
                         ))}
-
                       </div>
                     </>
                   );
@@ -1403,293 +1073,7 @@ const CompletedPayroll = () => {
 
 
 
-                case "markCompleted":
-                  // Get selected employees data
-                  const selectedEmployees = data.filter(employee =>
-                    selectedIds.includes(employee.empId)
-                  );
-
-                  // Group selected employees by month-year
-                  const groupedSelected = selectedEmployees.reduce((acc, employee) => {
-                    const date = new Date(employee.date);
-                    const monthYear = date.toLocaleString('default', {
-                      month: 'long',
-                      year: 'numeric'
-                    });
-                    if (!acc[monthYear]) acc[monthYear] = [];
-                    acc[monthYear].push(employee);
-                    return acc;
-                  }, {});
-
-                  return (
-                    <div className="gallery-container">
-                      {/* Deduction Controls */}
-                      <div className="deduction-controls">
-                        <h2>Apply Deductions to All Selected</h2>
-                        <div className="deduction-filters">
-                          <label>Select Allowances</label>
-                          <Select
-                            isMulti
-                            placeholder="Select Allowances..."
-                            options={allowanceOptions}
-                            value={selectedAllowances}
-                            onChange={(selected) => dispatch(setSelectedDeductions({
-                              ...selectedDeductions,
-                              allowances: selected || []
-                            }))}
-                          />
-
-                          <label>Select Bonuses</label>
-                          <Select
-                            isMulti
-                            placeholder="Select Bonuses..."
-                            options={bonusOptions}
-                            value={selectedBonuses}
-                            onChange={(selected) => dispatch(setSelectedDeductions({
-                              ...selectedDeductions,
-                              bonuses: selected || []
-                            }))}
-                          />
-
-                          <label>Select Taxes</label>
-                          <Select
-                            isMulti
-                            placeholder="Select Taxes..."
-                            options={taxOptions}
-                            value={selectedTaxes}
-                            onChange={(selected) => dispatch(setSelectedDeductions({
-                              ...selectedDeductions,
-                              taxes: selected || []
-                            }))}
-                          />
-
-                          <label>Select Appraisals</label>
-                          <Select
-                            isMulti
-                            placeholder="Select Appraisals..."
-                            options={appraisalOptions}
-                            value={selectedAppraisals}
-                            onChange={(selected) => dispatch(setSelectedDeductions({
-                              ...selectedDeductions,
-                              appraisals: selected || []
-                            }))}
-                          />
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="modal-footer">
-                          <button
-                            className="submit-button"
-                            onClick={() => handleConfirmMarkAsCompleted(selectedDeductions)}
-                          >
-                            Confirm Mark as Completed
-                          </button>
-                          <button
-                            className="cancel-button"
-                            onClick={() => dispatch(resetState())}
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Table Structure */}
-                      {Object.entries(groupedSelected).map(([monthYear, employees], groupIndex) => (
-                        <div key={monthYear}>
-                          <div className="month-group">
-                            <div className="month-header">
-                              <h3 className="month-title">{monthYear}</h3>
-                              <hr className="month-divider" />
-                            </div>
-                            <div className="department-table">
-                              <div className="departments-table">
-                                <table className="table">
-                                  <thead>
-                                    <tr>
-
-                                      <th>Employee ID</th>
-                                      <th>Employee Name</th>
-                                      <th>Overtime Pay</th>
-                                      <th>Overtime Hours</th>
-                                      <th>Extra Fund</th>
-                                      <th>Advance Salary</th>
-                                      <th>Loan</th>
-                                      <th>Appraisals</th>
-                                      <th>Bonus</th>
-                                      <th>Allowances</th>
-                                      <th>Taxes</th>
-                                      <th>Basic</th>
-                                      <th>Daily Salary</th>
-                                      <th>Original Pay</th>
-                                      <th>Total</th>
-                                      <th>Salary Slip</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {employees.map((employee) => {
-                                      const originalPay = parseFloat(employee.calculate_pay) || 0;
-
-                                      const existingAppraisals = Array.isArray(employee.app)
-                                        ? employee.app.reduce((total, i) => total + Number(i.appraisalAmount || 0), 0)
-                                        : 0;
-
-                                      const existingBonuses = Array.isArray(employee.bonus)
-                                        ? employee.bonus.reduce((total, i) => total + Number(i.bonusAmount || 0), 0)
-                                        : 0;
-
-                                      const existingAllowances = Array.isArray(employee.allowances)
-                                        ? employee.allowances.reduce((total, a) => total + Number(a.amount || 0), 0)
-                                        : 0;
-
-                                      const existingTaxes = Array.isArray(employee.taxes)
-                                        ? employee.taxes.reduce((total, t) => {
-                                          if (t.nature === "fixedamount") return total + Number(t.amount);
-                                          return total + (originalPay * (Number(t.percent) / 100));
-                                        }, 0)
-                                        : 0;
-
-                                      // Calculate new amounts from selections
-                                      // 1. Calculate additions (allowances, bonuses, appraisals)
-                                      const newAllowances = (selectedDeductions.allowances || []).reduce((sum, a) => {
-                                        const allowance = allowances.find(al => al.id === a?.value);
-                                        return sum + (allowance ? Number(allowance.amount || 0) : 0);
-                                      }, 0);
-
-                                      const newBonuses = (selectedDeductions.bonuses || []).reduce((sum, b) => {
-                                        const bonus = bonuses.find(bo => bo.id === b?.value);
-                                        return sum + (bonus ? Number(bonus.bonusAmount || 0) : 0);
-                                      }, 0);
-
-                                      const newAppraisals = (selectedDeductions.appraisals || []).reduce((sum, ap) => {
-                                        const appraisal = appraisals.find(a => a.id === ap?.value);
-                                        return sum + (appraisal ? Number(appraisal.appraisal_amount || 0) : 0);
-                                      }, 0);
-
-                                      // 2. Calculate total additions
-                                      const totalAdditions = newAllowances + newBonuses + newAppraisals;
-
-                                      // 3. Calculate additional amount BEFORE tax
-                                      const additionalAmountBeforeTax = originalPay + totalAdditions;
-
-                                      // 4. Calculate taxes (now using additionalAmountBeforeTax as the base)
-                                      const newTaxes = (selectedDeductions.taxes || []).reduce((sum, t) => {
-                                        const tax = taxes.find(ta => ta.id === t?.value);
-                                        if (!tax) return sum;
-
-                                        if (tax.nature === "fixedamount") {
-                                          return sum + Number(tax.amount || 0);
-                                        } else {
-                                          const percent = Number(tax.percent || 0);
-                                          return sum + (additionalAmountBeforeTax * (percent / 100));
-                                        }
-                                      }, 0);
-
-                                      // 5. Final additional amount after tax
-                                      const additionalAmount = additionalAmountBeforeTax - newTaxes;
-
-                                      // Calculate totals
-                                      const totalAppraisals = existingAppraisals + newAppraisals;
-                                      const totalBonuses = existingBonuses + newBonuses;
-                                      const totalAllowances = existingAllowances + newAllowances;
-                                      const totalTaxes = existingTaxes + newTaxes;
-
-
-                                      // const additionalAmount = parseFloat(calculateNetPay(employee, selectedDeductions, {
-                                      //   appraisals,
-                                      //   allowances,
-                                      //   bonuses,
-                                      //   taxes,
-
-                                      // })                                    ) || 0;
-
-
-                                      return (
-
-                                        <tr key={employee.pysId}>
-                                          <td>{employee.empId}</td>
-                                          <td>{employee.empName}</td>
-                                          <td>{employee.otHoursPay}</td>
-                                          <td>{employee.otHours}</td>
-                                          <td>{employee.extraFund}</td>
-                                          <td>{employee.advSalary}</td>
-                                          <td>{employee.loan}</td>
-                                          <td>
-                                            {existingAppraisals.toFixed(2)} + {newAppraisals.toFixed(2)} = {" "}
-                                            <strong>{totalAppraisals.toFixed(2)}</strong>
-                                          </td>
-                                          <td>
-                                            {existingBonuses.toFixed(2)} + {newBonuses.toFixed(2)} = {" "}
-                                            <strong>{totalBonuses.toFixed(2)}</strong>
-                                          </td>
-                                          <td>
-                                            {existingAllowances.toFixed(2)} + {newAllowances.toFixed(2)} = {" "}
-                                            <strong>{totalAllowances.toFixed(2)}</strong>
-                                          </td>
-                                          <td>
-                                            {existingTaxes.toFixed(2)} + {newTaxes.toFixed(2)} = {" "}
-                                            <strong>{totalTaxes.toFixed(2)}</strong>
-                                          </td>
-
-                                          <td>{employee.basicSalary}</td>
-                                          <td>{employee.dailySalary}</td>
-                                          <td>Rs. {originalPay.toFixed(2)}</td>
-                                          <td>Rs. {(additionalAmount).toFixed(2)}</td>
-                                          <td>
-                                            <button style={{ background: "none", border: "none" }}
-                                              onClick={() => {
-                                                if (!employee) return;
-                                                handleOpenEditedSalarySlip({
-                                                  ...employee,
-                                                  existingAllowances,
-                                                  existingBonuses,
-                                                  existingTaxes,
-                                                  existingAppraisals
-                                                });
-                                              }}
-                                            >
-                                              <FaDownload className="salary-slip-button" />
-                                            </button>
-                                          </td>
-                                        </tr>
-
-                                      )
-                                    })}
-                                  </tbody>
-                                </table>
-                              </div>
-                            </div>
-                          </div>
-                          {groupIndex < Object.keys(groupedSelected).length - 1 && <hr />}
-                        </div>
-                      ))}
-                    </div>
-                  );
-
-
-
                 case "salarySlip":
-                  return (
-                    <div className="modal">
-                      <div className="modal-salary">
-                        <div className="btn-container">
-                          <div className="print-salary">
-                            <button onClick={handleExportPdf}>
-                              <FontAwesomeIcon icon={faPrint} />
-                            </button>
-                          </div>
-                          <div className="close-Salary">
-                            <button onClick={handleCloseSalarySlip}>
-                              <FontAwesomeIcon icon={faXmark} />
-                            </button>
-                          </div>
-                        </div>
-                        <SalarySlip salaryDetails={selectedEmployee} />
-                      </div>
-                    </div>
-                  );
-
-
-                case "editedSalarySlip":
                   return (
                     <div className="modal">
                       <div className="modal-salary">
@@ -1705,7 +1089,7 @@ const CompletedPayroll = () => {
                             </button>
                           </div>
                         </div>
-                        <EditedSalarySlip salaryDetails={selectedEmployee} />
+                        <CompletedSalarySlip salaryDetails={selectedEmployee} />
                       </div>
                     </div>
                   );
@@ -1722,13 +1106,13 @@ const CompletedPayroll = () => {
 
 
   const handleTableActiveTab = () => {
-    dispatch(setActiveTab('table'))
+    setActiveTab('table')
   }
   const handleGalleryActiveTab = () => {
-    dispatch(setActiveTab('gallery'))
+    setActiveTab('gallery')
   }
   const handleSalarySlipActiveTab = () => {
-    dispatch(setActiveTab('salarySlip'))
+    setActiveTab('salarySlip')
   }
 
   return (
@@ -1800,7 +1184,7 @@ const CompletedPayroll = () => {
                 : `Are you sure you want to ${modalType} this Employee?`
             }
             onConfirm={() => {
-              if (modalType === "close all payrolls") confirmCloseAllPayrolls();
+              // if (modalType === "close all payrolls") confirmCloseAllPayrolls();
             }}
             onCancel={() => setShowModal(false)}
             animationData={
@@ -1832,13 +1216,6 @@ const CompletedPayroll = () => {
             warningModal={warningModal}
           />
 
-          {/* Mark As Completed Modal */}
-          <MarkAsCompletedModal
-            isOpen={showMarkAsCompletedModal}
-            onClose={() => setShowMarkAsCompletedModal(false)}
-            selectedEmployees={selectedEmployees}
-            onConfirm={handleConfirmMarkAsCompleted}
-          />
 
 
           {renderTabContent()}

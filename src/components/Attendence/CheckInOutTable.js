@@ -196,6 +196,7 @@ const CheckInOutTable = ({ dash }) => {
 
 
   const handleEdit = (row) => {
+    console.log(row);
     setEditFormData({
       id: row.id,
       empId: row.empId,
@@ -213,6 +214,7 @@ const CheckInOutTable = ({ dash }) => {
   const handleUpdate = async () => {
     setModalType("update");
     setEditFormData({ ...editFormData });
+    console.log(editFormData);
     setShowModal(true);
   };
 
@@ -280,6 +282,7 @@ const CheckInOutTable = ({ dash }) => {
   const addAtt = async () => {
     setModalType("create");
     setShowModal(true);
+    console.log(formData);
   };
   const confirmAdd = async () => {
     if (

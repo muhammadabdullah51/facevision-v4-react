@@ -612,19 +612,22 @@ const EmployeeProfile = () => {
       const bonus = bonuses.find(bo => bo.id === b?.value);
       return sum + (bonus ? Number(bonus.bonusAmount || 0) : 0);
     }, 0);
-
-    const newTaxes = (selectedDeductions.taxes || []).reduce((sum, t) => {
-      const tax = taxes.find(ta => ta.id === t?.value);
-      if (!tax) return sum;
-      if (tax.nature === "fixedamount") return sum + Number(tax.amount || 0);
-      return sum + (originalPay * (Number(tax.percent || 0) / 100));
-    }, 0);
-
-    // For allowances
+    
     const newAllowances = (selectedDeductions.allowances || []).reduce((sum, a) => {
       const allowance = allowances.find(al => al.id === a?.value);
       return sum + (allowance ? Number(allowance.amount || 0) : 0);
     }, 0);
+
+    
+    const newTaxes = (selectedDeductions.taxes || []).reduce((sum, t) => {
+      const tax = taxes.find(ta => ta.id === t?.value);
+      if (!tax) return sum;
+      if (tax.nature === "fixedamount") return sum + Number(tax.amount || 0);
+      const beforeTax = originalPay + newAllowances + newBonuses + newAppraisals
+      return sum + (beforeTax * (Number(tax.percent || 0) / 100));
+    }, 0);
+
+    // For allowances
 
     // Create processed data object
     const processedData = {
@@ -639,10 +642,10 @@ const EmployeeProfile = () => {
       totalBonuses: newBonuses,
       totalTaxes: newTaxes,
       totalAppraisals: newAppraisals,
-      // totalAllowances: employee.existingAllowances + newAllowances,
-      // totalBonuses: employee.existingBonuses + newBonuses,
-      // totalTaxes: employee.existingTaxes + newTaxes,
-      // totalAppraisals: employee.existingAppraisals + newAppraisals,
+      existingAllowances: existingAllowances,
+      existingBonuses: existingBonuses,
+      existingTaxes: existingTaxes,
+      existingAppraisals: existingAppraisals,
       finalNetPay: originalPay + newAllowances + newBonuses + newAppraisals - newTaxes,
       deductions: selectedDeductions
     };
@@ -1645,7 +1648,7 @@ const EmployeeProfile = () => {
                                                   existingAllowances,
                                                   existingBonuses,
                                                   existingTaxes,
-                                                  existingAppraisals
+                                                  existingAppraisals, 
                                                 });
                                               }}
                                             >
@@ -1707,7 +1710,7 @@ const EmployeeProfile = () => {
                             </button>
                           </div>
                         </div>
-                        <EditedSalarySlip salaryDetails={selectedEmployee} />
+                        <EditedSalarySlip salaryDetails={selectedEmployee} preview={false} />
                       </div>
                     </div>
                   );

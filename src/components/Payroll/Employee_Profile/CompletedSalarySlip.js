@@ -3,23 +3,44 @@ import "./salarySlip.css"; // Reuse the same styles
 import SERVER_URL from "../../../config";
 import axios from "axios";
 
-const EditedSalarySlip = ({ salaryDetails, preview }) => {
-    // Destructure processed data from salaryDetails
-    // const {
-    //     originalPay,
-    //     totalAppraisals,
-    //     totalBonuses,
-    //     totalAllowances,
-    //     totalTaxes,
-    //     finalNetPay,
-    //     employeeInfo,
-    //     deductions
-    // } = salaryDetails;
+const CompletedSalarySlip = ({ salaryDetails, preview }) => {
+    const {
+        allowance_items = [],
+        bonus_items = [],
+        tax_items = [],
+        appraisal_items = [],
+        calculate_pay,
+        basicSalary,
+        advSalary,
+        otHoursPay,
+        loan,
+        extraFund,
+        allowance,
+        bonus,
+        app,
+        taxes
+    } = salaryDetails;
 
     const [data, setData] = useState([]);
+    const [companyLogo, setCompanyLogo] = useState(null);
+    const [companyName, setCompanyName] = useState(null);
+
     console.log(salaryDetails);
 
-
+    const fetchCompany = useCallback(async () => {
+        try {
+            const response = await axios.get(`${SERVER_URL}auth-cmp-reg/`);
+            if (response.data.context && response.data.context.length > 0) {
+                const logoPath = response.data.context[0].logo.replace(/\\/g, "/");
+                const companyName = response.data.context[0].companyName;
+                setCompanyLogo(logoPath);
+                setCompanyName(companyName);
+                console.log(response);
+            }
+        } catch (error) {
+            console.error('Error fetching company data:', error);
+        }
+    }, []);
     const fetchPyrSett = useCallback(async () => {
         try {
             const response = await axios.get(`${SERVER_URL}sett-adv-pyr/`);
@@ -33,24 +54,11 @@ const EditedSalarySlip = ({ salaryDetails, preview }) => {
 
     useEffect(() => {
         fetchPyrSett();
-    }, [fetchPyrSett]);
+        fetchCompany()
+    }, [fetchPyrSett, fetchCompany]);
 
 
-    // Calculate final net pay properly
-    const totalEarnings =
-        parseFloat(salaryDetails.originalPay || 0) +
-        parseFloat(salaryDetails.totalAllowances || 0) +
-        parseFloat(salaryDetails.totalBonuses || 0) +
-        parseFloat(salaryDetails.totalAppraisals || 0);
 
-    const totalTaxes = (salaryDetails.taxes || []).reduce((sum, tax) => {
-        if (tax.nature === "fixedamount") {
-            return sum + parseFloat(tax.amount || 0);
-        }
-        return sum + (totalEarnings * (parseFloat(tax.percent || 0) / 100));
-    }, 0);
-
-    const finalNetPay = totalEarnings - totalTaxes;
 
     return (
         <div className="salary-slip"
@@ -60,10 +68,14 @@ const EditedSalarySlip = ({ salaryDetails, preview }) => {
             <header className="header-salary">
                 <div className={`cmp-detail ${preview ? 'preview-header' : ''}`}>
                     <div className="logo-controller">
-                        <img src={`${SERVER_URL}${salaryDetails.companyLogo}`} alt="logo" />
+                        {companyLogo && (
+                            <img
+                                src={`${SERVER_URL}${companyLogo}`}
+                                alt="logo"
+                            />)}
                     </div>
                     <div className="logo-text">
-                        <h2>{salaryDetails.companyName}</h2>
+                        <h2>{companyName}</h2>
                         <p>Salary Slip</p>
                     </div>
                 </div>
@@ -134,42 +146,34 @@ const EditedSalarySlip = ({ salaryDetails, preview }) => {
                             <tr>
                                 <td>1</td>
                                 <td>Basic Salary</td>
-                                <td>Rs. {salaryDetails.basicSalary}</td>
+                                <td>Rs. {basicSalary}</td>
                             </tr>
                             <tr>
                                 <td>2</td>
                                 <td>Overtime Hours Pay</td>
-                                <td>Rs. {salaryDetails.otHoursPay}</td>
+                                <td>Rs. {otHoursPay}</td>
                             </tr>
-
-                            {/* Render all allowances */}
-                            {salaryDetails.allowances?.map((allowance, index) => (
-                                <tr key={`allowance-${index}`}>
-                                    <td>{index + 3}</td>
-                                    <td>{allowance.allowanceName}</td>
-                                    <td>Rs. {allowance.amount}</td>
-                                </tr>
-                            ))}
-                            {/* Render all bonuses */}
-                            {salaryDetails.bonuses?.map((bonus, index) => (
-                                <tr key={`bonus-${index}`}>
-                                    <td>{salaryDetails.allowances?.length + index + 2}</td>
-                                    <td>{bonus.bonusName}</td>
-                                    <td>Rs. {bonus.bonusAmount}</td>
-                                </tr>
-                            ))}
-                            {/* Render all appraisals */}
-                            {salaryDetails.appraisals?.map((appraisal, index) => (
-                                <tr key={`appraisal-${index}`}>
-                                    <td>{salaryDetails.allowances?.length + salaryDetails.bonuses?.length + index + 2}</td>
-                                    <td>{appraisal.appraisalName}</td>
-                                    <td>Rs. {appraisal.appraisalAmount}</td>
-                                </tr>
-                            ))}
+                            {/* Allowances */}
+                           <tr>
+                                <td>2</td>
+                                <td>Allowances</td>
+                                <td>Rs. {salaryDetails.allowance}</td>
+                            </tr>
+                           <tr>
+                                <td>3</td>
+                                <td>Appraisals</td>
+                                <td>Rs. {salaryDetails.app}</td>
+                            </tr>
+                           <tr>
+                                <td>4</td>
+                                <td>Bonus</td>
+                                <td>Rs. {salaryDetails.bonus}</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
 
+                {/* Deductions Table */}
                 <div className="tableSalary">
                     <h4>Deductions</h4>
                     <table>
@@ -194,21 +198,13 @@ const EditedSalarySlip = ({ salaryDetails, preview }) => {
                             <tr>
                                 <td>3</td>
                                 <td>Extra Fund</td>
-                                <td>Rs. {salaryDetails.extraFund}</td>
+                                <td>Rs. {extraFund}</td>
                             </tr>
-
-                            {/* Mapped Taxes */}
-                            {(salaryDetails.taxes || []).map((tax, index) => (
-                                <tr key={`tax-${index}`}>
-                                    <td>{4 + index}</td>
-                                    <td>{tax.taxName}</td>
-                                    <td>
-                                        Rs. {tax.nature === "fixedamount"
-                                            ? tax.amount
-                                            : ((parseFloat(salaryDetails.basicSalary) * (tax.percent / 100)).toFixed(2))}
-                                    </td>
-                                </tr>
-                            ))}
+                           <tr>
+                                <td>4</td>
+                                <td>Taxes</td>
+                                <td>Rs. {salaryDetails.taxes}</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -230,23 +226,35 @@ const EditedSalarySlip = ({ salaryDetails, preview }) => {
                             <tr>
                                 <td>1</td>
                                 <td>Original Pay</td>
-                                <td>Rs. {salaryDetails.originalPay.toFixed(2)}</td>
+                                <td>Rs. {calculate_pay}</td>
                             </tr>
-                            <tr>
-                                <td>2</td>
-                                <td>Additional Allowances</td>
-                                <td>Rs. {salaryDetails.totalAllowances.toFixed(2)}</td>
-                            </tr>
-                            <tr>
-                                <td>3</td>
-                                <td>Additional Bonuses</td>
-                                <td>Rs. {salaryDetails.totalBonuses.toFixed(2)}</td>
-                            </tr>
-                            <tr>
-                                <td>4</td>
-                                <td>Appraisal Adjustments</td>
-                                <td>Rs. {salaryDetails.totalAppraisals.toFixed(2)}</td>
-                            </tr>
+                            {/* Allowance Items */}
+                            {allowance_items.map((item, index) => (
+                                <tr key={`rev-allowance-${index}`}>
+                                    <td>{index + 2}</td>
+                                    <td>Additional Allowance</td>
+                                    {/* <td>{item.name}</td> */}
+                                    <td>Rs. {item.amount}</td>
+                                </tr>
+                            ))}
+                            {/* Bonus Items */}
+                            {bonus_items.map((item, index) => (
+                                <tr key={`rev-bonus-${index}`}>
+                                    <td>{allowance_items.length + index + 2}</td>
+                                    <td>Additional Bonus</td>
+                                    {/* <td>{item.name}</td> */}
+                                    <td>Rs. {item.amount}</td>
+                                </tr>
+                            ))}
+                            {/* Appraisal Items */}
+                            {appraisal_items.map((item, index) => (
+                                <tr key={`rev-appraisal-${index}`}>
+                                    <td>{allowance_items.length + bonus_items.length + index + 2}</td>
+                                    <td>Additional Appraisals</td>
+                                    {/* <td>{item.name}</td> */}
+                                    <td>Rs. {item.amount}</td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
                 </div>
@@ -263,20 +271,25 @@ const EditedSalarySlip = ({ salaryDetails, preview }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>1</td>
-                                <td>Tax Deductions</td>
-                                <td>Rs. {salaryDetails.totalTaxes.toFixed(2)}</td>
-                            </tr>
-                            {/* Add other deductions as needed */}
+                            {tax_items.map((item, index) => (
+                                <tr key={`rev-tax-${index}`}>
+                                    <td>{index + 1}</td>
+                                    <td>Additional Tax</td>
+                                    {/* <td>{item.name}</td> */}
+                                    <td>Rs. {item.amount}</td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
                 </div>
             </section>
 
+            {/* Revised Earnings */}
+
+
             {/* Final Summary */}
             <section className="summary">
-                <p><strong>Final Net Pay:</strong> Rs. {salaryDetails.finalNetPay.toFixed(2)}</p>
+                <p><strong>Final Net Pay:</strong> Rs. {calculate_pay}</p>
             </section>
 
             <footer className="footer-salary">
@@ -289,4 +302,4 @@ const EditedSalarySlip = ({ salaryDetails, preview }) => {
     );
 };
 
-export default EditedSalarySlip;
+export default CompletedSalarySlip;
