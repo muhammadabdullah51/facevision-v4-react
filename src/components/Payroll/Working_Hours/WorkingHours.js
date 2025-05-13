@@ -151,6 +151,13 @@ const WorkingHours = () => {
         fetchWH();
         handleReset()
     };
+    const formatTime = (dateTimeStr) => {
+        const date = new Date(dateTimeStr);
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        return `${hours}:${minutes}:${seconds}`;
+    };
 
     const handleEdit = (item) => {
         setEditFormData({
@@ -183,6 +190,7 @@ const WorkingHours = () => {
             return;
         }
         console.log(editFormData.id);
+        console.log(editFormData);
         await axios.put(`${SERVER_URL}working-hours/update/${editFormData.id}/`, editFormData);
         setShowModal(false);
         setSuccessModal(true);
@@ -428,7 +436,7 @@ const WorkingHours = () => {
                         <div>
                             <label>First Checkin</label> <br />
                             <input
-                                type="time"
+                                type="datetime-local"
                                 name="first_checkin"
                                 value={formData.first_checkin}
                                 onChange={handleInputChange}
@@ -438,7 +446,7 @@ const WorkingHours = () => {
                         <div>
                             <label>Last Checkout</label> <br />
                             <input
-                                type="time"
+                                type="datetime-local"
                                 name="last_checkout"
                                 value={formData.last_checkout}
                                 onChange={handleInputChange}
@@ -503,8 +511,8 @@ const WorkingHours = () => {
 
                             setEditFormData({
                                 ...editFormData,
-                                empId: selectedEmployee ? selectedEmployee.empId : value, 
-                                
+                                empId: selectedEmployee ? selectedEmployee.empId : value,
+
                             });
                         }}
                     />
@@ -514,7 +522,7 @@ const WorkingHours = () => {
                             <option
                                 key={emp.id}
                                 value={emp.id}
-                                // value={`${emp.empId} ${emp.fName} ${emp.lName}`} // Format: empId fName lName
+                            // value={`${emp.empId} ${emp.fName} ${emp.lName}`} // Format: empId fName lName
                             >
                                 {emp.empId} {emp.fName} {emp.lName}
                             </option>
@@ -526,7 +534,8 @@ const WorkingHours = () => {
                         <div>
                             <label>First Checkin</label> <br />
                             <input
-                                type="time"
+                                type="datetime-local"
+                                step="1"
                                 value={editFormData.first_checkin}
                                 onChange={(e) => setEditFormData({ ...editFormData, first_checkin: e.target.value })}
                             />
@@ -534,7 +543,8 @@ const WorkingHours = () => {
                         <div>
                             <label>Last Checkout</label> <br />
                             <input
-                                type="time"
+                                type="datetime-local"
+                                step="1"
                                 value={editFormData.last_checkout}
                                 onChange={(e) => setEditFormData({ ...editFormData, last_checkout: e.target.value })}
                             />

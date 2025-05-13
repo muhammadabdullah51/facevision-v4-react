@@ -36,21 +36,7 @@ const CheckInOutTable = ({ dash }) => {
       ip: "",
     });
 
-  const handleReset = () => {
-    dispatch(resetCheckInOutData());
-    setFormData({
-      id: "",
-      empId: "",
-      fName: "",
-      lName: "",
-      time: "",
-      date: "",
-      status: "",
-      ip: "",
-    });
-    setShowAddForm(false);
-    setShowEditForm(false);
-  };
+
 
   const [editFormData, setEditFormData] = useState({
     id: "",
@@ -62,6 +48,32 @@ const CheckInOutTable = ({ dash }) => {
     status: "",
     ip: "",
   });
+
+  const handleReset = () => {
+    dispatch(resetCheckInOutData());
+    setShowAddForm(false);
+    setShowEditForm(false);
+    setFormData({
+      id: "",
+      empId: "",
+      fName: "",
+      lName: "",
+      time: "",
+      date: "",
+      status: "",
+      ip: "",
+    });
+    setEditFormData({
+      id: "",
+      empId: "",
+      fName: "",
+      lName: "",
+      time: "",
+      date: "",
+      status: "",
+      ip: "",
+    });
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -243,17 +255,19 @@ const CheckInOutTable = ({ dash }) => {
     };
     console.log(attPayload);
     try {
-      await axios.put(
+      const response = await axios.put(
         `${SERVER_URL}att-chkinout/${editFormData.id}/`,
         attPayload
       );
-      const updatedData = await axios.get(`${SERVER_URL}att-chkinout/`);
-      setData(updatedData.data);
-      fetchAtt();
-      setShowEditForm(false);
-      setShowModal(false);
-      setSuccessModal(true);
-      handleReset();
+      if (response.status == 200) {
+        const updatedData = await axios.get(`${SERVER_URL}att-chkinout/`);
+        setData(updatedData.data);
+        dispatch(resetCheckInOutData());
+        setShowEditForm(false);
+        setShowModal(false);
+        setSuccessModal(true);
+        handleReset();
+      }
 
     } catch (error) {
     }
@@ -309,14 +323,16 @@ const CheckInOutTable = ({ dash }) => {
     };
     console.log(payload);
     try {
-      await axios.post(`${SERVER_URL}att-chkinout/`, payload);
-      const updatedData = await axios.get(`${SERVER_URL}att-chkinout/`);
-      setData(updatedData.data);
-      fetchAtt();
-      setShowAddForm(false);
-      setShowModal(false);
-      setSuccessModal(true);
-      handleReset()
+      const response = await axios.post(`${SERVER_URL}att-chkinout/`, payload);
+      if (response.status == 200) {
+        const updatedData = await axios.get(`${SERVER_URL}att-chkinout/`);
+        setData(updatedData.data);
+        dispatch(resetCheckInOutData());
+        setShowEditForm(false);
+        setShowModal(false);
+        setSuccessModal(true);
+        handleReset();
+      }
     } catch (error) {
     }
   };
@@ -380,13 +396,12 @@ const CheckInOutTable = ({ dash }) => {
           accessor: "status",
           Cell: ({ value }) => (
             <span
-              className={`status ${
-                value === "checkin"
+              className={`status ${value === "checkin"
                   ? "presentStatus"
                   : value === "checkout"
-                  ? "lateStatus"
-                  : "none"
-              }`}
+                    ? "lateStatus"
+                    : "none"
+                }`}
             >
               {value}
             </span>
@@ -417,8 +432,8 @@ const CheckInOutTable = ({ dash }) => {
       ].filter(Boolean), // Remove falsy values (e.g., undefined) to clean up the array
     [filteredData, selectedIds] // Dependencies for memoization
   );
-  
-  
+
+
 
 
   const {
@@ -548,194 +563,194 @@ const CheckInOutTable = ({ dash }) => {
               </button>
             </div>
           </div>
-       
-      {showAddForm && !showEditForm && (
-        <div className="add-department-form add-leave-form">
-          <h3>Add Manual Check In / Out</h3>
-          <label>Select Employee</label>
-          <input
-            list="employeesList"
-            value={formData.empId} // Display the selected or entered empId
-            onChange={(e) => {
-              const selectedEmpId = e.target.value; // Capture the entered/selected empId
-              const selectedEmployee = employees.find(
-                (emp) => emp.empId === selectedEmpId
-              ); // Find the corresponding employee
 
-              setFormData({
-                ...formData,
-                empId: selectedEmpId, // Update empId in formData
-                fName: selectedEmployee ? selectedEmployee.fName : "", // Auto-fill fName
-                lName: selectedEmployee ? selectedEmployee.lName : "", // Auto-fill lName
-              });
-            }}
-            placeholder="Enter or select Employee ID"
-          />
+          {showAddForm && !showEditForm && (
+            <div className="add-department-form add-leave-form">
+              <h3>Add Manual Check In / Out</h3>
+              <label>Select Employee</label>
+              <input
+                list="employeesList"
+                value={formData.empId} // Display the selected or entered empId
+                onChange={(e) => {
+                  const selectedEmpId = e.target.value; // Capture the entered/selected empId
+                  const selectedEmployee = employees.find(
+                    (emp) => emp.empId === selectedEmpId
+                  ); // Find the corresponding employee
 
-          <datalist id="employeesList">
-            {employees.map((emp) => (
-              <option key={emp.empId} value={emp.empId}>
-                {emp.empId} {emp.fName} {emp.lName}
-              </option>
-            ))}
-          </datalist>
+                  setFormData({
+                    ...formData,
+                    empId: selectedEmpId, // Update empId in formData
+                    fName: selectedEmployee ? selectedEmployee.fName : "", // Auto-fill fName
+                    lName: selectedEmployee ? selectedEmployee.lName : "", // Auto-fill lName
+                  });
+                }}
+                placeholder="Enter or select Employee ID"
+              />
 
-          <label>First Name</label>
-          <input
-            type="text"
-            value={formData.fName}
-            disabled
-          />
+              <datalist id="employeesList">
+                {employees.map((emp) => (
+                  <option key={emp.empId} value={emp.empId}>
+                    {emp.empId} {emp.fName} {emp.lName}
+                  </option>
+                ))}
+              </datalist>
 
-          <label>Last Name</label>
-          <input
-            type="text"
-            value={formData.lName}
-            disabled
-          />
+              <label>First Name</label>
+              <input
+                type="text"
+                value={formData.fName}
+                disabled
+              />
 
-          <div>
-            <label>Time</label>
-            <input
-              type="time"
-              placeholder="Time"
-              name="time"
-              value={formData.time}
-              onChange={handleInputChange}
-            />
-          </div>
+              <label>Last Name</label>
+              <input
+                type="text"
+                value={formData.lName}
+                disabled
+              />
 
-          <label>Date</label>
-          <input
-            type="date"
-            name="date"
-            value={formData.date}
-            onChange={handleInputChange}
-          />
+              <div>
+                <label>Time</label>
+                <input
+                  type="time"
+                  placeholder="Time"
+                  name="time"
+                  value={formData.time}
+                  onChange={handleInputChange}
+                />
+              </div>
 
-          <label>Select Status</label>
-          <select
-          name="status"
-            value={formData.status}
-            onChange={handleInputChange}
-          >
-            <option>Select Status</option>
-            <option value="checkin">Checkin</option>
-            <option value="checkout">Checkout</option>
-          </select>
+              <label>Date</label>
+              <input
+                type="date"
+                name="date"
+                value={formData.date}
+                onChange={handleInputChange}
+              />
 
-          <label>Marked By</label>
-          <select
-            disabled
-            name="ip"
-            value={formData.ip}
-            onChange={handleInputChange}
-          >
+              <label>Select Status</label>
+              <select
+                name="status"
+                value={formData.status}
+                onChange={handleInputChange}
+              >
+                <option>Select Status</option>
+                <option value="checkin">Checkin</option>
+                <option value="checkout">Checkout</option>
+              </select>
 
-            <option value="byAdmin">By Admin</option>
-          </select>
-          <button className="submit-button" onClick={addAtt}>
-            Add Manual Check In / Out
-          </button>
-          <button
-            className="cancel-button"
-            onClick={handleReset}
-          >
-            Cancel
-          </button>
-        </div>
-      )}
-      {!showAddForm && showEditForm && (
-        <div className="add-department-form add-leave-form">
-          <h3>Edit Manual Check In / Out</h3>
-          <label>Selected Employee</label>
-          <input
-            disabled
-            list="employeesList"
-            value={editFormData.empId} // Display the selected or entered empId
-            onChange={(e) => {
-              const selectedEmpId = e.target.value; // Capture the entered/selected empId
-              const selectedEmployee = employees.find(
-                (emp) => emp.empId === selectedEmpId
-              ); // Find the corresponding employee
+              <label>Marked By</label>
+              <select
+                disabled
+                name="ip"
+                value={formData.ip}
+                onChange={handleInputChange}
+              >
 
-              setEditFormData({
-                ...editFormData,
-                empId: selectedEmpId, // Update empId in formData
-                fName: selectedEmployee ? selectedEmployee.fName : "", // Auto-fill fName
-                lName: selectedEmployee ? selectedEmployee.lName : "", // Auto-fill lName
-              });
-            }}
-            placeholder="Enter or select Employee ID"
-          />
+                <option value="byAdmin">By Admin</option>
+              </select>
+              <button className="submit-button" onClick={addAtt}>
+                Add Manual Check In / Out
+              </button>
+              <button
+                className="cancel-button"
+                onClick={handleReset}
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+          {!showAddForm && showEditForm && (
+            <div className="add-department-form add-leave-form">
+              <h3>Edit Manual Check In / Out</h3>
+              <label>Selected Employee</label>
+              <input
+                disabled
+                list="employeesList"
+                value={editFormData.empId} // Display the selected or entered empId
+                onChange={(e) => {
+                  const selectedEmpId = e.target.value; // Capture the entered/selected empId
+                  const selectedEmployee = employees.find(
+                    (emp) => emp.empId === selectedEmpId
+                  ); // Find the corresponding employee
 
-          <datalist id="employeesList">
-            {employees.map((emp) => (
-              <option key={emp.empId} value={emp.empId}>
-                {emp.empId} {emp.fName} {emp.lName}
-              </option>
-            ))}
-          </datalist>
+                  setEditFormData({
+                    ...editFormData,
+                    empId: selectedEmpId, // Update empId in formData
+                    fName: selectedEmployee ? selectedEmployee.fName : "", // Auto-fill fName
+                    lName: selectedEmployee ? selectedEmployee.lName : "", // Auto-fill lName
+                  });
+                }}
+                placeholder="Enter or select Employee ID"
+              />
 
-          <label>First Name</label>
-          <input
-            type="text"
-            value={editFormData.fName} // Display the auto-filled first name
-            disabled // Make it read-only to prevent user edits
-          />
+              <datalist id="employeesList">
+                {employees.map((emp) => (
+                  <option key={emp.empId} value={emp.empId}>
+                    {emp.empId} {emp.fName} {emp.lName}
+                  </option>
+                ))}
+              </datalist>
 
-          <label>Last Name</label>
-          <input
-            type="text"
-            value={editFormData.lName} // Display the auto-filled last name
-            disabled // Make it read-only to prevent user edits
-          />
+              <label>First Name</label>
+              <input
+                type="text"
+                value={editFormData.fName} // Display the auto-filled first name
+                disabled // Make it read-only to prevent user edits
+              />
 
-          <div>
-            <label>Time</label>
-            <input
-              type="time"
-              placeholder="Time"
-              value={editFormData.time}
-              onChange={(e) =>
-                setEditFormData({ ...editFormData, time: e.target.value })
-              }
-            />
-          </div>
+              <label>Last Name</label>
+              <input
+                type="text"
+                value={editFormData.lName} // Display the auto-filled last name
+                disabled // Make it read-only to prevent user edits
+              />
 
-          <label>Date</label>
-          <input
-            type="date"
-            value={editFormData.date}
-            onChange={(e) => setEditFormData({ ...editFormData, date: e.target.value })}
-          />
+              <div>
+                <label>Time</label>
+                <input
+                  type="time"
+                  placeholder="Time"
+                  value={editFormData.time}
+                  onChange={(e) =>
+                    setEditFormData({ ...editFormData, time: e.target.value })
+                  }
+                />
+              </div>
 
-          <label>Select Status</label>
-          <select
-            value={editFormData.status}
-            onChange={(e) =>
-              setEditFormData({ ...editFormData, status: e.target.value })
-            }
-          >
-            <option>Select Status</option>
-            <option value="checkin">Checkin</option>
-            <option value="checkout">Checkout</option>
-          </select>
-          <button
-            className="submit-button"
-            onClick={() => handleUpdate(editFormData)}
-          >
-            Update Manual Check In / Out
-          </button>
-          <button
-            className="cancel-button"
-            onClick={handleReset}
-          >
-            Cancel
-          </button>
-        </div>
-      )}
- </>
+              <label>Date</label>
+              <input
+                type="date"
+                value={editFormData.date}
+                onChange={(e) => setEditFormData({ ...editFormData, date: e.target.value })}
+              />
+
+              <label>Select Status</label>
+              <select
+                value={editFormData.status}
+                onChange={(e) =>
+                  setEditFormData({ ...editFormData, status: e.target.value })
+                }
+              >
+                <option>Select Status</option>
+                <option value="checkin">Checkin</option>
+                <option value="checkout">Checkout</option>
+              </select>
+              <button
+                className="submit-button"
+                onClick={() => handleUpdate(editFormData)}
+              >
+                Update Manual Check In / Out
+              </button>
+              <button
+                className="cancel-button"
+                onClick={handleReset}
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+        </>
       )}
       <div className="departments-table">
         <table {...getTableProps()} className="table">

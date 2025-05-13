@@ -808,3 +808,6 @@ th.th-component, td.th-component{
   width: 100%;
   color: gray;
 }
+.form-section {
+    margin-bottom: 10px;
+}

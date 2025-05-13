@@ -16,7 +16,6 @@ import Tax from "../Tax/Tax"
 import axios from "axios";
 import { faXmark, faPrint } from "@fortawesome/free-solid-svg-icons";
 
-import SalarySlip from "./SalarySlip";
 import ReactDOMServer from "react-dom/server";
 
 import { SERVER_URL } from "../../../config";
@@ -81,75 +80,6 @@ const CompletedPayroll = () => {
       filteredAppraisals: []
     })
 
-  const handleEdit = (item) => {
-    setEditFormData({
-      empId: item.empId,
-      empName: item.empName,
-      calculate_pay: item.calculate_pay,
-      filteredAllowance: item.allowance_items?.map(a => ({ amount: parseFloat(a.amount) })) || [],
-      filteredBonus: item.bonus_items?.map(b => ({ amount: parseFloat(b.amount) })) || [],
-      filteredTax: item.tax_items?.map(t => ({ amount: parseFloat(t.amount) })) || [],
-      filteredAppraisals: item.appraisal_items?.map(app => ({ amount: parseFloat(app.amount) })) || []
-    });
-    setShowEditForm(true);
-  };
-  const updateAssign = () => {
-    setModalType("update");
-    setEditFormData({ ...editFormData });
-    setShowModal(true);
-  };
-  const confirmUpdate = async () => {
-    if (!editFormData.empId || !editFormData.from_date || !editFormData.end_date) {
-      setResMsg("Please fill in all required fields.");
-      setShowModal(false);
-      setWarningModal(true);
-      return;
-    }
-    console.log(editFormData);
-    await axios.put(`${SERVER_URL}pyr-emp-cmp/`, editFormData);
-
-    setShowModal(false);
-    setSuccessModal(true);
-    setShowEditForm(false);
-    fetchCompletedPayrolls(); // replace with your actual fetch function
-    handleReset();
-  };
-  const handleReset = () => {
-    setEditFormData({
-      empId: "",
-      from_date: "",
-      end_date: "",
-      empName: "",
-      department: "",
-      bankName: "",
-      accountNo: "",
-      salaryType: "",
-      salaryPeriod: "",
-      basicSalary: "",
-      otHours: "",
-      otHoursPay: "",
-      advSalary: "",
-      loan: "",
-      bonus: "",
-      allowance: "",
-      taxes: "",
-      extraFund: "",
-      app: "",
-      dailySalary: "",
-      calculate_pay: "",
-      totalWorkingDays: "",
-      totalWorkingHours: "",
-      totalWorkingMinutes: "",
-      attemptWorkingHours: "",
-      attempt_working_hours: "",
-      filteredAllowance: [],
-      filteredBonus: [],
-      filteredTax: [],
-      filteredAppraisals: []
-    },
-    );
-    setShowEditForm(false);
-  };
 
 
 
@@ -312,6 +242,86 @@ const CompletedPayroll = () => {
 
 
 
+  // const exportToPDF = () => {
+  //   const doc = new jsPDF('l', 'mm', 'legal');
+
+  //   doc.autoTable({
+  //     head: [
+  //       [
+  //         "Serial No",
+  //         "Employee ID",
+  //         "Employee Name",
+  //         "Overtime Pay",
+  //         "Overtime Hours",
+  //         "Extra Fund",
+  //         "Advance Salary",
+  //         "Appraisals",
+  //         "Loan",
+  //         "Bonus",
+  //         "Allowances",
+  //         "Taxes",
+  //         "Salary Period",
+  //         "Bank Name",
+  //         "Account Number",
+  //         "Basic Salary",
+  //         "Salary Type",
+  //         "Total Working Days",
+  //         "Total Working Hours",
+  //         "Total Working Minutes",
+  //         "Attempt Working Hours",
+  //         "Daily Salary",
+  //         "Pay",
+  //       ],
+  //     ],
+  //     body: filteredData.map((item, index) => [
+  //       index + 1,
+  //       item.empId,
+  //       item.empName,
+  //       item.otHoursPay,
+  //       item.otHours,
+  //       item.extraFund,
+  //       item.advSalary,
+  //       item.app,
+  //       item.loan,
+  //       item.bonus,
+  //       item.allowances,
+  //       item.taxes,
+  //       item.salaryPeriod,
+  //       item.bankName,
+  //       item.accountNo,
+  //       item.basicSalary,
+  //       item.salaryType,
+  //       item.totalWorkingDays,
+  //       item.totalWorkingHours,
+  //       item.totalWorkingMinutes,
+  //       item.attemptWorkingHours,
+  //       item.dailySalary,
+  //       item.calcPay,
+  //     ]),
+  //     styles: {
+  //       overflow: 'linebreak',
+  //       fontSize: 8,
+  //       cellPadding: 2,
+  //       lineWidth: 0.1,
+  //       lineColor: [0, 0, 0],
+  //     },
+  //     tableWidth: 'auto',
+  //     didDrawCell: (data) => {
+  //       const { cell } = data;
+  //       doc.setTextColor(0, 0, 0);
+  //       doc.setLineWidth(0.1);
+  //       doc.setDrawColor(0, 0, 0);
+  //       doc.rect(cell.x, cell.y, cell.width, cell.height);
+  //     },
+  //     didDrawPage: (data) => {
+  //       doc.text('Employee Salary Report', 20, 10);
+  //     },
+  //   });
+
+  //   doc.save("completed-payrolls.pdf");
+  // };
+
+
   const exportToPDF = () => {
     const doc = new jsPDF('l', 'mm', 'legal');
 
@@ -328,6 +338,8 @@ const CompletedPayroll = () => {
           "Appraisals",
           "Loan",
           "Bonus",
+          "Allowances",
+          "Taxes",
           "Salary Period",
           "Bank Name",
           "Account Number",
@@ -349,9 +361,19 @@ const CompletedPayroll = () => {
         item.otHours,
         item.extraFund,
         item.advSalary,
-        item.app,
+        // Appraisals
+        `${item.app || '0'}${item.appraisal_items?.length > 0 ?
+          ` + ${item.appraisal_items.map(i => i.amount).join(', ')}` : ''}`,
         item.loan,
-        item.bonus,
+        // Bonus
+        `${item.bonus || '0'}${item.bonus_items?.length > 0 ?
+          ` + ${item.bonus_items.map(i => i.amount).join(', ')}` : ''}`,
+        // Allowances
+        `${item.allowance || '0'}${item.allowance_items?.length > 0 ?
+          ` + ${item.allowance_items.map(i => i.amount).join(', ')}` : ''}`,
+        // Taxes
+        `${item.taxes || '0'}${item.tax_items?.length > 0 ?
+          ` + ${item.tax_items.map(i => i.amount).join(', ')}` : ''}`,
         item.salaryPeriod,
         item.bankName,
         item.accountNo,
@@ -362,7 +384,7 @@ const CompletedPayroll = () => {
         item.totalWorkingMinutes,
         item.attemptWorkingHours,
         item.dailySalary,
-        item.calcPay,
+        item.calculate_pay,  // Changed from calcPay to calculate_pay to match your state
       ]),
       styles: {
         overflow: 'linebreak',
@@ -384,8 +406,51 @@ const CompletedPayroll = () => {
       },
     });
 
-    doc.save("employee-profile.pdf");
+    doc.save("completed-payrolls.pdf");
   };
+
+  const csvData = useMemo(() => {
+    // const joinAmounts = (arr) =>
+    //   Array.isArray(arr) && arr.length
+    //     ? arr.map(i => i.amount).join(' + ')
+    //     : '0';
+
+    return filteredData.map((item, index) => ({
+      "Serial No": index + 1,
+      "Employee ID": item.empId,
+      "Employee Name": item.empName,
+      "Overtime Pay": item.otHoursPay,
+      "Overtime Hours": item.otHours,
+      "Extra Fund": item.extraFund,
+      "Advance Salary": item.advSalary,
+      "Appraisals": `${item.app || '0'}${item.appraisal_items?.length > 0
+        ? ` + ${item.appraisal_items.map(i => i.amount).join(', ')}`
+        : ''}`,
+      "Loan": item.loan,
+      "Bonus": `${item.bonus || '0'}${item.bonus_items?.length > 0
+        ? ` + ${item.bonus_items.map(i => i.amount).join(', ')}`
+        : ''}`,
+      "Allowances": `${item.allowance || '0'}${item.allowance_items?.length > 0
+        ? ` + ${item.allowance_items.map(i => i.amount).join(', ')}`
+        : ''}`,
+      "Taxes": `${item.taxes || '0'}${item.tax_items?.length > 0
+        ? ` + ${item.tax_items.map(i => i.amount).join(', ')}`
+        : ''}`,
+      "Salary Period": item.salaryPeriod,
+      "Bank Name": item.bankName,
+      "Account Number": item.accountNo,
+      "Basic Salary": item.basicSalary,
+      "Salary Type": item.salaryType,
+      "Total Working Days": item.totalWorkingDays,
+      "Total Working Hours": item.totalWorkingHours,
+      "Total Working Minutes": item.totalWorkingMinutes,
+      "Attempt Working Hours": item.attemptWorkingHours,
+      "Daily Salary": item.dailySalary,
+      "Pay": item.calculate_pay,
+    }));
+  }, [filteredData]);
+
+
 
   const handleExportPdf = async () => {
     const element = document.querySelector(".salary-slip");
@@ -440,87 +505,163 @@ const CompletedPayroll = () => {
   };
 
 
-  const handleCloseSalarySlip = () => {
-    setActiveTab("table");
-    setSelectedEmployee(null);
-  };
+  // const handleCloseSalarySlip = () => {
+  //   setActiveTab("table");
+  //   setSelectedEmployee(null);
+  // };
   const handleCloseEditedSalarySlip = () => {
     setActiveTab("table");
     setSelectedEmployee(null);
   };
 
+  // const generateSalarySlipPDF = (salaryDetails) => {
+  //   return new Promise(async (resolve, reject) => {
+  //     const tempContainer = document.createElement("div");
+  //     try {
+  //       const salarySlipHTML = ReactDOMServer.renderToStaticMarkup(
+  //         <SalarySlip salaryDetails={salaryDetails} />
+  //       );
+
+  //       tempContainer.innerHTML = salarySlipHTML;
+  //       tempContainer.style.position = "absolute";
+  //       tempContainer.style.left = "-9999px";
+  //       document.body.appendChild(tempContainer);
+
+  //       const images = tempContainer.querySelectorAll("img");
+  //       const imagePromises = Array.from(images).map((img) => {
+  //         return new Promise((resolve, reject) => {
+  //           if (img.complete) {
+  //             resolve();
+  //           } else {
+  //             img.onload = resolve;
+  //             img.onerror = reject;
+  //           }
+  //         });
+  //       });
+
+  //       await Promise.all(imagePromises);
+
+  //       const canvas = await html2canvas(tempContainer, {
+  //         scale: 1.5,
+  //         useCORS: true,
+  //       });
+
+  //       if (!canvas || !canvas.width || !canvas.height) {
+  //         reject(new Error("Canvas rendering failed"));
+  //         return;
+  //       }
+
+  //       const imgData = canvas.toDataURL("image/jpeg", 0.8);
+  //       const pdf = new jsPDF("p", "mm", "a4");
+
+  //       const pageWidth = pdf.internal.pageSize.getWidth();
+  //       const pageHeight = pdf.internal.pageSize.getHeight();
+  //       const canvasAspectRatio = canvas.width / canvas.height;
+  //       const pdfAspectRatio = pageWidth / pageHeight;
+
+  //       let imgWidth, imgHeight;
+  //       if (canvasAspectRatio > pdfAspectRatio) {
+  //         imgWidth = pageWidth;
+  //         imgHeight = pageWidth / canvasAspectRatio;
+  //       } else {
+  //         imgHeight = pageHeight;
+  //         imgWidth = pageHeight * canvasAspectRatio;
+  //       }
+
+  //       const x = (pageWidth - imgWidth) / 2;
+  //       const y = (pageHeight - imgHeight) / 2;
+
+  //       pdf.addImage(imgData, "JPEG", x, y, imgWidth, imgHeight);
+
+  //       document.body.removeChild(tempContainer);
+
+  //       const pdfBlob = pdf.output("blob");
+  //       resolve({
+  //         pdfBlob,
+  //         fileName: `${salaryDetails.empId}-${salaryDetails.empName}-SalarySlip.pdf`,
+  //       });
+  //     } catch (error) {
+  //       document.body.removeChild(tempContainer);
+  //       reject(error);
+  //     }
+  //   });
+  // };
+
   const generateSalarySlipPDF = (salaryDetails) => {
-    return new Promise(async (resolve, reject) => {
-      const tempContainer = document.createElement("div");
-      try {
-        const salarySlipHTML = ReactDOMServer.renderToStaticMarkup(
-          <SalarySlip salaryDetails={salaryDetails} />
-        );
+  return new Promise(async (resolve, reject) => {
+    const tempContainer = document.createElement("div");
+    let appended = false;
 
-        tempContainer.innerHTML = salarySlipHTML;
-        tempContainer.style.position = "absolute";
-        tempContainer.style.left = "-9999px";
-        document.body.appendChild(tempContainer);
+    try {
+      const salarySlipHTML = ReactDOMServer.renderToStaticMarkup(
+        <CompletedSalarySlip salaryDetails={salaryDetails} />
+      );
 
-        const images = tempContainer.querySelectorAll("img");
-        const imagePromises = Array.from(images).map((img) => {
-          return new Promise((resolve, reject) => {
-            if (img.complete) {
-              resolve();
-            } else {
-              img.onload = resolve;
-              img.onerror = reject;
-            }
-          });
+      tempContainer.innerHTML = salarySlipHTML;
+      tempContainer.style.position = "absolute";
+      tempContainer.style.left = "-9999px";
+      document.body.appendChild(tempContainer);
+      appended = true;
+
+      const images = tempContainer.querySelectorAll("img");
+      const imagePromises = Array.from(images).map((img) => {
+        return new Promise((resolve, reject) => {
+          if (img.complete) {
+            resolve();
+          } else {
+            img.onload = resolve;
+            img.onerror = reject;
+          }
         });
+      });
 
-        await Promise.all(imagePromises);
+      await Promise.all(imagePromises);
 
-        const canvas = await html2canvas(tempContainer, {
-          scale: 1.5,
-          useCORS: true,
-        });
+      const canvas = await html2canvas(tempContainer, {
+        scale: 1.5,
+        useCORS: true,
+      });
 
-        if (!canvas || !canvas.width || !canvas.height) {
-          reject(new Error("Canvas rendering failed"));
-          return;
-        }
-
-        const imgData = canvas.toDataURL("image/jpeg", 0.8);
-        const pdf = new jsPDF("p", "mm", "a4");
-
-        const pageWidth = pdf.internal.pageSize.getWidth();
-        const pageHeight = pdf.internal.pageSize.getHeight();
-        const canvasAspectRatio = canvas.width / canvas.height;
-        const pdfAspectRatio = pageWidth / pageHeight;
-
-        let imgWidth, imgHeight;
-        if (canvasAspectRatio > pdfAspectRatio) {
-          imgWidth = pageWidth;
-          imgHeight = pageWidth / canvasAspectRatio;
-        } else {
-          imgHeight = pageHeight;
-          imgWidth = pageHeight * canvasAspectRatio;
-        }
-
-        const x = (pageWidth - imgWidth) / 2;
-        const y = (pageHeight - imgHeight) / 2;
-
-        pdf.addImage(imgData, "JPEG", x, y, imgWidth, imgHeight);
-
-        document.body.removeChild(tempContainer);
-
-        const pdfBlob = pdf.output("blob");
-        resolve({
-          pdfBlob,
-          fileName: `${salaryDetails.empId}-${salaryDetails.empName}-SalarySlip.pdf`,
-        });
-      } catch (error) {
-        document.body.removeChild(tempContainer);
-        reject(error);
+      if (!canvas || !canvas.width || !canvas.height) {
+        throw new Error("Canvas rendering failed");
       }
-    });
-  };
+
+      const imgData = canvas.toDataURL("image/jpeg", 0.8);
+      const pdf = new jsPDF("p", "mm", "a4");
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const canvasAspectRatio = canvas.width / canvas.height;
+      const pdfAspectRatio = pageWidth / pageHeight;
+
+      let imgWidth, imgHeight;
+      if (canvasAspectRatio > pdfAspectRatio) {
+        imgWidth = pageWidth;
+        imgHeight = pageWidth / canvasAspectRatio;
+      } else {
+        imgHeight = pageHeight;
+        imgWidth = pageHeight * canvasAspectRatio;
+      }
+
+      const x = (pageWidth - imgWidth) / 2;
+      const y = (pageHeight - imgHeight) / 2;
+
+      pdf.addImage(imgData, "JPEG", x, y, imgWidth, imgHeight);
+      const pdfBlob = pdf.output("blob");
+
+      resolve({
+        pdfBlob,
+        fileName: `${salaryDetails.empId}-${salaryDetails.empName}-Completed-SalarySlip.pdf`,
+      });
+    } catch (error) {
+      reject(error);
+    } finally {
+      if (appended && tempContainer.parentNode === document.body) {
+        document.body.removeChild(tempContainer);
+      }
+    }
+  });
+};
 
   const downloadAllSalarySlips = async () => {
     const zip = new JSZip();
@@ -548,7 +689,7 @@ const CompletedPayroll = () => {
       .then(function (content) {
         const link = document.createElement("a");
         link.href = URL.createObjectURL(content);
-        link.download = "all_salary_slips.zip";
+        link.download = "all_completed_salary_slips.zip";
         link.click();
       })
       .catch((error) => {
@@ -655,28 +796,165 @@ const CompletedPayroll = () => {
   }, []);
 
 
-const calculateNewTotal = (formData, allowances, bonuses, taxes, appraisals) => {
-  const currentAllowances = allowances || formData.filteredAllowance;
-  const currentBonuses = bonuses || formData.filteredBonus;
-  const currentTaxes = taxes || formData.filteredTax;
-  const currentAppraisals = appraisals || formData.filteredAppraisals;
-
-  const allowanceSum = currentAllowances.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
-  const bonusSum = currentBonuses.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
-  const appraisalSum = currentAppraisals.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
-  const taxSum = currentTaxes.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
-
-  return (
-    parseFloat(formData.basicSalary || 0) +
-    parseFloat(formData.otHoursPay || 0) +
-    allowanceSum +
-    bonusSum +
-    appraisalSum -
-    taxSum
-  ).toFixed(2);
-};
 
 
+  const [newCalculatePay, setNewCalculatePay] = useState(null);
+  const [originalValues, setOriginalValues] = useState({
+    allowances: [],
+    bonuses: [],
+    taxes: [],
+    appraisals: []
+  });
+
+  const handleEdit = (item) => {
+    const original = {
+      allowances: item.allowance_items?.map(a => parseFloat(a.amount)) || [],
+      bonuses: item.bonus_items?.map(b => parseFloat(b.amount)) || [],
+      taxes: item.tax_items?.map(t => parseFloat(t.amount)) || [],
+      appraisals: item.appraisal_items?.map(app => parseFloat(app.amount)) || []
+    };
+
+    setOriginalValues(original);
+    setNewCalculatePay(null)
+
+    setEditFormData({
+      empId: item.empId,
+      empName: item.empName,
+      calculate_pay: item.calculate_pay,
+      filteredAllowance: item.allowance_items?.map(a => ({ amount: parseFloat(a.amount) })) || [],
+      filteredBonus: item.bonus_items?.map(b => ({ amount: parseFloat(b.amount) })) || [],
+      filteredTax: item.tax_items?.map(t => ({ amount: parseFloat(t.amount) })) || [],
+      filteredAppraisals: item.appraisal_items?.map(app => ({ amount: parseFloat(app.amount) })) || [],
+      from_date: item.from_date,
+      end_date: item.end_date,
+      department: item.department,
+      bankName: item.bankName,
+      accountNo: item.accountNo,
+      salaryType: item.salaryType,
+      salaryPeriod: item.salaryPeriod,
+      basicSalary: item.basicSalary,
+      otHours: item.otHours,
+      otHoursPay: item.otHoursPay,
+      advSalary: item.advSalary,
+      loan: item.loan,
+      bonus: item.bonus,
+      allowance: item.allowance,
+      taxes: item.taxes,
+      extraFund: item.extraFund,
+      app: item.app,
+      dailySalary: item.dailySalary,
+      calculate_pay: item.calculate_pay,
+      totalWorkingDays: item.totalWorkingDays,
+      totalWorkingHours: item.totalWorkingHours,
+      totalWorkingMinutes: item.totalWorkingMinutes,
+      attemptWorkingHours: item.attemptWorkingHours,
+      attempt_working_hours: item.attempt_working_hours,
+    });
+    setShowEditForm(true);
+  };
+  const updateAssign = () => {
+    setModalType("update");
+    setEditFormData({ ...editFormData });
+    setShowModal(true);
+  };
+  const confirmUpdate = async () => {
+    if (!editFormData.empId) {
+      setResMsg("Please fill in all required fields.");
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    }
+    console.log(editFormData);
+    const payload = {
+      ...editFormData, calculate_pay: newCalculatePay
+    }
+    console.log(payload);
+    await axios.put(`${SERVER_URL}pyr-emp-cmp/`, payload);
+
+    setShowModal(false);
+    setSuccessModal(true);
+    setShowEditForm(false);
+    fetchCompletedPayrolls(); // replace with your actual fetch function
+    handleReset();
+  };
+  const handleReset = () => {
+    setEditFormData({
+      empId: "",
+      from_date: "",
+      end_date: "",
+      empName: "",
+      department: "",
+      bankName: "",
+      accountNo: "",
+      salaryType: "",
+      salaryPeriod: "",
+      basicSalary: "",
+      otHours: "",
+      otHoursPay: "",
+      advSalary: "",
+      loan: "",
+      bonus: "",
+      allowance: "",
+      taxes: "",
+      extraFund: "",
+      app: "",
+      dailySalary: "",
+      calculate_pay: "",
+      totalWorkingDays: "",
+      totalWorkingHours: "",
+      totalWorkingMinutes: "",
+      attemptWorkingHours: "",
+      attempt_working_hours: "",
+      filteredAllowance: [],
+      filteredBonus: [],
+      filteredTax: [],
+      filteredAppraisals: []
+    },
+    );
+    setNewCalculatePay(null)
+    setShowEditForm(false);
+  };
+
+
+  // Modified calculate function
+  const calculateNewTotal = () => {
+    let totalDelta = 0;
+
+    // Calculate allowance deltas
+    editFormData.filteredAllowance.forEach((allowance, index) => {
+      const original = originalValues.allowances[index] || 0;
+      const current = parseFloat(allowance.amount) || 0;
+      totalDelta += (current - original);
+    });
+
+    // Calculate bonus deltas
+    editFormData.filteredBonus.forEach((bonus, index) => {
+      const original = originalValues.bonuses[index] || 0;
+      const current = parseFloat(bonus.amount) || 0;
+      totalDelta += (current - original);
+    });
+
+    // Calculate appraisal deltas
+    editFormData.filteredAppraisals.forEach((appraisal, index) => {
+      const original = originalValues.appraisals[index] || 0;
+      const current = parseFloat(appraisal.amount) || 0;
+      totalDelta += (current - original);
+    });
+
+    // Calculate tax deltas (subtract since taxes reduce pay)
+    editFormData.filteredTax.forEach((tax, index) => {
+      const original = originalValues.taxes[index] || 0;
+      const current = parseFloat(tax.amount) || 0;
+      totalDelta -= (current - original);
+    });
+
+    const newPay = (
+      parseFloat(editFormData.calculate_pay) +
+      totalDelta
+    ).toFixed(2);
+
+    setNewCalculatePay(newPay);
+  };
 
   const renderTabContent = () => {
     switch (changeTab) {
@@ -802,8 +1080,9 @@ const calculateNewTotal = (formData, allowances, bonuses, taxes, appraisals) => 
                                 </button>
 
                                 <CSVLink
-                                  data={filteredData}
-                                  filename="employee-profile.csv"
+                                  data={csvData}
+                                  headers={Object.keys(csvData[0] || {}).map(key => ({ label: key, key }))}
+                                  filename="completed-payrolls.csv"
                                   style={{ textDecoration: 'none' }}
                                 >
                                   <button
@@ -845,15 +1124,8 @@ const calculateNewTotal = (formData, allowances, bonuses, taxes, appraisals) => 
                                   onChange={(e) => setEditFormData({ ...editFormData, empId: e.target.value })}
                                   required
                                 />
-
                               </div>
-
-
                             </div>
-
-                            {/* Salary Details */}
-
-
 
                             {/* Allowances Section */}
                             <div className="form-section">
@@ -869,10 +1141,13 @@ const calculateNewTotal = (formData, allowances, bonuses, taxes, appraisals) => 
                                       const newAllowances = [...editFormData.filteredAllowance];
                                       newAllowances[index].amount = e.target.value;
                                       setEditFormData({ ...editFormData, filteredAllowance: newAllowances });
+                                      setNewCalculatePay(null);
                                     }}
                                     step="0.01"
                                   />
-
+                                  <span className="original-value">
+                                    (Original: {originalValues.allowances[index] || 0})
+                                  </span>
                                 </div>
                               ))}
                             </div>
@@ -891,10 +1166,13 @@ const calculateNewTotal = (formData, allowances, bonuses, taxes, appraisals) => 
                                       const newBonuses = [...editFormData.filteredBonus];
                                       newBonuses[index].amount = e.target.value;
                                       setEditFormData({ ...editFormData, filteredBonus: newBonuses });
+                                      setNewCalculatePay(null);
                                     }}
                                     step="0.01"
                                   />
-
+                                  <span className="original-value">
+                                    (Original: {originalValues.bonuses[index] || 0})
+                                  </span>
                                 </div>
                               ))}
                             </div>
@@ -913,10 +1191,13 @@ const calculateNewTotal = (formData, allowances, bonuses, taxes, appraisals) => 
                                       const newTaxes = [...editFormData.filteredTax];
                                       newTaxes[index].amount = e.target.value;
                                       setEditFormData({ ...editFormData, filteredTax: newTaxes });
+                                      setNewCalculatePay(null);
                                     }}
                                     step="0.01"
                                   />
-
+                                  <span className="original-value">
+                                    (Original: {originalValues.taxes[index] || 0})
+                                  </span>
                                 </div>
                               ))}
                             </div>
@@ -935,27 +1216,77 @@ const calculateNewTotal = (formData, allowances, bonuses, taxes, appraisals) => 
                                       const newAppraisals = [...editFormData.filteredAppraisals];
                                       newAppraisals[index].amount = e.target.value;
                                       setEditFormData({ ...editFormData, filteredAppraisals: newAppraisals });
+                                      setNewCalculatePay(null);
                                     }}
                                     step="0.01"
                                   />
-
+                                  <span className="original-value">
+                                    (Original: {originalValues.appraisals[index] || 0})
+                                  </span>
                                 </div>
                               ))}
+
                             </div>
 
-
-                            <div className="form-actions">
-                              <button className="submit-button" onClick={() => updateAssign(editFormData)}>
-                                Update Payroll
-                              </button>
-                              <button className="cancel-button" onClick={handleReset}>
-                                Cancel
-                              </button>
+                            <div className="form-section">
+                              <div className="form-row">
+                                <label>Original Net Pay</label>
+                                <input
+                                  type="number"
+                                  className="form-input"
+                                  value={editFormData.calculate_pay}
+                                  disabled
+                                  step="0.01"
+                                />
+                              </div>
                             </div>
+
+                            <div className="form-section">
+                              <div className="form-row">
+                                <button
+                                  type="button"
+                                  className="add-button"
+                                  style={{ margin: '0' }}
+                                  onClick={calculateNewTotal}
+                                >
+                                  Calculate New Net Pay
+                                </button>
+                              </div>
+                            </div>
+
+                            {newCalculatePay !== null && (
+                              <>
+                                <div className="form-section">
+                                  <div className="form-row">
+                                    <label>New Calculated Net Pay</label>
+                                    <input
+                                      type="number"
+                                      className="form-input"
+                                      value={newCalculatePay}
+                                      disabled
+                                      step="0.01"
+                                    />
+                                  </div>
+                                </div>
+
+
+
+
+
+                                <div className="form-actions">
+                                  <button className="submit-button" onClick={() => updateAssign(editFormData)}>
+                                    Update Payroll
+                                  </button>
+                                  <button className="cancel-button" onClick={handleReset}>
+                                    Cancel
+                                  </button>
+                                </div>
+                              </>
+                            )}
                           </div>
                         )}
                         <div className="departments-table">
-                          <table className="table">
+                          <table className="table pyr-table">
                             <thead>
                               <tr>
                                 <th>
@@ -1008,26 +1339,26 @@ const calculateNewTotal = (formData, allowances, bonuses, taxes, appraisals) => 
                                   <td>{item.advSalary}</td>
                                   <td>
                                     {`${item.app || '0'}${Array.isArray(item.appraisal_items) && item.appraisal_items.length > 0
-                                        ? ` + ${item.appraisal_items.map(i => i.amount).join(', ')}`
-                                        : ''
+                                      ? ` + ${item.appraisal_items.map(i => i.amount).join(', ')}`
+                                      : ''
                                       }`}
                                   </td>
                                   <td>
                                     {`${item.bonus || '0'}${Array.isArray(item.bonus_items) && item.bonus_items.length > 0
-                                        ? ` + ${item.bonus_items.map(i => i.amount).join(', ')}`
-                                        : ''
+                                      ? ` + ${item.bonus_items.map(i => i.amount).join(', ')}`
+                                      : ''
                                       }`}
                                   </td>
                                   <td>
                                     {`${item.allowance || '0'}${Array.isArray(item.allowance_items) && item.allowance_items.length > 0
-                                        ? ` + ${item.allowance_items.map(i => i.amount).join(', ')}`
-                                        : ''
+                                      ? ` + ${item.allowance_items.map(i => i.amount).join(', ')}`
+                                      : ''
                                       }`}
                                   </td>
                                   <td>
                                     {`${item.taxes || '0'}${Array.isArray(item.tax_items) && item.tax_items.length > 0
-                                        ? ` + ${item.tax_items.map(i => i.amount).join(', ')}`
-                                        : ''
+                                      ? ` + ${item.tax_items.map(i => i.amount).join(', ')}`
+                                      : ''
                                       }`}
                                   </td>
                                   <td>{item.loan}</td>
@@ -1325,9 +1656,9 @@ const calculateNewTotal = (formData, allowances, bonuses, taxes, appraisals) => 
   const handleGalleryActiveTab = () => {
     setActiveTab('gallery')
   }
-  const handleSalarySlipActiveTab = () => {
-    setActiveTab('salarySlip')
-  }
+  // const handleSalarySlipActiveTab = () => {
+  //   setActiveTab('salarySlip')
+  // }
 
   return (
     <>

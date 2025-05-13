@@ -673,7 +673,7 @@ const AssignExtrFunds = () => {
                     />
                     <label>Select Type</label>
                     <select
-                    disabled
+                        disabled
                         value={editFormData.type}
                         onChange={(e) => {
                             const selectedType = e.target.value;
@@ -789,19 +789,19 @@ const AssignExtrFunds = () => {
                                         className={`status ${adv.type === "payable"
                                             ? "absentStatus"
                                             : adv.type === "Rejected"
-                                            ? "absentStatus"
-                                            : "presentStatus"
+                                                ? "absentStatus"
+                                                : "presentStatus"
                                             }`}
-                                            >
+                                    >
                                         {adv.type}
                                     </span>
                                 </td>
-                                    <td>{adv.desc}</td>
+                                <td>{adv.desc}</td>
                                 <td>
                                     {adv.type.toLowerCase() === "payable" && (
                                         <button
-                                        onClick={() => handleEdit(adv)}
-                                        style={{ background: "none", border: "none" }}
+                                            onClick={() => handleEdit(adv)}
+                                            style={{ background: "none", border: "none" }}
                                         >
                                             <FaEdit className="table-edit" />
                                         </button>

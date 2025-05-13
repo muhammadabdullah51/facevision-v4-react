@@ -40,47 +40,7 @@ import { setActiveTab, setSelectedIds, setSelectedDeductions, resetState } from 
 import EditedSalarySlip from "./EditedSalarySlip";
 
 
-const calculateNetPay = (employee, deductions, options) => {
-  const { allowances, bonuses, taxes, appraisals } = options;
-  let netPay = parseFloat(employee.calculate_pay) || 0;
 
-  // Allowances
-  deductions.allowances?.forEach(allowance => {
-    const found = allowances.find(a => a.id === allowance.value);
-    netPay += parseFloat(found?.amount) || 0;
-  });
-
-  // Bonuses
-  deductions.bonuses?.forEach(bonus => {
-    const found = bonuses.find(b => b.id === bonus.value);
-    netPay += parseFloat(found?.bonusAmount) || 0;
-  });
-
-  // Taxes
-  deductions.taxes?.forEach(tax => {
-    const found = taxes.find(t => t.id === tax.value);
-    if (found?.nature === "fixedamount") {
-      netPay -= parseFloat(found.amount) || 0;
-    } else {
-      netPay -= netPay * (parseFloat(found?.percent) / 100) || 0;
-    }
-  });
-
-
-  // Loans
-  deductions.appraisals?.forEach(app => {
-    const found = appraisals.find(a => a.id === app.value);
-    netPay += parseFloat(found?.appraisal_amount) || 0;
-  });
-
-  // Loans
-  // deductions.loans?.forEach(loan => {
-  //   const found = loans.find(l => l.id === loan.value);
-  //   netPay -= parseFloat(found?.givenLoan) || 0;
-  // });
-
-  return netPay.toFixed(2);
-};
 
 const EmployeeProfile = () => {
   const dispatch = useDispatch();
@@ -359,7 +319,7 @@ const EmployeeProfile = () => {
             const originalPay = parseFloat(employee.calculate_pay) || 0;
 
             // 1️⃣ Calculate total additions from selected deductions
-            const totalAdditions = 
+            const totalAdditions =
               filteredAllowance.reduce((sum, a) => sum + Number(a.amount || 0), 0) +
               filteredBonus.reduce((sum, b) => sum + Number(b.amount || 0), 0) +
               filteredAppraisals.reduce((sum, ap) => sum + Number(ap.amount || 0), 0);
@@ -387,7 +347,7 @@ const EmployeeProfile = () => {
           })
           .filter(Boolean);
 
-          // console.log(filteredTax);
+        // console.log(filteredTax);
         // 3️⃣ Return the final shape:
         return {
           // preserve identifying fields
@@ -452,6 +412,82 @@ const EmployeeProfile = () => {
   };
 
 
+  // const exportToPDF = () => {
+  //   const doc = new jsPDF('l', 'mm', 'legal');
+
+  //   doc.autoTable({
+  //     head: [
+  //       [
+  //         "Serial No",
+  //         "Employee ID",
+  //         "Employee Name",
+  //         "Overtime Pay",
+  //         "Overtime Hours",
+  //         "Extra Fund",
+  //         "Advance Salary",
+  //         "Appraisals",
+  //         "Loan",
+  //         "Bonus",
+  //         "Salary Period",
+  //         "Bank Name",
+  //         "Account Number",
+  //         "Basic Salary",
+  //         "Salary Type",
+  //         "Total Working Days",
+  //         "Total Working Hours",
+  //         "Total Working Minutes",
+  //         "Attempt Working Hours",
+  //         "Daily Salary",
+  //         "Pay",
+  //       ],
+  //     ],
+  //     body: filteredData.map((item, index) => [
+  //       index + 1,
+  //       item.empId,
+  //       item.empName,
+  //       item.otHoursPay,
+  //       item.otHours,
+  //       item.extraFund,
+  //       item.advSalary,
+  //       item.app,
+  //       item.loan,
+  //       item.bonus,
+  //       item.salaryPeriod,
+  //       item.bankName,
+  //       item.accountNo,
+  //       item.basicSalary,
+  //       item.salaryType,
+  //       item.totalWorkingDays,
+  //       item.totalWorkingHours,
+  //       item.totalWorkingMinutes,
+  //       item.attemptWorkingHours,
+  //       item.dailySalary,
+  //       item.calcPay,
+  //     ]),
+  //     styles: {
+  //       overflow: 'linebreak',
+  //       fontSize: 8,
+  //       cellPadding: 2,
+  //       lineWidth: 0.1,
+  //       lineColor: [0, 0, 0],
+  //     },
+  //     tableWidth: 'auto',
+  //     didDrawCell: (data) => {
+  //       const { cell } = data;
+  //       doc.setTextColor(0, 0, 0);
+  //       doc.setLineWidth(0.1);
+  //       doc.setDrawColor(0, 0, 0);
+  //       doc.rect(cell.x, cell.y, cell.width, cell.height);
+  //     },
+  //     didDrawPage: (data) => {
+  //       doc.text('Employee Salary Report', 20, 10);
+  //     },
+  //   });
+
+  //   doc.save("employee-profile.pdf");
+  // };
+
+
   const exportToPDF = () => {
     const doc = new jsPDF('l', 'mm', 'legal');
 
@@ -468,6 +504,8 @@ const EmployeeProfile = () => {
           "Appraisals",
           "Loan",
           "Bonus",
+          "Allowances",
+          "Taxes",
           "Salary Period",
           "Bank Name",
           "Account Number",
@@ -481,29 +519,43 @@ const EmployeeProfile = () => {
           "Pay",
         ],
       ],
-      body: filteredData.map((item, index) => [
-        index + 1,
-        item.empId,
-        item.empName,
-        item.otHoursPay,
-        item.otHours,
-        item.extraFund,
-        item.advSalary,
-        item.app,
-        item.loan,
-        item.bonus,
-        item.salaryPeriod,
-        item.bankName,
-        item.accountNo,
-        item.basicSalary,
-        item.salaryType,
-        item.totalWorkingDays,
-        item.totalWorkingHours,
-        item.totalWorkingMinutes,
-        item.attemptWorkingHours,
-        item.dailySalary,
-        item.calcPay,
-      ]),
+      body: filteredData.map((item, index) => {
+        // helper to join numeric fields from an array of objects
+        const joinAmounts = (arr, key) =>
+          arr && arr.length
+            ? arr.map(obj => obj[key]).join(' + ')
+            : '0';
+
+        return [
+          index + 1,
+          item.empId,
+          item.empName,
+          item.otHoursPay,
+          item.otHours,
+          item.extraFund,
+          item.advSalary,
+          // Appraisals: use `appraisalAmount` from each object in `item.app`
+          joinAmounts(item.app, 'appraisalAmount'),
+          item.loan,
+          // Bonus: use `bonusAmount` from each object in `item.bonus`
+          joinAmounts(item.bonus, 'bonusAmount'),
+          // Allowances: use `amount` from each object in `item.allowances`
+          joinAmounts(item.allowances, 'amount'),
+          // Taxes: use `deductedAmount` or `amount` as appropriate
+          joinAmounts(item.taxes, 'deductedAmount'),
+          item.salaryPeriod,
+          item.bankName,
+          item.accountNo,
+          item.basicSalary,
+          item.salaryType,
+          item.totalWorkingDays,
+          item.totalWorkingHours,
+          item.totalWorkingMinutes,
+          item.attemptWorkingHours,
+          item.dailySalary,
+          item.calculate_pay || item.calcPay,
+        ];
+      }),
       styles: {
         overflow: 'linebreak',
         fontSize: 8,
@@ -512,20 +564,58 @@ const EmployeeProfile = () => {
         lineColor: [0, 0, 0],
       },
       tableWidth: 'auto',
-      didDrawCell: (data) => {
-        const { cell } = data;
+      didDrawCell: ({ cell }) => {
         doc.setTextColor(0, 0, 0);
         doc.setLineWidth(0.1);
         doc.setDrawColor(0, 0, 0);
         doc.rect(cell.x, cell.y, cell.width, cell.height);
       },
-      didDrawPage: (data) => {
-        doc.text('Employee Salary Report', 20, 10);
+      didDrawPage: () => {
+        doc.text('Employee Profile Report', 20, 10);
       },
     });
 
     doc.save("employee-profile.pdf");
   };
+
+  const csvData = useMemo(() => {
+    // helper to join numeric fields from an array of objects
+    const joinAmounts = (arr, key) =>
+      Array.isArray(arr) && arr.length
+        ? arr.map(obj => obj[key]).join(' + ')
+        : '0';
+
+    return filteredData.map(item => ({
+      // copy over all the scalar fields you want:
+      "Employee ID": item.empId,
+      "Employee Name": item.empName,
+      "Overtime Pay": item.otHoursPay,
+      "Overtime Hours": item.otHours,
+      "Extra Fund": item.extraFund,
+      "Advance Salary": item.advSalary,
+
+      // flatten your arrays into strings:
+      "Appraisals": joinAmounts(item.app, 'appraisalAmount'),
+      "Bonus": joinAmounts(item.bonus, 'bonusAmount'),
+      "Allowances": joinAmounts(item.allowances, 'amount'),
+      "Taxes": joinAmounts(item.taxes, 'amount'),
+
+      // then the rest of your fields:
+      "Loan": item.loan,
+      "Salary Period": item.salaryPeriod,
+      "Bank Name": item.bankName,
+      "Account Number": item.accountNo,
+      "Basic Salary": item.basicSalary,
+      "Salary Type": item.salaryType,
+      "Total Working Days": item.totalWorkingDays,
+      "Total Working Hours": item.totalWorkingHours,
+      "Total Working Minutes": item.totalWorkingMinutes,
+      "Attempt Working Hours": item.attempt_working_hours,
+      "Daily Salary": item.dailySalary,
+      "Pay": item.calcPay || item.calculate_pay,
+    }));
+  }, [filteredData]);
+
 
   const handleExportPdf = async () => {
     const element = document.querySelector(".salary-slip");
@@ -612,13 +702,13 @@ const EmployeeProfile = () => {
       const bonus = bonuses.find(bo => bo.id === b?.value);
       return sum + (bonus ? Number(bonus.bonusAmount || 0) : 0);
     }, 0);
-    
+
     const newAllowances = (selectedDeductions.allowances || []).reduce((sum, a) => {
       const allowance = allowances.find(al => al.id === a?.value);
       return sum + (allowance ? Number(allowance.amount || 0) : 0);
     }, 0);
 
-    
+
     const newTaxes = (selectedDeductions.taxes || []).reduce((sum, t) => {
       const tax = taxes.find(ta => ta.id === t?.value);
       if (!tax) return sum;
@@ -796,7 +886,7 @@ const EmployeeProfile = () => {
       generatePreview();
     }, [employee, deductions]); // Add deductions as dependency
 
-    
+
     const transformDeductions = useMemo(() => ({
       allowances: (deductions.allowances || []).map(a => ({
         ...allowances.find(al => al.id === a.value),
@@ -878,8 +968,6 @@ const EmployeeProfile = () => {
           axios.get(`${SERVER_URL}taxes/`),
           axios.get(`${SERVER_URL}allowances/`),
           axios.get(`${SERVER_URL}pyr-appr/`),
-          // axios.get(`${SERVER_URL}pyr-ext/`),
-          // axios.get(`${SERVER_URL}pyr-loan/`)
 
         ]);
 
@@ -1064,13 +1152,12 @@ const EmployeeProfile = () => {
                                 </button>
 
                                 <CSVLink
-                                  data={filteredData}
+                                  data={csvData}
+                                  headers={Object.keys(csvData[0] || {}).map(key => ({ label: key, key }))}
                                   filename="employee-profile.csv"
                                   style={{ textDecoration: 'none' }}
                                 >
-                                  <button
-                                    className="dropdown-item"
-                                  >
+                                  <button className="dropdown-item">
                                     <FontAwesomeIcon icon={faFileCsv} className="dropdown-icon" />
                                     Export to CSV
                                   </button>
@@ -1093,7 +1180,7 @@ const EmployeeProfile = () => {
 
                       <div className="department-table">
                         <div className="departments-table">
-                          <table className="table">
+                          <table className="table pyr-table">
                             <thead>
                               <tr>
                                 <th>
@@ -1593,15 +1680,7 @@ const EmployeeProfile = () => {
                                       const totalTaxes = existingTaxes + newTaxes;
 
 
-                                      // const additionalAmount = parseFloat(calculateNetPay(employee, selectedDeductions, {
-                                      //   appraisals,
-                                      //   allowances,
-                                      //   bonuses,
-                                      //   taxes,
-
-                                      // })                                    ) || 0;
-
-
+                                    
                                       return (
 
                                         <tr key={employee.pysId}>
@@ -1642,7 +1721,7 @@ const EmployeeProfile = () => {
                                                   existingAllowances,
                                                   existingBonuses,
                                                   existingTaxes,
-                                                  existingAppraisals, 
+                                                  existingAppraisals,
                                                 });
                                               }}
                                             >
@@ -1726,9 +1805,9 @@ const EmployeeProfile = () => {
   const handleGalleryActiveTab = () => {
     dispatch(setActiveTab('gallery'))
   }
-  const handleSalarySlipActiveTab = () => {
-    dispatch(setActiveTab('salarySlip'))
-  }
+  // const handleSalarySlipActiveTab = () => {
+  //   dispatch(setActiveTab('salarySlip'))
+  // }
 
   return (
     <>

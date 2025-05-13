@@ -240,8 +240,9 @@ input:not(:placeholder-shown)~.reset {
     /* border: 1px solid #ddd; */
     padding: 8px;
 }
-.pyr-table th  {
+.pyr-table th, .pyr-table td  {
     padding: 6px; 
+    text-wrap: auto !important;
 }
 
 .departments-table {

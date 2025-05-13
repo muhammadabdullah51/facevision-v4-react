@@ -66,6 +66,7 @@ const AttendanceTable = ({ data, setData }) => {
     try {
       const response = await axios.get(`${SERVER_URL}all-attendance/`);
       setData(response.data);
+      console.log(data);
     } catch (error) {
     }
   }, [setData]);
@@ -333,7 +334,7 @@ const AttendanceTable = ({ data, setData }) => {
 
   const confirmUpdate = async () => {
     if (!editFormData.empId ||
-      !editFormData.date ||
+      // !editFormData.date ||
       // !editFormData.time_in ||
       // !editFormData.time_out ||
       !editFormData.date ||
@@ -356,35 +357,43 @@ const AttendanceTable = ({ data, setData }) => {
       location: editFormData.location,
     };
     try {
+      console.log(attPayload)
       await axios.post(`${SERVER_URL}all-attendance/`, attPayload);
       const updatedData = await axios.get(`${SERVER_URL}all-attendance/`);
       setData(updatedData.data);
-      fetchAtt();
+      handleReset()
       setShowEditForm(false);
       setShowModal(false);
+      
       setSuccessModal(true);
     } catch (error) {
     }
-    setFormData({
-      empId: "",
-      time_in: "",
-      time_out: "",
-      date: "",
-      attendance_marked: "by Admin",
-      status: "",
-      location: "",
-    });
-    setEditFormData({
-      empId: "",
-      time_in: "",
-      time_out: "",
-      date: "",
-      attendance_marked: "by Admin",
-      status: "",
-      location: "",
-    });
+    
   };
 
+
+  const handleReset = () => {
+    setFormData({
+        empId: "",
+        time_in: "",
+        time_out: "",
+        date: "",
+        attendance_marked: "by Admin",
+        status: "",
+        location: "",
+      });
+      setEditFormData({
+        empId: "",
+        time_in: "",
+        time_out: "",
+        date: "",
+        attendance_marked: "by Admin",
+        status: "",
+        location: "",
+      });
+      setShowEditForm(false);
+      setShowAddForm(false);
+  }
   const handleDelete = async (row) => {
     setModalType("delete");
     setShowModal(true);
@@ -434,33 +443,17 @@ const AttendanceTable = ({ data, setData }) => {
     console.log(payload);
 
     try {
-      await axios.post(`${SERVER_URL}manual-att/`, payload);
+      const res = await axios.post(`${SERVER_URL}manual-att/`, payload);
       const updatedData = await axios.get(`${SERVER_URL}all-attendance/`);
+      console.log(res);
       setData(updatedData.data);
-      fetchAtt();
+      handleReset();
       setShowAddForm(false);
       setShowModal(false);
       setSuccessModal(true);
     } catch (error) {
     }
-    setFormData({
-      empId: "",
-      time_in: "",
-      time_out: "",
-      date: "",
-      attendance_marked: "by Admin",
-      status: "",
-      location: "",
-    });
-    setEditFormData({
-      empId: "",
-      time_in: "",
-      time_out: "",
-      date: "",
-      attendance_marked: "by Admin",
-      status: "",
-      location: "",
-    });
+    
   };
 
   const formatTime = (time) => {

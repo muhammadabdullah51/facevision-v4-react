@@ -20,21 +20,21 @@ const ExtraFundsReport = ({ searchQuery, sendDataToParent }) => {
 
   useEffect(() => {
     const newFilteredData = data.filter((item) => {
-      const itemDate = new Date(item.date); // Assuming the `date` field is a string representing a valid date
+      const itemDate = new Date(item.assign_date); // Assuming the `date` field is a string representing a valid date
       const startDate = new Date(fromDate);
       const endDate = new Date(toDate);
 
       // Check if item matches the search query
       const matchesSearchQuery =
-        item.empId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.empName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.type?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.empId?.toString().includes(searchQuery) ||
-        item.paid?.toLowerCase().includes(searchQuery) ||
-        item.pendingAmount?.toLowerCase().includes(searchQuery) ||
-        item.nextPayable?.toLowerCase().includes(searchQuery) ||
-        item.date?.toLowerCase().includes(searchQuery) ||
-        item.extraFundAmount?.toLowerCase().includes(searchQuery);
+        item.empIdVal?.toString().includes(searchQuery) ||
+        item.type?.toString().includes(searchQuery) ||
+        item.status?.toString().includes(searchQuery) ||
+        item.pendingAmount?.toString().includes(searchQuery) ||
+        item.paidAmount?.toString().includes(searchQuery) ||
+        item.nextPayable?.toString().includes(searchQuery) ||
+        item.extrafund_amount?.toString().includes(searchQuery)
 
       // Check if item matches the date range
       const matchesDateRange =
@@ -97,42 +97,56 @@ const ExtraFundsReport = ({ searchQuery, sendDataToParent }) => {
                 <th>ID</th>
                 <th>Employee ID</th>
                 <th>Employee Name</th>
+                <th>Extra Funds Name</th>
                 <th>Extra Funds Amount</th>
                 <th>Paid Amount</th>
                 <th>Pending Amount</th>
                 <th>Return In Months</th>
                 <th>Next Month Payable</th>
                 <th>Date</th>
-                <th>Reason</th>
                 <th>Type</th>
+                <th>Status</th>
+                <th>Reason</th>
               </tr>
             </thead>
             <tbody>
               {filteredData.map((adv) => (
                 <tr key={adv.id}>
                   <td>{adv.id}</td>
-                  <td>{adv.empId}</td>
+                  <td>{adv.empIdVal}</td>
                   <td className="bold-fonts">{adv.empName}</td>
-                  <td>{adv.extraFundAmount}</td>
+                  <td className="bold-fonts">{adv.name}</td>
+                  <td>{adv.extrafund_amount}</td>
                   <td>{adv.paidAmount}</td>
                   <td>{adv.pendingAmount}</td>
                   <td>{adv.returnInMonths}</td>
                   <td>{adv.nextPayable}</td>
-                  <td>{adv.date}</td>
-                  <td>{adv.reason}</td>
+                  <td>{adv.assign_date}</td>
                   <td>
                     <span
-                      className={`status ${
-                        adv.type === "payable"
-                          ? "absentStatus"
-                          : adv.type === "Rejected"
+                      className={`status ${adv.status === "rejected"
+                        ? "absentStatus"
+                        : adv.status === "pending"
+                          ? "lateStatus"
+                          : "presentStatus"
+                        }`}
+                    >
+                      {adv.status}
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      className={`status ${adv.type === "payable"
+                        ? "absentStatus"
+                        : adv.type === "Rejected"
                           ? "absentStatus"
                           : "presentStatus"
-                      }`}
+                        }`}
                     >
                       {adv.type}
                     </span>
                   </td>
+                  <td>{adv.desc}</td>
                 </tr>
               ))}
             </tbody>
