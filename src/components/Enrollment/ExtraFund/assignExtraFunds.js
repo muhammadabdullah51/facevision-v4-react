@@ -335,7 +335,7 @@ const AssignExtrFunds = () => {
     const confirmBulkDelete = async () => {
         try {
             const payload = { ids: selectedIds };
-            await axios.post(`${SERVER_URL}asgnbonus/del/data`, payload);
+            await axios.post(`${SERVER_URL}extfund/del/data`, payload);
             const updatedData = await axios.get(`${SERVER_URL}pyr-ext/`);
             setData(updatedData.data);
             setShowModal(false);

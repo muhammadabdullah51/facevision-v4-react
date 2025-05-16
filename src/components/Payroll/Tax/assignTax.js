@@ -39,6 +39,8 @@ const AssignTax = () => {
       date: "",
       value: "",
       assignTo: "",
+      status: "",
+
     });
 
   const handleReset = () => {
@@ -48,6 +50,8 @@ const AssignTax = () => {
       type: "",
       amount: "",
       date: "",
+      status: "",
+
     });
     setShowAddForm(false);
     setShowEditForm(false);
@@ -58,6 +62,8 @@ const AssignTax = () => {
     type: "",
     amount: "",
     date: "",
+    status: "",
+
   });
 
   const handleInputChange = (e) => {
@@ -152,7 +158,7 @@ const AssignTax = () => {
   };
 
   const confirmAdd = async () => {
-    if (!formData.txId || !formData.date) {
+    if (!formData.txId || !formData.date || !formData.status) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
       setWarningModal(true);
@@ -173,6 +179,7 @@ const AssignTax = () => {
       txId: item.txId,
       date: item.date,
       value: item.value,
+      status: item.status,
       assignTo: item.assignTo,
     });
     setShowAddForm(false);
@@ -184,7 +191,7 @@ const AssignTax = () => {
     setShowModal(true);
   };
   const confirmUpdate = async () => {
-    if (!editFormData.empId || !editFormData.txId || !editFormData.date) {
+    if (!editFormData.empId || !editFormData.txId || !editFormData.date || !editFormData.status) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
       setWarningModal(true);
@@ -205,6 +212,7 @@ const AssignTax = () => {
     item.employeeId.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.empName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.date.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.empTaxAmount.toString().toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.taxName.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -521,6 +529,18 @@ const AssignTax = () => {
             onChange={handleInputChange}
 
           />
+          <label>Select Status</label>
+
+          <select
+            name="status"
+            value={formData.status}
+            onChange={handleInputChange}
+          >
+            <option value="">Select Status</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
           <button className="submit-button" onClick={addAssign}>
             Assign Tax
           </button>
@@ -583,6 +603,17 @@ const AssignTax = () => {
             value={editFormData.date}
             onChange={(e) => setEditFormData({ ...editFormData, date: e.target.value })}
           />
+          <select
+            value={editFormData.status}
+            onChange={(e) =>
+              setEditFormData({ ...editFormData, status: e.target.value })
+            }
+          >
+            <option value="">Select Status</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
           <button
             className="submit-button"
             onClick={() => updateAssign(editFormData)}
@@ -612,6 +643,7 @@ const AssignTax = () => {
               <th>Tax Name</th>
               <th>Amount</th>
               <th>Date</th>
+              <th>Status</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -632,6 +664,18 @@ const AssignTax = () => {
                 <td className="bold-fonts">{bonus.taxName}</td>
                 <td className="bold-fonts">{bonus.empTaxAmount}</td>
                 <td>{bonus.date}</td>
+                <td>
+                  <span
+                    className={`status ${bonus.status === "pending"
+                      ? "lateStatus"
+                      : bonus.status === "rejected"
+                        ? "absentStatus"
+                        : "presentStatus"
+                      }`}
+                  >
+                    {bonus.status}
+                  </span>
+                </td>
                 <td>
                   <button
                     // className="edit-button"

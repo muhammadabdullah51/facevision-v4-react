@@ -144,6 +144,12 @@ const AppraisalTable = () => {
       setWarningModal(true);
       return;
     }
+    if (formData.desc.length > 250 ) {
+            setResMsg("Reason Can't be Bigger than 250 characters");
+            setShowModal(false);
+            setWarningModal(true);
+            return;
+        }
     const newAppraisal = {
       name: formData.name,
       created_date: formData.created_date,
@@ -201,6 +207,12 @@ const AppraisalTable = () => {
       setWarningModal(true);
       return;
     }
+    if (editFormData.desc.length > 250) {
+      setResMsg("Reason Can't be Bigger than 250 characters");
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    }
 
     try {
       const updateAppraisal = {
@@ -208,7 +220,7 @@ const AppraisalTable = () => {
         created_date: editFormData.created_date,
         appraisal_amount: editFormData.appraisal_amount,
         desc: editFormData.desc,
-        
+
       };
       console.log(updateAppraisal)
 
@@ -289,7 +301,7 @@ const AppraisalTable = () => {
   const confirmBulkDelete = async () => {
     try {
       const payload = { ids: selectedIds };
-      await axios.post(`${SERVER_URL}appr/del/data`, payload);
+      await axios.post(`${SERVER_URL}crapp/del/data`, payload);
       const updatedData = await axios.get(`${SERVER_URL}pyr-appr/`);
       setData(updatedData.data);
       setShowModal(false);
@@ -407,7 +419,7 @@ const AppraisalTable = () => {
       {showAddForm && !showEditForm && (
         <div className="add-leave-form">
           <h3>Add New Appraisal</h3>
-          
+
           <label>Name</label>
           <input
             type="text"
@@ -477,7 +489,7 @@ const AppraisalTable = () => {
               setEditFormData({ ...editFormData, appraisal_amount: e.target.value })
             }
           />
-         
+
           <label>Date</label>
           <input
             type="Date"
@@ -542,7 +554,7 @@ const AppraisalTable = () => {
                 <td>{adv.appraisal_amount}</td>
                 <td>{adv.created_date}</td>
                 <td>{adv.desc}</td>
-               
+
                 <td>
                   <button
                     onClick={() => handleEdit(adv)}

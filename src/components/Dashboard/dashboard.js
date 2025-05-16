@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 // import Card from '../Cards/card';
 import { faIdBadge, faCalendarCheck, faCalendarAlt, faTabletAlt } from '@fortawesome/free-solid-svg-icons';
 import PrefomanceGraph from '../Graphs/prefomanceGraph';
-import ProjectGraph from '../Graphs/projectStatus';
+// import ProjectGraph from '../Graphs/projectStatus';
+import DsgLocDemo from '../Graphs/dsgLocDemo';
 import { SERVER_URL } from "../../config";
 import axios from "axios";
 import Employees from "../Enrollment/Employees/employees";
@@ -147,7 +148,8 @@ const Dashboard = () => {
                                 <PrefomanceGraph data={data}/>
                             </div>
                             <div className="geography-graph">
-                                <ProjectGraph />
+                                {/* <ProjectGraph /> */}
+                                <DsgLocDemo/>
                             </div>
                         </div>
                         <div>

@@ -1289,14 +1289,7 @@ const CompletedPayroll = () => {
                           <table className="table pyr-table">
                             <thead>
                               <tr>
-                                <th>
-                                  <input
-                                    id="delete-checkbox"
-                                    type="checkbox"
-                                    checked={selectAll}
-                                    onChange={handleSelectAllChange}
-                                  />
-                                </th>
+                                
                                 <th>Employee ID</th>
                                 <th>Employee Name</th>
                                 <th>Overtime Pay</th>
@@ -1323,14 +1316,7 @@ const CompletedPayroll = () => {
                             <tbody>
                               {filteredData.map((item, index) => (
                                 <tr key={item.cPayId}>
-                                  <td>
-                                    <input
-                                      type="checkbox"
-                                      id="delete-checkbox"
-                                      checked={selectedIds.includes(item.empId)}
-                                      onChange={(event) => handleRowCheckboxChange(event, item.empId)}
-                                    />
-                                  </td>
+                                 
                                   <td>{item.empId}</td>
                                   <td>{item.empName}</td>
                                   <td>{item.otHoursPay}</td>

@@ -347,7 +347,7 @@ const AssignLoan = () => {
         try {
             const payload = { ids: selectedIds };
             await axios.post(`${SERVER_URL}loan/del/data`, payload);
-            const updatedData = await axios.get(`${SERVER_URL}pyr-loan/`);
+            const updatedData = await axios.get(`${SERVER_URL}pyr-asg-loan/`);
             setData(updatedData.data);
             setShowModal(false);
             setSelectedIds([]);

@@ -16,7 +16,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setAssignBonusData, resetAssignBonusData } from "../../../redux/assignBonusSlice";
 
 
-const AssignBonus = ({  }) => {
+const AssignBonus = ({ }) => {
   const [data, setData] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [bonuses, setBonuses] = useState([]);
@@ -33,6 +33,8 @@ const AssignBonus = ({  }) => {
       empId: "",
       bonusId: "",
       bonusAssignDate: "",
+      status: "",
+
     });
 
   const handleReset = () => {
@@ -42,6 +44,8 @@ const AssignBonus = ({  }) => {
       empId: "",
       bonusId: "",
       bonusAssignDate: "",
+      status: "",
+
     });
     setShowAddForm(false);
     setShowEditForm(false);
@@ -52,6 +56,8 @@ const AssignBonus = ({  }) => {
     empId: "",
     bonusId: "",
     bonusAssignDate: "",
+    status: "",
+
   });
 
   const handleInputChange = (e) => {
@@ -133,7 +139,7 @@ const AssignBonus = ({  }) => {
   };
 
   const confirmAdd = async () => {
-    if (!formData.empId || !formData.bonusId || !formData.bonusAssignDate) {
+    if (!formData.empId || !formData.bonusId || !formData.bonusAssignDate || !formData.status) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
       setWarningModal(true);
@@ -153,6 +159,7 @@ const AssignBonus = ({  }) => {
       empId: item.empId,
       bonusId: item.bonusId,
       bonusAssignDate: item.bonusAssignDate,
+      status: item.status,
     });
     setShowAddForm(false);
     setShowEditForm(true);
@@ -163,7 +170,7 @@ const AssignBonus = ({  }) => {
     setShowModal(true);
   };
   const confirmUpdate = async () => {
-    if (!editFormData.empId || !editFormData.bonusId || !editFormData.bonusAssignDate) {
+    if (!editFormData.empId || !editFormData.bonusId || !editFormData.bonusAssignDate || !editFormData.status) {
       setResMsg("Please fill in all required fields.");
       setShowModal(false);
       setWarningModal(true);
@@ -187,6 +194,7 @@ const AssignBonus = ({  }) => {
     item.empId.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.empName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.bonusAssignDate.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.bonusAmount.toLowerCase().includes(searchQuery.toLowerCase())
 
   );
@@ -425,6 +433,18 @@ const AssignBonus = ({  }) => {
             value={formData.bonusAssignDate}
             onChange={handleInputChange}
           />
+          <label>Select Status</label>
+
+          <select
+            name="status"
+            value={formData.status}
+            onChange={handleInputChange}
+          >
+            <option value="">Select Status</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
           <button className="submit-button" onClick={addAssign}>
             Assign Bonus
           </button>
@@ -496,6 +516,18 @@ const AssignBonus = ({  }) => {
               setEditFormData({ ...editFormData, bonusAssignDate: e.target.value })
             }
           />
+          <select
+            value={editFormData.status}
+            onChange={(e) =>
+              setEditFormData({ ...editFormData, status: e.target.value })
+            }
+          >
+            <option value="">Select Status</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+
           <button
             className="submit-button"
             onClick={() => updateAssign(editFormData)}
@@ -525,6 +557,7 @@ const AssignBonus = ({  }) => {
               <th>Bonus Name</th>
               <th>Amount</th>
               <th>Awarded Date</th>
+              <th>Status</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -545,6 +578,18 @@ const AssignBonus = ({  }) => {
                 <td>{bonus.bonusName}</td>
                 <td className="bold-fonts">{bonus.bonusAmount}</td>
                 <td>{bonus.bonusAssignDate}</td>
+                <td>
+                  <span
+                    className={`status ${bonus.status === "pending"
+                      ? "lateStatus"
+                      : bonus.status === "rejected"
+                        ? "absentStatus"
+                        : "presentStatus"
+                      }`}
+                  >
+                    {bonus.status}
+                  </span>
+                </td>
                 <td>
                   <button
                     // className="edit-button"

@@ -7,14 +7,14 @@ const ExtraFundsLogs = () => {
 
   const fetchLogs = useCallback(async () => {
     try {
-      const response = await axios.get(`${SERVER_URL}pyr-ext/`);
+      const response = await axios.get(`${SERVER_URL}pyr-ext/logs`);
       setData(response.data);
+      console.log(response.data);
     } catch (error) {
     }
   }, [setData]);
 
 
-  // Fetch the data when the component mounts
   useEffect(() => {
     fetchLogs();
   }, [fetchLogs]);
@@ -27,16 +27,12 @@ const ExtraFundsLogs = () => {
     (item) =>
       item.id?.toString().includes(searchQuery) ||
       item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.created_date?.toString().includes(searchQuery) ||
-      item.extrafund_amount?.toString().includes(searchQuery) ||
-      item.desc?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.returnInMonths?.toString().includes(searchQuery) ||
-      item.pendingAmount?.toString().includes(searchQuery) ||
-      item.paidAmount?.toString().includes(searchQuery) ||
+      item.amount?.toString().includes(searchQuery) ||
+      item.from_date?.toString().includes(searchQuery) ||
+      item.end_date?.toString().includes(searchQuery) ||
       item.empId?.toString().includes(searchQuery) ||
       item.emp_Name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.department?.toLowerCase().includes(searchQuery.toLowerCase())
-
   );
 
 
@@ -99,15 +95,13 @@ const ExtraFundsLogs = () => {
             <tr>
               <th>ID</th>
               <th>Name</th>
+              <th>Amount</th>
               <th>Created Date</th>
-              <th>Extra Funds Amount</th>
-              <th>Return In Months</th>
-              <th>Pending Amount</th>
-              <th>Paid Amount</th>
-              <th>Employee Id</th>
+              <th>Assign Date</th>
+              
+              <th>Employee ID</th>
               <th>Employee Name</th>
               <th>Department</th>
-              <th>Description</th>
             </tr>
           </thead>
           <tbody>
@@ -115,15 +109,12 @@ const ExtraFundsLogs = () => {
               <tr key={adv.id}>
                 <td>{adv.id}</td>
                 <td className="bold-fonts">{adv.name}</td>
-                <td>{adv.created_date}</td>
-                <td>{adv.extrafund_amount}</td>
-                <td>{adv.returnInMonths}</td>
-                <td>{adv.pendingAmount}</td>
-                <td>{adv.paidAmount}</td>
+                <td className="bold-fonts">{adv.amount}</td>
+                <td>{adv.from_date}</td>
+                <td>{adv.end_date}</td>
                 <td>{adv.empId}</td>
                 <td className="bold-fonts">{adv.emp_Name}</td>
                 <td className="bold-fonts">{adv.department}</td>
-                <td>{adv.desc}</td>
               </tr>
             ))}
           </tbody>

@@ -236,13 +236,73 @@ const EmployeeProfile = () => {
   // Confirm close all payrolls
   const confirmCloseAllPayrolls = async () => {
     try {
-      // Send all payroll data in the request payload
-      await axios.post(`${SERVER_URL}close-all-payrolls/`, {
-        payrolls: data  // Send the entire data array
+      const payload = data.map(employee => {
+        // 1️⃣ Compute the sums:
+        const appSum = Array.isArray(employee.app)
+        ? employee.app.reduce((sum, a) => sum + Number(a.appraisalAmount || 0), 0)
+        : 0;
+        
+        const bonusSum = Array.isArray(employee.bonus)
+          ? employee.bonus.reduce((sum, b) => sum + Number(b.bonusAmount || 0), 0)
+          : 0;
+
+        const allowancesSum = Array.isArray(employee.allowances)
+        ? employee.allowances.reduce((sum, al) => sum + Number(al.amount || 0), 0)
+        : 0;
+        
+        const taxesSum = Array.isArray(employee.taxes)
+        ? employee.taxes.reduce((sum, t) => sum + Number(t.amount || 0), 0)
+        : 0;
+        
+        // 2️⃣ Build filtered arrays from the user’s selections:
+        
+        return {
+          // preserve identifying fields
+          pysId: employee.pysId,
+          empId: employee.empId,
+          empName: employee.empName,
+          department: employee.department,
+          companyName: employee.companyName,
+          companyLogo: employee.companyLogo,
+          
+          // original scalar fields
+          otHoursPay: employee.otHoursPay,
+          otHours: employee.otHours,
+          extraFund: employee.extraFund,
+          advSalary: employee.advSalary,
+          loan: employee.loan,
+          salaryPeriod: employee.salaryPeriod,
+          bankName: employee.bankName,
+          accountNo: employee.accountNo,
+          basicSalary: employee.basicSalary,
+          salaryType: employee.salaryType,
+          totalWorkingDays: employee.totalWorkingDays,
+          totalWorkingHours: employee.totalWorkingMinutes,
+          totalWorkingMinutes: employee.totalWorkingHours,
+          attemptWorkingHours: employee.attemptWorkingHours,
+          attempt_working_hours: employee.attempt_working_hours,
+          dailySalary: employee.dailySalary,
+          calculate_pay: employee.calculate_pay,
+          date: employee.date,
+          from_date: "",
+          end_date: "",
+          
+          // 🔢 Top-level sums
+          app: appSum,
+          bonus: bonusSum,
+          allowances: allowancesSum,
+          taxes: taxesSum,
+          
+          
+        };
       });
+      console.log(payload);
+      
+      // Send all payroll data in the request payload
+      await axios.post(`${SERVER_URL}pyr-close-all/`, payload);
 
       // Update the state after successful API call
-      setData([]);
+      // setData([]);
       setShowModal(false);
       setResMsg("All payrolls have been closed successfully.");
       setSuccessModal(true);
@@ -347,8 +407,6 @@ const EmployeeProfile = () => {
           })
           .filter(Boolean);
 
-        // console.log(filteredTax);
-        // 3️⃣ Return the final shape:
         return {
           // preserve identifying fields
           pysId: employee.pysId,

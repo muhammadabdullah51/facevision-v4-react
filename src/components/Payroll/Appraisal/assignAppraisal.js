@@ -81,6 +81,7 @@ const AssignAppraisal = () => {
         try {
             const response = await axios.get(`${SERVER_URL}pyr-asg-appr/`);
             setData(response.data);
+            console.log(response.data);
         } catch (error) {
         }
     }, [setData]);
@@ -151,6 +152,12 @@ const AssignAppraisal = () => {
             setWarningModal(true);
             return;
         }
+        if (formData.desc.length > 250 ) {
+            setResMsg("Reason Can't be Bigger than 250 characters");
+            setShowModal(false);
+            setWarningModal(true);
+            return;
+        }
         await axios.post(`${SERVER_URL}pyr-asg-appr/`, formData);
         setShowModal(false);
         setSuccessModal(true);
@@ -190,6 +197,12 @@ const AssignAppraisal = () => {
             setWarningModal(true);
             return;
         }
+        if (editFormData.desc.length > 250 ) {
+            setResMsg("Reason Can't be Bigger than 250 characters");
+            setShowModal(false);
+            setWarningModal(true);
+            return;
+        }
         console.log(editFormData);
 
         await axios.put(`${SERVER_URL}pyr-asg-appr/${editFormData.id}/`, editFormData);
@@ -210,6 +223,7 @@ const AssignAppraisal = () => {
         item.empName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.appraisalName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.appraisalAmount?.toString().includes(searchQuery) ||
         item.assign_date?.toString().includes(searchQuery) ||
         item.appr_id?.toString().includes(searchQuery) ||
         item.desc.toLowerCase().includes(searchQuery.toLowerCase())
@@ -273,8 +287,8 @@ const AssignAppraisal = () => {
     const confirmBulkDelete = async () => {
         try {
             const payload = { ids: selectedIds };
-            await axios.post(`${SERVER_URL}asgnbonus/del/data`, payload);
-            const updatedData = await axios.get(`${SERVER_URL}pyr-asg-bns/`);
+            await axios.post(`${SERVER_URL}appr/del/data`, payload);
+            const updatedData = await axios.get(`${SERVER_URL}pyr-asg-appr/`);
             setData(updatedData.data);
             setShowModal(false);
             setSelectedIds([]);
@@ -622,9 +636,9 @@ const AssignAppraisal = () => {
                                 <td>{bonus.assign_date}</td>
                                 <td>
                                     <span
-                                        className={`status ${bonus.status === "Pending"
+                                        className={`status ${bonus.status === "pending"
                                             ? "lateStatus"
-                                            : bonus.status === "Rejected"
+                                            : bonus.status === "rejected"
                                                 ? "absentStatus"
                                                 : "presentStatus"
                                             }`}

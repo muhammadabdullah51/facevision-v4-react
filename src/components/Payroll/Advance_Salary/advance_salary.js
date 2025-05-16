@@ -36,11 +36,9 @@ const AdvanceSalary = () => {
   const handleReset = () => {
     dispatch(resetAdvanceSalaryData());
     setFormData({
-      id: "",
       empId: "",
-      first_checkin: "",
-      last_checkout: "",
-      calcHours: '',
+      amount: "",
+      reason: "",
       date: "",
     });
     setShowAddForm(false);
@@ -48,11 +46,9 @@ const AdvanceSalary = () => {
   };
 
   const [editFormData, setEditFormData] = useState({
-    id: "",
     empId: "",
-    first_checkin: "",
-    last_checkout: "",
-    calcHours: '',
+    amount: "",
+    reason: "",
     date: "",
   });
 
@@ -145,6 +141,12 @@ const AdvanceSalary = () => {
       setWarningModal(true);
       return;
     }
+    if (formData.reason.length > 250) {
+      setResMsg("Reason Can't be Bigger than 250 characters");
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    }
     const advSalary = {
       empId: formData.empId,
       amount: formData.amount,
@@ -186,6 +188,12 @@ const AdvanceSalary = () => {
       editFormData.date === ""
     ) {
       setResMsg("Please fill in all required fields.");
+      setShowModal(false);
+      setWarningModal(true);
+      return;
+    }
+    if (editFormData.reason.length > 250) {
+      setResMsg("Reason Can't be Bigger than 250 characters");
       setShowModal(false);
       setWarningModal(true);
       return;

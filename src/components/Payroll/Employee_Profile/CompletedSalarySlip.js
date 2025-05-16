@@ -137,22 +137,29 @@ const CompletedSalarySlip = ({ salaryDetails, preview }) => {
                                 <td>Overtime Hours Pay</td>
                                 <td>Rs. {otHoursPay}</td>
                             </tr>
-                            {/* Allowances */}
-                           <tr>
-                                <td>2</td>
-                                <td>Allowances</td>
-                                <td>Rs. {salaryDetails.allowance}</td>
-                            </tr>
-                           <tr>
-                                <td>3</td>
-                                <td>Appraisals</td>
-                                <td>Rs. {salaryDetails.app}</td>
-                            </tr>
-                           <tr>
-                                <td>4</td>
-                                <td>Bonus</td>
-                                <td>Rs. {salaryDetails.bonus}</td>
-                            </tr>
+                            {salaryDetails.allowances_old?.map((allowance, index) => (
+                                <tr key={`allowance-${index}`}>
+                                    <td>{index + 3}</td>
+                                    <td>{allowance.allowanceName}</td>
+                                    <td>Rs. {allowance.amount}</td>
+                                </tr>
+                            ))}
+                            {/* Render all bonuses */}
+                            {salaryDetails.bonus_old?.map((bonus, index) => (
+                                <tr key={`bonus-${index}`}>
+                                    <td>{salaryDetails.allowances_old?.length + index + 3}</td>
+                                    <td>{bonus.bonusName}</td>
+                                    <td>Rs. {bonus.bonusAmount}</td>
+                                </tr>
+                            ))}
+                            {/* Render all appraisals */}
+                            {salaryDetails.app_old?.map((appraisal, index) => (
+                                <tr key={`appraisal-${index}`}>
+                                    <td>{salaryDetails.allowances_old?.length + salaryDetails.bonus_old?.length + index + 3}</td>
+                                    <td>{appraisal.appraisalName}</td>
+                                    <td>Rs. {appraisal.appraisalAmount}</td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
                 </div>
@@ -184,11 +191,16 @@ const CompletedSalarySlip = ({ salaryDetails, preview }) => {
                                 <td>Extra Fund</td>
                                 <td>Rs. {extraFund}</td>
                             </tr>
-                           <tr>
-                                <td>4</td>
-                                <td>Taxes</td>
-                                <td>Rs. {salaryDetails.taxes}</td>
-                            </tr>
+                           {(salaryDetails.taxes_old || []).map((tax, index) => (
+                                <tr key={`tax-${index}`}>
+                                    <td>{4 + index}</td>
+                                    <td>{tax.taxName}</td>
+                                    <td>
+                                        Rs. { tax.empTaxAmount
+                                            }
+                                    </td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
                 </div>

@@ -802,7 +802,7 @@ th.th-component, td.th-component{
   margin: auto;
   text-align: center;
   position: absolute;
-  bottom: 50px;
+  bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
   width: 100%;

@@ -7,14 +7,14 @@ const TaxLogs = () => {
 
   const fetchLogs = useCallback(async () => {
     try {
-      const response = await axios.get(`${SERVER_URL}pyr-ext/`);
+      const response = await axios.get(`${SERVER_URL}api/taxeslog/`);
       setData(response.data);
+      console.log(response.data);
     } catch (error) {
     }
   }, [setData]);
 
 
-  // Fetch the data when the component mounts
   useEffect(() => {
     fetchLogs();
   }, [fetchLogs]);
@@ -28,10 +28,11 @@ const TaxLogs = () => {
       item.id?.toString().includes(searchQuery) ||
       item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.amount?.toString().includes(searchQuery) ||
-      item.percent?.toString().includes(searchQuery) ||
-      item.date?.toString().includes(searchQuery) ||
-      item.nature?.toLowerCase().includes(searchQuery.toLowerCase())
-
+      item.from_date?.toString().includes(searchQuery) ||
+      item.end_date?.toString().includes(searchQuery) ||
+      item.empId?.toString().includes(searchQuery) ||
+      item.emp_Name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.department?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
 
@@ -94,10 +95,11 @@ const TaxLogs = () => {
             <tr>
               <th>ID</th>
               <th>Name</th>
-              <th>Nature</th>
-              <th>Amount / Percent</th>
-              <th>Date</th>
-              <th>Employee Id</th>
+              <th>Amount</th>
+              <th>Created Date</th>
+              <th>Assign Date</th>
+              
+              <th>Employee ID</th>
               <th>Employee Name</th>
               <th>Department</th>
             </tr>
@@ -107,13 +109,12 @@ const TaxLogs = () => {
               <tr key={adv.id}>
                 <td>{adv.id}</td>
                 <td className="bold-fonts">{adv.name}</td>
-                <td>{adv.nature}</td>
-                <td>{adv.amount === 0 ? adv.percent : adv.amount} {adv.nature === 'percentage' ? '%' : 'Rs'}</td>
-                <td>{adv.date}</td>
+                <td className="bold-fonts">{adv.amount}</td>
+                <td>{adv.from_date}</td>
+                <td>{adv.end_date}</td>
                 <td>{adv.empId}</td>
                 <td className="bold-fonts">{adv.emp_Name}</td>
                 <td className="bold-fonts">{adv.department}</td>
-
               </tr>
             ))}
           </tbody>

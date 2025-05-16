@@ -3,18 +3,18 @@ import axios from "axios";
 import "../../Dashboard/dashboard.css";
 import { SERVER_URL } from "../../../config";
 const BonusLogs = () => {
-  const [data, setData] = useState([]);
+ const [data, setData] = useState([]);
 
   const fetchLogs = useCallback(async () => {
     try {
-      const response = await axios.get(`${SERVER_URL}pyr-ext/`);
+      const response = await axios.get(`${SERVER_URL}api/bonuseslog/`);
       setData(response.data);
+      console.log(response.data);
     } catch (error) {
     }
   }, [setData]);
 
 
-  // Fetch the data when the component mounts
   useEffect(() => {
     fetchLogs();
   }, [fetchLogs]);
@@ -26,10 +26,10 @@ const BonusLogs = () => {
   const filteredData = data.filter(
     (item) =>
       item.id?.toString().includes(searchQuery) ||
-      item.bonusName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.bonusAmount?.toString().includes(searchQuery) ||
-      item.bonusAssignDate?.toString().includes(searchQuery) ||
-      item.bonusDuration?.toString().includes(searchQuery) ||
+      item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.amount?.toString().includes(searchQuery) ||
+      item.from_date?.toString().includes(searchQuery) ||
+      item.end_date?.toString().includes(searchQuery) ||
       item.empId?.toString().includes(searchQuery) ||
       item.emp_Name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.department?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -95,9 +95,10 @@ const BonusLogs = () => {
             <tr>
               <th>ID</th>
               <th>Name</th>
-              <th>Bonus Amount</th>
+              <th>Amount</th>
+              <th>Created Date</th>
               <th>Assign Date</th>
-              <th>Duration</th>
+              
               <th>Employee ID</th>
               <th>Employee Name</th>
               <th>Department</th>
@@ -107,10 +108,10 @@ const BonusLogs = () => {
             {filteredData.map((adv) => (
               <tr key={adv.id}>
                 <td>{adv.id}</td>
-                <td className="bold-fonts">{adv.bonusName}</td>
-                <td className="bold-fonts">{adv.bonusAmount}</td>
-                <td>{adv.bonusAssignDate}</td>
-                <td>{adv.bonusDuration}</td>
+                <td className="bold-fonts">{adv.name}</td>
+                <td className="bold-fonts">{adv.amount}</td>
+                <td>{adv.from_date}</td>
+                <td>{adv.end_date}</td>
                 <td>{adv.empId}</td>
                 <td className="bold-fonts">{adv.emp_Name}</td>
                 <td className="bold-fonts">{adv.department}</td>

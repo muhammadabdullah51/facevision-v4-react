@@ -7,8 +7,9 @@ const AppraisalLogs = () => {
 
   const fetchLogs = useCallback(async () => {
     try {
-      const response = await axios.get(`${SERVER_URL}pyr-ext/`);
+      const response = await axios.get(`${SERVER_URL}api/appraisalslog/`);
       setData(response.data);
+      console.log(data);
     } catch (error) {
     }
   }, [setData]);
@@ -27,11 +28,9 @@ const AppraisalLogs = () => {
     (item) =>
       item.id?.toString().includes(searchQuery) ||
       item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.appraisal_amount?.toString().includes(searchQuery) ||
-      item.created_date?.toString().includes(searchQuery) ||
-      item.assign_date?.toString().includes(searchQuery) ||
-      item.status?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.desc?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.amount?.toString().includes(searchQuery) ||
+      item.from_date?.toString().includes(searchQuery) ||
+      item.end_date?.toString().includes(searchQuery) ||
       item.empId?.toString().includes(searchQuery) ||
       item.emp_Name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.department?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -97,11 +96,10 @@ const AppraisalLogs = () => {
             <tr>
               <th>ID</th>
               <th>Name</th>
-              <th>Appraisal Amount</th>
+              <th>Amount</th>
               <th>Created Date</th>
               <th>Assign Date</th>
-              <th>Status</th>
-              <th>Description</th>
+              
               <th>Employee ID</th>
               <th>Employee Name</th>
               <th>Department</th>
@@ -112,22 +110,9 @@ const AppraisalLogs = () => {
               <tr key={adv.id}>
                 <td>{adv.id}</td>
                 <td className="bold-fonts">{adv.name}</td>
-                <td className="bold-fonts">{adv.appraisal_amount}</td>
-                <td>{adv.created_date}</td>
-                <td>{adv.assign_date}</td>
-                <td>
-                <span
-                    className={`status ${adv.status === "Pending"
-                      ? "lateStatus"
-                      : adv.status === "Rejected"
-                        ? "absentStatus"
-                        : "presentStatus"
-                      }`}
-                  >
-                    {adv.status}
-                  </span>
-                </td>
-                <td>{adv.desc}</td>
+                <td className="bold-fonts">{adv.amount}</td>
+                <td>{adv.from_date}</td>
+                <td>{adv.end_date}</td>
                 <td>{adv.empId}</td>
                 <td className="bold-fonts">{adv.emp_Name}</td>
                 <td className="bold-fonts">{adv.department}</td>

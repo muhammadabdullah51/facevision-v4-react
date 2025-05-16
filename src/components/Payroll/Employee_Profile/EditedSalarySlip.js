@@ -151,7 +151,7 @@ const EditedSalarySlip = ({ salaryDetails, preview }) => {
                                 </tr>
                             ))}
                             {/* Render all bonuses */}
-                            {salaryDetails.bonuses?.map((bonus, index) => (
+                            {salaryDetails.bonus?.map((bonus, index) => (
                                 <tr key={`bonus-${index}`}>
                                     <td>{salaryDetails.allowances?.length + index + 2}</td>
                                     <td>{bonus.bonusName}</td>
@@ -159,9 +159,9 @@ const EditedSalarySlip = ({ salaryDetails, preview }) => {
                                 </tr>
                             ))}
                             {/* Render all appraisals */}
-                            {salaryDetails.appraisals?.map((appraisal, index) => (
+                            {salaryDetails.app?.map((appraisal, index) => (
                                 <tr key={`appraisal-${index}`}>
-                                    <td>{salaryDetails.allowances?.length + salaryDetails.bonuses?.length + index + 2}</td>
+                                    <td>{salaryDetails.allowances?.length + salaryDetails.bonus?.length + index + 2}</td>
                                     <td>{appraisal.appraisalName}</td>
                                     <td>Rs. {appraisal.appraisalAmount}</td>
                                 </tr>

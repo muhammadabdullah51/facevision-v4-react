@@ -27,7 +27,7 @@ const SalarySlip = ({ salaryDetails, preview, deductions = {},  }) => {
           }))
         ],
         bonuses: [
-          ...(salaryDetails.bonuses || []),
+          ...(salaryDetails.bonus || []),
           ...(deductions.bonuses || []).map(b => ({
             bonusName: b.label?.split(' (')[0] || 'Bonus',
             bonusAmount: b.amount
@@ -41,7 +41,7 @@ const SalarySlip = ({ salaryDetails, preview, deductions = {},  }) => {
           }))
         ],
         appraisals: [
-          ...(salaryDetails.appraisals || []),
+          ...(salaryDetails.app || []),
           ...(deductions.appraisals || []).map(a => ({
             appraisalName: a.label?.split(' (')[0] || 'Appraisal',
             appraisalAmount: a.amount
@@ -173,7 +173,7 @@ const SalarySlip = ({ salaryDetails, preview, deductions = {},  }) => {
                   </tr>
                 ))}
                 {/* Render all bonuses */}
-                {mergedData.bonuses?.map((bonus, index) => (
+                {mergedData.bonus?.map((bonus, index) => (
                   <tr key={`bonus-${index}`}>
                     <td>{mergedData.allowances?.length + index + 2}</td>
                     <td>{bonus.bonusName}</td>
