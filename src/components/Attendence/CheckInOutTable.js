@@ -314,8 +314,8 @@ const CheckInOutTable = ({ dash }) => {
     }
     const payload = {
       empId: formData.empId,
-      fName: formData.lName,
-      lName: formData.fName,
+      fName: formData.fName,
+      lName: formData.lName,
       time: formatTime(formData.time),
       date: formData.date,
       status: formData.status,
@@ -376,7 +376,7 @@ const CheckInOutTable = ({ dash }) => {
           Header: "Employee Name",
           Cell: ({ row }) => (
             <span className="bold-fonts">
-              {row.original.lName} {row.original.fName}
+              {row.original.fName} {row.original.lName}
             </span>
           ),
           key: "employeeName", // Explicitly set the key

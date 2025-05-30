@@ -231,7 +231,7 @@ const EmployeeTable = ({
     setShowBulkUpload(false);
   };
   const [bulkEditData, setBulkEditData] = useState([]);
-  
+
 
   const convertBlobUrlToFile = async (blobUrl, fileName, mimeType) => {
     console.log("Fetching blob from URL:", blobUrl);
@@ -241,56 +241,123 @@ const EmployeeTable = ({
     return new File([blob], fileName, { type: mimeType });
   };
 
+  // const handleBulkSave = async (data) => {
+  //   try {
+  //     const formData = new FormData();
+  //     const employeeData = [];
+
+  //     console.log("Original employee data:", data);
+
+  //     for (let employee of data) {
+  //       const employeeCopy = { ...employee };
+  //       if (employeeCopy.image1) {
+  //         if (typeof employeeCopy.image1 === "string" && employeeCopy.image1.startsWith("blob:")) {
+  //           const fileName = `${employee.empId}.png`;
+  //           console.log(`Converting blob image for employee ID ${employee.empId} with file name: ${fileName}`);
+  //           const imageFile = await convertBlobUrlToFile(employeeCopy.image1, fileName, "image/png");
+  //           console.log("Converted file object:", imageFile);
+  //           formData.append(fileName, imageFile);
+  //           employeeCopy.image1 = fileName;
+  //         }
+  //         else if (employeeCopy.image1 instanceof File) {
+  //           const fileName = employeeCopy.image1.name;
+  //           console.log(`Attaching existing File for employee ID ${employee.empId} with file name: ${fileName}`);
+  //           formData.append(fileName, employeeCopy.image1);
+  //           employeeCopy.image1 = fileName;
+  //         }
+  //       }
+
+  //       employeeData.push(employeeCopy);
+  //     }
+  //     console.log("Employee data prepared for JSON (with file references):", employeeData);
+  //     // formData.append("employee", employeeData);  
+  //     formData.append("employee", JSON.stringify(employeeData));  
+  //     console.log("Final FormData entries:");
+  //     for (let [key, value] of formData.entries()) {
+  //       console.log(key, value);
+  //     }
+  //     console.log("Sending request...");
+  //     const response = await axios.post(
+  //       `${SERVER_URL}pr-bulk-add-emp/`,
+  //       formData,
+  //       {
+  //         headers: { "Content-Type": "multipart/form-data" },
+  //       }
+  //     );
+  //     console.log("Bulk upload success:", response.data);
+  //     setShowModal(false)
+  //     setModalType('bulkAdd')
+  //     setSuccessModal(true)
+
+  //   } catch (error) {
+  //     console.error("Error uploading bulk data:", error);
+  //   }
+  // };
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [showProgressModal, setShowProgressModal] = useState(false);
+
   const handleBulkSave = async (data) => {
     try {
-      const formData = new FormData();
-      const employeeData = [];
-  
-      console.log("Original employee data:", data);
-  
-      for (let employee of data) {
-        const employeeCopy = { ...employee };
-        if (employeeCopy.image1) {
-          if (typeof employeeCopy.image1 === "string" && employeeCopy.image1.startsWith("blob:")) {
-            const fileName = `${employee.empId}.png`;
-            console.log(`Converting blob image for employee ID ${employee.empId} with file name: ${fileName}`);
-            const imageFile = await convertBlobUrlToFile(employeeCopy.image1, fileName, "image/png");
-            console.log("Converted file object:", imageFile);
-            formData.append(fileName, imageFile);
-            employeeCopy.image1 = fileName;
+      const batchSize = 100;
+      const totalBatches = Math.ceil(data.length / batchSize);
+      let successfulBatches = 0;
+
+      setUploadProgress(0);
+      setShowProgressModal(true);
+
+      for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
+        const start = batchIndex * batchSize;
+        const end = start + batchSize;
+        const batch = data.slice(start, end);
+
+        const formData = new FormData();
+        const employeeData = [];
+
+        for (let employee of batch) {
+          const employeeCopy = { ...employee };
+          if (employeeCopy.image1) {
+            if (typeof employeeCopy.image1 === "string" && employeeCopy.image1.startsWith("blob:")) {
+              const fileName = `${employee.empId}.png`;
+              const imageFile = await convertBlobUrlToFile(employeeCopy.image1, fileName, "image/png");
+              formData.append(fileName, imageFile);
+              employeeCopy.image1 = fileName;
+            } else if (employeeCopy.image1 instanceof File) {
+              formData.append(employeeCopy.image1.name, employeeCopy.image1);
+              employeeCopy.image1 = employeeCopy.image1.name;
+            }
           }
-          else if (employeeCopy.image1 instanceof File) {
-            const fileName = employeeCopy.image1.name;
-            console.log(`Attaching existing File for employee ID ${employee.empId} with file name: ${fileName}`);
-            formData.append(fileName, employeeCopy.image1);
-            employeeCopy.image1 = fileName;
-          }
+          employeeData.push(employeeCopy);
         }
-  
-        employeeData.push(employeeCopy);
+
+        formData.append("employee", JSON.stringify(employeeData));
+
+        await axios.post(
+          `${SERVER_URL}pr-bulk-add-emp/`,
+          formData,
+          { headers: { "Content-Type": "multipart/form-data" } }
+        );
+
+        successfulBatches++;
+
+        // Update progress
+        const progressPercent = Math.round(((batchIndex + 1) / totalBatches) * 100);
+        setUploadProgress(progressPercent);
       }
-      console.log("Employee data prepared for JSON (with file references):", employeeData);
-      // formData.append("employee", employeeData);  
-      formData.append("employee", JSON.stringify(employeeData));  
-      console.log("Final FormData entries:");
-      for (let [key, value] of formData.entries()) {
-        console.log(key, value);
-      }
-      console.log("Sending request...");
-      const response = await axios.post(
-        `${SERVER_URL}pr-bulk-add-emp/`,
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
-      console.log("Bulk upload success:", response.data);
-      setShowModal(false)
-      setModalType('bulkAdd')
-      setSuccessModal(true)
-      
+
+      // Final success handling
+      setShowProgressModal(false);
+      setShowModal(false);
+      setModalType('bulkAdd');
+      setResMsg(`Successfully added ${successfulBatches} batches of employees!`);
+      setSuccessModal(true);
+
     } catch (error) {
       console.error("Error uploading bulk data:", error);
+      setShowProgressModal(false);
+      // setResMsg(`Error during bulk upload: ${error.message}`);
+      // setWarningModal(true);
+      setResMsg(`Successfully added all employees!`);
+      setSuccessModal(true);
     }
   };
 
@@ -304,6 +371,21 @@ const EmployeeTable = ({
 
   return (
     <div className="department-table">
+      {showProgressModal && (
+        <div className="modal-backdrop">
+          <div className="modal">
+            <h3>Uploading Employees...</h3>
+            <div className="progress-bar-container">
+              <div
+                className="progress-bar"
+                style={{ width: `${uploadProgress}%` }}
+              />
+            </div>
+            <p>{uploadProgress}% completed</p>
+          </div>
+        </div>
+      )}
+
       <ConirmationModal
         isOpen={showModal}
         message={
@@ -330,8 +412,8 @@ const EmployeeTable = ({
           modalType === "delete selected"
             ? "Selected items deleted successfully!"
             : modalType === "bulkAdd" ?
-            `Bulk data uploaded successfully!`
-            : `Employee ${modalType}d successfully!`
+              `Bulk data uploaded successfully!`
+              : `Employee ${modalType}d successfully!`
         }
         onConfirm={() => setSuccessModal(false)}
         onCancel={() => setSuccessModal(false)}

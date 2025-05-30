@@ -192,26 +192,8 @@ const BulkUploadView = ({ onClose, onSave }) => {
   };
 
   const removeBackgroundFromFile = async (file) => {
-    try {
-      const formData = new FormData();
-      formData.append('image_file', file);
-
-      const response = await axios.post('https://api.remove.bg/v1.0/removebg', formData, {
-        headers: { 'X-Api-Key': API_KEY },
-        responseType: 'blob'
-      });
-
-      // Create a new File object using the response blob
-      const bgRemovedFile = new File([response.data], file.name, {
-        type: 'image/png',
-        lastModified: file.lastModified // preserves original timestamp
-      });
-      return bgRemovedFile;
-    } catch (error) {
-      console.error("Error removing background for file:", file.name, error);
-      // If an error occurs, return the original file
-      return file;
-    }
+     console.log(file);
+    return file;
   };
 
 
