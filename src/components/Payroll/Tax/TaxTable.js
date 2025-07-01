@@ -423,7 +423,7 @@ const TaxTable = () => {
           <input
             type="text"
             list="taxType" // Link to the datalist by id
-            placeholder="Allowance Type"
+            placeholder="Tax Type"
             value={
               taxSettings.find((setting) => setting.id === formData.type)
                 ?.type || ""

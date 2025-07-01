@@ -37,9 +37,10 @@ function App() {
       })
   }, []);
   const renderHome = () => {
-    if (!authTrue) {
-      return <AuthToken />;
-    } else if (!companyInfoCompleted) {
+    // if (!authTrue) {
+    //   return <AuthToken />;
+    // } else 
+    if (!companyInfoCompleted) {
       return <Information />;
     } else {
       return <Login />;
