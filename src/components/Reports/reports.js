@@ -454,7 +454,7 @@ const Reports = () => {
             )}
           </div>
         </div>
-        <div>
+        {/* <div className="table-header"> */}
           <form className="form" onSubmit={(e) => e.preventDefault()}>
             <button type="submit">
               <svg
@@ -501,7 +501,7 @@ const Reports = () => {
               </svg>
             </button>
           </form>
-        </div>
+        {/* </div> */}
       </div>
       <div>{renderContent()}</div>
     </div>

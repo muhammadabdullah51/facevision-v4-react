@@ -269,7 +269,7 @@
    
     .geography-graph{
         width: 90%;
-        overflow: scroll;
+        /* overflow: scroll; */
     }
     .footer-item{
         justify-content: start;

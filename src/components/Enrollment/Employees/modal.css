@@ -99,7 +99,8 @@
   padding: 20px 30px;
   border-radius: 8px;
   text-align: center;
-  width: 300px;
+  overflow: scroll;
+  /* width: 300px; */
 }
 
 .progress-bar-container {

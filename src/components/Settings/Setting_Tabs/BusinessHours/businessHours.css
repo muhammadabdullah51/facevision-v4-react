@@ -1,5 +1,5 @@
 .business-hours {
-    width: 50%;
+    width: 100%;
     background-color: #ffffff;
     padding: 20px;
     border-radius: 10px;
@@ -102,8 +102,9 @@ input[type="checkbox"]:checked:before {
     display: flex;
     align-items: center;
     gap: 10px;
-    width: 15vw;
+    /* width: 15vw; */
     justify-content: center;
+    margin-right: 20px;
 }
 
 input[type="time"] {
@@ -166,7 +167,7 @@ input[type="checkbox"]:disabled+label {
 @media only screen and (max-width:700px) {
     
     .time-inputs{
-        width: 100%;
+        width: 30%;
     }
     .day-row label, .enable-toggle label, .timezone label{
         font-size: 2.8vw;
@@ -187,14 +188,15 @@ input[type="checkbox"]:disabled+label {
         font-size: small;
     }
     .day-row{
-        flex-direction: column;
+        /* flex-direction: column; */
         align-items: flex-start;
         gap: 2vh;
+        justify-content: space-between;
     }
     .additional-settings button{
         font-size: 2.5vw;
     }
-    .enable-toggle, .timezone, .day-row, .additional-settings{
+    .enable-toggle, .timezone,  .additional-settings{
         justify-content: start;
     }
     

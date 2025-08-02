@@ -71,14 +71,14 @@
 @media (max-width:1300px) {
     .dashboard-content {
         margin-left: 0;
-        width: 79%;
+        width: 100%;
     }
     .dashboard-graphs{
         flex-wrap: wrap;
         justify-content: center;
     }
     .prefomance-graph{
-        width: 80%;
+        width: 100%;
     }
 }
 
@@ -181,6 +181,11 @@
 .low-value {
     background-color: #fee2e2; /* Light red background for low value */
 }
+ @media (min-width: 1149px) and (max-width:1673px) {
+     .card{
+         width: 20%;
+     }
+ }
  @media (min-width: 700px) and (max-width:895px) {
     .card{
         width: 40%;

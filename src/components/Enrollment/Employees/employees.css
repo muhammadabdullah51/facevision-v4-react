@@ -259,12 +259,15 @@ button.toggle-button {
     width: 60%;
     justify-content: end;
 }
-@media only screen and (max-width:700px){
-    /* .add-delete-emp{
+@media only screen and (max-width:1070px){
+    .add-delete-emp{
         display: flex;
         width: 100%;
         justify-content: end;
-    } */
+    }
+}
+@media only screen and (max-width:700px){
+    
     .employee-add-button {
         width: 100%;
     }
