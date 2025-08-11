@@ -21,6 +21,8 @@ const DeviceTable = ({ data, setData }) => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [locations, setLocations] = useState([]);
+  const [showProgressModal, setShowProgressModal] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
 
   const fetchloc = async () => {
     try {
@@ -108,6 +110,32 @@ const DeviceTable = ({ data, setData }) => {
 
 
 
+  // const handleDownload = async (rowData) => {
+  //   const requestData = {
+  //     cameraIp: rowData.cameraIp,
+  //     port: rowData.port,
+  //   };
+
+  //   try {
+  //     // await axios.post(`${SERVER_URL}fetch-data/`, requestData);
+  //     // console.log(data);
+  //     if (rowData.status === 'Disconnected') {
+  //       setResMsg("Please confirm that your API runner is running. Failed to fetch data!");
+  //       setWarningModal(true);
+  //     } else {
+  //       let res = await axios.post(`${SERVER_URL}fetch-data/`, requestData);
+  //       console.log(res);
+  //       if (res.status === 200) {
+  //         setResMsg("Data fetched successfully!");
+  //         setModalType('attendance')
+  //         setSuccessModal(true);
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
+
   const handleDownload = async (rowData) => {
     const requestData = {
       cameraIp: rowData.cameraIp,
@@ -115,26 +143,44 @@ const DeviceTable = ({ data, setData }) => {
     };
 
     try {
-      // await axios.post(`${SERVER_URL}fetch-data/`, requestData);
-      // console.log(data);
       if (rowData.status === 'Disconnected') {
         setResMsg("Please confirm that your API runner is running. Failed to fetch data!");
         setWarningModal(true);
-      } else{
-        let res = await axios.post(`${SERVER_URL}fetch-data/`, requestData);
-        console.log(res);
-        if (res.status === 200) {
+      } else {
+        // Show progress modal and reset progress
+        setShowProgressModal(true);
+        setDownloadProgress(0);
+
+        const res = await axios.post(`${SERVER_URL}fetch-data/`, requestData, {
+          onDownloadProgress: (progressEvent) => {
+            // Calculate download progress
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 100) / (progressEvent.total || 1000000)
+            );
+            setDownloadProgress(Math.min(percentCompleted, 90));
+          }
+        });
+
+        // Simulate final processing step
+        setDownloadProgress(95);
+        await new Promise(resolve => setTimeout(resolve, 500));
+        setDownloadProgress(100);
+
+        // Close progress modal after delay
+        setTimeout(() => {
+          setShowProgressModal(false);
           setResMsg("Data fetched successfully!");
-          setModalType('attendance')
+          setModalType('attendance');
           setSuccessModal(true);
-        }
+        }, 500);
       }
     } catch (error) {
       console.log(error);
+      setShowProgressModal(false);
+      setResMsg("Failed to fetch data: " + error.message);
+      setWarningModal(true);
     }
   };
-
-
 
   const [selectedIds, setSelectedIds] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
@@ -473,6 +519,20 @@ const DeviceTable = ({ data, setData }) => {
 
   return (
     <div className="department-table">
+      {showProgressModal && (
+        <div className="modal-backdrop">
+          <div className="modal">
+            <h3>Downloading Attendance...</h3>
+            <div className="progress-bar-container">
+              <div
+                className="progress-bar"
+                style={{ width: `${downloadProgress}%` }}
+              />
+            </div>
+            <p>{downloadProgress}% completed</p>
+          </div>
+        </div>
+      )}
       <ConirmationModal
         isOpen={showModal}
         message={
