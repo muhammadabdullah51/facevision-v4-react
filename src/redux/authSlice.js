@@ -43,8 +43,15 @@ const authSlice = createSlice({
                 state.userInfo.password = action.payload; // Update password
             }
         },
+        updateProfilePicture: (state, action) => {
+            if (state.userInfo) {
+                state.userInfo.profilePicture = action.payload; // Update profile picture
+            }
+        },
     },
 });
 
-export const { login, logout, setAuthToken, updatePassword  } = authSlice.actions;
+export const { login, logout, setAuthToken, updatePassword, updateProfilePicture} = authSlice.actions;
 export default authSlice.reducer;
+
+

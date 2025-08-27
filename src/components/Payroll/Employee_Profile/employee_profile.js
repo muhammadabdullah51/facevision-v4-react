@@ -191,7 +191,7 @@ const EmployeeProfile = () => {
     setSelectAll(isChecked);
 
     if (isChecked) {
-      const allIds = currentPageData.map((row) => row.empId);
+      const allIds = filteredData.map((row) => row.empId);
       // setSelectedIds(allIds);
       dispatch(setSelectedIds(allIds));
       console.log(allIds);
@@ -219,12 +219,12 @@ const EmployeeProfile = () => {
   };
 
   useEffect(() => {
-    if (selectedIds.length === currentPageData.length && currentPageData.length > 0) {
+    if (selectedIds.length === filteredData.length && filteredData.length > 0) {
       setSelectAll(true);
     } else {
       setSelectAll(false);
     }
-  }, [selectedIds, currentPageData]);
+  }, [selectedIds, filteredData]);
 
   // Handle close payroll (deletes all existing payrolls)
   const handleClosePayroll = () => {
@@ -1333,7 +1333,7 @@ const EmployeeProfile = () => {
                             </tbody>
                           </table>
                         </div>
-                        <div className="pagination">
+                        {/* <div className="pagination">
                           <ReactPaginate
                             previousLabel={"Previous"}
                             nextLabel={"Next"}
@@ -1345,7 +1345,7 @@ const EmployeeProfile = () => {
                             containerClassName={"pagination"}
                             activeClassName={"active"}
                           />
-                        </div>
+                        </div> */}
                       </div>
                     </>
                   );
@@ -1979,6 +1979,7 @@ const EmployeeProfile = () => {
 
           {renderTabContent()}
         </div>
+        
       </div>
     </>
   );

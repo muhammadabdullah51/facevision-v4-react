@@ -14,4 +14,5 @@ code {
 
 #root{
   overflow-x: hidden;
+  /* overflow-x: scroll; */
 }

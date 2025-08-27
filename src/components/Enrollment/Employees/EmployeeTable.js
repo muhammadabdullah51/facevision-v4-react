@@ -594,7 +594,16 @@ const EmployeeTable = ({
                   <td>{row.accountNo}</td>
                   <td>{row.bankName}</td>
                   <td className="empImage">
+              
                     <img
+                      src={row.image1
+                    ? new URL(row.image1, SERVER_URL).toString()  // avoids //media
+                    : Default_picture}
+                      alt={row.employeeName}
+                      className="employee-image"
+                      onError={(e) => { e.currentTarget.src = Default_picture; }}
+                    />
+                    {/* <img
                       src={
                         row.image1
                           ? `${SERVER_URL}${row.image1}?${new Date().getTime()}` // Add timestamp to prevent caching
@@ -602,7 +611,7 @@ const EmployeeTable = ({
                       }
                       alt={row.employeeName}
                       className="employee-image"
-                    />
+                    /> */}
                   </td>
                   <td>
                     <div className="icons-box">
@@ -656,11 +665,19 @@ const EmployeeTable = ({
 
                 <div className="card-employee" key={row.empId}>
                   <div className={`card-body empImage ${window.innerWidth <= 700 ? '' : 'image-name'}`}>
-                    <img
+                     <img
+                      src={row.image1
+                    ? new URL(row.image1, SERVER_URL).toString()  // avoids //media
+                    : Default_picture}
+                      alt={row.employeeName}
+                      className="employee-image"
+                      onError={(e) => { e.currentTarget.src = Default_picture; }}
+                    />
+                    {/* <img
                       src={row.image1 ? `${SERVER_URL}${row.image1}` : Default_picture}
                       alt={row.employeeName}
                       className="employee-image"
-                    />
+                    /> */}
                     <div>
                       <p>{row.empId}</p>
                       <h3>{row.fName} {row.lName}</h3>

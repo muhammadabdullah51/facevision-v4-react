@@ -39,7 +39,7 @@
 }
 
 .pagination a:hover,
-.pagination span.active {
+.pagination .active a {
     background-color: var(--theam-color);
     color: #fff;
 }

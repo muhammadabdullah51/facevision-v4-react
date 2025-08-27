@@ -90,7 +90,8 @@ const AddEmployee = ({
     newEmployee.image1 instanceof File || newEmployee.image1 instanceof Blob
       ? URL.createObjectURL(newEmployee.image1)
       : typeof newEmployee.image1 === "string"
-        ? `${SERVER_URL}${newEmployee.image1}?${new Date().getTime()}`
+        // ? `${SERVER_URL}${newEmployee.image1}?${new Date().getTime()}`
+        ? new URL(newEmployee.image1, SERVER_URL).toString()
         : "";
 
 

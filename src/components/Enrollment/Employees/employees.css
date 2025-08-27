@@ -146,7 +146,7 @@ h2 {
 }
 
 button.toggle-button {
-    width: 45%;
+    width: 10%;
 }
 
 /* button.toggle-button.active {
@@ -242,9 +242,9 @@ button.toggle-button {
     display:unset;
 }
 button.toggle-button {
-    border: none;
+    /* border: none; */
     font-size: 1vw;
-    background: transparent;
+    /* background: transparent; */
 }
 .card-header{
     background-color: #f4f4f4;

@@ -20,6 +20,7 @@
     overflow-y: scroll; /* Enables vertical scrolling */
     scrollbar-width: none; /* Firefox: Hides scrollbar */
     -ms-overflow-style: none; /* Internet Explorer 10+ */
+    background-color: var(--app-color);
 }
 
 /* WebKit browsers: Chrome, Safari, and newer versions of Edge */
@@ -71,7 +72,7 @@
 @media (max-width:1300px) {
     .dashboard-content {
         margin-left: 0;
-        width: 100%;
+        width: 80%;
     }
     .dashboard-graphs{
         flex-wrap: wrap;
@@ -79,6 +80,9 @@
     }
     .prefomance-graph{
         width: 100%;
+    }
+    .main-content{
+        padding: 1% 1% 1% 1%;
     }
 }
 
