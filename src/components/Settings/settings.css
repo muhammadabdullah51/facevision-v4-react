@@ -13,7 +13,7 @@
     padding: 10px;
     border: 1px solid;
     border-radius: 10px;
-    background: white;
+    background: var(--tabs-button);
     cursor: pointer;
     font-weight: 700;
     color: grey;
@@ -187,7 +187,7 @@
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 5px;
-    background-color: #f9f9f9;
+    background-color: var(--payroll-ques);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -203,7 +203,7 @@
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 5px;
-    background-color: #f9f9f9;
+    background-color: var(--payroll-ques);
     display: flex;
     align-items: start;
     gap: 10px;
@@ -216,6 +216,8 @@
   }
   .checkbox-item-textarea textarea{
     width: 100%;
+    background-color: var(--form-inputs);
+    color: var(--table-text-color);
   }
 
 
@@ -267,6 +269,9 @@
   #closingDate {
     padding: 5px;
     width: 30%;
+    background-color: var(--table-data-color);
+    color: var(--table-text-color);
+
   }
 
   .tabs.card-table-toggle {

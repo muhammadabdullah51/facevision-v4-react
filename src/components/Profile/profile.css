@@ -4,7 +4,7 @@
 
 .profile-settings {
     width: 40%;
-    background-color: #fff;
+    background-color: var(--form-bg);
     padding: 2vw;
     border-radius: 1vw;
     box-shadow: 0 0 1.3vw rgba(0, 0, 0, 0.2);
@@ -54,6 +54,10 @@
     border-radius: 0.5vw;
     font-size: 0.8vw;
     outline: none;
+    background-color: var(--form-inputs);
+    color: var(--table-text-color);
+
+
 }
 
 .profile-settings textarea {
@@ -174,7 +178,8 @@
         flex-direction: column;
     }
 }
-.profiles{
+
+.profiles {
     position: relative;
 }
 
@@ -202,94 +207,95 @@
 }
 
 .profile-image-wrapper {
-  position: relative;
-  display: inline-block;
-  cursor: pointer;
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
 }
 
 .profile-image-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  color: white;
-  font-size: 1.5vw;
-  cursor: pointer;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    color: white;
+    font-size: 1.5vw;
+    cursor: pointer;
 }
 
 .profile-image-wrapper:hover .profile-image-overlay {
-  opacity: 1;
+    opacity: 1;
 }
+
 /* Add these styles to your existing profile.css */
 
 .profile-image-wrapper {
-  position: relative;
-  display: inline-block;
-  cursor: pointer;
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
 }
 
 .profile-image-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 1.5vw;
-  cursor: pointer;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5vw;
+    cursor: pointer;
 }
 
 .upload-button-container {
-  display: flex;
-  gap: 1vw;
-  margin-top: 1vw;
-  justify-content: center;
+    display: flex;
+    gap: 1vw;
+    margin-top: 1vw;
+    justify-content: center;
 }
 
 .upload-button {
-  padding: 8px 16px;
-  border: 1px solid var(--theam-color);
-  border-radius: 4px;
-  background-color: var(--button-color);
-  color: var(--theam-color);
-  cursor: pointer;
-  font-weight: 600;
-  transition: background-color 0.3s, color 0.3s;
+    padding: 8px 16px;
+    border: 1px solid var(--theam-color);
+    border-radius: 4px;
+    background-color: var(--button-color);
+    color: var(--theam-color);
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s, color 0.3s;
 }
 
 .upload-button:hover {
-  background-color: var(--button-hover-color);
-  border: 1px solid var(--button-hover-color);
-  color: white;
+    background-color: var(--button-hover-color);
+    border: 1px solid var(--button-hover-color);
+    color: white;
 }
 
 .cancel-button {
-  padding: 8px 16px;
-  border: 1px solid #dc3545;
-  border-radius: 4px;
-  background-color: transparent;
-  color: #dc3545;
-  cursor: pointer;
-  font-weight: 600;
-  transition: background-color 0.3s, color 0.3s;
+    padding: 8px 16px;
+    border: 1px solid #dc3545;
+    border-radius: 4px;
+    background-color: transparent;
+    color: #dc3545;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s, color 0.3s;
 }
 
 .cancel-button:hover {
-  background-color: #dc3545;
-  color: white;
+    background-color: #dc3545;
+    color: white;
 }
 
 /* Rest of your existing CSS */

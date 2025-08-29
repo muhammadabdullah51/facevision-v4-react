@@ -11,7 +11,10 @@
   --success-button-color: #67b8b1;
   --fail-button-color: #ffffff;
   --button-hover-color: #7670eb;
-  --table-header-color: #e5e5e5;
+  --table-header-color: #f4f4f4;
+  --table-data-color: white;
+  --table-text-color: black;
+  --pagination-text: #333;
   --shadow-color: rgba(0, 0, 0, 0.541);
   --text-color: #4e4e4e;
   --background-color: #f0f0f0;
@@ -34,10 +37,147 @@
   --sidebar-font: 0.8vw;
   --sidebar-font-dropdown: 0.73vw;
   --sidebar-bg: #ffffff;
-  /* Old Color #508CED */
   --accessible-items-font: 14px;
   --delete-svg-color: #ff4c74;
   --edit-svg-color: #7670eb;
+  --tabs-button: white;
+  --tabs-button-hover: rgb(239 207 255 / 35%);
+  --card-text: #111827;
+  --card-header: #6b7280;
+  --card-icon: #9ca3af;
+  --chart-title: #1f2937;
+  --border: #eeeeee;
+  --form-bg: #f9f9f9;
+  --form-inputs: white;
+  --picker-icon-filter: invert(0%) sepia(0%) saturate(0%) hue-rotate(0deg);
+  --time-input: #495057;
+  --month-text: #2c3e50;
+  --slip-preview: #f8f9fa;
+  --slip-preview-text: #666;
+  --payroll-ques: #f9f9f9;
+  --logout-modal: rgba(255, 255, 255, 0.9);
+  --logout-modal-hovers: #f0f0f0;
+  --present-status-text: #17a136;
+  --present-status-bg: #d4edda;
+  --absent-status-text: #cf0013;
+  --absent-status-bg: #ffa8bd;
+  --late-status-text: #bf0450;
+  --late-status-bg: #fdbaca;
+  --globe: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"%3E%3Cpath d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.22.21-1.8l3.79 3.79v.01c.32 1.25 1.5 2.17 2.88 2.2l.12.73zm6.9-6.01c.01.01.01.02.01.03 0 .9-.36 1.71-.93 2.29L13.3 9.7l3.6-3.6c.6.74.98 1.69.98 2.77 0 1.04-.3 2.01-.78 2.85zm-7.77-6.84c-.63-.63-.19-1.75.7-1.75H11v.99L9.13 7.08zm8.07.92l.7.7c1.16 1.19 1.82 2.81 1.82 4.6 0 3.2-2.56 5.79-5.74 5.97v-.99c.75-.01 1.47-.29 2.04-.78L10.58 6.41zm-.71 1.06c-.29.29-.77.29-1.06 0L11 7v1.05c.39.39 1.02.39 1.41 0l.88-.88zM4.05 11H2.03c.02-3.94 3.07-7.12 6.99-7.81V5.9l-2.07 2.07L4.05 11z" fill="%23000000"/%3E%3C/svg%3E') no-repeat center center
+}
+
+body.dark-mode {
+  --primary-color: #a8cfa3;
+  --secondary-color: #2c3a2a;
+  --sidebar-color: #1c1c1c;
+  --app-color: #121212;
+  --hover-color: #2a2a2a;
+  --hoverText-color: #936eff;
+  --theam-color: #9d77ff;
+  --after-border-radius: #9f7ff3;
+  --button-color: #1e1e1e;
+  --success-button-color: #2d6f6a;
+  --fail-button-color: #2a2a2a;
+  --button-hover-color: #695eff;
+  --table-header-color: #1f1f1f;
+  --table-data-color: #2a2a2a;
+  --table-text-color: white;
+  --pagination-text: #d6d6d6;
+  --shadow-color: rgba(255, 255, 255, 0.15);
+  --text-color: #e6e6e6;
+  --background-color: #121212;
+  --input-border-color: #2e2e2e;
+  --border-color: #333333;
+  --input-border-color: #444444;
+  --box-shadow: 0 4px 8px rgba(255, 255, 255, 0.05);
+  --font-size: 0.9vw;
+  --headerFont-size: 0.8vw;
+  --inner-border-color: #9f7ff3;
+  --pagination-hover-color: white;
+  --timing: 0.3s;
+  --width-of-input: 300px;
+  --height-of-input: 40px;
+  --border-height: 2px;
+  --input-bg: #1e1e1e;
+  --border-radius: 30px;
+  --after-border-radius: 1px;
+  --bold-font: 900;
+  --table-text-font: 0.6vw;
+  --icon-size: 1vw;
+  --sidebar-font: 0.8vw;
+  --sidebar-font-dropdown: 0.73vw;
+  --sidebar-bg: #1c1c1c;
+  --accessible-items-font: 14px;
+  --delete-svg-color: #ff4c74;
+  --edit-svg-color: #a8a2ff;
+  --tabs-button: #1e1e1e;
+  --tabs-button-hover: rgb(239 207 255 / 15%);
+  --card-text: #d7e3ff;
+  --card-header: #c8bafa;
+  --card-icon: #c9ced6;
+  --chart-title: #ffffff;
+  --border: #292424;
+  --form-bg: #2a2a2a;
+  --form-inputs: rgb(22, 22, 22);
+  --picker-icon-filter: invert(100%) sepia(67%) saturate(635%) hue-rotate(230deg);
+  --time-input: white;
+  --month-text: #f7fbff;
+  --slip-preview: var(--table-data-color);
+  --slip-preview-text: white;
+  --payroll-ques: var(--table-data-color);
+  --logout-modal: rgba(0, 0, 0, 0.5);
+  --logout-modal-hovers: #2e2e2e;
+  --present-status-text: #17a136;
+  --present-status-bg: #103b1a;
+  --absent-status-text: #cf0013;
+  --absent-status-bg: #4f2630;
+  --late-status-text: #bf0450;
+  --late-status-bg: #492029;
+  --globe: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"%3E%3Cpath d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.22.21-1.8l3.79 3.79v.01c.32 1.25 1.5 2.17 2.88 2.2l.12.73zm6.9-6.01c.01.01.01.02.01.03 0 .9-.36 1.71-.93 2.29L13.3 9.7l3.6-3.6c.6.74.98 1.69.98 2.77 0 1.04-.3 2.01-.78 2.85zm-7.77-6.84c-.63-.63-.19-1.75.7-1.75H11v.99L9.13 7.08zm8.07.92l.7.7c1.16 1.19 1.82 2.81 1.82 4.6 0 3.2-2.56 5.79-5.74 5.97v-.99c.75-.01 1.47-.29 2.04-.78L10.58 6.41zm-.71 1.06c-.29.29-.77.29-1.06 0L11 7v1.05c.39.39 1.02.39 1.41 0l.88-.88zM4.05 11H2.03c.02-3.94 3.07-7.12 6.99-7.81V5.9l-2.07 2.07L4.05 11z" fill="%23ffffff"/%3E%3C/svg%3E') no-repeat center center;
+}
+
+
+html {
+  background-color: var(--table-data-color);
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  color: var(--table-text-color);
+  /* Changes the SVG icon color */
+  cursor: pointer;
+  filter: var(--picker-icon-filter);
+  /* For custom color */
+}
+
+.css-13cymwt-control,
+.css-t3ipsp-control,
+.css-rnyjni,
+.css-1nmdiq5-menu,
+.css-qr46ko {
+  background-color: var(--form-inputs) !important;
+  box-shadow: 0 0 0 1px #775dad !important;
+}
+
+.css-d7l1ni-option {
+  background-color: #775dad !important;
+  color: white !important;
+}
+
+.css-t3ipsp-control:hover {
+  border-color: unset;
+}
+
+.css-10wo9uf-option {
+  color: var(--table-text-color) !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  color: var(--table-text-color);
 }
 
 @media only screen and (max-width:1300px) {
@@ -125,18 +265,18 @@
 }
 
 .presentStatus {
-  background-color: #d4edda;
-  color: #17a136;
+  background-color: var(--present-status-bg);
+  color: var(--present-status-text);
 }
 
 .absentStatus {
-  background-color: #ffa8bd;
-  color: #cf0013;
+  background-color: var(--absent-status-bg);
+  color: var(--absent-status-text);
 }
 
 .lateStatus {
-  background-color: #fdbaca;
-  color: #bf0450;
+  background-color: var(--late-status-bg);
+  color: var(--late-status-text);
 }
 
 .status {
@@ -148,7 +288,7 @@
 table thead th {
   position: sticky;
   top: 0;
-  /* background-color: var(--table-header-color) !important; */
+  background-color: var(--table-header-color) !important;
   background-color: #f4f4f4;
   z-index: 1;
 }
@@ -232,16 +372,18 @@ body {
 
 .date-search input {
   /* width: 90%; */
-  background-color: #fff;
+  background-color: var(--form-inputs);
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 14px;
   margin: 0 0.5vw 0 0.3vw;
 }
+
 .date-search select {
   width: auto;
-  background-color: #fff;
+  background-color: var(--form-inputs);
+  color: var(--table-text-color);
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -276,7 +418,7 @@ input[type="checkbox"]#delete-checkbox {
 }
 
 .live-data {
-  background-color: #e0e0e0;
+  background-color: var(--input-border-color);
   border-radius: 12px;
   padding: 2px 8px;
   font-size: 0.9em;
@@ -293,6 +435,7 @@ input[type="checkbox"]#delete-checkbox {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 10px;
+  color: var(--table-text-color);
 }
 
 #google_translate_element {
@@ -321,7 +464,7 @@ input[type="checkbox"]#delete-checkbox {
   border-radius: 50%;
   appearance: none;
   background-color: #fff;
-  background: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"%3E%3Cpath d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.22.21-1.8l3.79 3.79v.01c.32 1.25 1.5 2.17 2.88 2.2l.12.73zm6.9-6.01c.01.01.01.02.01.03 0 .9-.36 1.71-.93 2.29L13.3 9.7l3.6-3.6c.6.74.98 1.69.98 2.77 0 1.04-.3 2.01-.78 2.85zm-7.77-6.84c-.63-.63-.19-1.75.7-1.75H11v.99L9.13 7.08zm8.07.92l.7.7c1.16 1.19 1.82 2.81 1.82 4.6 0 3.2-2.56 5.79-5.74 5.97v-.99c.75-.01 1.47-.29 2.04-.78L10.58 6.41zm-.71 1.06c-.29.29-.77.29-1.06 0L11 7v1.05c.39.39 1.02.39 1.41 0l.88-.88zM4.05 11H2.03c.02-3.94 3.07-7.12 6.99-7.81V5.9l-2.07 2.07L4.05 11z" fill="%23000000"/%3E%3C/svg%3E') no-repeat center center;
+  background: var(--globe);
   background-size: 2.2rem;
   border: none;
 }

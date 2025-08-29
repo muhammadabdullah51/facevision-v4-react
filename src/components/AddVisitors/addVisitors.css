@@ -19,7 +19,7 @@
     font-size: 0.9vw;
 }
 .visitor-info{
-    background-color: white;
+    background-color: var(--table-data-color);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -32,7 +32,7 @@
 .visitor-uper{
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     border-radius: 10px;
-    background-color: white;
+    background-color: var(--table-data-color);
     display: flex;
     justify-content: space-between;
     width: 90%;
@@ -67,8 +67,11 @@
     font-weight: 700;
     transition: .3s all;
     outline: none;
+    background-color: var(--form-inputs);
 }
 .visitor-info-inner select{
+    background-color: var(--form-inputs);
+    color: var(--table-text-color);
     display: block;
     width: 30vw;
     height: 4vh;

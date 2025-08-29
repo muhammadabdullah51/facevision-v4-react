@@ -76,8 +76,8 @@
 
 
 .setting-toggle img {
-    width: 2.7vw;
-    height: 2.7vw;
+    width: 1.7vw;
+    height: 1.7vw;
     border-radius: 50px;
     object-fit: cover;
     padding: 5px;
@@ -98,9 +98,9 @@ ul.setting-menu li {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 7vh;
+    height: 2vh;
     width: 99.5%;
-    border: 2px solid #eeeeee;
+    border: 2px solid var(--border);
     padding: 2vh 0px;
 }
 
@@ -186,7 +186,7 @@ ul.setting-menu li {
     width: 11vw;
     right: 0;
     top: 100%;
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: var(--logout-modal);
     box-shadow: 0 0px 10px rgba(0, 0, 0, 0.4);
     border-radius: 8px;
     list-style: none;
@@ -209,7 +209,7 @@ ul.setting-menu li {
 }
 
 .setting-menu li:hover {
-    background-color: #f0f0f0;
+    background-color: var(--logout-modal-hovers);
 }
 
 @media only screen and (min-width:700px) and (max-width:1500px){

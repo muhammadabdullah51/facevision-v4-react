@@ -146,6 +146,11 @@
 
 input:focus {
     outline: none;
+    color: var(--table-text-color);
+}
+input {
+    outline: none;
+    color: var(--table-text-color);
 }
 
 .form:focus-within:before {

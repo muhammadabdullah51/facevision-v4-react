@@ -4,6 +4,7 @@ import { SERVER_URL } from "../../../config";
 import axios from "axios";
 
 const SalarySlip = ({ salaryDetails, preview, deductions = {},  }) => {
+  // console.log(salaryDetails.companyName);
   const effectiveDeductions = deductions || salaryDetails.deductions || {};
   const mergedData = useMemo(() => {
     if (preview) {
