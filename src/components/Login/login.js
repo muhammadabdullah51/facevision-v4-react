@@ -63,7 +63,7 @@ const Login = () => {
             <div className="login-card">
                 <div className="login-header">
                     <img src={Logo} alt='faceVision' />
-                    <h2>Welcome to 360 FaceVision</h2>
+                    <h2 className='login-signup-form-heading'>Welcome to 360 FaceVision</h2>
                     <p>Please enter your details to Sign In</p>
                 </div>
                 

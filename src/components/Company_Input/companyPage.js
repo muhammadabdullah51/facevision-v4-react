@@ -48,7 +48,7 @@ const Information = () => {
         <div className="company-container">
             <div className="company-card">
                 <div className="company-header">
-                    <h2>Enter Your Company Information</h2>
+                    <h2 className="login-signup-form-heading">Enter Your Company Information</h2>
                     <p>Please provide the details of your company</p>
                 </div>
                 <form onSubmit={handleSubmit}>
@@ -74,7 +74,7 @@ const Information = () => {
                     </div>
                     <div className="input-group">
                         <label>Company Logo</label>
-                        <input type="file" onChange={handleLogoUpload} required />
+                        <input className="login-signup-form-heading" type="file" onChange={handleLogoUpload} required />
                     </div>
                     <div className="input-group">
                         <label>Industry</label>
@@ -99,6 +99,9 @@ const Information = () => {
                         Submit
                     </button>
                 </form>
+                <div className="signup-link">
+                    Company Already Registered? <a href="/">Sign In</a> or <a href="/Signup">Create account</a>
+                </div>
             </div>
         </div>
     );

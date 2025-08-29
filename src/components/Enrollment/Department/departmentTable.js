@@ -142,7 +142,7 @@ const TableComponent = ({ data, setData }) => {
 
   const confirmAdd = async () => {
     if (!formData.name || !formData.superior || !formData.empQty ) {
-      setResMsg("Please fill in atleast Department Name fields.")
+      setResMsg("Please fill in all fields.")
       setShowModal(false);
       setWarningModal(true);
       return;
@@ -194,7 +194,7 @@ const TableComponent = ({ data, setData }) => {
   };
   const confirmUpdate = async () => {
     if (!editFormData.name  || !editFormData.superior || !editFormData.empQty) {
-      setResMsg("Please fill in atleast Department Name fields.")
+      setResMsg("Please fill in all fields.")
       setShowModal(false);
       setWarningModal(true);
       return;

@@ -13,6 +13,7 @@ import Devices from "../Devices/devices";
 import { FaArrowLeft } from "react-icons/fa";
 import CheckInOutTable from "../Attendence/CheckInOutTable";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import EmployeeProfile from "../Payroll/Employee_Profile/employee_profile";
 
 
 const Dashboard = () => {
@@ -50,7 +51,7 @@ const Dashboard = () => {
             case "attendance":
                 return <Attendance />;
             case "payrolls":
-                return <PayrollLogs />;
+                return <EmployeeProfile />;
             case "devices":
                 return <Devices />;
             default:
@@ -62,8 +63,10 @@ const Dashboard = () => {
 
                             <div className="card">
                                 <div className="card-header-dash">
-                                    <span className="card-title">Total Employees</span>
-                                    <FontAwesomeIcon className="icon" icon={faIdBadge} />
+                                    <span  className="card-title">Total Employees</span>
+                                    <FontAwesomeIcon 
+                                    onClick={() => setActiveComponent("employees")}
+                                    className="icon" icon={faIdBadge} />
                                 </div>
                                 <div className="card-content">
                                     <span className="card-amount">{dashData?.total_employees || 0}</span>
@@ -83,7 +86,9 @@ const Dashboard = () => {
                             <div className="card">
                                 <div className="card-header-dash">
                                     <span className="card-title">Attendance</span>
-                                    <FontAwesomeIcon className="icon" icon={faCalendarCheck} />
+                                    <FontAwesomeIcon className="icon" 
+                                    onClick={() => setActiveComponent("attendance")}
+                                    icon={faCalendarCheck} />
                                 </div>
                                 <div className="card-content">
                                     <span className="card-amount">{dashData?.total_present || 0}</span>
@@ -103,7 +108,9 @@ const Dashboard = () => {
                             <div className="card">
                                 <div className="card-header-dash">
                                     <span className="card-title">Payrolls</span>
-                                    <FontAwesomeIcon className="icon" icon={faCalendarAlt} />
+                                    <FontAwesomeIcon className="icon" 
+                                    onClick={() => setActiveComponent("payrolls")}
+                                    icon={faCalendarAlt} />
                                 </div>
                                 <div className="card-content">
                                     <span className="card-amount">Rs. {dashData?.total_payroll_amount || 0}</span>
@@ -123,7 +130,9 @@ const Dashboard = () => {
                             <div className="card">
                                 <div className="card-header-dash">
                                     <span className="card-title">Devices</span>
-                                    <FontAwesomeIcon className="icon" icon={faTabletAlt} />
+                                    <FontAwesomeIcon 
+                                    onClick={() => setActiveComponent("devices")}
+                                    className="icon" icon={faTabletAlt} />
                                 </div>
                                 <div className="card-content">
                                     <span className="card-amount">{dashData?.total_devices || 0}</span>
